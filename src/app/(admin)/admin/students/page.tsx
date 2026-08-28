@@ -1,15 +1,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Users, UserCheck, ShieldAlert, Download, Mail, MoreHorizontal } from "lucide-react";
+import Link from "next/link";
+import { Search, Users, UserCheck, ShieldAlert, Download, Mail, MoreHorizontal, ArrowRight, Star } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
-import { ADMIN_STUDENTS } from "@/lib/data/admin";
+import { ADMIN_STUDENTS, type AdminStudent } from "@/lib/data/admin";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 
 export default function AdminStudentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"All" | "Active" | "Inactive">("All");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const filtered = ADMIN_STUDENTS.filter((s) => {
     const matchesSearch =
@@ -28,6 +35,13 @@ export default function AdminStudentsPage() {
       />
 
       <div className="flex-1 space-y-5 p-3 sm:p-6 lg:p-8 lg:pt-4">
+        {/* Toast */}
+        {toastMessage && (
+          <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-3.5 text-xs font-bold text-[#2563EB] shadow-xl backdrop-blur-md animate-in fade-in">
+            <span>{toastMessage}</span>
+          </div>
+        )}
+
         {/* Metric Cards */}
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <TiltCard>
@@ -90,7 +104,7 @@ export default function AdminStudentsPage() {
                   key={st}
                   type="button"
                   onClick={() => setFilterStatus(st)}
-                  className={`rounded-lg px-3 py-1 text-xs font-bold transition-colors whitespace-nowrap ${
+                  className={`rounded-lg px-3 py-1 text-xs font-bold transition-colors whitespace-nowrap cursor-pointer ${
                     filterStatus === st
                       ? "bg-[#2563EB] text-white shadow-xs"
                       : "text-slate-500 hover:text-slate-900"
@@ -104,6 +118,7 @@ export default function AdminStudentsPage() {
 
           <button
             type="button"
+            onClick={() => showToast("Exporting registered students roster (CSV)...")}
             className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors self-end sm:self-auto cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" />
@@ -114,11 +129,12 @@ export default function AdminStudentsPage() {
         {/* Students Table */}
         <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs min-w-[650px]">
+            <table className="w-full text-left text-xs min-w-[700px]">
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
                   <th className="pb-3 pr-4 pl-0">Student</th>
                   <th className="px-4 pb-3">Enrolled Courses</th>
+                  <th className="px-4 pb-3">Progress Rating</th>
                   <th className="px-4 pb-3">AI Interviews</th>
                   <th className="px-4 pb-3 text-center">Status</th>
                   <th className="px-4 pb-3">Joined Date</th>
@@ -126,58 +142,79 @@ export default function AdminStudentsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {filtered.map((s) => (
-                  <tr key={s.email} className="transition-colors hover:bg-slate-50/60">
-                    <td className="py-4 pr-4 pl-0 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-xs font-bold text-[#2563EB]">
-                          {s.name.split(" ").map((n) => n[0]).join("")}
+                {filtered.map((s) => {
+                  const studentSlug = s.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                  const rating = s.name === "Priya Nair" ? 4.9 : s.name === "Sneha Kulkarni" ? 4.9 : s.name === "Arjun Mehta" ? 4.8 : 4.7;
+
+                  return (
+                    <tr
+                      key={s.email}
+                      className="group transition-colors hover:bg-blue-50/40 cursor-pointer"
+                    >
+                      <td className="py-4 pr-4 pl-0 whitespace-nowrap">
+                        <Link href={`/admin/students/${studentSlug}`} className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-xs font-bold text-[#2563EB] group-hover:bg-[#2563EB] group-hover:text-white transition-colors">
+                            {s.name.split(" ").map((n) => n[0]).join("")}
+                          </div>
+                          <div>
+                            <div className="font-bold text-slate-900 group-hover:text-[#2563EB] transition-colors flex items-center gap-1">
+                              <span>{s.name}</span>
+                              <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                            <div className="text-[11px] font-medium text-slate-400">{s.email}</div>
+                          </div>
+                        </Link>
+                      </td>
+                      <td className="px-4 py-4 font-semibold text-slate-700 whitespace-nowrap">
+                        {s.enrolledCourses} {s.enrolledCourses === 1 ? "course" : "courses"}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 border border-amber-200/80 text-[11px] font-extrabold text-amber-800">
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          <span>{rating} / 5.0</span>
                         </div>
-                        <div>
-                          <div className="font-bold text-slate-900">{s.name}</div>
-                          <div className="text-[11px] font-medium text-slate-400">{s.email}</div>
+                      </td>
+                      <td className="px-4 py-4 font-semibold text-[#2563EB] whitespace-nowrap">
+                        {s.aiInterviews} sessions
+                      </td>
+                      <td className="px-4 py-4 text-center whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                            s.status === "Active"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {s.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 font-medium text-slate-500 whitespace-nowrap">
+                        {s.joinedDate}
+                      </td>
+                      <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link
+                            href={`/admin/students/${studentSlug}`}
+                            className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-[#2563EB] hover:bg-[#2563EB] hover:text-white transition-colors"
+                          >
+                            <span>View Profile</span>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              showToast(`Composing direct message to ${s.email}...`);
+                            }}
+                            className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                            title="Message Student"
+                          >
+                            <Mail className="h-3.5 w-3.5" />
+                          </button>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 font-semibold text-slate-700 whitespace-nowrap">
-                      {s.enrolledCourses} {s.enrolledCourses === 1 ? "course" : "courses"}
-                    </td>
-                    <td className="px-4 py-4 font-semibold text-[#2563EB] whitespace-nowrap">
-                      {s.aiInterviews} sessions
-                    </td>
-                    <td className="px-4 py-4 text-center whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                          s.status === "Active"
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {s.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 font-medium text-slate-500 whitespace-nowrap">
-                      {s.joinedDate}
-                    </td>
-                    <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                          title="Message Student"
-                        >
-                          <Mail className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                        >
-                          <MoreHorizontal className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

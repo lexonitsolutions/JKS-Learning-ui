@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
+import { ChunkErrorHandler } from "@/components/common/chunk-error-handler";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -13,12 +14,49 @@ export const metadata: Metadata = {
     "AI-powered learning platform for Java Full Stack, Frontend, and SAP professionals — structured courses, AI mock interviews, and verified certification.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+const chunkErrorScript = `
+(function() {
+  var KEY = 'jks_chunk_load_retry_ts';
+  function handleRetry(msg) {
+    try {
+      var isChunk = /Loading chunk|ChunkLoadError|Failed to fetch dynamically imported module|Importing a module script failed|dynamically imported module/i.test(msg || '');
+      if (!isChunk) return;
+      var last = sessionStorage.getItem(KEY);
+      var now = Date.now();
+      if (!last || now - parseInt(last, 10) > 10000) {
+        sessionStorage.setItem(KEY, String(now));
+        window.location.reload();
+      }
+    } catch(e) {}
+  }
+  window.addEventListener('error', function(e) {
+    handleRetry(e.message || (e.error && e.error.message));
+  }, true);
+  window.addEventListener('unhandledrejection', function(e) {
+    handleRetry((e.reason && (e.reason.message || e.reason)) || '');
+  });
+})();
+`;
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" className={`${manrope.variable} h-full antialiased`}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: chunkErrorScript,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-bg-light text-text-heading">
+        <ChunkErrorHandler />
         {children}
       </body>
     </html>
   );
 }
+
