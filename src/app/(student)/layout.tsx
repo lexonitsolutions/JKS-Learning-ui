@@ -12,7 +12,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     <div className="relative flex min-h-screen text-slate-800">
       <AmbientPageBackground />
       <DashboardSidebar />
-      <div className="relative flex flex-1 flex-col">{children}</div>
+      <div className="relative flex flex-1 flex-col min-w-0">{children}</div>
     </div>
   );
 }
