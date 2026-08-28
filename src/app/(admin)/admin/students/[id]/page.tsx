@@ -32,11 +32,26 @@ import {
   Check,
   Send,
   ExternalLink,
+  Code2,
+  Copy,
+  Eye,
+  X,
+  FileCode,
+  HelpCircle,
+  CheckCircle,
+  XCircle,
+  PlayCircle,
+  GraduationCap,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
-import { getStudentProfile } from "@/lib/data/admin-student-details";
+import {
+  getStudentProfile,
+  StudentAssignmentSubmission,
+  StudentCourseProgress,
+  StudentQuizResult,
+} from "@/lib/data/admin-student-details";
 
 export default function AdminStudentDetailsPage() {
   const params = useParams();
@@ -46,25 +61,50 @@ export default function AdminStudentDetailsPage() {
 
   const [activeTab, setActiveTab] = useState<
     "overview" | "courses" | "assignments" | "quizzes" | "certificates" | "timeline"
-  >("overview");
+  >("courses");
 
+  const [selectedCourseFilter, setSelectedCourseFilter] = useState<string | "all">("all");
   const [assignmentFilter, setAssignmentFilter] = useState<"all" | "high-human" | "ai-assisted">("all");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Modal inspection states
+  const [inspectingAssignment, setInspectingAssignment] = useState<StudentAssignmentSubmission | null>(null);
+  const [inspectingQuiz, setInspectingQuiz] = useState<StudentQuizResult | null>(null);
+  const [inspectModalTab, setInspectModalTab] = useState<"answers" | "ai-scan" | "rubric">("answers");
+  const [copiedCode, setCopiedCode] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  const handleCopyCode = (code: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code);
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
+    }
+  };
+
+  // Handle clicking on an enrolled course card -> drills down to Assignments & AI Scan for that course
+  const handleSelectCourseDrilldown = (courseTitle: string) => {
+    setSelectedCourseFilter(courseTitle);
+    setActiveTab("assignments");
+    showToast(`Filtering assignments & AI authenticity scan for: ${courseTitle}`);
+  };
+
   const filteredAssignments = useMemo(() => {
+    let list = student.assignments;
+    if (selectedCourseFilter !== "all") {
+      list = list.filter((a) => a.courseTitle === selectedCourseFilter);
+    }
     if (assignmentFilter === "high-human") {
-      return student.assignments.filter((a) => a.aiAnalysis.humanScore >= 90);
+      list = list.filter((a) => a.aiAnalysis.humanScore >= 90);
+    } else if (assignmentFilter === "ai-assisted") {
+      list = list.filter((a) => a.aiAnalysis.aiScore > 10);
     }
-    if (assignmentFilter === "ai-assisted") {
-      return student.assignments.filter((a) => a.aiAnalysis.aiScore > 10);
-    }
-    return student.assignments;
-  }, [student.assignments, assignmentFilter]);
+    return list;
+  }, [student.assignments, selectedCourseFilter, assignmentFilter]);
 
   return (
     <>
@@ -77,7 +117,7 @@ export default function AdminStudentDetailsPage() {
       <div className="flex-1 space-y-6 p-3 sm:p-6 lg:p-8 lg:pt-4">
         {/* Toast Notification */}
         {toastMessage && (
-          <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-3.5 text-xs font-bold text-[#2563EB] shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-4">
+          <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-blue-200 bg-white/95 px-5 py-3.5 text-xs font-bold text-[#2563EB] shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-4">
             <CheckCircle2 className="h-4 w-4 text-[#2563EB]" />
             <span>{toastMessage}</span>
           </div>
@@ -227,9 +267,9 @@ export default function AdminStudentDetailsPage() {
         {/* Tab Navigation Strip */}
         <div className="flex items-center gap-1.5 border-b border-slate-200/80 pb-1 overflow-x-auto">
           {[
-            { id: "overview", label: "Overview & Analytics" },
             { id: "courses", label: `Enrolled Courses (${student.courses.length})` },
             { id: "assignments", label: `Assignments & AI Scan (${student.assignments.length})` },
+            { id: "overview", label: "Overview & Analytics" },
             { id: "quizzes", label: `Quizzes & Tests (${student.quizzes.length})` },
             { id: "certificates", label: `Certificates (${student.certificates.length})` },
             { id: "timeline", label: "Activity Timeline" },
@@ -239,7 +279,12 @@ export default function AdminStudentDetailsPage() {
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => {
+                  setActiveTab(tab.id as any);
+                  if (tab.id === "assignments") {
+                    setSelectedCourseFilter("all");
+                  }
+                }}
                 className={`rounded-xl px-4 py-2 text-xs font-bold transition-all duration-150 cursor-pointer whitespace-nowrap ${
                   isActive
                     ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
@@ -252,7 +297,351 @@ export default function AdminStudentDetailsPage() {
           })}
         </div>
 
-        {/* TAB CONTENT 1: OVERVIEW & LEARNING ANALYTICS */}
+        {/* ========================================================================= */}
+        {/* TAB 1: ENROLLED COURSES (Redesigned like Dashboard All-Courses Card Style) */}
+        {/* ========================================================================= */}
+        {activeTab === "courses" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Enrolled Learning Pathways</h3>
+                <p className="text-xs text-slate-500">
+                  Click any course card to inspect its submitted assignments, answers, and AI authenticity verification report.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-[#2563EB] bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
+                {student.courses.length} Active Tracks
+              </span>
+            </div>
+
+            <Reveal variant="stagger" className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {student.courses.map((course) => {
+                const isCompleted = course.progress >= 100;
+                return (
+                  <TiltCard key={course.courseId} className="h-full">
+                    <div
+                      onClick={() => handleSelectCourseDrilldown(course.courseTitle)}
+                      className="group flex h-full flex-col justify-between overflow-hidden rounded-[24px] border border-white/80 bg-white/95 shadow-[0_10px_35px_rgb(20,50,100,0.07)] backdrop-blur-xl transition-all duration-300 hover:shadow-2xl hover:border-blue-300 hover:-translate-y-1 cursor-pointer"
+                    >
+                      {/* Premium Top Gradient Hero Banner */}
+                      <div className="relative flex h-32 flex-col justify-between bg-gradient-to-br from-slate-950 via-slate-900 to-[#1E3A8A] p-5 text-white overflow-hidden">
+                        {/* Decorative background grid and glow */}
+                        <div
+                          className="absolute inset-0 opacity-20"
+                          style={{
+                            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)`,
+                            backgroundSize: "16px 16px",
+                          }}
+                        />
+                        <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-blue-500/25 blur-2xl" />
+
+                        {/* Top Badges */}
+                        <div className="relative z-10 flex items-center justify-between">
+                          <span className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md border border-white/20">
+                            {course.track}
+                          </span>
+                          <span className="rounded-full bg-blue-500/25 px-2.5 py-1 text-[10px] font-bold text-blue-200 border border-blue-400/30">
+                            {course.hoursSpent} hrs logged
+                          </span>
+                        </div>
+
+                        {/* Banner Footer Info */}
+                        <div className="relative z-10 flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-1.5 text-slate-300 font-medium">
+                            <GraduationCap className="h-3.5 w-3.5 text-blue-400" />
+                            <span className="truncate max-w-[200px]">
+                              {course.instructorName || "JKS Faculty"}
+                            </span>
+                          </div>
+                          <span className="text-[11px] font-bold text-emerald-400">
+                            Grade: {course.grade}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="flex-1 p-6 space-y-4">
+                        <div>
+                          <h4 className="text-lg font-extrabold text-slate-900 leading-snug group-hover:text-[#2563EB] transition-colors">
+                            {course.courseTitle}
+                          </h4>
+                          <p className="mt-1 text-xs text-slate-500 flex items-center gap-2">
+                            <span>{course.completedLessons} of {course.totalLessons} Lessons Finished</span>
+                            <span>•</span>
+                            <span>Active: {course.lastActive}</span>
+                          </p>
+                        </div>
+
+                        {/* Progress Bar & Status */}
+                        <div className="space-y-1.5 pt-1">
+                          <div className="flex justify-between text-xs font-bold">
+                            <span className="text-slate-600">Course Mastery Index</span>
+                            <span className="text-[#2563EB]">{course.progress}%</span>
+                          </div>
+                          <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-cyan-500 transition-all duration-500"
+                              style={{ width: `${course.progress}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Status Pills */}
+                        <div className="flex items-center justify-between pt-1">
+                          {course.certificateEarned ? (
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                              <CheckCircle2 className="h-3.5 w-3.5" /> Certificate Verified
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                              <Clock className="h-3.5 w-3.5" /> In Progress
+                            </span>
+                          )}
+
+                          <span className="text-xs font-bold text-slate-400">
+                            {student.assignments.filter((a) => a.courseTitle === course.courseTitle).length} Assignments Submitted
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Action Button Strip */}
+                      <div className="border-t border-slate-100 bg-slate-50/70 p-4 flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-600 group-hover:text-[#2563EB] transition-colors">
+                          Inspect Submissions & AI Scan
+                        </span>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-[#2563EB] shadow-xs group-hover:bg-[#2563EB] group-hover:text-white transition-all">
+                          <ChevronRight className="h-4 w-4 stroke-[2.5]" />
+                        </div>
+                      </div>
+                    </div>
+                  </TiltCard>
+                );
+              })}
+            </Reveal>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 2: ASSIGNMENTS & AI AUTHENTICITY SCAN (With Full Answer Inspection)   */}
+        {/* ========================================================================= */}
+        {activeTab === "assignments" && (
+          <div className="space-y-6">
+            {/* Filter and Course Selection Strip */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white/90 p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-slate-600 flex items-center gap-1">
+                  <Filter className="h-3.5 w-3.5 text-slate-400" /> Filter by Track:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCourseFilter("all")}
+                  className={`rounded-xl px-3 py-1 text-xs font-bold transition-all cursor-pointer ${
+                    selectedCourseFilter === "all"
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  All Courses ({student.assignments.length})
+                </button>
+                {student.courses.map((c) => (
+                  <button
+                    key={c.courseId}
+                    type="button"
+                    onClick={() => setSelectedCourseFilter(c.courseTitle)}
+                    className={`rounded-xl px-3 py-1 text-xs font-bold transition-all cursor-pointer ${
+                      selectedCourseFilter === c.courseTitle
+                        ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {c.track}
+                  </button>
+                ))}
+              </div>
+
+              {/* AI Verdict Filter */}
+              <div className="flex items-center gap-2">
+                {[
+                  { id: "all", label: "All Verdicts" },
+                  { id: "high-human", label: "Authentic Human (≥90%)" },
+                  { id: "ai-assisted", label: "AI Assisted" },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setAssignmentFilter(f.id as any)}
+                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors cursor-pointer ${
+                      assignmentFilter === f.id
+                        ? "bg-blue-100 text-[#2563EB]"
+                        : "text-slate-500 hover:bg-slate-100"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Active Filter Notice */}
+            {selectedCourseFilter !== "all" && (
+              <div className="flex items-center justify-between rounded-xl bg-blue-50 border border-blue-200 px-4 py-2.5 text-xs text-[#2563EB]">
+                <span className="font-bold">
+                  Showing submissions for: <span className="underline">{selectedCourseFilter}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCourseFilter("all")}
+                  className="font-bold underline hover:text-blue-900 cursor-pointer"
+                >
+                  Clear filter & show all
+                </button>
+              </div>
+            )}
+
+            {/* Assignments List */}
+            <div className="space-y-5">
+              {filteredAssignments.map((asg) => (
+                <div
+                  key={asg.id}
+                  className="rounded-[24px] border border-white/80 bg-white/95 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5 transition-all hover:shadow-xl hover:border-blue-200"
+                >
+                  {/* Top Header: Title, Course Badge & Score */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-md bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-[#2563EB] border border-blue-100">
+                          {asg.courseTitle}
+                        </span>
+                        <span className="text-xs text-slate-400">Submitted: {asg.submittedAt}</span>
+                      </div>
+                      <h4 className="mt-1.5 text-lg font-extrabold text-slate-900">{asg.title}</h4>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="text-2xl font-black text-slate-900">{asg.score}/100</div>
+                        <div className="text-[10px] font-bold text-emerald-600 uppercase">
+                          {asg.status}
+                        </div>
+                      </div>
+
+                      {/* Primary Action to Open Solution Dossier */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInspectingAssignment(asg);
+                          setInspectModalTab("answers");
+                        }}
+                        className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-slate-800 active:scale-95 transition-all cursor-pointer"
+                      >
+                        <Eye className="h-3.5 w-3.5 text-blue-400" />
+                        <span>Inspect Answers & Code</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* AI vs Human Writing Analysis Breakdown Card */}
+                  <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 shadow-xs">
+                          <ShieldCheck className="h-4.5 w-4.5" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-slate-900">
+                            JKS AI Authenticity & Linguistic Verification
+                          </div>
+                          <span className="inline-block mt-0.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-800">
+                            {asg.aiAnalysis.verdict}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
+                        <span>Plagiarism: <strong className="text-slate-900">{asg.aiAnalysis.plagiarismRate}%</strong></span>
+                        <span>Complexity: <strong className="text-[#2563EB]">{asg.aiAnalysis.syntacticComplexity}</strong></span>
+                        <span>Detector Confidence: <strong className="text-emerald-600">{asg.aiAnalysis.confidenceScore}%</strong></span>
+                      </div>
+                    </div>
+
+                    {/* Dual Color AI vs Human Ratio Bar */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs font-bold">
+                        <span className="text-emerald-700 flex items-center gap-1.5">
+                          <User className="h-3.5 w-3.5" /> Human Authored: {asg.aiAnalysis.humanScore}%
+                        </span>
+                        <span className="text-indigo-600 flex items-center gap-1.5">
+                          <Bot className="h-3.5 w-3.5" /> AI Assisted: {asg.aiAnalysis.aiScore}%
+                        </span>
+                      </div>
+
+                      <div className="flex h-3 w-full rounded-full overflow-hidden bg-slate-200">
+                        <div
+                          className="bg-emerald-500 transition-all duration-500"
+                          style={{ width: `${asg.aiAnalysis.humanScore}%` }}
+                        />
+                        <div
+                          className="bg-indigo-500 transition-all duration-500"
+                          style={{ width: `${asg.aiAnalysis.aiScore}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Key Findings Preview */}
+                    <div className="space-y-1 pt-1">
+                      <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        AI Telemetry Analysis Notes
+                      </div>
+                      <ul className="space-y-1">
+                        {asg.aiAnalysis.keyFindings.map((finding, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-xs text-slate-600">
+                            <span className="text-emerald-500 font-bold">•</span>
+                            <span>{finding}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Submission Answers Preview Snippet */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                      <span className="flex items-center gap-1.5">
+                        <FileText className="h-3.5 w-3.5 text-[#2563EB]" /> Submitted Executive Summary
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInspectingAssignment(asg);
+                          setInspectModalTab("answers");
+                        }}
+                        className="text-[11px] text-[#2563EB] hover:underline cursor-pointer"
+                      >
+                        View Full Code & Blueprint →
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                      {asg.studentAnswers.executiveSummary}
+                    </p>
+                  </div>
+
+                  {/* Instructor Feedback */}
+                  <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3 text-xs text-slate-700 flex items-start gap-2">
+                    <Sparkles className="h-4 w-4 text-[#2563EB] shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-[#2563EB]">Lead Trainer Feedback: </span>
+                      <span>{asg.feedback}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 3: OVERVIEW & LEARNING ANALYTICS                                      */}
+        {/* ========================================================================= */}
         {activeTab === "overview" && (
           <div className="space-y-6">
             {/* Top 4 Quick Metric Cards */}
@@ -381,203 +770,14 @@ export default function AdminStudentDetailsPage() {
           </div>
         )}
 
-        {/* TAB CONTENT 2: ENROLLED COURSES */}
-        {activeTab === "courses" && (
-          <div className="space-y-4">
-            <Reveal variant="stagger" className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {student.courses.map((c) => (
-                <TiltCard key={c.courseId} className="h-full">
-                  <div className="flex h-full flex-col justify-between rounded-[22px] border border-white/80 bg-white/90 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="rounded-md bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-[#2563EB] border border-blue-200">
-                          {c.track}
-                        </span>
-                        <span className="text-xs font-bold text-slate-500">
-                          {c.hoursSpent} hrs logged
-                        </span>
-                      </div>
-
-                      <h4 className="text-base font-extrabold text-slate-900 leading-snug">
-                        {c.courseTitle}
-                      </h4>
-
-                      <div className="flex items-center justify-between text-xs text-slate-600 font-medium">
-                        <span>{c.completedLessons} of {c.totalLessons} lessons completed</span>
-                        <span className="font-extrabold text-slate-900">{c.grade}</span>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-xs font-bold">
-                          <span className="text-slate-500">Course Progress</span>
-                          <span className="text-[#2563EB]">{c.progress}%</span>
-                        </div>
-                        <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-cyan-500 transition-all duration-500"
-                            style={{ width: `${c.progress}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className="text-slate-400">Last active: {c.lastActive}</span>
-                      {c.certificateEarned ? (
-                        <span className="inline-flex items-center gap-1 font-bold text-emerald-600">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Certificate Issued
-                        </span>
-                      ) : (
-                        <span className="text-slate-500 font-medium">In Progress</span>
-                      )}
-                    </div>
-                  </div>
-                </TiltCard>
-              ))}
-            </Reveal>
-          </div>
-        )}
-
-        {/* TAB CONTENT 3: ASSIGNMENT SUBMISSIONS & AI WRITING ANALYSIS */}
-        {activeTab === "assignments" && (
-          <div className="space-y-4">
-            {/* Filter Bar */}
-            <div className="flex items-center justify-between bg-white/80 p-3 rounded-2xl border border-slate-200/80 shadow-xs">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-600 pl-2">Filter Analysis:</span>
-                {[
-                  { id: "all", label: "All Submissions" },
-                  { id: "high-human", label: "Authentic Human (≥90%)" },
-                  { id: "ai-assisted", label: "AI Assisted (>10%)" },
-                ].map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => setAssignmentFilter(f.id as any)}
-                    className={`rounded-lg px-3 py-1 text-xs font-bold transition-colors cursor-pointer ${
-                      assignmentFilter === f.id
-                        ? "bg-[#2563EB] text-white shadow-xs"
-                        : "text-slate-600 hover:bg-slate-100"
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-              <span className="text-xs text-slate-400 pr-2">
-                Powered by JKS AI Authenticity Engine
-              </span>
-            </div>
-
-            {/* Assignments List */}
-            <div className="space-y-4">
-              {filteredAssignments.map((asg) => (
-                <div
-                  key={asg.id}
-                  className="rounded-[22px] border border-white/80 bg-white/90 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-4"
-                >
-                  {/* Top Row: Title, Course, Grade & Submission Date */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="rounded bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-[#2563EB]">
-                          {asg.courseTitle}
-                        </span>
-                        <span className="text-xs text-slate-400">Submitted: {asg.submittedAt}</span>
-                      </div>
-                      <h4 className="mt-1 text-base font-extrabold text-slate-900">{asg.title}</h4>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <div className="text-lg font-black text-slate-900">{asg.score}/100</div>
-                        <div className="text-[10px] font-bold text-emerald-600 uppercase">
-                          {asg.status}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* AI vs Human Writing Analysis Breakdown Card */}
-                  <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-                          <ShieldCheck className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <span className="text-xs font-bold text-slate-900">
-                            AI Writing Authenticity Check
-                          </span>
-                          <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">
-                            {asg.aiAnalysis.verdict}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 text-xs font-semibold text-slate-600">
-                        <span>Plagiarism: <strong className="text-slate-900">{asg.aiAnalysis.plagiarismRate}%</strong></span>
-                        <span>Complexity: <strong className="text-[#2563EB]">{asg.aiAnalysis.syntacticComplexity}</strong></span>
-                      </div>
-                    </div>
-
-                    {/* Dual Color AI vs Human Ratio Bar */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs font-bold">
-                        <span className="text-emerald-700 flex items-center gap-1">
-                          <User className="h-3.5 w-3.5" /> Human Authored: {asg.aiAnalysis.humanScore}%
-                        </span>
-                        <span className="text-indigo-600 flex items-center gap-1">
-                          <Bot className="h-3.5 w-3.5" /> AI Assisted: {asg.aiAnalysis.aiScore}%
-                        </span>
-                      </div>
-
-                      <div className="flex h-3 w-full rounded-full overflow-hidden bg-slate-200">
-                        <div
-                          className="bg-emerald-500 transition-all duration-500"
-                          style={{ width: `${asg.aiAnalysis.humanScore}%` }}
-                        />
-                        <div
-                          className="bg-indigo-500 transition-all duration-500"
-                          style={{ width: `${asg.aiAnalysis.aiScore}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Key Verification Findings */}
-                    <div className="space-y-1 pt-1">
-                      <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                        Key Detector Findings
-                      </div>
-                      <ul className="space-y-1">
-                        {asg.aiAnalysis.keyFindings.map((finding, idx) => (
-                          <li key={idx} className="flex items-start gap-2 text-xs text-slate-600">
-                            <span className="text-emerald-500 font-bold">•</span>
-                            <span>{finding}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Instructor Feedback */}
-                  <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 text-xs text-slate-700">
-                    <span className="font-bold text-[#2563EB]">Lead Trainer Feedback: </span>
-                    <span>{asg.feedback}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB CONTENT 4: QUIZZES & ASSESSMENTS */}
+        {/* ========================================================================= */}
+        {/* TAB 4: QUIZZES & ASSESSMENTS                                              */}
+        {/* ========================================================================= */}
         {activeTab === "quizzes" && (
           <div className="space-y-4">
             <div className="rounded-[22px] border border-white/80 bg-white/90 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs min-w-[600px]">
+                <table className="w-full text-left text-xs min-w-[650px]">
                   <thead>
                     <tr className="border-b border-slate-100 text-[11px] font-semibold uppercase text-slate-400">
                       <th className="pb-3">Assessment Title</th>
@@ -586,7 +786,7 @@ export default function AdminStudentDetailsPage() {
                       <th className="px-4 pb-3">Accuracy</th>
                       <th className="px-4 pb-3">Duration</th>
                       <th className="px-4 pb-3">Date</th>
-                      <th className="pr-0 pb-3 text-right">Result</th>
+                      <th className="pr-0 pb-3 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
@@ -600,10 +800,15 @@ export default function AdminStudentDetailsPage() {
                         </td>
                         <td className="px-4 py-3.5 text-slate-500">{qz.durationMinutes} mins</td>
                         <td className="px-4 py-3.5 text-slate-500">{qz.attemptDate}</td>
-                        <td className="pr-0 py-3.5 text-right font-bold text-emerald-600">
-                          <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-700">
-                            {qz.status}
-                          </span>
+                        <td className="pr-0 py-3.5 text-right">
+                          <button
+                            type="button"
+                            onClick={() => setInspectingQuiz(qz)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-[#2563EB] hover:bg-blue-100 transition-colors cursor-pointer"
+                          >
+                            <Eye className="h-3 w-3" />
+                            <span>Audit Answers</span>
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -614,7 +819,9 @@ export default function AdminStudentDetailsPage() {
           </div>
         )}
 
-        {/* TAB CONTENT 5: CERTIFICATES EARNED */}
+        {/* ========================================================================= */}
+        {/* TAB 5: CERTIFICATES EARNED                                                */}
+        {/* ========================================================================= */}
         {activeTab === "certificates" && (
           <div className="space-y-4">
             {student.certificates.length > 0 ? (
@@ -670,7 +877,7 @@ export default function AdminStudentDetailsPage() {
                       <button
                         type="button"
                         onClick={() => showToast(`Copied verification link: https://jkslearning.com/verify/${cert.verificationId}`)}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
                       >
                         <Share2 className="h-3.5 w-3.5" />
                         <span>Share</span>
@@ -691,7 +898,9 @@ export default function AdminStudentDetailsPage() {
           </div>
         )}
 
-        {/* TAB CONTENT 6: ACTIVITY TIMELINE */}
+        {/* ========================================================================= */}
+        {/* TAB 6: ACTIVITY TIMELINE                                                  */}
+        {/* ========================================================================= */}
         {activeTab === "timeline" && (
           <div className="rounded-[22px] border border-white/80 bg-white/90 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
             <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
@@ -711,6 +920,414 @@ export default function AdminStudentDetailsPage() {
           </div>
         )}
       </div>
+
+      {/* ========================================================================= */}
+      {/* MODAL 1: SUBMITTED ASSIGNMENT & AI AUTHENTICITY INSPECTION DOSSIER        */}
+      {/* ========================================================================= */}
+      {inspectingAssignment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative flex flex-col max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-[28px] border border-white/90 bg-white shadow-2xl">
+            {/* Modal Header */}
+            <div className="relative flex items-center justify-between bg-gradient-to-r from-slate-950 via-slate-900 to-[#1E3A8A] px-6 py-5 text-white">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-md bg-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-300 border border-blue-400/30">
+                    {inspectingAssignment.courseTitle}
+                  </span>
+                  <span className="text-xs text-slate-300">
+                    Submitted: {inspectingAssignment.submittedAt}
+                  </span>
+                </div>
+                <h3 className="text-lg font-black text-white">{inspectingAssignment.title}</h3>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <div className="text-2xl font-black text-emerald-400">
+                    {inspectingAssignment.score}/100
+                  </div>
+                  <div className="text-[10px] font-bold text-slate-300 uppercase">
+                    Grade: Distinction
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setInspectingAssignment(null)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Nav Tabs */}
+            <div className="flex items-center gap-2 border-b border-slate-200 px-6 pt-3 bg-slate-50/80">
+              {[
+                { id: "answers", label: "Student Submitted Solution & Code", icon: Code2 },
+                { id: "ai-scan", label: "AI Writing Scan & Authenticity", icon: ShieldCheck },
+                { id: "rubric", label: "Grading Rubric & Feedback", icon: Award },
+              ].map((tab) => {
+                const isActive = inspectModalTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setInspectModalTab(tab.id as any)}
+                    className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "border-[#2563EB] text-[#2563EB] bg-white rounded-t-xl"
+                        : "border-transparent text-slate-500 hover:text-slate-900"
+                    }`}
+                  >
+                    <tab.icon className="h-4 w-4" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Modal Scrollable Content Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* TAB 1: STUDENT SUBMITTED ANSWERS & CODE */}
+              {inspectModalTab === "answers" && (
+                <div className="space-y-6">
+                  {/* Original Assignment Prompt */}
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4.5 space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#2563EB] uppercase tracking-wider">
+                      <HelpCircle className="h-4 w-4" /> Assignment Problem Statement
+                    </div>
+                    <p className="text-xs font-medium text-slate-800 leading-relaxed">
+                      {inspectingAssignment.assignmentPrompt}
+                    </p>
+                  </div>
+
+                  {/* Student Written Narrative */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-[#2563EB]" /> Executive Summary & Solution Architecture
+                    </h4>
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-xs text-slate-700 leading-relaxed space-y-2">
+                      <p>{inspectingAssignment.studentAnswers.executiveSummary}</p>
+                      <div className="pt-2 border-t border-slate-200/80">
+                        <span className="font-bold text-slate-900 block mb-1">Step-by-Step Methodology:</span>
+                        <p className="whitespace-pre-line text-slate-600">
+                          {inspectingAssignment.studentAnswers.methodology}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Configuration Parameters Table (if applicable) */}
+                  {inspectingAssignment.studentAnswers.configurationParameters && (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-bold text-slate-900">Configured Enterprise Parameters</h4>
+                      <div className="overflow-hidden rounded-2xl border border-slate-200">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase">
+                            <tr>
+                              <th className="p-3">Parameter / Key</th>
+                              <th className="p-3">Configured Value</th>
+                              <th className="p-3">Business Purpose</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 bg-white">
+                            {inspectingAssignment.studentAnswers.configurationParameters.map((p, idx) => (
+                              <tr key={idx}>
+                                <td className="p-3 font-bold text-slate-900">{p.parameter}</td>
+                                <td className="p-3 font-mono text-[#2563EB]">{p.configuredValue}</td>
+                                <td className="p-3 text-slate-600">{p.purpose}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Submitted Code Solution */}
+                  {inspectingAssignment.studentAnswers.codeSolution && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                          <FileCode className="h-4 w-4 text-[#2563EB]" />
+                          <span>Submitted Source: {inspectingAssignment.studentAnswers.codeSolution.filename}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyCode(inspectingAssignment.studentAnswers.codeSolution!.code)}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                          <span>{copiedCode ? "Copied!" : "Copy Code"}</span>
+                        </button>
+                      </div>
+
+                      <div className="overflow-x-auto rounded-2xl bg-slate-950 p-4 text-xs font-mono text-emerald-400 shadow-inner">
+                        <pre className="whitespace-pre">
+                          {inspectingAssignment.studentAnswers.codeSolution.code}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Attached Files List */}
+                  {inspectingAssignment.studentAnswers.submittedFiles && (
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <span className="text-xs font-bold text-slate-500">Verified Submission Artifacts:</span>
+                      {inspectingAssignment.studentAnswers.submittedFiles.map((file, i) => (
+                        <span
+                          key={i}
+                          className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 border border-slate-200"
+                        >
+                          📎 {file}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 2: AI SCAN & AUTHENTICITY AUDIT */}
+              {inspectModalTab === "ai-scan" && (
+                <div className="space-y-6">
+                  {/* Verdict Banner */}
+                  <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-md">
+                        <ShieldCheck className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-black text-emerald-900">
+                          {inspectingAssignment.aiAnalysis.verdict}
+                        </div>
+                        <div className="text-xs text-emerald-700">
+                          Confidence Score: {inspectingAssignment.aiAnalysis.confidenceScore}% (Scanned {inspectingAssignment.aiAnalysis.tokenCount} tokens)
+                        </div>
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-extrabold text-white">
+                      PASSED AUDIT
+                    </span>
+                  </div>
+
+                  {/* Dual Ratio Bar */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3 shadow-xs">
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                      Linguistic Authorship Breakdown
+                    </h4>
+                    <div className="flex justify-between text-xs font-bold">
+                      <span className="text-emerald-700 flex items-center gap-1.5">
+                        <User className="h-4 w-4" /> Human Written Content: {inspectingAssignment.aiAnalysis.humanScore}%
+                      </span>
+                      <span className="text-indigo-600 flex items-center gap-1.5">
+                        <Bot className="h-4 w-4" /> AI Generated / Paraphrased: {inspectingAssignment.aiAnalysis.aiScore}%
+                      </span>
+                    </div>
+
+                    <div className="flex h-4 w-full rounded-full overflow-hidden bg-slate-100">
+                      <div
+                        className="bg-emerald-500 transition-all duration-500"
+                        style={{ width: `${inspectingAssignment.aiAnalysis.humanScore}%` }}
+                      />
+                      <div
+                        className="bg-indigo-500 transition-all duration-500"
+                        style={{ width: `${inspectingAssignment.aiAnalysis.aiScore}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Telemetry Metrics Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase">Plagiarism Index</span>
+                      <div className="mt-1 text-xl font-extrabold text-slate-900">
+                        {inspectingAssignment.aiAnalysis.plagiarismRate}%
+                      </div>
+                      <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">Industry Standard &lt; 5%</p>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase">Syntactic Variance</span>
+                      <div className="mt-1 text-xl font-extrabold text-[#2563EB]">
+                        {inspectingAssignment.aiAnalysis.syntacticComplexity}
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-semibold mt-0.5">High Burstiness & Depth</p>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase">Detector Confidence</span>
+                      <div className="mt-1 text-xl font-extrabold text-emerald-600">
+                        {inspectingAssignment.aiAnalysis.confidenceScore}%
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-semibold mt-0.5">Dual-Engine Verification</p>
+                    </div>
+                  </div>
+
+                  {/* Bullet Findings */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-2">
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                      Detailed Telemetry Audit Findings
+                    </h4>
+                    <ul className="space-y-2 pt-1">
+                      {inspectingAssignment.aiAnalysis.keyFindings.map((finding, idx) => (
+                        <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700">
+                          <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                          <span>{finding}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: RUBRIC BREAKDOWN & FEEDBACK */}
+              {inspectModalTab === "rubric" && (
+                <div className="space-y-6">
+                  <div className="overflow-hidden rounded-2xl border border-slate-200">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase">
+                        <tr>
+                          <th className="p-3.5">Evaluation Criteria</th>
+                          <th className="p-3.5">Max Score</th>
+                          <th className="p-3.5">Awarded</th>
+                          <th className="p-3.5">Instructor Remarks</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 bg-white">
+                        {inspectingAssignment.rubricBreakdown.map((item, idx) => (
+                          <tr key={idx}>
+                            <td className="p-3.5 font-bold text-slate-900">{item.criteria}</td>
+                            <td className="p-3.5 text-slate-500">{item.maxScore} pts</td>
+                            <td className="p-3.5 font-black text-[#2563EB]">{item.awardedScore} pts</td>
+                            <td className="p-3.5 text-slate-600">{item.feedback}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Summary Feedback Box */}
+                  <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-5 space-y-2">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#2563EB]">
+                      <Sparkles className="h-4 w-4" /> Evaluator Final Assessment
+                    </div>
+                    <p className="text-xs font-medium text-slate-800 leading-relaxed">
+                      {inspectingAssignment.feedback}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4">
+              <span className="text-xs font-medium text-slate-500">
+                JKS Academic Verification Ledger • Signature Valid
+              </span>
+              <button
+                type="button"
+                onClick={() => setInspectingAssignment(null)}
+                className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Close Dossier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 2: QUIZ / TEST ANSWER BREAKDOWN AUDIT                               */}
+      {/* ========================================================================= */}
+      {inspectingQuiz && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative flex flex-col max-h-[85vh] w-full max-w-3xl overflow-hidden rounded-[28px] border border-white/90 bg-white shadow-2xl">
+            <div className="flex items-center justify-between bg-gradient-to-r from-slate-950 via-slate-900 to-[#1E3A8A] px-6 py-5 text-white">
+              <div>
+                <span className="text-xs text-blue-300 font-bold">{inspectingQuiz.category}</span>
+                <h3 className="text-lg font-black text-white">{inspectingQuiz.title}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInspectingQuiz(null)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-blue-50 border border-blue-100 text-xs">
+                <span className="font-bold text-slate-700">
+                  Total Questions: {inspectingQuiz.totalQuestions} • Correct: {inspectingQuiz.correctAnswers}
+                </span>
+                <span className="text-lg font-black text-[#2563EB]">{inspectingQuiz.score}% Accuracy</span>
+              </div>
+
+              {inspectingQuiz.questionsList && inspectingQuiz.questionsList.length > 0 ? (
+                inspectingQuiz.questionsList.map((q) => (
+                  <div key={q.qNumber} className="rounded-2xl border border-slate-200 bg-white p-4.5 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="text-xs font-extrabold text-slate-900">
+                        Q{q.qNumber}. {q.question}
+                      </span>
+                      {q.isCorrect ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                          <CheckCircle className="h-3.5 w-3.5" /> Correct
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">
+                          <XCircle className="h-3.5 w-3.5" /> Incorrect
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5 text-xs">
+                      {q.options.map((opt, i) => {
+                        const isStudentChoice = opt === q.studentAnswer;
+                        const isCorrectChoice = opt === q.correctAnswer;
+                        return (
+                          <div
+                            key={i}
+                            className={`rounded-xl p-2.5 border font-medium ${
+                              isCorrectChoice
+                                ? "bg-emerald-50 border-emerald-300 text-emerald-900 font-bold"
+                                : isStudentChoice && !q.isCorrect
+                                ? "bg-rose-50 border-rose-300 text-rose-900"
+                                : "bg-slate-50/60 border-slate-200 text-slate-700"
+                            }`}
+                          >
+                            {opt} {isStudentChoice && "(Student Selection)"} {isCorrectChoice && "✓"}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="pt-1 text-[11px] text-slate-500">
+                      <span className="font-bold text-slate-700">Explanation: </span>
+                      <span>{q.explanation}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-xs text-slate-500">
+                  Detailed question telemetry recorded on grading ledger. (Total score: {inspectingQuiz.score}%)
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-slate-200 bg-slate-50 px-6 py-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setInspectingQuiz(null)}
+                className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Close Audit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
