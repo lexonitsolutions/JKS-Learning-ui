@@ -202,12 +202,12 @@ function CourseLearningHubPage({ params }) {
                 children: "Loading course curriculum…"
             }, void 0, false, {
                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                lineNumber: 179,
+                lineNumber: 180,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-            lineNumber: 178,
+            lineNumber: 179,
             columnNumber: 7
         }, this);
     }
@@ -291,13 +291,13 @@ function CourseLearningHubPage({ params }) {
         setShowAskModal(false);
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "flex min-h-screen flex-col bg-[#F8FAFC] text-slate-800",
+        className: "flex min-h-screen flex-col bg-[#F8FAFC] text-slate-800 overflow-x-hidden",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("header", {
                 className: "sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-slate-200 bg-white/95 px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex items-center gap-3 sm:gap-4",
+                        className: "flex items-center gap-3 sm:gap-4 min-w-0",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
                                 href: "/dashboard/courses",
@@ -307,31 +307,32 @@ function CourseLearningHubPage({ params }) {
                                         className: "h-4 w-4"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 264,
+                                        lineNumber: 265,
                                         columnNumber: 13
                                     }, this),
                                     " Courses"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 260,
+                                lineNumber: 261,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "h-4 w-[1px] bg-slate-200 hidden sm:block"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 266,
+                                lineNumber: 267,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "min-w-0",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                                        className: "text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[220px] sm:max-w-md",
+                                        className: "text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[200px] sm:max-w-md",
                                         children: course.title
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 268,
+                                        lineNumber: 269,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -344,23 +345,23 @@ function CourseLearningHubPage({ params }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 271,
+                                        lineNumber: 272,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 267,
+                                lineNumber: 268,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                        lineNumber: 259,
+                        lineNumber: 260,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex items-center justify-between sm:justify-end gap-3",
+                        className: "flex items-center justify-between sm:justify-end gap-3 shrink-0",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "text-left sm:text-right",
@@ -373,7 +374,7 @@ function CourseLearningHubPage({ params }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 279,
+                                        lineNumber: 280,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -386,17 +387,17 @@ function CourseLearningHubPage({ params }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 282,
+                                        lineNumber: 283,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 278,
+                                lineNumber: 279,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "h-2 w-24 sm:w-32 rounded-full bg-slate-100 overflow-hidden",
+                                className: "h-2 w-20 sm:w-32 rounded-full bg-slate-100 overflow-hidden shrink-0",
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "h-full rounded-full bg-gradient-to-r from-blue-600 to-emerald-500 transition-all duration-500",
                                     style: {
@@ -404,31 +405,31 @@ function CourseLearningHubPage({ params }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 287,
+                                    lineNumber: 288,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 286,
+                                lineNumber: 287,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                        lineNumber: 277,
+                        lineNumber: 278,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                lineNumber: 258,
+                lineNumber: 259,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex flex-1 flex-col lg:flex-row",
+                className: "flex flex-1 min-w-0 flex-col lg:flex-row overflow-x-hidden",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex flex-1 flex-col p-4 sm:p-6 lg:p-8 space-y-6",
+                        className: "flex flex-1 min-w-0 flex-col p-3 sm:p-5 lg:p-6 space-y-5",
                         children: [
                             activeVideo ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "space-y-3",
@@ -442,20 +443,21 @@ function CourseLearningHubPage({ params }) {
                                         onVideoCompleted: ()=>handleVideoCompleted(activeVideo.id)
                                     }, activeVideo.id, false, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 302,
+                                        lineNumber: 303,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs",
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "min-w-0",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                                                        className: "text-sm sm:text-base font-bold text-slate-900",
+                                                        className: "text-sm sm:text-base font-bold text-slate-900 truncate",
                                                         children: activeVideo.title
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 315,
+                                                        lineNumber: 316,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -468,14 +470,14 @@ function CourseLearningHubPage({ params }) {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 317,
+                                                                lineNumber: 318,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 children: "•"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 318,
+                                                                lineNumber: 319,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -483,23 +485,23 @@ function CourseLearningHubPage({ params }) {
                                                                 children: activeVideo.videoType === "upload" ? "Uploaded Lecture" : "Private Stream"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 319,
+                                                                lineNumber: 320,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 316,
+                                                        lineNumber: 317,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 314,
+                                                lineNumber: 315,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "flex items-center gap-2",
+                                                className: "flex items-center gap-2 shrink-0",
                                                 children: completedVideoIds.includes(activeVideo.id) ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     className: "flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-700",
                                                     children: [
@@ -507,14 +509,14 @@ function CourseLearningHubPage({ params }) {
                                                             className: "h-4 w-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 328,
+                                                            lineNumber: 329,
                                                             columnNumber: 23
                                                         }, this),
                                                         " Lesson Completed"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 327,
+                                                    lineNumber: 328,
                                                     columnNumber: 21
                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                     type: "button",
@@ -525,31 +527,31 @@ function CourseLearningHubPage({ params }) {
                                                             className: "h-4 w-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 336,
+                                                            lineNumber: 337,
                                                             columnNumber: 23
                                                         }, this),
                                                         " Mark Completed"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 331,
+                                                    lineNumber: 332,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 325,
+                                                lineNumber: 326,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 313,
+                                        lineNumber: 314,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 301,
+                                lineNumber: 302,
                                 columnNumber: 13
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex aspect-video items-center justify-center rounded-2xl bg-slate-950 text-white",
@@ -558,12 +560,12 @@ function CourseLearningHubPage({ params }) {
                                     children: "Select a video lesson from the curriculum to begin."
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 344,
+                                    lineNumber: 345,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 343,
+                                lineNumber: 344,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -572,6 +574,12 @@ function CourseLearningHubPage({ params }) {
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex items-center gap-1 border-b border-slate-200 px-4 sm:px-6 overflow-x-auto bg-slate-50/50",
                                         children: [
+                                            {
+                                                id: "curriculum",
+                                                label: "Curriculum & Lessons",
+                                                icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$folder$2d$tree$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__FolderTree$3e$__["FolderTree"],
+                                                mobileOnly: true
+                                            },
                                             {
                                                 id: "overview",
                                                 label: "Overview",
@@ -608,37 +616,400 @@ function CourseLearningHubPage({ params }) {
                                             return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                 type: "button",
                                                 onClick: ()=>setActiveTab(tab.id),
-                                                className: `flex items-center gap-2 border-b-2 px-4 py-3.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${isActive ? "border-[#2563EB] text-[#2563EB]" : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"}`,
+                                                className: `flex items-center gap-2 border-b-2 px-4 py-3.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${tab.mobileOnly ? "lg:hidden " : ""}${isActive ? "border-[#2563EB] text-[#2563EB]" : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"}`,
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(Icon, {
                                                         className: "h-3.5 w-3.5"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 375,
+                                                        lineNumber: 379,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                         children: tab.label
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 376,
+                                                        lineNumber: 380,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, tab.id, true, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 365,
+                                                lineNumber: 367,
                                                 columnNumber: 19
                                             }, this);
                                         })
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 353,
+                                        lineNumber: 354,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "p-5 sm:p-8",
                                         children: [
+                                            activeTab === "curriculum" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "lg:hidden space-y-6 max-w-4xl",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                children: [
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                                        className: "text-base sm:text-lg font-bold text-slate-900",
+                                                                        children: "Course Curriculum & Video Lessons"
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                        lineNumber: 393,
+                                                                        columnNumber: 23
+                                                                    }, this),
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                        className: "text-xs text-slate-500 font-medium mt-0.5",
+                                                                        children: [
+                                                                            allSections.length,
+                                                                            " Sections · ",
+                                                                            allVideos.length,
+                                                                            " Video Lessons · ",
+                                                                            totalItems,
+                                                                            " Milestones"
+                                                                        ]
+                                                                    }, void 0, true, {
+                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                        lineNumber: 396,
+                                                                        columnNumber: 23
+                                                                    }, this)
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                lineNumber: 392,
+                                                                columnNumber: 21
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                className: "flex items-center gap-3",
+                                                                children: [
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                        className: "text-left sm:text-right",
+                                                                        children: [
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                className: "text-xs font-bold text-[#2563EB]",
+                                                                                children: [
+                                                                                    overallPercent,
+                                                                                    "% Completed"
+                                                                                ]
+                                                                            }, void 0, true, {
+                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                lineNumber: 403,
+                                                                                columnNumber: 25
+                                                                            }, this),
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                className: "text-[10px] text-slate-400",
+                                                                                children: [
+                                                                                    completedCount,
+                                                                                    "/",
+                                                                                    totalItems,
+                                                                                    " Done"
+                                                                                ]
+                                                                            }, void 0, true, {
+                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                lineNumber: 404,
+                                                                                columnNumber: 25
+                                                                            }, this)
+                                                                        ]
+                                                                    }, void 0, true, {
+                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                        lineNumber: 402,
+                                                                        columnNumber: 23
+                                                                    }, this),
+                                                                    isCourseComplete && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                        type: "button",
+                                                                        onClick: ()=>setShowCertModal(true),
+                                                                        className: "flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs cursor-pointer",
+                                                                        children: [
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$award$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Award$3e$__["Award"], {
+                                                                                className: "h-4 w-4"
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                lineNumber: 412,
+                                                                                columnNumber: 27
+                                                                            }, this),
+                                                                            " Certificate"
+                                                                        ]
+                                                                    }, void 0, true, {
+                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                        lineNumber: 407,
+                                                                        columnNumber: 25
+                                                                    }, this)
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                lineNumber: 401,
+                                                                columnNumber: 21
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                        lineNumber: 391,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "space-y-4",
+                                                        children: allSections.map((sec, secIdx)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                className: "rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs",
+                                                                children: [
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                        className: "flex items-center justify-between bg-slate-50/80 p-3.5 border-b border-slate-100",
+                                                                        children: [
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                className: "flex items-center gap-2.5",
+                                                                                children: [
+                                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                        className: "flex h-6 w-6 items-center justify-center rounded-lg bg-[#2563EB] text-[11px] font-bold text-white",
+                                                                                        children: secIdx + 1
+                                                                                    }, void 0, false, {
+                                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                        lineNumber: 429,
+                                                                                        columnNumber: 29
+                                                                                    }, this),
+                                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                        className: "text-xs sm:text-sm font-bold text-slate-900",
+                                                                                        children: sec.title
+                                                                                    }, void 0, false, {
+                                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                        lineNumber: 432,
+                                                                                        columnNumber: 29
+                                                                                    }, this)
+                                                                                ]
+                                                                            }, void 0, true, {
+                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                lineNumber: 428,
+                                                                                columnNumber: 27
+                                                                            }, this),
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                className: "text-[11px] text-slate-400 font-medium",
+                                                                                children: [
+                                                                                    sec.subsections ? sec.subsections.reduce((acc, s)=>acc + s.videos.length, 0) : sec.directVideos?.length || 0,
+                                                                                    " Lessons"
+                                                                                ]
+                                                                            }, void 0, true, {
+                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                lineNumber: 436,
+                                                                                columnNumber: 27
+                                                                            }, this)
+                                                                        ]
+                                                                    }, void 0, true, {
+                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                        lineNumber: 427,
+                                                                        columnNumber: 25
+                                                                    }, this),
+                                                                    sec.subsections && sec.subsections.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                        className: "divide-y divide-slate-100",
+                                                                        children: sec.subsections.map((sub)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                className: "p-3.5 space-y-2",
+                                                                                children: [
+                                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                        className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider",
+                                                                                        children: sub.title
+                                                                                    }, void 0, false, {
+                                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                        lineNumber: 446,
+                                                                                        columnNumber: 33
+                                                                                    }, this),
+                                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                        className: "space-y-1.5 pl-2 sm:pl-3",
+                                                                                        children: sub.videos.map((vid)=>{
+                                                                                            const isSelected = activeVideo?.id === vid.id;
+                                                                                            const isDone = completedVideoIds.includes(vid.id);
+                                                                                            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                                                type: "button",
+                                                                                                onClick: ()=>{
+                                                                                                    handleSelectVideo(vid, sec.id);
+                                                                                                    window.scrollTo({
+                                                                                                        top: 0,
+                                                                                                        behavior: "smooth"
+                                                                                                    });
+                                                                                                },
+                                                                                                className: `flex w-full items-center justify-between gap-2 rounded-xl p-3 text-left text-xs sm:text-sm transition-all cursor-pointer ${isSelected ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200" : "text-slate-700 hover:bg-slate-50 border border-transparent"}`,
+                                                                                                children: [
+                                                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                                        className: "flex items-center gap-2.5 min-w-0",
+                                                                                                        children: [
+                                                                                                            isDone ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__["CheckCircle2"], {
+                                                                                                                className: "h-4 w-4 text-emerald-600 shrink-0"
+                                                                                                            }, void 0, false, {
+                                                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                                                lineNumber: 471,
+                                                                                                                columnNumber: 45
+                                                                                                            }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$play$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__PlayCircle$3e$__["PlayCircle"], {
+                                                                                                                className: `h-4 w-4 shrink-0 ${isSelected ? "text-[#2563EB]" : "text-slate-400"}`
+                                                                                                            }, void 0, false, {
+                                                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                                                lineNumber: 473,
+                                                                                                                columnNumber: 45
+                                                                                                            }, this),
+                                                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                                                className: "truncate",
+                                                                                                                children: vid.title
+                                                                                                            }, void 0, false, {
+                                                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                                                lineNumber: 479,
+                                                                                                                columnNumber: 43
+                                                                                                            }, this)
+                                                                                                        ]
+                                                                                                    }, void 0, true, {
+                                                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                                        lineNumber: 469,
+                                                                                                        columnNumber: 41
+                                                                                                    }, this),
+                                                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                                        className: "text-[11px] text-slate-400 shrink-0 font-mono",
+                                                                                                        children: vid.durationFormatted
+                                                                                                    }, void 0, false, {
+                                                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                                        lineNumber: 481,
+                                                                                                        columnNumber: 41
+                                                                                                    }, this)
+                                                                                                ]
+                                                                                            }, vid.id, true, {
+                                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                                lineNumber: 456,
+                                                                                                columnNumber: 39
+                                                                                            }, this);
+                                                                                        })
+                                                                                    }, void 0, false, {
+                                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                        lineNumber: 450,
+                                                                                        columnNumber: 33
+                                                                                    }, this)
+                                                                                ]
+                                                                            }, sub.id, true, {
+                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                lineNumber: 445,
+                                                                                columnNumber: 31
+                                                                            }, this))
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                        lineNumber: 443,
+                                                                        columnNumber: 27
+                                                                    }, this),
+                                                                    sec.directVideos && sec.directVideos.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                        className: "p-3.5 space-y-1.5",
+                                                                        children: sec.directVideos.map((vid)=>{
+                                                                            const isSelected = activeVideo?.id === vid.id;
+                                                                            const isDone = completedVideoIds.includes(vid.id);
+                                                                            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                                type: "button",
+                                                                                onClick: ()=>{
+                                                                                    handleSelectVideo(vid, sec.id);
+                                                                                    window.scrollTo({
+                                                                                        top: 0,
+                                                                                        behavior: "smooth"
+                                                                                    });
+                                                                                },
+                                                                                className: `flex w-full items-center justify-between gap-2 rounded-xl p-3 text-left text-xs sm:text-sm transition-all cursor-pointer ${isSelected ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200" : "text-slate-700 hover:bg-slate-50 border border-transparent"}`,
+                                                                                children: [
+                                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                        className: "flex items-center gap-2.5 min-w-0",
+                                                                                        children: [
+                                                                                            isDone ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__["CheckCircle2"], {
+                                                                                                className: "h-4 w-4 text-emerald-600 shrink-0"
+                                                                                            }, void 0, false, {
+                                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                                lineNumber: 518,
+                                                                                                columnNumber: 39
+                                                                                            }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$play$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__PlayCircle$3e$__["PlayCircle"], {
+                                                                                                className: `h-4 w-4 shrink-0 ${isSelected ? "text-[#2563EB]" : "text-slate-400"}`
+                                                                                            }, void 0, false, {
+                                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                                lineNumber: 520,
+                                                                                                columnNumber: 39
+                                                                                            }, this),
+                                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                                className: "truncate",
+                                                                                                children: vid.title
+                                                                                            }, void 0, false, {
+                                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                                lineNumber: 526,
+                                                                                                columnNumber: 37
+                                                                                            }, this)
+                                                                                        ]
+                                                                                    }, void 0, true, {
+                                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                        lineNumber: 516,
+                                                                                        columnNumber: 35
+                                                                                    }, this),
+                                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                        className: "text-[11px] text-slate-400 shrink-0 font-mono",
+                                                                                        children: vid.durationFormatted
+                                                                                    }, void 0, false, {
+                                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                        lineNumber: 528,
+                                                                                        columnNumber: 35
+                                                                                    }, this)
+                                                                                ]
+                                                                            }, vid.id, true, {
+                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                lineNumber: 503,
+                                                                                columnNumber: 33
+                                                                            }, this);
+                                                                        })
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                        lineNumber: 496,
+                                                                        columnNumber: 27
+                                                                    }, this),
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                        className: "border-t border-slate-100 p-3 bg-slate-50/60 flex items-center justify-between text-xs",
+                                                                        children: [
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                className: "font-semibold text-emerald-800 flex items-center gap-1.5",
+                                                                                children: [
+                                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$clipboard$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ClipboardCheck$3e$__["ClipboardCheck"], {
+                                                                                        className: "h-4 w-4"
+                                                                                    }, void 0, false, {
+                                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                        lineNumber: 540,
+                                                                                        columnNumber: 29
+                                                                                    }, this),
+                                                                                    completedAssignmentIds.includes(sec.assignment.id) ? "Assignment Passed ✓" : "Section Assignment"
+                                                                                ]
+                                                                            }, void 0, true, {
+                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                lineNumber: 539,
+                                                                                columnNumber: 27
+                                                                            }, this),
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                                type: "button",
+                                                                                onClick: ()=>setActiveAssignmentSection(sec),
+                                                                                className: "font-bold text-[#2563EB] hover:underline cursor-pointer",
+                                                                                children: completedAssignmentIds.includes(sec.assignment.id) ? "View Solution" : "Open Assignment →"
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                                lineNumber: 545,
+                                                                                columnNumber: 27
+                                                                            }, this)
+                                                                        ]
+                                                                    }, void 0, true, {
+                                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                        lineNumber: 538,
+                                                                        columnNumber: 25
+                                                                    }, this)
+                                                                ]
+                                                            }, sec.id, true, {
+                                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                                lineNumber: 422,
+                                                                columnNumber: 23
+                                                            }, this))
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                        lineNumber: 420,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
+                                                lineNumber: 390,
+                                                columnNumber: 17
+                                            }, this),
                                             activeTab === "overview" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "space-y-8 max-w-4xl",
                                                 children: [
@@ -653,7 +1024,7 @@ function CourseLearningHubPage({ params }) {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 389,
+                                                                lineNumber: 565,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -667,7 +1038,7 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: course.rating || 4.8
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 395,
+                                                                                lineNumber: 571,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -678,12 +1049,12 @@ function CourseLearningHubPage({ params }) {
                                                                                         className: "h-3.5 w-3.5 fill-amber-400 text-amber-400"
                                                                                     }, i, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 398,
+                                                                                        lineNumber: 574,
                                                                                         columnNumber: 29
                                                                                     }, this))
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 396,
+                                                                                lineNumber: 572,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -695,47 +1066,47 @@ function CourseLearningHubPage({ params }) {
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 401,
+                                                                                lineNumber: 577,
                                                                                 columnNumber: 25
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 394,
+                                                                        lineNumber: 570,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                         children: "•"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 404,
+                                                                        lineNumber: 580,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                         children: course.studentsEnrolled ? `${course.studentsEnrolled.toLocaleString()} students` : "14,845 students"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 405,
+                                                                        lineNumber: 581,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                         children: "•"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 406,
+                                                                        lineNumber: 582,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                         children: course.durationWeeks ? `${course.durationWeeks * 2} total hours` : "32 total hours"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 407,
+                                                                        lineNumber: 583,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 393,
+                                                                lineNumber: 569,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -748,21 +1119,21 @@ function CourseLearningHubPage({ params }) {
                                                                                 className: "h-3.5 w-3.5 text-slate-400"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 412,
+                                                                                lineNumber: 588,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             " Last updated 08/2026"
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 411,
+                                                                        lineNumber: 587,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                         children: "•"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 414,
+                                                                        lineNumber: 590,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -772,21 +1143,21 @@ function CourseLearningHubPage({ params }) {
                                                                                 className: "h-3.5 w-3.5 text-slate-400"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 416,
+                                                                                lineNumber: 592,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             " English, Hindi"
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 415,
+                                                                        lineNumber: 591,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                         children: "•"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 418,
+                                                                        lineNumber: 594,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -796,26 +1167,26 @@ function CourseLearningHubPage({ params }) {
                                                                                 className: "h-3.5 w-3.5 text-slate-400"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 420,
+                                                                                lineNumber: 596,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             " Subtitles Available"
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 419,
+                                                                        lineNumber: 595,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 410,
+                                                                lineNumber: 586,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 388,
+                                                        lineNumber: 564,
                                                         columnNumber: 19
                                                     }, this),
                                                     showSchedulerBanner && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -830,12 +1201,12 @@ function CourseLearningHubPage({ params }) {
                                                                             className: "h-5 w-5 text-[#2563EB]"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 430,
+                                                                            lineNumber: 606,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 429,
+                                                                        lineNumber: 605,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -846,7 +1217,7 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "Schedule learning time"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 433,
+                                                                                lineNumber: 609,
                                                                                 columnNumber: 27
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -854,19 +1225,19 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "Learning a little each day adds up. Research shows that students who make learning a habit are more likely to reach their goals. Set time aside to learn and get reminders using your learning scheduler."
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 436,
+                                                                                lineNumber: 612,
                                                                                 columnNumber: 27
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 432,
+                                                                        lineNumber: 608,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 428,
+                                                                lineNumber: 604,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -879,7 +1250,7 @@ function CourseLearningHubPage({ params }) {
                                                                         children: "Get started"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 443,
+                                                                        lineNumber: 619,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -889,19 +1260,19 @@ function CourseLearningHubPage({ params }) {
                                                                         children: "Dismiss"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 450,
+                                                                        lineNumber: 626,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 442,
+                                                                lineNumber: 618,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 427,
+                                                        lineNumber: 603,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -912,7 +1283,7 @@ function CourseLearningHubPage({ params }) {
                                                                 children: "By the numbers"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 463,
+                                                                lineNumber: 639,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -928,7 +1299,7 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "Skill level:"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 466,
+                                                                                        lineNumber: 642,
                                                                                         columnNumber: 30
                                                                                     }, this),
                                                                                     " ",
@@ -937,13 +1308,13 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: course.level || "All Levels"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 466,
+                                                                                        lineNumber: 642,
                                                                                         columnNumber: 95
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 466,
+                                                                                lineNumber: 642,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -953,7 +1324,7 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "Students:"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 467,
+                                                                                        lineNumber: 643,
                                                                                         columnNumber: 30
                                                                                     }, this),
                                                                                     " ",
@@ -962,13 +1333,13 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: course.studentsEnrolled || "14,845"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 467,
+                                                                                        lineNumber: 643,
                                                                                         columnNumber: 92
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 467,
+                                                                                lineNumber: 643,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -978,7 +1349,7 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "Languages:"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 468,
+                                                                                        lineNumber: 644,
                                                                                         columnNumber: 30
                                                                                     }, this),
                                                                                     " ",
@@ -987,13 +1358,13 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "English, Hindi"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 468,
+                                                                                        lineNumber: 644,
                                                                                         columnNumber: 93
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 468,
+                                                                                lineNumber: 644,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1003,7 +1374,7 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "Captions:"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 469,
+                                                                                        lineNumber: 645,
                                                                                         columnNumber: 30
                                                                                     }, this),
                                                                                     " ",
@@ -1012,19 +1383,19 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "Yes"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 469,
+                                                                                        lineNumber: 645,
                                                                                         columnNumber: 92
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 469,
+                                                                                lineNumber: 645,
                                                                                 columnNumber: 25
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 465,
+                                                                        lineNumber: 641,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1037,7 +1408,7 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "Lectures:"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 472,
+                                                                                        lineNumber: 648,
                                                                                         columnNumber: 30
                                                                                     }, this),
                                                                                     " ",
@@ -1046,13 +1417,13 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: allVideos.length || 42
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 472,
+                                                                                        lineNumber: 648,
                                                                                         columnNumber: 92
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 472,
+                                                                                lineNumber: 648,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1062,7 +1433,7 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "Video:"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 473,
+                                                                                        lineNumber: 649,
                                                                                         columnNumber: 30
                                                                                     }, this),
                                                                                     " ",
@@ -1071,31 +1442,31 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "32 total hours"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 473,
+                                                                                        lineNumber: 649,
                                                                                         columnNumber: 89
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 473,
+                                                                                lineNumber: 649,
                                                                                 columnNumber: 25
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 471,
+                                                                        lineNumber: 647,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 464,
+                                                                lineNumber: 640,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 462,
+                                                        lineNumber: 638,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1106,7 +1477,7 @@ function CourseLearningHubPage({ params }) {
                                                                 children: "Certificates"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 480,
+                                                                lineNumber: 656,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1114,7 +1485,7 @@ function CourseLearningHubPage({ params }) {
                                                                 children: "Get JKS Learning accredited certificate by completing the entire course and milestone assessments."
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 481,
+                                                                lineNumber: 657,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1126,26 +1497,26 @@ function CourseLearningHubPage({ params }) {
                                                                         className: "h-4 w-4 text-[#2563EB]"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 489,
+                                                                        lineNumber: 665,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                         children: "JKS Learning Certificate"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 490,
+                                                                        lineNumber: 666,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 484,
+                                                                lineNumber: 660,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 479,
+                                                        lineNumber: 655,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1156,7 +1527,7 @@ function CourseLearningHubPage({ params }) {
                                                                 children: "Features"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 496,
+                                                                lineNumber: 672,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1166,7 +1537,7 @@ function CourseLearningHubPage({ params }) {
                                                                         className: "h-4 w-4 text-slate-400"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 498,
+                                                                        lineNumber: 674,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1177,7 +1548,7 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "iOS"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 499,
+                                                                                lineNumber: 675,
                                                                                 columnNumber: 42
                                                                             }, this),
                                                                             " and ",
@@ -1186,26 +1557,26 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "Android"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 499,
+                                                                                lineNumber: 675,
                                                                                 columnNumber: 124
                                                                             }, this),
                                                                             " mobile devices"
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 499,
+                                                                        lineNumber: 675,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 497,
+                                                                lineNumber: 673,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 495,
+                                                        lineNumber: 671,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1216,7 +1587,7 @@ function CourseLearningHubPage({ params }) {
                                                                 children: "Description"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 505,
+                                                                lineNumber: 681,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1227,7 +1598,7 @@ function CourseLearningHubPage({ params }) {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 506,
+                                                                lineNumber: 682,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1238,7 +1609,7 @@ function CourseLearningHubPage({ params }) {
                                                                         children: "What you'll learn"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 512,
+                                                                        lineNumber: 688,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1259,31 +1630,31 @@ function CourseLearningHubPage({ params }) {
                                                                                         className: "h-4 w-4 text-emerald-600 shrink-0 mt-0.5"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 527,
+                                                                                        lineNumber: 703,
                                                                                         columnNumber: 29
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                         children: item
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 528,
+                                                                                        lineNumber: 704,
                                                                                         columnNumber: 29
                                                                                     }, this)
                                                                                 ]
                                                                             }, idx, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 526,
+                                                                                lineNumber: 702,
                                                                                 columnNumber: 27
                                                                             }, this))
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 515,
+                                                                        lineNumber: 691,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 511,
+                                                                lineNumber: 687,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1297,7 +1668,7 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "Are there any course requirements or prerequisites?"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 537,
+                                                                                lineNumber: 713,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -1307,33 +1678,33 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "Basic knowledge of computer operations"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 541,
+                                                                                        lineNumber: 717,
                                                                                         columnNumber: 27
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                                                         children: "No prior professional programming experience required"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 542,
+                                                                                        lineNumber: 718,
                                                                                         columnNumber: 27
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                                                         children: "A computer with internet connection (Windows, Mac, or Linux)"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 543,
+                                                                                        lineNumber: 719,
                                                                                         columnNumber: 27
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 540,
+                                                                                lineNumber: 716,
                                                                                 columnNumber: 25
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 536,
+                                                                        lineNumber: 712,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1344,7 +1715,7 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "Who this course is for:"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 548,
+                                                                                lineNumber: 724,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -1354,45 +1725,45 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "Students seeking Tier-1 product company software engineering jobs"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 552,
+                                                                                        lineNumber: 728,
                                                                                         columnNumber: 27
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                                                         children: "Engineers wanting to transition into Full Stack & Cloud roles"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 553,
+                                                                                        lineNumber: 729,
                                                                                         columnNumber: 27
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                                                         children: "Anyone wanting a solid, project-centric coding foundation"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 554,
+                                                                                        lineNumber: 730,
                                                                                         columnNumber: 27
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 551,
+                                                                                lineNumber: 727,
                                                                                 columnNumber: 25
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 547,
+                                                                        lineNumber: 723,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 535,
+                                                                lineNumber: 711,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 504,
+                                                        lineNumber: 680,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1403,7 +1774,7 @@ function CourseLearningHubPage({ params }) {
                                                                 children: "Instructor"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 562,
+                                                                lineNumber: 738,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1420,12 +1791,12 @@ function CourseLearningHubPage({ params }) {
                                                                             className: "h-full w-full object-cover"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 566,
+                                                                            lineNumber: 742,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 565,
+                                                                        lineNumber: 741,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1438,7 +1809,7 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "Shubham Saurav & JKS Mentor Team"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 578,
+                                                                                        lineNumber: 754,
                                                                                         columnNumber: 27
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1446,13 +1817,13 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: "Lead Enterprise Architect & Engineering Educator (10+ Years Experience)"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 579,
+                                                                                        lineNumber: 755,
                                                                                         columnNumber: 27
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 577,
+                                                                                lineNumber: 753,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1465,12 +1836,12 @@ function CourseLearningHubPage({ params }) {
                                                                                             className: "h-3.5 w-3.5"
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                            lineNumber: 587,
+                                                                                            lineNumber: 763,
                                                                                             columnNumber: 29
                                                                                         }, this)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 586,
+                                                                                        lineNumber: 762,
                                                                                         columnNumber: 27
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1480,12 +1851,12 @@ function CourseLearningHubPage({ params }) {
                                                                                             className: "h-3.5 w-3.5"
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                            lineNumber: 590,
+                                                                                            lineNumber: 766,
                                                                                             columnNumber: 29
                                                                                         }, this)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 589,
+                                                                                        lineNumber: 765,
                                                                                         columnNumber: 27
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1495,18 +1866,18 @@ function CourseLearningHubPage({ params }) {
                                                                                             className: "h-3.5 w-3.5"
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                            lineNumber: 593,
+                                                                                            lineNumber: 769,
                                                                                             columnNumber: 29
                                                                                         }, this)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 592,
+                                                                                        lineNumber: 768,
                                                                                         columnNumber: 27
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 585,
+                                                                                lineNumber: 761,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1514,31 +1885,31 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "Shubham Saurav is a senior software engineer and architect with a deep passion for teaching. Over the past decade, he has mentored over 50,000+ engineers globally, helping them secure high-impact roles at leading tech companies."
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 597,
+                                                                                lineNumber: 773,
                                                                                 columnNumber: 25
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 576,
+                                                                        lineNumber: 752,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 564,
+                                                                lineNumber: 740,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 561,
+                                                        lineNumber: 737,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 386,
+                                                lineNumber: 562,
                                                 columnNumber: 17
                                             }, this),
                                             activeTab === "qa" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1554,7 +1925,7 @@ function CourseLearningHubPage({ params }) {
                                                                         className: "absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 611,
+                                                                        lineNumber: 787,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1565,13 +1936,13 @@ function CourseLearningHubPage({ params }) {
                                                                         className: "w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-4 text-xs text-slate-900 outline-none focus:border-[#2563EB]"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 612,
+                                                                        lineNumber: 788,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 610,
+                                                                lineNumber: 786,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1583,26 +1954,26 @@ function CourseLearningHubPage({ params }) {
                                                                         className: "h-4 w-4"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 626,
+                                                                        lineNumber: 802,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                         children: "Ask a new question"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 627,
+                                                                        lineNumber: 803,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 621,
+                                                                lineNumber: 797,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 609,
+                                                        lineNumber: 785,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1627,12 +1998,12 @@ function CourseLearningHubPage({ params }) {
                                                                                             className: "h-full w-full object-cover"
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                            lineNumber: 645,
+                                                                                            lineNumber: 821,
                                                                                             columnNumber: 33
                                                                                         }, this)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 644,
+                                                                                        lineNumber: 820,
                                                                                         columnNumber: 31
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1642,7 +2013,7 @@ function CourseLearningHubPage({ params }) {
                                                                                                 children: q.title
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                                lineNumber: 655,
+                                                                                                lineNumber: 831,
                                                                                                 columnNumber: 33
                                                                                             }, this),
                                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1652,53 +2023,53 @@ function CourseLearningHubPage({ params }) {
                                                                                                         children: q.author
                                                                                                     }, void 0, false, {
                                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                                        lineNumber: 657,
+                                                                                                        lineNumber: 833,
                                                                                                         columnNumber: 35
                                                                                                     }, this),
                                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                                         children: "•"
                                                                                                     }, void 0, false, {
                                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                                        lineNumber: 658,
+                                                                                                        lineNumber: 834,
                                                                                                         columnNumber: 35
                                                                                                     }, this),
                                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                                         children: q.lecture
                                                                                                     }, void 0, false, {
                                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                                        lineNumber: 659,
+                                                                                                        lineNumber: 835,
                                                                                                         columnNumber: 35
                                                                                                     }, this),
                                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                                         children: "•"
                                                                                                     }, void 0, false, {
                                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                                        lineNumber: 660,
+                                                                                                        lineNumber: 836,
                                                                                                         columnNumber: 35
                                                                                                     }, this),
                                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                                         children: q.timeAgo
                                                                                                     }, void 0, false, {
                                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                                        lineNumber: 661,
+                                                                                                        lineNumber: 837,
                                                                                                         columnNumber: 35
                                                                                                     }, this)
                                                                                                 ]
                                                                                             }, void 0, true, {
                                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                                lineNumber: 656,
+                                                                                                lineNumber: 832,
                                                                                                 columnNumber: 33
                                                                                             }, this)
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 654,
+                                                                                        lineNumber: 830,
                                                                                         columnNumber: 31
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 643,
+                                                                                lineNumber: 819,
                                                                                 columnNumber: 29
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1711,7 +2082,7 @@ function CourseLearningHubPage({ params }) {
                                                                                                 className: "h-3 w-3"
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                                lineNumber: 668,
+                                                                                                lineNumber: 844,
                                                                                                 columnNumber: 33
                                                                                             }, this),
                                                                                             " ",
@@ -1719,7 +2090,7 @@ function CourseLearningHubPage({ params }) {
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 667,
+                                                                                        lineNumber: 843,
                                                                                         columnNumber: 31
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1729,7 +2100,7 @@ function CourseLearningHubPage({ params }) {
                                                                                                 className: "h-3 w-3"
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                                lineNumber: 671,
+                                                                                                lineNumber: 847,
                                                                                                 columnNumber: 33
                                                                                             }, this),
                                                                                             " ",
@@ -1737,19 +2108,19 @@ function CourseLearningHubPage({ params }) {
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 670,
+                                                                                        lineNumber: 846,
                                                                                         columnNumber: 31
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 666,
+                                                                                lineNumber: 842,
                                                                                 columnNumber: 29
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 642,
+                                                                        lineNumber: 818,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     q.hasInstructorResponse && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1759,37 +2130,37 @@ function CourseLearningHubPage({ params }) {
                                                                                 className: "h-3.5 w-3.5 text-[#2563EB] shrink-0"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 678,
+                                                                                lineNumber: 854,
                                                                                 columnNumber: 31
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                 children: "Instructor verified answer available"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 679,
+                                                                                lineNumber: 855,
                                                                                 columnNumber: 31
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 677,
+                                                                        lineNumber: 853,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 ]
                                                             }, q.id, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 638,
+                                                                lineNumber: 814,
                                                                 columnNumber: 25
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 632,
+                                                        lineNumber: 808,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 608,
+                                                lineNumber: 784,
                                                 columnNumber: 17
                                             }, this),
                                             activeTab === "notes" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1810,13 +2181,13 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "02:15"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 695,
+                                                                                lineNumber: 871,
                                                                                 columnNumber: 40
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 694,
+                                                                        lineNumber: 870,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1824,13 +2195,13 @@ function CourseLearningHubPage({ params }) {
                                                                         children: activeVideo?.title
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 697,
+                                                                        lineNumber: 873,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 693,
+                                                                lineNumber: 869,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -1841,7 +2212,7 @@ function CourseLearningHubPage({ params }) {
                                                                 className: "w-full rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-800 outline-none focus:border-[#2563EB]"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 700,
+                                                                lineNumber: 876,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1855,25 +2226,25 @@ function CourseLearningHubPage({ params }) {
                                                                             className: "h-3.5 w-3.5"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 714,
+                                                                            lineNumber: 890,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         " Save Note"
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 709,
+                                                                    lineNumber: 885,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 708,
+                                                                lineNumber: 884,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 692,
+                                                        lineNumber: 868,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1888,7 +2259,7 @@ function CourseLearningHubPage({ params }) {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 721,
+                                                                lineNumber: 897,
                                                                 columnNumber: 21
                                                             }, this),
                                                             notesList.map((n)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1902,7 +2273,7 @@ function CourseLearningHubPage({ params }) {
                                                                                     children: n.timestamp
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                    lineNumber: 730,
+                                                                                    lineNumber: 906,
                                                                                     columnNumber: 27
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1910,13 +2281,13 @@ function CourseLearningHubPage({ params }) {
                                                                                     children: n.lecture
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                    lineNumber: 733,
+                                                                                    lineNumber: 909,
                                                                                     columnNumber: 27
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 729,
+                                                                            lineNumber: 905,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1924,25 +2295,25 @@ function CourseLearningHubPage({ params }) {
                                                                             children: n.text
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 735,
+                                                                            lineNumber: 911,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     ]
                                                                 }, n.id, true, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 725,
+                                                                    lineNumber: 901,
                                                                     columnNumber: 23
                                                                 }, this))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 720,
+                                                        lineNumber: 896,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 690,
+                                                lineNumber: 866,
                                                 columnNumber: 17
                                             }, this),
                                             activeTab === "announcements" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1964,12 +2335,12 @@ function CourseLearningHubPage({ params }) {
                                                                         className: "h-full w-full object-cover"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 748,
+                                                                        lineNumber: 924,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 747,
+                                                                    lineNumber: 923,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1979,7 +2350,7 @@ function CourseLearningHubPage({ params }) {
                                                                             children: "Shubham Saurav (Instructor)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 758,
+                                                                            lineNumber: 934,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1987,19 +2358,19 @@ function CourseLearningHubPage({ params }) {
                                                                             children: "Posted 3 days ago"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 759,
+                                                                            lineNumber: 935,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 757,
+                                                                    lineNumber: 933,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 746,
+                                                            lineNumber: 922,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -2007,7 +2378,7 @@ function CourseLearningHubPage({ params }) {
                                                             children: "🚀 New Section on Spring Boot 3.3, Virtual Threads & Microservices Capstone Added!"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 763,
+                                                            lineNumber: 939,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2015,18 +2386,18 @@ function CourseLearningHubPage({ params }) {
                                                             children: "Hello learners! We have just updated this course curriculum with 4 brand-new deep dive lectures and milestone challenges focusing on Java 21 Virtual Threads, reactive resilience patterns, and cloud containerization. Make sure to check them out in Section 2 and 3!"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 767,
+                                                            lineNumber: 943,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 745,
+                                                    lineNumber: 921,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 744,
+                                                lineNumber: 920,
                                                 columnNumber: 17
                                             }, this),
                                             activeTab === "reviews" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2043,7 +2414,7 @@ function CourseLearningHubPage({ params }) {
                                                                         children: "4.8"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 779,
+                                                                        lineNumber: 955,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2054,12 +2425,12 @@ function CourseLearningHubPage({ params }) {
                                                                                 className: "h-4 w-4 fill-amber-400 text-amber-400"
                                                                             }, i, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 782,
+                                                                                lineNumber: 958,
                                                                                 columnNumber: 27
                                                                             }, this))
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 780,
+                                                                        lineNumber: 956,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2067,13 +2438,13 @@ function CourseLearningHubPage({ params }) {
                                                                         children: "Course Rating"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 785,
+                                                                        lineNumber: 961,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 778,
+                                                                lineNumber: 954,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2087,7 +2458,7 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "5 stars"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 790,
+                                                                                lineNumber: 966,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2099,12 +2470,12 @@ function CourseLearningHubPage({ params }) {
                                                                                     }
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                    lineNumber: 792,
+                                                                                    lineNumber: 968,
                                                                                     columnNumber: 27
                                                                                 }, this)
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 791,
+                                                                                lineNumber: 967,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2112,13 +2483,13 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "82%"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 794,
+                                                                                lineNumber: 970,
                                                                                 columnNumber: 25
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 789,
+                                                                        lineNumber: 965,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2129,7 +2500,7 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "4 stars"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 797,
+                                                                                lineNumber: 973,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2141,12 +2512,12 @@ function CourseLearningHubPage({ params }) {
                                                                                     }
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                    lineNumber: 799,
+                                                                                    lineNumber: 975,
                                                                                     columnNumber: 27
                                                                                 }, this)
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 798,
+                                                                                lineNumber: 974,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2154,13 +2525,13 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "14%"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 801,
+                                                                                lineNumber: 977,
                                                                                 columnNumber: 25
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 796,
+                                                                        lineNumber: 972,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2171,7 +2542,7 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "3 stars"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 804,
+                                                                                lineNumber: 980,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2183,12 +2554,12 @@ function CourseLearningHubPage({ params }) {
                                                                                     }
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                    lineNumber: 806,
+                                                                                    lineNumber: 982,
                                                                                     columnNumber: 27
                                                                                 }, this)
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 805,
+                                                                                lineNumber: 981,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2196,25 +2567,25 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: "3%"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 808,
+                                                                                lineNumber: 984,
                                                                                 columnNumber: 25
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 803,
+                                                                        lineNumber: 979,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 788,
+                                                                lineNumber: 964,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 777,
+                                                        lineNumber: 953,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2243,7 +2614,7 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: rev.name
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 831,
+                                                                                lineNumber: 1007,
                                                                                 columnNumber: 27
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2251,13 +2622,13 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: rev.date
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 832,
+                                                                                lineNumber: 1008,
                                                                                 columnNumber: 27
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 830,
+                                                                        lineNumber: 1006,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2268,12 +2639,12 @@ function CourseLearningHubPage({ params }) {
                                                                                 className: "h-3 w-3 fill-amber-400 text-amber-400"
                                                                             }, i, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 836,
+                                                                                lineNumber: 1012,
                                                                                 columnNumber: 29
                                                                             }, this))
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 834,
+                                                                        lineNumber: 1010,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2281,24 +2652,24 @@ function CourseLearningHubPage({ params }) {
                                                                         children: rev.text
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 839,
+                                                                        lineNumber: 1015,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, idx, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 829,
+                                                                lineNumber: 1005,
                                                                 columnNumber: 23
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 814,
+                                                        lineNumber: 990,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 776,
+                                                lineNumber: 952,
                                                 columnNumber: 17
                                             }, this),
                                             activeTab === "tools" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2311,7 +2682,7 @@ function CourseLearningHubPage({ params }) {
                                                             children: "Downloadable Source Code & Repositories"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 850,
+                                                            lineNumber: 1026,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2330,33 +2701,33 @@ function CourseLearningHubPage({ params }) {
                                                                                     className: "h-4 w-4 text-[#2563EB]"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                    lineNumber: 861,
+                                                                                    lineNumber: 1037,
                                                                                     columnNumber: 27
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                     children: "Course Complete GitHub Repository & Starter Boilerplate"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                    lineNumber: 862,
+                                                                                    lineNumber: 1038,
                                                                                     columnNumber: 27
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 860,
+                                                                            lineNumber: 1036,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$external$2d$link$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ExternalLink$3e$__["ExternalLink"], {
                                                                             className: "h-3.5 w-3.5 text-slate-400"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 864,
+                                                                            lineNumber: 1040,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 854,
+                                                                    lineNumber: 1030,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2371,20 +2742,20 @@ function CourseLearningHubPage({ params }) {
                                                                                     className: "h-4 w-4 text-emerald-600"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                    lineNumber: 873,
+                                                                                    lineNumber: 1049,
                                                                                     columnNumber: 27
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                     children: "Download Java 21 & Spring Boot 3 Quick Reference PDF"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                    lineNumber: 874,
+                                                                                    lineNumber: 1050,
                                                                                     columnNumber: 27
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 872,
+                                                                            lineNumber: 1048,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2392,42 +2763,42 @@ function CourseLearningHubPage({ params }) {
                                                                             children: "2.4 MB"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 876,
+                                                                            lineNumber: 1052,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 867,
+                                                                    lineNumber: 1043,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 853,
+                                                            lineNumber: 1029,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 849,
+                                                    lineNumber: 1025,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 848,
+                                                lineNumber: 1024,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 383,
+                                        lineNumber: 387,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 351,
+                                lineNumber: 352,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2438,7 +2809,7 @@ function CourseLearningHubPage({ params }) {
                                         children: "Section Assignments & Milestones"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 887,
+                                        lineNumber: 1063,
                                         columnNumber: 13
                                     }, this),
                                     allSections.map((sec, secIdx)=>{
@@ -2458,7 +2829,7 @@ function CourseLearningHubPage({ params }) {
                                                                     children: secIdx + 1
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 899,
+                                                                    lineNumber: 1075,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
@@ -2466,13 +2837,13 @@ function CourseLearningHubPage({ params }) {
                                                                     children: sec.title
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 902,
+                                                                    lineNumber: 1078,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 898,
+                                                            lineNumber: 1074,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2483,13 +2854,13 @@ function CourseLearningHubPage({ params }) {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 904,
+                                                            lineNumber: 1080,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 897,
+                                                    lineNumber: 1073,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2504,7 +2875,7 @@ function CourseLearningHubPage({ params }) {
                                                                             className: "h-4 w-4 text-emerald-700"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 912,
+                                                                            lineNumber: 1088,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2512,13 +2883,13 @@ function CourseLearningHubPage({ params }) {
                                                                             children: sec.assignment.title
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                            lineNumber: 913,
+                                                                            lineNumber: 1089,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 911,
+                                                                    lineNumber: 1087,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2532,13 +2903,13 @@ function CourseLearningHubPage({ params }) {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 917,
+                                                                    lineNumber: 1093,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 910,
+                                                            lineNumber: 1086,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2549,7 +2920,7 @@ function CourseLearningHubPage({ params }) {
                                                                         className: "h-4 w-4"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 925,
+                                                                        lineNumber: 1101,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     " Passed (",
@@ -2558,7 +2929,7 @@ function CourseLearningHubPage({ params }) {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 924,
+                                                                lineNumber: 1100,
                                                                 columnNumber: 25
                                                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                                 type: "button",
@@ -2569,48 +2940,48 @@ function CourseLearningHubPage({ params }) {
                                                                         className: "h-4 w-4"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 933,
+                                                                        lineNumber: 1109,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     " Take Assignment"
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 928,
+                                                                lineNumber: 1104,
                                                                 columnNumber: 25
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 922,
+                                                            lineNumber: 1098,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 909,
+                                                    lineNumber: 1085,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, sec.id, true, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 893,
+                                            lineNumber: 1069,
                                             columnNumber: 17
                                         }, this);
                                     })
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 886,
+                                lineNumber: 1062,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                        lineNumber: 298,
+                        lineNumber: 299,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("aside", {
-                        className: "w-full shrink-0 border-t border-slate-200 bg-white p-4 sm:p-6 lg:w-[420px] lg:border-t-0 lg:border-l space-y-6",
+                        className: "hidden lg:block w-full shrink-0 border-t border-slate-200 bg-white p-4 sm:p-5 lg:w-[340px] xl:w-[380px] lg:border-t-0 lg:border-l space-y-6",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 children: [
@@ -2619,7 +2990,7 @@ function CourseLearningHubPage({ params }) {
                                         children: "Curriculum & Video Lessons"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 947,
+                                        lineNumber: 1125,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2627,13 +2998,13 @@ function CourseLearningHubPage({ params }) {
                                         children: "Structured sequential progression with in-app tracking"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 948,
+                                        lineNumber: 1126,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 946,
+                                lineNumber: 1124,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2651,7 +3022,7 @@ function CourseLearningHubPage({ params }) {
                                                             children: secIdx + 1
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 963,
+                                                            lineNumber: 1141,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2659,18 +3030,18 @@ function CourseLearningHubPage({ params }) {
                                                             children: sec.title
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 966,
+                                                            lineNumber: 1144,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 962,
+                                                    lineNumber: 1140,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 961,
+                                                lineNumber: 1139,
                                                 columnNumber: 17
                                             }, this),
                                             sec.subsections && sec.subsections.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2685,20 +3056,20 @@ function CourseLearningHubPage({ params }) {
                                                                         className: "h-3.5 w-3.5 text-blue-600"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 978,
+                                                                        lineNumber: 1156,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                         children: sub.title
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 979,
+                                                                        lineNumber: 1157,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 977,
+                                                                lineNumber: 1155,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2718,13 +3089,13 @@ function CourseLearningHubPage({ params }) {
                                                                                         className: "h-4 w-4 text-emerald-600 shrink-0"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 1000,
+                                                                                        lineNumber: 1178,
                                                                                         columnNumber: 37
                                                                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$play$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__PlayCircle$3e$__["PlayCircle"], {
                                                                                         className: `h-4 w-4 shrink-0 ${isSelected ? "text-[#2563EB]" : "text-slate-400"}`
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 1002,
+                                                                                        lineNumber: 1180,
                                                                                         columnNumber: 37
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2732,13 +3103,13 @@ function CourseLearningHubPage({ params }) {
                                                                                         children: vid.title
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                        lineNumber: 1008,
+                                                                                        lineNumber: 1186,
                                                                                         columnNumber: 35
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 998,
+                                                                                lineNumber: 1176,
                                                                                 columnNumber: 33
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2746,30 +3117,30 @@ function CourseLearningHubPage({ params }) {
                                                                                 children: vid.durationFormatted
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                                lineNumber: 1010,
+                                                                                lineNumber: 1188,
                                                                                 columnNumber: 33
                                                                             }, this)
                                                                         ]
                                                                     }, vid.id, true, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 988,
+                                                                        lineNumber: 1166,
                                                                         columnNumber: 31
                                                                     }, this);
                                                                 })
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 982,
+                                                                lineNumber: 1160,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, sub.id, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 976,
+                                                        lineNumber: 1154,
                                                         columnNumber: 23
                                                     }, this))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 974,
+                                                lineNumber: 1152,
                                                 columnNumber: 19
                                             }, this),
                                             sec.directVideos && sec.directVideos.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2789,13 +3160,13 @@ function CourseLearningHubPage({ params }) {
                                                                         className: "h-4 w-4 text-emerald-600 shrink-0"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 1042,
+                                                                        lineNumber: 1220,
                                                                         columnNumber: 31
                                                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$play$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__PlayCircle$3e$__["PlayCircle"], {
                                                                         className: `h-4 w-4 shrink-0 ${isSelected ? "text-[#2563EB]" : "text-slate-400"}`
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 1044,
+                                                                        lineNumber: 1222,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2803,13 +3174,13 @@ function CourseLearningHubPage({ params }) {
                                                                         children: vid.title
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                        lineNumber: 1050,
+                                                                        lineNumber: 1228,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 1040,
+                                                                lineNumber: 1218,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2817,19 +3188,19 @@ function CourseLearningHubPage({ params }) {
                                                                 children: vid.durationFormatted
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 1052,
+                                                                lineNumber: 1230,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, vid.id, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 1030,
+                                                        lineNumber: 1208,
                                                         columnNumber: 25
                                                     }, this);
                                                 })
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 1024,
+                                                lineNumber: 1202,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2842,14 +3213,14 @@ function CourseLearningHubPage({ params }) {
                                                                 className: "h-3.5 w-3.5"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                lineNumber: 1064,
+                                                                lineNumber: 1242,
                                                                 columnNumber: 21
                                                             }, this),
                                                             completedAssignmentIds.includes(sec.assignment.id) ? "Assignment Passed ✓" : "Section Assignment"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 1063,
+                                                        lineNumber: 1241,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2859,24 +3230,24 @@ function CourseLearningHubPage({ params }) {
                                                         children: completedAssignmentIds.includes(sec.assignment.id) ? "View" : "Open"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 1069,
+                                                        lineNumber: 1247,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 1062,
+                                                lineNumber: 1240,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, sec.id, true, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 956,
+                                        lineNumber: 1134,
                                         columnNumber: 15
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 954,
+                                lineNumber: 1132,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2891,12 +3262,12 @@ function CourseLearningHubPage({ params }) {
                                                     className: "h-5 w-5"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1097,
+                                                    lineNumber: 1275,
                                                     columnNumber: 17
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 1090,
+                                                lineNumber: 1268,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2907,7 +3278,7 @@ function CourseLearningHubPage({ params }) {
                                                         children: "Accredited Certificate"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 1100,
+                                                        lineNumber: 1278,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2915,19 +3286,19 @@ function CourseLearningHubPage({ params }) {
                                                         children: isCourseComplete ? "Congratulations! All section videos and assignments are 100% completed." : "Complete all section video lectures and submit all assignments to unlock your verified credential."
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                        lineNumber: 1103,
+                                                        lineNumber: 1281,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                lineNumber: 1099,
+                                                lineNumber: 1277,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 1089,
+                                        lineNumber: 1267,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2941,14 +3312,14 @@ function CourseLearningHubPage({ params }) {
                                                     className: "h-4 w-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1118,
+                                                    lineNumber: 1296,
                                                     columnNumber: 19
                                                 }, this),
                                                 " Download Verified Certificate"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1113,
+                                            lineNumber: 1291,
                                             columnNumber: 17
                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "flex items-center justify-between text-xs text-slate-400 font-medium",
@@ -2961,7 +3332,7 @@ function CourseLearningHubPage({ params }) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1122,
+                                                    lineNumber: 1300,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2973,36 +3344,36 @@ function CourseLearningHubPage({ params }) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1123,
+                                                    lineNumber: 1301,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1121,
+                                            lineNumber: 1299,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 1111,
+                                        lineNumber: 1289,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 1082,
+                                lineNumber: 1260,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                        lineNumber: 945,
+                        lineNumber: 1121,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                lineNumber: 296,
+                lineNumber: 297,
                 columnNumber: 7
             }, this),
             showSchedulerModal && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3018,12 +3389,12 @@ function CourseLearningHubPage({ params }) {
                                 className: "h-4 w-4"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 1140,
+                                lineNumber: 1318,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1135,
+                            lineNumber: 1313,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3035,12 +3406,12 @@ function CourseLearningHubPage({ params }) {
                                         className: "h-5 w-5"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 1145,
+                                        lineNumber: 1323,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1144,
+                                    lineNumber: 1322,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3050,7 +3421,7 @@ function CourseLearningHubPage({ params }) {
                                             children: "Schedule Learning Time"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1148,
+                                            lineNumber: 1326,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3058,19 +3429,19 @@ function CourseLearningHubPage({ params }) {
                                             children: "Build a daily routine and get automated reminders"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1149,
+                                            lineNumber: 1327,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1147,
+                                    lineNumber: 1325,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1143,
+                            lineNumber: 1321,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3083,7 +3454,7 @@ function CourseLearningHubPage({ params }) {
                                             children: "Frequency"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1155,
+                                            lineNumber: 1333,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -3093,33 +3464,33 @@ function CourseLearningHubPage({ params }) {
                                                     children: "Every Day (30 mins)"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1157,
+                                                    lineNumber: 1335,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                     children: "Weekdays (Mon-Fri 45 mins)"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1158,
+                                                    lineNumber: 1336,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                     children: "Weekends (Sat-Sun 2 hours)"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1159,
+                                                    lineNumber: 1337,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1156,
+                                            lineNumber: 1334,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1154,
+                                    lineNumber: 1332,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3129,7 +3500,7 @@ function CourseLearningHubPage({ params }) {
                                             children: "Preferred Time"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1164,
+                                            lineNumber: 1342,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -3138,19 +3509,19 @@ function CourseLearningHubPage({ params }) {
                                             className: "mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-800 outline-none"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1165,
+                                            lineNumber: 1343,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1163,
+                                    lineNumber: 1341,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1153,
+                            lineNumber: 1331,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3163,7 +3534,7 @@ function CourseLearningHubPage({ params }) {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1174,
+                                    lineNumber: 1352,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3176,24 +3547,24 @@ function CourseLearningHubPage({ params }) {
                                     children: "Save Schedule"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1181,
+                                    lineNumber: 1359,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1173,
+                            lineNumber: 1351,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                    lineNumber: 1134,
+                    lineNumber: 1312,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                lineNumber: 1133,
+                lineNumber: 1311,
                 columnNumber: 9
             }, this),
             showAskModal && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3209,12 +3580,12 @@ function CourseLearningHubPage({ params }) {
                                 className: "h-4 w-4"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 1205,
+                                lineNumber: 1383,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1200,
+                            lineNumber: 1378,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -3222,7 +3593,7 @@ function CourseLearningHubPage({ params }) {
                             children: "Ask a Question"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1208,
+                            lineNumber: 1386,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3230,7 +3601,7 @@ function CourseLearningHubPage({ params }) {
                             children: "Ask the mentor or community about this lecture"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1209,
+                            lineNumber: 1387,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -3244,7 +3615,7 @@ function CourseLearningHubPage({ params }) {
                                             children: "Question Title / Summary"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1213,
+                                            lineNumber: 1391,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -3255,13 +3626,13 @@ function CourseLearningHubPage({ params }) {
                                             required: true
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1214,
+                                            lineNumber: 1392,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1212,
+                                    lineNumber: 1390,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3271,7 +3642,7 @@ function CourseLearningHubPage({ params }) {
                                             children: "Details & Code Snippets"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1224,
+                                            lineNumber: 1402,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -3282,13 +3653,13 @@ function CourseLearningHubPage({ params }) {
                                             className: "mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs font-mono text-slate-900 outline-none focus:border-[#2563EB]"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1225,
+                                            lineNumber: 1403,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1223,
+                                    lineNumber: 1401,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3301,7 +3672,7 @@ function CourseLearningHubPage({ params }) {
                                             children: "Cancel"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1235,
+                                            lineNumber: 1413,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3312,37 +3683,37 @@ function CourseLearningHubPage({ params }) {
                                                     className: "h-3.5 w-3.5"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1246,
+                                                    lineNumber: 1424,
                                                     columnNumber: 19
                                                 }, this),
                                                 " Post Question"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1242,
+                                            lineNumber: 1420,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1234,
+                                    lineNumber: 1412,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1211,
+                            lineNumber: 1389,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                    lineNumber: 1199,
+                    lineNumber: 1377,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                lineNumber: 1198,
+                lineNumber: 1376,
                 columnNumber: 9
             }, this),
             activeAssignmentSection && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3358,12 +3729,12 @@ function CourseLearningHubPage({ params }) {
                                 className: "h-4 w-4"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 1263,
+                                lineNumber: 1441,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1258,
+                            lineNumber: 1436,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3373,7 +3744,7 @@ function CourseLearningHubPage({ params }) {
                                     className: "h-5 w-5 text-[#2563EB]"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1267,
+                                    lineNumber: 1445,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3383,7 +3754,7 @@ function CourseLearningHubPage({ params }) {
                                             children: activeAssignmentSection.assignment.title
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1269,
+                                            lineNumber: 1447,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3398,19 +3769,19 @@ function CourseLearningHubPage({ params }) {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1272,
+                                            lineNumber: 1450,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1268,
+                                    lineNumber: 1446,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1266,
+                            lineNumber: 1444,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3421,7 +3792,7 @@ function CourseLearningHubPage({ params }) {
                                     children: activeAssignmentSection.assignment.description
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1280,
+                                    lineNumber: 1458,
                                     columnNumber: 15
                                 }, this),
                                 activeAssignmentSection.assignment.questions && activeAssignmentSection.assignment.questions.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3439,7 +3810,7 @@ function CourseLearningHubPage({ params }) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1289,
+                                                    lineNumber: 1467,
                                                     columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3454,36 +3825,36 @@ function CourseLearningHubPage({ params }) {
                                                                     className: "accent-[#2563EB]"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 1296,
+                                                                    lineNumber: 1474,
                                                                     columnNumber: 29
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                     children: choice
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                                    lineNumber: 1302,
+                                                                    lineNumber: 1480,
                                                                     columnNumber: 29
                                                                 }, this)
                                                             ]
                                                         }, cIdx, true, {
                                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                            lineNumber: 1292,
+                                                            lineNumber: 1470,
                                                             columnNumber: 27
                                                         }, this))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1290,
+                                                    lineNumber: 1468,
                                                     columnNumber: 23
                                                 }, this)
                                             ]
                                         }, qIdx, true, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1288,
+                                            lineNumber: 1466,
                                             columnNumber: 21
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1286,
+                                    lineNumber: 1464,
                                     columnNumber: 17
                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "space-y-2",
@@ -3493,7 +3864,7 @@ function CourseLearningHubPage({ params }) {
                                             children: "Paste Project Git Repository URL or Solution Notes:"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1311,
+                                            lineNumber: 1489,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -3502,19 +3873,19 @@ function CourseLearningHubPage({ params }) {
                                             className: "w-full rounded-xl border border-slate-200 p-3 text-xs font-mono text-slate-800 outline-none"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1314,
+                                            lineNumber: 1492,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1310,
+                                    lineNumber: 1488,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1279,
+                            lineNumber: 1457,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3527,7 +3898,7 @@ function CourseLearningHubPage({ params }) {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1324,
+                                    lineNumber: 1502,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3539,31 +3910,31 @@ function CourseLearningHubPage({ params }) {
                                             className: "h-4 w-4"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1336,
+                                            lineNumber: 1514,
                                             columnNumber: 17
                                         }, this),
                                         " Submit & Evaluate"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1331,
+                                    lineNumber: 1509,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1323,
+                            lineNumber: 1501,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                    lineNumber: 1257,
+                    lineNumber: 1435,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                lineNumber: 1256,
+                lineNumber: 1434,
                 columnNumber: 9
             }, this),
             showCertModal && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3579,12 +3950,12 @@ function CourseLearningHubPage({ params }) {
                                 className: "h-4 w-4"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                lineNumber: 1352,
+                                lineNumber: 1530,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1347,
+                            lineNumber: 1525,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3596,12 +3967,12 @@ function CourseLearningHubPage({ params }) {
                                         className: "h-8 w-8"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                        lineNumber: 1357,
+                                        lineNumber: 1535,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1356,
+                                    lineNumber: 1534,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3609,7 +3980,7 @@ function CourseLearningHubPage({ params }) {
                                     children: "JKS Learning Institute of Technology"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1359,
+                                    lineNumber: 1537,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3617,7 +3988,7 @@ function CourseLearningHubPage({ params }) {
                                     children: "Official Certificate of Course Mastery"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1362,
+                                    lineNumber: 1540,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3625,7 +3996,7 @@ function CourseLearningHubPage({ params }) {
                                     children: "This certifies that"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1365,
+                                    lineNumber: 1543,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3633,7 +4004,7 @@ function CourseLearningHubPage({ params }) {
                                     children: "Jordan Dsouza"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1366,
+                                    lineNumber: 1544,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3641,7 +4012,7 @@ function CourseLearningHubPage({ params }) {
                                     children: "has successfully completed all required video sections, subsections, and passed all milestone assignments for"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1369,
+                                    lineNumber: 1547,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3649,7 +4020,7 @@ function CourseLearningHubPage({ params }) {
                                     children: course.title
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1372,
+                                    lineNumber: 1550,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3665,7 +4036,7 @@ function CourseLearningHubPage({ params }) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1376,
+                                                    lineNumber: 1554,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3673,13 +4044,13 @@ function CourseLearningHubPage({ params }) {
                                                     children: "Verified Authentic via JKS Ledger"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1377,
+                                                    lineNumber: 1555,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1375,
+                                            lineNumber: 1553,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3690,7 +4061,7 @@ function CourseLearningHubPage({ params }) {
                                                     children: "Authorized Signature"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1380,
+                                                    lineNumber: 1558,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3698,25 +4069,25 @@ function CourseLearningHubPage({ params }) {
                                                     children: "Academic Director, JKS"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                                    lineNumber: 1381,
+                                                    lineNumber: 1559,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1379,
+                                            lineNumber: 1557,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1374,
+                                    lineNumber: 1552,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1355,
+                            lineNumber: 1533,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3729,7 +4100,7 @@ function CourseLearningHubPage({ params }) {
                                     children: "Close"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1387,
+                                    lineNumber: 1565,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3741,37 +4112,37 @@ function CourseLearningHubPage({ params }) {
                                             className: "h-4 w-4"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                            lineNumber: 1399,
+                                            lineNumber: 1577,
                                             columnNumber: 17
                                         }, this),
                                         " Download PDF Certificate"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                                    lineNumber: 1394,
+                                    lineNumber: 1572,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                            lineNumber: 1386,
+                            lineNumber: 1564,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                    lineNumber: 1346,
+                    lineNumber: 1524,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-                lineNumber: 1345,
+                lineNumber: 1523,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(student)/dashboard/my-courses/[slug]/page.tsx",
-        lineNumber: 256,
+        lineNumber: 257,
         columnNumber: 5
     }, this);
 }
@@ -3961,163 +4332,189 @@ function InAppVideoPlayer({ title, videoUrl, videoType, durationFormatted = "3:0
         const s = Math.floor(sec % 60);
         return `${m}:${s < 10 ? "0" : ""}${s}`;
     };
+    // When it's an external embed (YouTube / Vimeo), render the native iframe cleanly without duplicate template controls
+    if (isExternalEmbed) {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            ref: containerRef,
+            className: `relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-800 bg-black shadow-2xl ${className}`,
+            children: youTubeEmbedSrc ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("iframe", {
+                src: youTubeEmbedSrc,
+                title: title,
+                allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+                allowFullScreen: true,
+                className: "h-full w-full border-0"
+            }, void 0, false, {
+                fileName: "[project]/src/components/ui/in-app-video-player.tsx",
+                lineNumber: 193,
+                columnNumber: 11
+            }, this) : vimeoEmbedSrc ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("iframe", {
+                src: vimeoEmbedSrc,
+                title: title,
+                allow: "autoplay; fullscreen; picture-in-picture",
+                allowFullScreen: true,
+                className: "h-full w-full border-0"
+            }, void 0, false, {
+                fileName: "[project]/src/components/ui/in-app-video-player.tsx",
+                lineNumber: 201,
+                columnNumber: 11
+            }, this) : null
+        }, void 0, false, {
+            fileName: "[project]/src/components/ui/in-app-video-player.tsx",
+            lineNumber: 188,
+            columnNumber: 7
+        }, this);
+    }
+    // HTML5 native video player with in-app tracking and custom controls
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         ref: containerRef,
         className: `group relative flex aspect-video w-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 text-white shadow-2xl ${className}`,
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "relative z-20 flex items-center justify-between bg-gradient-to-b from-slate-950/90 via-slate-950/40 to-transparent p-4 transition-opacity",
+                className: "relative z-20 flex items-center justify-between bg-gradient-to-b from-slate-950/90 via-slate-950/40 to-transparent p-2.5 sm:p-4 transition-opacity",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex items-center gap-2",
+                        className: "flex items-center gap-1.5 sm:gap-2 min-w-0",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "flex items-center gap-1.5 rounded-lg bg-blue-600/90 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs backdrop-blur-md",
+                                className: "flex items-center gap-1 rounded-lg bg-blue-600/90 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-[11px] font-bold text-white shadow-xs backdrop-blur-md shrink-0",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$tv$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Tv$3e$__["Tv"], {
-                                        className: "h-3.5 w-3.5"
+                                        className: "h-3 w-3 sm:h-3.5 sm:w-3.5"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                        lineNumber: 194,
+                                        lineNumber: 223,
                                         columnNumber: 13
                                     }, this),
-                                    " In-App Protected Player"
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        children: "Protected Player"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/ui/in-app-video-player.tsx",
+                                        lineNumber: 224,
+                                        columnNumber: 13
+                                    }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                lineNumber: 193,
+                                lineNumber: 222,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "truncate text-xs font-semibold text-slate-300 max-w-[240px] sm:max-w-md",
+                                className: "truncate text-[11px] sm:text-xs font-semibold text-slate-300 max-w-[140px] sm:max-w-md hidden sm:inline-block",
                                 children: title
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                lineNumber: 196,
+                                lineNumber: 226,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                        lineNumber: 192,
+                        lineNumber: 221,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex items-center gap-2",
+                        className: "flex items-center gap-1.5 sm:gap-2 shrink-0",
                         children: [
                             antiSkip && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "flex items-center gap-1 rounded-md bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-500/30",
+                                className: "flex items-center gap-1 rounded-md bg-amber-500/20 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-amber-300 border border-amber-500/30",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$lock$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Lock$3e$__["Lock"], {
-                                        className: "h-3 w-3"
+                                        className: "h-2.5 w-2.5 sm:h-3 sm:w-3"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                        lineNumber: 204,
+                                        lineNumber: 234,
                                         columnNumber: 15
                                     }, this),
-                                    " Anti-Skip Active"
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "hidden xs:inline",
+                                        children: "Anti-Skip"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/ui/in-app-video-player.tsx",
+                                        lineNumber: 235,
+                                        columnNumber: 15
+                                    }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                lineNumber: 203,
+                                lineNumber: 233,
                                 columnNumber: 13
                             }, this),
                             isCompleted && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "flex items-center gap-1 rounded-md bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/30",
+                                className: "flex items-center gap-1 rounded-md bg-emerald-500/20 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-300 border border-emerald-500/30",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__["CheckCircle2"], {
-                                        className: "h-3 w-3"
+                                        className: "h-2.5 w-2.5 sm:h-3 sm:w-3"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                        lineNumber: 209,
+                                        lineNumber: 240,
                                         columnNumber: 15
                                     }, this),
-                                    " Completed"
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        children: "Done"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/ui/in-app-video-player.tsx",
+                                        lineNumber: 241,
+                                        columnNumber: 15
+                                    }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                lineNumber: 208,
+                                lineNumber: 239,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                        lineNumber: 201,
+                        lineNumber: 231,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                lineNumber: 191,
+                lineNumber: 220,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "relative flex flex-1 items-center justify-center overflow-hidden bg-black",
-                children: youTubeEmbedSrc ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("iframe", {
-                    src: youTubeEmbedSrc,
-                    title: title,
-                    allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-                    allowFullScreen: true,
-                    className: "absolute inset-0 h-full w-full border-0"
-                }, void 0, false, {
-                    fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                    lineNumber: 219,
-                    columnNumber: 11
-                }, this) : vimeoEmbedSrc ? /* CASE 2: Vimeo in-app embed */ /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("iframe", {
-                    src: vimeoEmbedSrc,
-                    title: title,
-                    allow: "autoplay; fullscreen; picture-in-picture",
-                    allowFullScreen: true,
-                    className: "absolute inset-0 h-full w-full border-0"
-                }, void 0, false, {
-                    fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                    lineNumber: 228,
-                    columnNumber: 11
-                }, this) : /* CASE 3: HTML5 native video (Uploaded file, Blob URL, or Direct MP4 link) */ /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("video", {
-                            ref: videoRef,
-                            src: videoUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                            onTimeUpdate: handleTimeUpdate,
-                            onPlay: ()=>setIsPlaying(true),
-                            onPause: ()=>setIsPlaying(false),
-                            onEnded: ()=>{
-                                setIsCompleted(true);
-                                setIsPlaying(false);
-                                onVideoCompleted?.();
-                            },
-                            playsInline: true,
-                            className: "h-full w-full object-contain"
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("video", {
+                        ref: videoRef,
+                        src: videoUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                        onTimeUpdate: handleTimeUpdate,
+                        onPlay: ()=>setIsPlaying(true),
+                        onPause: ()=>setIsPlaying(false),
+                        onEnded: ()=>{
+                            setIsCompleted(true);
+                            setIsPlaying(false);
+                            onVideoCompleted?.();
+                        },
+                        playsInline: true,
+                        className: "h-full w-full object-contain"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/ui/in-app-video-player.tsx",
+                        lineNumber: 249,
+                        columnNumber: 9
+                    }, this),
+                    !isPlaying && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        type: "button",
+                        onClick: togglePlay,
+                        className: "absolute z-10 flex h-16 w-16 items-center justify-center rounded-full bg-[#2563EB]/90 text-white shadow-2xl backdrop-blur-md transition-transform hover:scale-110 active:scale-95 cursor-pointer",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$play$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Play$3e$__["Play"], {
+                            className: "h-7 w-7 fill-white translate-x-0.5"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                            lineNumber: 238,
+                            lineNumber: 274,
                             columnNumber: 13
-                        }, this),
-                        !isPlaying && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            type: "button",
-                            onClick: togglePlay,
-                            className: "absolute z-10 flex h-16 w-16 items-center justify-center rounded-full bg-[#2563EB]/90 text-white shadow-2xl backdrop-blur-md transition-transform hover:scale-110 active:scale-95",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$play$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Play$3e$__["Play"], {
-                                className: "h-7 w-7 fill-white translate-x-0.5"
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                lineNumber: 263,
-                                columnNumber: 17
-                            }, this)
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                            lineNumber: 258,
-                            columnNumber: 15
                         }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                    lineNumber: 237,
-                    columnNumber: 11
-                }, this)
-            }, void 0, false, {
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/ui/in-app-video-player.tsx",
+                        lineNumber: 269,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
                 fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                lineNumber: 216,
+                lineNumber: 248,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4132,12 +4529,12 @@ function InAppVideoPlayer({ title, videoUrl, videoType, durationFormatted = "3:0
                             }
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                            lineNumber: 274,
+                            lineNumber: 283,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                        lineNumber: 273,
+                        lineNumber: 282,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4149,40 +4546,40 @@ function InAppVideoPlayer({ title, videoUrl, videoType, durationFormatted = "3:0
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         type: "button",
                                         onClick: togglePlay,
-                                        className: "flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors",
+                                        className: "flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer",
                                         children: isPlaying ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$pause$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Pause$3e$__["Pause"], {
                                             className: "h-4 w-4"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                            lineNumber: 288,
+                                            lineNumber: 297,
                                             columnNumber: 17
                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$play$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Play$3e$__["Play"], {
                                             className: "h-4 w-4 fill-white"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                            lineNumber: 290,
+                                            lineNumber: 299,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                        lineNumber: 282,
+                                        lineNumber: 291,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         type: "button",
                                         onClick: handleRestart,
-                                        className: "flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors",
+                                        className: "flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer",
                                         title: "Restart Video",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$rotate$2d$ccw$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__RotateCcw$3e$__["RotateCcw"], {
                                             className: "h-3.5 w-3.5"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                            lineNumber: 300,
+                                            lineNumber: 309,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                        lineNumber: 294,
+                                        lineNumber: 303,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4191,18 +4588,18 @@ function InAppVideoPlayer({ title, videoUrl, videoType, durationFormatted = "3:0
                                             children: durationFormatted
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                            lineNumber: 307,
+                                            lineNumber: 316,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                        lineNumber: 303,
+                                        lineNumber: 312,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                lineNumber: 281,
+                                lineNumber: 290,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4216,70 +4613,70 @@ function InAppVideoPlayer({ title, videoUrl, videoType, durationFormatted = "3:0
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                        lineNumber: 313,
+                                        lineNumber: 322,
                                         columnNumber: 13
                                     }, this),
-                                    !isExternalEmbed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         type: "button",
                                         onClick: toggleMute,
-                                        className: "flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors",
+                                        className: "flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer",
                                         children: isMuted ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$volume$2d$x$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__VolumeX$3e$__["VolumeX"], {
                                             className: "h-4 w-4 text-rose-400"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                            lineNumber: 324,
-                                            columnNumber: 19
+                                            lineNumber: 332,
+                                            columnNumber: 17
                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$volume$2d$2$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Volume2$3e$__["Volume2"], {
                                             className: "h-4 w-4"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                            lineNumber: 326,
-                                            columnNumber: 19
+                                            lineNumber: 334,
+                                            columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                        lineNumber: 318,
-                                        columnNumber: 15
+                                        lineNumber: 326,
+                                        columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         type: "button",
                                         onClick: handleFullscreen,
-                                        className: "flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors",
+                                        className: "flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer",
                                         title: "Fullscreen",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$maximize$2d$2$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Maximize2$3e$__["Maximize2"], {
                                             className: "h-3.5 w-3.5"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                            lineNumber: 337,
+                                            lineNumber: 344,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                        lineNumber: 331,
+                                        lineNumber: 338,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                                lineNumber: 312,
+                                lineNumber: 321,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                        lineNumber: 280,
+                        lineNumber: 289,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-                lineNumber: 271,
+                lineNumber: 280,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/ui/in-app-video-player.tsx",
-        lineNumber: 186,
+        lineNumber: 215,
         columnNumber: 5
     }, this);
 }

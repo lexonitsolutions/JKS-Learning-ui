@@ -229,9 +229,32 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   return (
     <motion.div
       {...cardMotion}
-      className="flex w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-xl"
+      className="flex w-full max-w-4xl flex-col md:flex-row overflow-hidden rounded-2xl bg-white shadow-xl"
     >
-      {/* Left side — animated dot map + brand */}
+      {/* Mobile Top — animated dot map + brand header */}
+      <div className="relative block h-[150px] w-full overflow-hidden border-b border-gray-100 md:hidden shrink-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100">
+          {!reducedMotion && <DotMap />}
+
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4">
+            <FadeIn reducedMotion={reducedMotion} delay={0.2} className="mb-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-200">
+                <ArrowRight className="h-4 w-4 text-white" />
+              </div>
+            </FadeIn>
+            <FadeIn reducedMotion={reducedMotion} delay={0.3}>
+              <h2 className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-center text-lg font-extrabold text-transparent">
+                {copy.panelTitle}
+              </h2>
+            </FadeIn>
+            <FadeIn reducedMotion={reducedMotion} delay={0.4}>
+              <p className="max-w-xs text-center text-xs text-gray-600">{copy.panelBody}</p>
+            </FadeIn>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Left side — animated dot map + brand */}
       <div className="relative hidden h-[600px] w-1/2 overflow-hidden border-r border-gray-100 md:block">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100">
           {!reducedMotion && <DotMap />}
@@ -253,6 +276,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
           </div>
         </div>
       </div>
+
 
       {/* Right side — form */}
       <div className="flex w-full flex-col justify-center bg-white p-8 md:w-1/2 md:p-10">

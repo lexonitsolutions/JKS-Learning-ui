@@ -182,92 +182,101 @@ export function InAppVideoPlayer({
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
-  return (
-    <div
-      ref={containerRef}
-      className={`group relative flex aspect-video w-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 text-white shadow-2xl ${className}`}
-    >
-      {/* Top Header Badge Overlay */}
-      <div className="relative z-20 flex items-center justify-between bg-gradient-to-b from-slate-950/90 via-slate-950/40 to-transparent p-4 transition-opacity">
-        <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-lg bg-blue-600/90 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs backdrop-blur-md">
-            <Tv className="h-3.5 w-3.5" /> In-App Protected Player
-          </span>
-          <span className="truncate text-xs font-semibold text-slate-300 max-w-[240px] sm:max-w-md">
-            {title}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {antiSkip && (
-            <span className="flex items-center gap-1 rounded-md bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-500/30">
-              <Lock className="h-3 w-3" /> Anti-Skip Active
-            </span>
-          )}
-          {isCompleted && (
-            <span className="flex items-center gap-1 rounded-md bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/30">
-              <CheckCircle2 className="h-3 w-3" /> Completed
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Main Video Viewport Canvas */}
-      <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
-        {/* CASE 1: YouTube in-app embed frame without external redirection */}
+  // When it's an external embed (YouTube / Vimeo), render the native iframe cleanly without duplicate template controls
+  if (isExternalEmbed) {
+    return (
+      <div
+        ref={containerRef}
+        className={`relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-800 bg-black shadow-2xl ${className}`}
+      >
         {youTubeEmbedSrc ? (
           <iframe
             src={youTubeEmbedSrc}
             title={title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
-            className="absolute inset-0 h-full w-full border-0"
+            className="h-full w-full border-0"
           />
         ) : vimeoEmbedSrc ? (
-          /* CASE 2: Vimeo in-app embed */
           <iframe
             src={vimeoEmbedSrc}
             title={title}
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
-            className="absolute inset-0 h-full w-full border-0"
+            className="h-full w-full border-0"
           />
-        ) : (
-          /* CASE 3: HTML5 native video (Uploaded file, Blob URL, or Direct MP4 link) */
-          <>
-            <video
-              ref={videoRef}
-              src={
-                videoUrl ||
-                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-              }
-              onTimeUpdate={handleTimeUpdate}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              onEnded={() => {
-                setIsCompleted(true);
-                setIsPlaying(false);
-                onVideoCompleted?.();
-              }}
-              playsInline
-              className="h-full w-full object-contain"
-            />
+        ) : null}
+      </div>
+    );
+  }
 
-            {/* Central Play/Pause Watermark Button for native video */}
-            {!isPlaying && (
-              <button
-                type="button"
-                onClick={togglePlay}
-                className="absolute z-10 flex h-16 w-16 items-center justify-center rounded-full bg-[#2563EB]/90 text-white shadow-2xl backdrop-blur-md transition-transform hover:scale-110 active:scale-95"
-              >
-                <Play className="h-7 w-7 fill-white translate-x-0.5" />
-              </button>
-            )}
-          </>
+  // HTML5 native video player with in-app tracking and custom controls
+  return (
+    <div
+      ref={containerRef}
+      className={`group relative flex aspect-video w-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 text-white shadow-2xl ${className}`}
+    >
+      {/* Top Header Badge Overlay */}
+      <div className="relative z-20 flex items-center justify-between bg-gradient-to-b from-slate-950/90 via-slate-950/40 to-transparent p-2.5 sm:p-4 transition-opacity">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <span className="flex items-center gap-1 rounded-lg bg-blue-600/90 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-[11px] font-bold text-white shadow-xs backdrop-blur-md shrink-0">
+            <Tv className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            <span>Protected Player</span>
+          </span>
+          <span className="truncate text-[11px] sm:text-xs font-semibold text-slate-300 max-w-[140px] sm:max-w-md hidden sm:inline-block">
+            {title}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {antiSkip && (
+            <span className="flex items-center gap-1 rounded-md bg-amber-500/20 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-amber-300 border border-amber-500/30">
+              <Lock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              <span className="hidden xs:inline">Anti-Skip</span>
+            </span>
+          )}
+          {isCompleted && (
+            <span className="flex items-center gap-1 rounded-md bg-emerald-500/20 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-300 border border-emerald-500/30">
+              <CheckCircle2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              <span>Done</span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Main HTML5 Video Canvas */}
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
+        <video
+          ref={videoRef}
+          src={
+            videoUrl ||
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+          }
+          onTimeUpdate={handleTimeUpdate}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onEnded={() => {
+            setIsCompleted(true);
+            setIsPlaying(false);
+            onVideoCompleted?.();
+          }}
+          playsInline
+          className="h-full w-full object-contain"
+        />
+
+        {/* Central Play/Pause Watermark Button */}
+        {!isPlaying && (
+          <button
+            type="button"
+            onClick={togglePlay}
+            className="absolute z-10 flex h-16 w-16 items-center justify-center rounded-full bg-[#2563EB]/90 text-white shadow-2xl backdrop-blur-md transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+          >
+            <Play className="h-7 w-7 fill-white translate-x-0.5" />
+          </button>
         )}
       </div>
 
-      {/* Bottom Controls Bar (Rendered for in-app tracking and native video controls) */}
+      {/* Bottom Controls Bar */}
       <div className="relative z-20 bg-gradient-to-t from-slate-950 via-slate-950/85 to-transparent p-3 sm:p-4 space-y-2">
         {/* Progress Scrubber */}
         <div className="relative h-1.5 w-full rounded-full bg-white/20 overflow-hidden">
@@ -282,7 +291,7 @@ export function InAppVideoPlayer({
             <button
               type="button"
               onClick={togglePlay}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
             >
               {isPlaying ? (
                 <Pause className="h-4 w-4" />
@@ -294,7 +303,7 @@ export function InAppVideoPlayer({
             <button
               type="button"
               onClick={handleRestart}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
               title="Restart Video"
             >
               <RotateCcw className="h-3.5 w-3.5" />
@@ -314,24 +323,22 @@ export function InAppVideoPlayer({
               {progressPercent}% watched
             </span>
 
-            {!isExternalEmbed && (
-              <button
-                type="button"
-                onClick={toggleMute}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
-              >
-                {isMuted ? (
-                  <VolumeX className="h-4 w-4 text-rose-400" />
-                ) : (
-                  <Volume2 className="h-4 w-4" />
-                )}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={toggleMute}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+            >
+              {isMuted ? (
+                <VolumeX className="h-4 w-4 text-rose-400" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
+            </button>
 
             <button
               type="button"
               onClick={handleFullscreen}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
               title="Fullscreen"
             >
               <Maximize2 className="h-3.5 w-3.5" />
@@ -342,3 +349,4 @@ export function InAppVideoPlayer({
     </div>
   );
 }
+

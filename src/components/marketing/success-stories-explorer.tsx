@@ -160,45 +160,46 @@ export function SuccessStoriesExplorer() {
         </div>
 
         {/* Featured Spotlight Career Deep-Dive */}
-        <div className="mt-12 overflow-hidden rounded-3xl border border-blue-200/80 bg-gradient-to-br from-white via-blue-50/40 to-cyan-50/20 p-6 sm:p-8 lg:p-10 shadow-lg shadow-blue-500/5">
-          <div className="flex items-center gap-2 text-xs font-bold text-primary-blue uppercase tracking-wider mb-6">
-            <Sparkles className="h-4 w-4 text-amber-500" /> Featured Career Transformation Spotlight
+        <div className="mt-8 sm:mt-12 overflow-hidden rounded-3xl border border-blue-200/80 bg-gradient-to-br from-white via-blue-50/40 to-cyan-50/20 p-4 sm:p-8 lg:p-10 shadow-lg shadow-blue-500/5">
+          <div className="flex items-center gap-2 text-[11px] sm:text-xs font-bold text-primary-blue uppercase tracking-wider mb-4 sm:mb-6">
+            <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
+            <span className="truncate">Featured Career Transformation Spotlight</span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
             {/* Left: Candidate Info & Journey */}
-            <div className="lg:col-span-7 flex flex-col gap-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-blue to-indigo-600 text-xl font-bold text-white shadow-md">
+            <div className="lg:col-span-7 flex flex-col gap-4 sm:gap-5">
+              <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+                <div className="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-blue to-indigo-600 text-lg sm:text-xl font-bold text-white shadow-md">
                   {getInitials(spotlightStory.name)}
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl sm:text-2xl font-bold text-text-heading">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-lg sm:text-2xl font-bold text-text-heading">
                       {spotlightStory.name}
                     </h3>
-                    <Badge variant="success" className="gap-1 font-semibold">
+                    <Badge variant="success" className="gap-1 font-semibold text-[11px] py-0.5 px-2">
                       <CheckCircle2 className="h-3 w-3" /> Placed {spotlightStory.hiredYear}
                     </Badge>
                   </div>
-                  <p className="text-sm font-semibold text-primary-blue mt-0.5">
+                  <p className="text-xs sm:text-sm font-semibold text-primary-blue mt-0.5 truncate">
                     {spotlightStory.role}
                   </p>
-                  <p className="text-xs text-text-body flex items-center gap-1.5 mt-1">
-                    <Building className="h-3.5 w-3.5 text-text-body/60" /> {spotlightStory.company}
+                  <p className="text-xs text-text-body flex items-center gap-1.5 mt-0.5">
+                    <Building className="h-3.5 w-3.5 text-text-body/60 shrink-0" /> {spotlightStory.company}
                   </p>
                 </div>
               </div>
 
               {/* Quote */}
-              <div className="relative rounded-2xl border border-border/80 bg-white/90 p-5 shadow-xs">
-                <Quote className="h-6 w-6 text-primary-blue/30 mb-2" />
-                <p className="text-sm sm:text-base text-text-body italic leading-relaxed">
+              <div className="relative rounded-2xl border border-border/80 bg-white/90 p-4 sm:p-5 shadow-xs">
+                <Quote className="h-5 w-5 sm:h-6 sm:w-6 text-primary-blue/30 mb-1.5" />
+                <p className="text-xs sm:text-base text-text-body italic leading-relaxed">
                   &ldquo;{spotlightStory.quote}&rdquo;
                 </p>
                 {spotlightStory.highlightText && (
-                  <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-lg p-2 border border-emerald-200/60">
-                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                  <div className="mt-3 flex items-start sm:items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-lg p-2.5 border border-emerald-200/60">
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 mt-0.5 sm:mt-0" />
                     <span>{spotlightStory.highlightText}</span>
                   </div>
                 )}
@@ -206,23 +207,23 @@ export function SuccessStoriesExplorer() {
             </div>
 
             {/* Right: Metrics & Capstone Breakdown */}
-            <div className="lg:col-span-5 flex flex-col gap-4">
+            <div className="lg:col-span-5 flex flex-col gap-3 sm:gap-4">
               {/* Transition Before vs After Card */}
-              <div className="rounded-2xl border border-border bg-white p-5 shadow-xs">
-                <div className="text-xs uppercase font-bold tracking-wider text-text-body/70 mb-3">
+              <div className="rounded-2xl border border-border bg-white p-4 sm:p-5 shadow-xs">
+                <div className="text-[11px] sm:text-xs uppercase font-bold tracking-wider text-text-body/70 mb-2.5">
                   Career Trajectory
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <div>
-                    <div className="text-xs text-text-body">Previous</div>
-                    <div className="font-semibold text-text-heading mt-0.5">
+                <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
+                  <div className="min-w-0">
+                    <div className="text-[11px] text-text-body">Previous</div>
+                    <div className="font-semibold text-text-heading mt-0.5 truncate">
                       {spotlightStory.previousRole}
                     </div>
                   </div>
                   <ArrowRight className="h-4 w-4 text-primary-blue shrink-0" />
-                  <div className="text-right">
-                    <div className="text-xs text-emerald-600 font-semibold">Offer Package</div>
-                    <div className="font-bold text-text-heading text-emerald-600 mt-0.5">
+                  <div className="text-right shrink-0">
+                    <div className="text-[11px] text-emerald-600 font-semibold">Offer Package</div>
+                    <div className="font-bold text-emerald-600 mt-0.5 text-sm sm:text-base">
                       {spotlightStory.salaryPackage || "Tier-1 Offer"}
                     </div>
                   </div>
@@ -230,14 +231,14 @@ export function SuccessStoriesExplorer() {
               </div>
 
               {/* AI Interview Growth & Capstone Card */}
-              <div className="rounded-2xl border border-border bg-white p-5 shadow-xs">
-                <div className="flex items-center justify-between">
+              <div className="rounded-2xl border border-border bg-white p-4 sm:p-5 shadow-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <div className="text-xs text-text-body font-medium">AI Mock Interview Growth</div>
-                    <div className="text-lg font-extrabold text-primary-blue mt-0.5 flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-emerald-600" />
+                    <div className="text-[11px] text-text-body font-medium">AI Mock Interview Growth</div>
+                    <div className="text-base sm:text-lg font-extrabold text-primary-blue mt-0.5 flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-emerald-600 shrink-0" />
                       <span>{spotlightStory.scoreDelta}</span>
-                      <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      <span className="text-[11px] sm:text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
                         +
                         {spotlightStory.finalScore && spotlightStory.initialScore
                           ? spotlightStory.finalScore - spotlightStory.initialScore
@@ -247,24 +248,26 @@ export function SuccessStoriesExplorer() {
                     </div>
                   </div>
                   {spotlightStory.salaryHike && (
-                    <span className="rounded-lg bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-xs font-bold text-amber-700">
+                    <span className="rounded-lg bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-[11px] sm:text-xs font-bold text-amber-700">
                       {spotlightStory.salaryHike}
                     </span>
                   )}
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-border/70">
-                  <div className="text-[11px] font-semibold text-text-body/70 flex items-center gap-1.5">
-                    <Award className="h-3.5 w-3.5 text-primary-blue" /> Verified Capstone
+                <div className="mt-3.5 pt-3 border-t border-border/70">
+                  <div className="text-[10px] sm:text-[11px] font-semibold text-text-body/70 flex items-center gap-1.5">
+                    <Award className="h-3.5 w-3.5 text-primary-blue shrink-0" /> Verified Capstone
                   </div>
-                  <div className="text-xs font-bold text-text-heading mt-1">
+                  <div className="text-xs font-bold text-text-heading mt-0.5 line-clamp-1">
                     {spotlightStory.capstone}
                   </div>
+
                 </div>
               </div>
             </div>
           </div>
         </div>
+
 
         {/* Stories Grid */}
         <div className="mt-12">

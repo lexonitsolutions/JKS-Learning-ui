@@ -75,9 +75,10 @@ function YoutubeIcon({ className = "h-4 w-4" }: { className?: string }) {
 }
 
 // Udemy Bottom Tabs
-type TabType = "overview" | "qa" | "notes" | "announcements" | "reviews" | "tools";
+type TabType = "overview" | "curriculum" | "qa" | "notes" | "announcements" | "reviews" | "tools";
 
 export default function CourseLearningHubPage({
+
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -253,10 +254,10 @@ export default function CourseLearningHubPage({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F8FAFC] text-slate-800">
+    <div className="flex min-h-screen flex-col bg-[#F8FAFC] text-slate-800 overflow-x-hidden">
       {/* Top Learning Hub Navigation Bar */}
       <header className="sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-slate-200 bg-white/95 px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md">
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <Link
             href="/dashboard/courses"
             className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
@@ -264,8 +265,8 @@ export default function CourseLearningHubPage({
             <ArrowLeft className="h-4 w-4" /> Courses
           </Link>
           <div className="h-4 w-[1px] bg-slate-200 hidden sm:block" />
-          <div>
-            <h1 className="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[220px] sm:max-w-md">
+          <div className="min-w-0">
+            <h1 className="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[200px] sm:max-w-md">
               {course.title}
             </h1>
             <div className="text-[10px] text-slate-400 font-medium">
@@ -274,7 +275,7 @@ export default function CourseLearningHubPage({
           </div>
         </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-3">
+        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
           <div className="text-left sm:text-right">
             <div className="text-xs font-extrabold text-slate-900">
               {overallPercent}% Completed
@@ -283,7 +284,7 @@ export default function CourseLearningHubPage({
               {completedCount} of {totalItems} Milestones Completed
             </div>
           </div>
-          <div className="h-2 w-24 sm:w-32 rounded-full bg-slate-100 overflow-hidden">
+          <div className="h-2 w-20 sm:w-32 rounded-full bg-slate-100 overflow-hidden shrink-0">
             <div
               className="h-full rounded-full bg-gradient-to-r from-blue-600 to-emerald-500 transition-all duration-500"
               style={{ width: `${overallPercent}%` }}
@@ -293,9 +294,9 @@ export default function CourseLearningHubPage({
       </header>
 
       {/* Main Learning Hub Grid */}
-      <div className="flex flex-1 flex-col lg:flex-row">
+      <div className="flex flex-1 min-w-0 flex-col lg:flex-row overflow-x-hidden">
         {/* LEFT COLUMN: In-App Video Viewport & Udemy Bottom Sections */}
-        <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8 space-y-6">
+        <div className="flex flex-1 min-w-0 flex-col p-3 sm:p-5 lg:p-6 space-y-5">
           {/* IN-APP VIDEO PLAYER */}
           {activeVideo ? (
             <div className="space-y-3">
@@ -311,8 +312,8 @@ export default function CourseLearningHubPage({
 
               {/* Video Title Bar & Completion Toggle */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-                <div>
-                  <h2 className="text-sm sm:text-base font-bold text-slate-900">{activeVideo.title}</h2>
+                <div className="min-w-0">
+                  <h2 className="text-sm sm:text-base font-bold text-slate-900 truncate">{activeVideo.title}</h2>
                   <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
                     <span>Duration: {activeVideo.durationFormatted}</span>
                     <span>•</span>
@@ -322,7 +323,7 @@ export default function CourseLearningHubPage({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   {completedVideoIds.includes(activeVideo.id) ? (
                     <span className="flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-700">
                       <CheckCircle2 className="h-4 w-4" /> Lesson Completed
@@ -349,9 +350,10 @@ export default function CourseLearningHubPage({
           {/* UDEMY-STYLE INTERACTIVE TABS & SECTIONS UNDER VIDEO       */}
           {/* ======================================================== */}
           <div className="rounded-[24px] border border-slate-200 bg-white shadow-xs overflow-hidden">
-            {/* Udemy Tabs Strip */}
+            {/* Udemy Tabs Strip (Curriculum is first on mobile, hidden on desktop since desktop has right rail) */}
             <div className="flex items-center gap-1 border-b border-slate-200 px-4 sm:px-6 overflow-x-auto bg-slate-50/50">
               {[
+                { id: "curriculum", label: "Curriculum & Lessons", icon: FolderTree, mobileOnly: true },
                 { id: "overview", label: "Overview", icon: BookOpen },
                 { id: "qa", label: "Q&A", icon: MessageSquare },
                 { id: "notes", label: "Notes", icon: FileText },
@@ -367,6 +369,8 @@ export default function CourseLearningHubPage({
                     type="button"
                     onClick={() => setActiveTab(tab.id as TabType)}
                     className={`flex items-center gap-2 border-b-2 px-4 py-3.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      tab.mobileOnly ? "lg:hidden " : ""
+                    }${
                       isActive
                         ? "border-[#2563EB] text-[#2563EB]"
                         : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
@@ -381,8 +385,180 @@ export default function CourseLearningHubPage({
 
             {/* TAB CONTENTS */}
             <div className="p-5 sm:p-8">
+              {/* TAB 0: CURRICULUM & VIDEO LESSONS (Mobile only, shown directly below video) */}
+              {activeTab === "curriculum" && (
+                <div className="lg:hidden space-y-6 max-w-4xl">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                        Course Curriculum &amp; Video Lessons
+                      </h3>
+                      <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        {allSections.length} Sections · {allVideos.length} Video Lessons · {totalItems} Milestones
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-left sm:text-right">
+                        <div className="text-xs font-bold text-[#2563EB]">{overallPercent}% Completed</div>
+                        <div className="text-[10px] text-slate-400">{completedCount}/{totalItems} Done</div>
+                      </div>
+                      {isCourseComplete && (
+                        <button
+                          type="button"
+                          onClick={() => setShowCertModal(true)}
+                          className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs cursor-pointer"
+                        >
+                          <Award className="h-4 w-4" /> Certificate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+
+                  {/* Sections & Video Lessons List */}
+                  <div className="space-y-4">
+                    {allSections.map((sec, secIdx) => (
+                      <div
+                        key={sec.id}
+                        className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs"
+                      >
+                        {/* Section Header Accordion */}
+                        <div className="flex items-center justify-between bg-slate-50/80 p-3.5 border-b border-slate-100">
+                          <div className="flex items-center gap-2.5">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#2563EB] text-[11px] font-bold text-white">
+                              {secIdx + 1}
+                            </span>
+                            <span className="text-xs sm:text-sm font-bold text-slate-900">
+                              {sec.title}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-slate-400 font-medium">
+                            {sec.subsections ? sec.subsections.reduce((acc: number, s: SubSection) => acc + s.videos.length, 0) : (sec.directVideos?.length || 0)} Lessons
+                          </span>
+                        </div>
+
+                        {/* Subsections & Videos */}
+                        {sec.subsections && sec.subsections.length > 0 && (
+                          <div className="divide-y divide-slate-100">
+                            {sec.subsections.map((sub: SubSection) => (
+                              <div key={sub.id} className="p-3.5 space-y-2">
+                                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                  {sub.title}
+                                </div>
+
+                                <div className="space-y-1.5 pl-2 sm:pl-3">
+                                  {sub.videos.map((vid: VideoItem) => {
+                                    const isSelected = activeVideo?.id === vid.id;
+                                    const isDone = completedVideoIds.includes(vid.id);
+
+                                    return (
+                                      <button
+                                        key={vid.id}
+                                        type="button"
+                                        onClick={() => {
+                                          handleSelectVideo(vid, sec.id);
+                                          window.scrollTo({ top: 0, behavior: "smooth" });
+                                        }}
+                                        className={`flex w-full items-center justify-between gap-2 rounded-xl p-3 text-left text-xs sm:text-sm transition-all cursor-pointer ${
+                                          isSelected
+                                            ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200"
+                                            : "text-slate-700 hover:bg-slate-50 border border-transparent"
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                          {isDone ? (
+                                            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                                          ) : (
+                                            <PlayCircle
+                                              className={`h-4 w-4 shrink-0 ${
+                                                isSelected ? "text-[#2563EB]" : "text-slate-400"
+                                              }`}
+                                            />
+                                          )}
+                                          <span className="truncate">{vid.title}</span>
+                                        </div>
+                                        <span className="text-[11px] text-slate-400 shrink-0 font-mono">
+                                          {vid.durationFormatted}
+                                        </span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+
+                        {/* Direct Videos */}
+                        {sec.directVideos && sec.directVideos.length > 0 && (
+                          <div className="p-3.5 space-y-1.5">
+                            {sec.directVideos.map((vid: VideoItem) => {
+                              const isSelected = activeVideo?.id === vid.id;
+
+                              const isDone = completedVideoIds.includes(vid.id);
+
+                              return (
+                                <button
+                                  key={vid.id}
+                                  type="button"
+                                  onClick={() => {
+                                    handleSelectVideo(vid, sec.id);
+                                    window.scrollTo({ top: 0, behavior: "smooth" });
+                                  }}
+                                  className={`flex w-full items-center justify-between gap-2 rounded-xl p-3 text-left text-xs sm:text-sm transition-all cursor-pointer ${
+                                    isSelected
+                                      ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200"
+                                      : "text-slate-700 hover:bg-slate-50 border border-transparent"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    {isDone ? (
+                                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                                    ) : (
+                                      <PlayCircle
+                                        className={`h-4 w-4 shrink-0 ${
+                                          isSelected ? "text-[#2563EB]" : "text-slate-400"
+                                        }`}
+                                      />
+                                    )}
+                                    <span className="truncate">{vid.title}</span>
+                                  </div>
+                                  <span className="text-[11px] text-slate-400 shrink-0 font-mono">
+                                    {vid.durationFormatted}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Section Assignment Footer */}
+                        <div className="border-t border-slate-100 p-3 bg-slate-50/60 flex items-center justify-between text-xs">
+                          <span className="font-semibold text-emerald-800 flex items-center gap-1.5">
+                            <ClipboardCheck className="h-4 w-4" />
+                            {completedAssignmentIds.includes(sec.assignment.id)
+                              ? "Assignment Passed ✓"
+                              : "Section Assignment"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setActiveAssignmentSection(sec)}
+                            className="font-bold text-[#2563EB] hover:underline cursor-pointer"
+                          >
+                            {completedAssignmentIds.includes(sec.assignment.id) ? "View Solution" : "Open Assignment →"}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* TAB 1: OVERVIEW (Full Udemy Screenshot Layout) */}
               {activeTab === "overview" && (
+
                 <div className="space-y-8 max-w-4xl">
                   {/* Course Header & Rating Meta */}
                   <div className="space-y-3">
@@ -942,7 +1118,9 @@ export default function CourseLearningHubPage({
         </div>
 
         {/* RIGHT COLUMN: Sequential Curriculum Rail & Certificate Unlock */}
-        <aside className="w-full shrink-0 border-t border-slate-200 bg-white p-4 sm:p-6 lg:w-[420px] lg:border-t-0 lg:border-l space-y-6">
+        <aside className="hidden lg:block w-full shrink-0 border-t border-slate-200 bg-white p-4 sm:p-5 lg:w-[340px] xl:w-[380px] lg:border-t-0 lg:border-l space-y-6">
+
+
           <div>
             <h3 className="text-sm font-bold text-slate-900">Curriculum &amp; Video Lessons</h3>
             <p className="text-xs text-slate-500 font-medium">
