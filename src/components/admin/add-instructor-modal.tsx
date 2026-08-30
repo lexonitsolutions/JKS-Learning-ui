@@ -45,8 +45,9 @@ export function AddInstructorModal({
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
 
-    const newInst: AdminInstructor = {
+    const newInst: AdminInstructor & { email?: string } = {
       name: name.trim(),
+      email: email.trim().toLowerCase(),
       initials: getInitials(name),
       role: role.trim() || `${track} Specialist`,
       assignedCourses: Number(assignedCourses) || 1,
@@ -56,7 +57,7 @@ export function AddInstructorModal({
 
     setIsSuccess(true);
     setTimeout(() => {
-      onSave(newInst);
+      onSave(newInst as AdminInstructor);
       setIsSuccess(false);
       setName("");
       setEmail("");

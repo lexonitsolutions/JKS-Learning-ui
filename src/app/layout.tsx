@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
 import { ChunkErrorHandler } from "@/components/common/chunk-error-handler";
+import { PageTransitionProvider } from "@/components/common/page-transition-provider";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -54,9 +55,12 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-bg-light text-text-heading">
         <ChunkErrorHandler />
-        {children}
+        <PageTransitionProvider>
+          {children}
+        </PageTransitionProvider>
       </body>
     </html>
   );
 }
+
 

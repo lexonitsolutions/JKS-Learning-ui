@@ -1,16 +1,27 @@
 import { useSyncExternalStore } from "react";
 
-// SSR-safe external-store subscription for a media query — avoids the
-// "setState in effect" double-render pattern for something that's really
-// just reading external (browser) state.
 export function useMediaQuery(query: string): boolean {
   return useSyncExternalStore(
     (callback) => {
-      const mql = window.matchMedia(query);
-      mql.addEventListener("change", callback);
-      return () => mql.removeEventListener("change", callback);
+      if (typeof window === "undefined" || !window.matchMedia) {
+        return () => {};
+      }
+      try {
+        const mql = window.matchMedia(query);
+        mql.addEventListener("change", callback);
+        return () => mql.removeEventListener("change", callback);
+      } catch {
+        return () => {};
+      }
     },
-    () => window.matchMedia(query).matches,
+    () => {
+      if (typeof window === "undefined" || !window.matchMedia) return false;
+      try {
+        return window.matchMedia(query).matches;
+      } catch {
+        return false;
+      }
+    },
     () => false
   );
 }

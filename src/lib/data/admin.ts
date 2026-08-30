@@ -43,6 +43,7 @@ export const ADMIN_COURSES: AdminCourseRow[] = [
 export interface AdminInstructor {
   initials: string;
   name: string;
+  email?: string;
   role: string;
   assignedCourses: number;
   students: number;
@@ -50,10 +51,10 @@ export interface AdminInstructor {
 }
 
 export const ADMIN_INSTRUCTORS: AdminInstructor[] = [
-  { initials: "RK", name: "Rohit Kapoor", role: "Lead Trainer, Java Full Stack", assignedCourses: 2, students: 3520, status: "Active" },
-  { initials: "MS", name: "Meera Subramaniam", role: "Lead Trainer, SAP", assignedCourses: 2, students: 1500, status: "Active" },
-  { initials: "DP", name: "Dev Patil", role: "Lead Trainer, Frontend", assignedCourses: 1, students: 3020, status: "Active" },
-  { initials: "AF", name: "Aisha Farooqui", role: "AI Interview Design Lead", assignedCourses: 0, students: 0, status: "Active" },
+  { initials: "RK", name: "Rohit Kapoor", email: "rohit.kapoor@jkslearning.com", role: "Lead Trainer, Java Full Stack", assignedCourses: 2, students: 3520, status: "Active" },
+  { initials: "MS", name: "Meera Subramaniam", email: "meera.subramaniam@jkslearning.com", role: "Lead Trainer, SAP", assignedCourses: 2, students: 1500, status: "Active" },
+  { initials: "DP", name: "Dev Patil", email: "dev.patil@jkslearning.com", role: "Lead Trainer, Frontend", assignedCourses: 1, students: 3020, status: "Active" },
+  { initials: "AF", name: "Aisha Farooqui", email: "aisha.farooqui@jkslearning.com", role: "AI Interview Design Lead", assignedCourses: 0, students: 0, status: "Active" },
 ];
 
 export interface AdminAssessmentRow {

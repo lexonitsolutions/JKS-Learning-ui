@@ -1,4 +1,4 @@
-export type MockRole = "student" | "admin";
+export type MockRole = "student" | "admin" | "instructor";
 
 export interface MockUser {
   email: string;
@@ -27,4 +27,12 @@ export const MOCK_USERS: MockUser[] = [
     initials: "AD",
     role: "admin",
   },
+  {
+    email: "instructor@jkslearning.dev",
+    password: "instructor123",
+    name: "Dr. Rohit Kapoor",
+    initials: "RK",
+    role: "instructor",
+  },
 ];
+

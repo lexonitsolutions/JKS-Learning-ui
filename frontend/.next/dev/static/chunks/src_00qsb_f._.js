@@ -416,6 +416,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
         if (!name.trim() || !email.trim()) return;
         const newInst = {
             name: name.trim(),
+            email: email.trim().toLowerCase(),
             initials: getInitials(name),
             role: role.trim() || `${track} Specialist`,
             assignedCourses: Number(assignedCourses) || 1,
@@ -465,12 +466,12 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                             className: "h-5 w-5 stroke-[2.2]"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                            lineNumber: 83,
+                                            lineNumber: 84,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 82,
+                                        lineNumber: 83,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -480,7 +481,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                 children: "Add New Instructor & Industry Mentor"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 86,
+                                                lineNumber: 87,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -488,19 +489,19 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                 children: "Onboard expert trainers and assign curriculum tracks"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 89,
+                                                lineNumber: 90,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 85,
+                                        lineNumber: 86,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                lineNumber: 81,
+                                lineNumber: 82,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -511,18 +512,18 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                     className: "h-4 w-4"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                    lineNumber: 99,
+                                    lineNumber: 100,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                lineNumber: 94,
+                                lineNumber: 95,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                        lineNumber: 80,
+                        lineNumber: 81,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -537,7 +538,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                         children: name ? getInitials(name) : "IN"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 107,
+                                        lineNumber: 108,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -548,7 +549,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                 children: name || "Instructor Full Name"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 111,
+                                                lineNumber: 112,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -556,19 +557,19 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                 children: role || "Designation & Track"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 114,
+                                                lineNumber: 115,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 110,
+                                        lineNumber: 111,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                lineNumber: 106,
+                                lineNumber: 107,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -581,7 +582,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                 children: "Full Name *"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 122,
+                                                lineNumber: 123,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -595,18 +596,18 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                     className: "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                    lineNumber: 126,
+                                                    lineNumber: 127,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 125,
+                                                lineNumber: 126,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 121,
+                                        lineNumber: 122,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -616,7 +617,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                 children: "Email Address *"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 138,
+                                                lineNumber: 139,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -630,24 +631,24 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                     className: "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                    lineNumber: 142,
+                                                    lineNumber: 143,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 141,
+                                                lineNumber: 142,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 137,
+                                        lineNumber: 138,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                lineNumber: 120,
+                                lineNumber: 121,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -660,7 +661,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                 children: "Track / Specialization"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 156,
+                                                lineNumber: 157,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -676,7 +677,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                         children: "Full Stack"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                        lineNumber: 167,
+                                                        lineNumber: 168,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -684,7 +685,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                         children: "Frontend"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                        lineNumber: 168,
+                                                        lineNumber: 169,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -692,7 +693,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                         children: "SAP"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                        lineNumber: 169,
+                                                        lineNumber: 170,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -700,7 +701,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                         children: "Cloud & DevOps"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                        lineNumber: 170,
+                                                        lineNumber: 171,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -708,19 +709,19 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                         children: "AI & Data"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                        lineNumber: 171,
+                                                        lineNumber: 172,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 159,
+                                                lineNumber: 160,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 155,
+                                        lineNumber: 156,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -730,7 +731,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                 children: "Assigned Courses"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 176,
+                                                lineNumber: 177,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -742,19 +743,19 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                 className: "mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB]"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                lineNumber: 179,
+                                                lineNumber: 180,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 175,
+                                        lineNumber: 176,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                lineNumber: 154,
+                                lineNumber: 155,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -764,7 +765,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                         children: "Designation / Role Title"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 191,
+                                        lineNumber: 192,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -775,13 +776,13 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                         className: "mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 194,
+                                        lineNumber: 195,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                lineNumber: 190,
+                                lineNumber: 191,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -791,7 +792,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                         children: "Bio & Industry Background (Optional)"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 204,
+                                        lineNumber: 205,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -802,13 +803,13 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                         className: "mt-1.5 w-full rounded-xl border border-slate-200 bg-white p-3 text-xs font-medium text-slate-800 outline-none focus:border-[#2563EB]"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 207,
+                                        lineNumber: 208,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                lineNumber: 203,
+                                lineNumber: 204,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -821,7 +822,7 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                         children: "Cancel"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 218,
+                                        lineNumber: 219,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -833,14 +834,14 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                     className: "h-4 w-4 animate-bounce"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                    lineNumber: 232,
+                                                    lineNumber: 233,
                                                     columnNumber: 21
                                                 }, this),
                                                 " Added Successfully!"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                            lineNumber: 231,
+                                            lineNumber: 232,
                                             columnNumber: 19
                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                                             children: [
@@ -848,47 +849,47 @@ function AddInstructorModal({ isOpen, onClose, onSave }) {
                                                     className: "h-4 w-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                                    lineNumber: 236,
+                                                    lineNumber: 237,
                                                     columnNumber: 21
                                                 }, this),
                                                 " Save & Invite Instructor"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                            lineNumber: 235,
+                                            lineNumber: 236,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                        lineNumber: 226,
+                                        lineNumber: 227,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                                lineNumber: 217,
+                                lineNumber: 218,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                        lineNumber: 104,
+                        lineNumber: 105,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-                lineNumber: 73,
+                lineNumber: 74,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-            lineNumber: 72,
+            lineNumber: 73,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/admin/add-instructor-modal.tsx",
-        lineNumber: 71,
+        lineNumber: 72,
         columnNumber: 5
     }, this);
 }
@@ -1033,6 +1034,48 @@ const ADMIN_NAV = [
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$settings$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Settings$3e$__["Settings"]
     }
 ];
+const INSTRUCTOR_NAV = [
+    {
+        href: "/instructor",
+        label: "Overview",
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$layout$2d$dashboard$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__LayoutDashboard$3e$__["LayoutDashboard"]
+    },
+    {
+        href: "/instructor/students",
+        label: "My Students",
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$users$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Users$3e$__["Users"]
+    },
+    {
+        href: "/instructor/courses",
+        label: "My Courses",
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$book$2d$open$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BookOpen$3e$__["BookOpen"]
+    },
+    {
+        href: "/instructor/courses/new",
+        label: "Upload Course",
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$book$2d$open$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BookOpen$3e$__["BookOpen"]
+    },
+    {
+        href: "/instructor/assessments",
+        label: "Assessments & Grading",
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$clipboard$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ClipboardCheck$3e$__["ClipboardCheck"]
+    },
+    {
+        href: "/instructor/analytics",
+        label: "Analytics",
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chart$2d$column$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BarChart3$3e$__["BarChart3"]
+    },
+    {
+        href: "/instructor/profile",
+        label: "Profile",
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$user$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__User$3e$__["User"]
+    },
+    {
+        href: "/instructor/settings",
+        label: "Settings",
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$settings$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Settings$3e$__["Settings"]
+    }
+];
 // Explore Dropdown Items (4 dedicated sections)
 const EXPLORE_SECTIONS = [
     {
@@ -1056,7 +1099,7 @@ const EXPLORE_SECTIONS = [
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$code$2d$xml$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Code2$3e$__["Code2"]
     }
 ];
-function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here's what's happening with your platform today.", userInitials = "JD", badgeNotification = true }) {
+function DashboardTopbar({ title = "Welcome back 👋", subtitle = "Here's what's happening with your platform today.", userInitials, badgeNotification = true }) {
     _s();
     const pathname = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"])();
     const [mobileMenuOpen, setMobileMenuOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
@@ -1064,11 +1107,12 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
     const exploreRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const session = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$use$2d$mock$2d$auth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMockSession"])();
     const isAdmin = pathname.startsWith("/admin");
-    const navItems = isAdmin ? ADMIN_NAV : STUDENT_NAV;
-    const rootHref = isAdmin ? "/admin" : "/dashboard";
-    const resolvedInitials = isAdmin ? "AD" : session?.initials ?? userInitials ?? "JD";
-    const userName = isAdmin ? session?.name && session.name !== "John Doe" ? session.name : "Ava Desai" : session?.name ?? "Jordan Dsouza";
-    const userEmail = isAdmin ? session?.email && session.email !== "student@jkslearning.com" ? session.email : "admin@jkslearning.com" : session?.email ?? "student@jkslearning.com";
+    const isInstructor = pathname.startsWith("/instructor");
+    const navItems = isAdmin ? ADMIN_NAV : isInstructor ? INSTRUCTOR_NAV : STUDENT_NAV;
+    const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
+    const resolvedInitials = isAdmin ? "AD" : isInstructor ? session?.initials ?? userInitials ?? "RK" : session?.initials ?? userInitials ?? "JD";
+    const userName = isAdmin ? session?.name && session.name !== "John Doe" ? session.name : "Ava Desai" : isInstructor ? session?.name ?? "Dr. Rohit Kapoor" : session?.name ?? "Jordan Dsouza";
+    const userEmail = isAdmin ? session?.email && session.email !== "student@jkslearning.com" ? session.email : "admin@jkslearning.com" : isInstructor ? session?.email ?? "instructor@jkslearning.dev" : session?.email ?? "student@jkslearning.com";
     // Close explore dropdown on outside click
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "DashboardTopbar.useEffect": ()=>{
@@ -1132,12 +1176,12 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                     className: "h-4 w-4 sm:h-5 sm:w-5 stroke-[2]"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                    lineNumber: 165,
+                                    lineNumber: 188,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                lineNumber: 159,
+                                lineNumber: 182,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1148,7 +1192,7 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                         children: title
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                        lineNumber: 169,
+                                        lineNumber: 192,
                                         columnNumber: 13
                                     }, this),
                                     subtitle && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1156,19 +1200,19 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                         children: subtitle
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                        lineNumber: 173,
+                                        lineNumber: 196,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                lineNumber: 168,
+                                lineNumber: 191,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/topbar.tsx",
-                        lineNumber: 157,
+                        lineNumber: 180,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1187,7 +1231,7 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                                 className: "h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                lineNumber: 192,
+                                                lineNumber: 215,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1195,26 +1239,26 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                                 children: "Explore"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                lineNumber: 193,
+                                                lineNumber: 216,
                                                 columnNumber: 15
                                             }, this),
                                             exploreOpen ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$up$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronUp$3e$__["ChevronUp"], {
                                                 className: "h-3.5 w-3.5 hidden sm:block"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                lineNumber: 195,
+                                                lineNumber: 218,
                                                 columnNumber: 17
                                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$down$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronDown$3e$__["ChevronDown"], {
                                                 className: "h-3.5 w-3.5 text-slate-400 hidden sm:block"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                lineNumber: 197,
+                                                lineNumber: 220,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                        lineNumber: 183,
+                                        lineNumber: 206,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -1254,47 +1298,47 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                                                     className: "h-4 w-4 stroke-[2]"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                                    lineNumber: 222,
+                                                                    lineNumber: 245,
                                                                     columnNumber: 29
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                                lineNumber: 221,
+                                                                lineNumber: 244,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 children: item.label
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                                lineNumber: 224,
+                                                                lineNumber: 247,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, item.label, true, {
                                                         fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                        lineNumber: 215,
+                                                        lineNumber: 238,
                                                         columnNumber: 25
                                                     }, this);
                                                 })
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                lineNumber: 211,
+                                                lineNumber: 234,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                            lineNumber: 204,
+                                            lineNumber: 227,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                        lineNumber: 202,
+                                        lineNumber: 225,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                lineNumber: 182,
+                                lineNumber: 205,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1306,20 +1350,20 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                         className: "h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2]"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                        lineNumber: 240,
+                                        lineNumber: 263,
                                         columnNumber: 13
                                     }, this),
                                     badgeNotification && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "absolute top-1.5 right-2 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                        lineNumber: 242,
+                                        lineNumber: 265,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                lineNumber: 235,
+                                lineNumber: 258,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1331,32 +1375,32 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                         children: resolvedInitials
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                        lineNumber: 251,
+                                        lineNumber: 274,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$down$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronDown$3e$__["ChevronDown"], {
                                         className: "h-3.5 w-3.5 text-slate-400 hidden sm:block"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                        lineNumber: 254,
+                                        lineNumber: 277,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                lineNumber: 247,
+                                lineNumber: 270,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/topbar.tsx",
-                        lineNumber: 180,
+                        lineNumber: 203,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                lineNumber: 156,
+                lineNumber: 179,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -1381,7 +1425,7 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                             "aria-hidden": true
                         }, void 0, false, {
                             fileName: "[project]/src/components/dashboard/topbar.tsx",
-                            lineNumber: 264,
+                            lineNumber: 287,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
@@ -1415,13 +1459,13 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                                     children: "Learning"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                    lineNumber: 289,
+                                                    lineNumber: 312,
                                                     columnNumber: 23
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                            lineNumber: 284,
+                                            lineNumber: 307,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1433,18 +1477,18 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                                 className: "h-5 w-5"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                lineNumber: 297,
+                                                lineNumber: 320,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                            lineNumber: 291,
+                                            lineNumber: 314,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                    lineNumber: 283,
+                                    lineNumber: 306,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
@@ -1461,26 +1505,26 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                                     className: `h-4 w-4 shrink-0 transition-colors ${active ? "text-[#2563EB] stroke-[2.2]" : "text-slate-400 group-hover:text-slate-600"}`
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                    lineNumber: 319,
+                                                    lineNumber: 342,
                                                     columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     children: item.label
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                    lineNumber: 326,
+                                                    lineNumber: 349,
                                                     columnNumber: 23
                                                 }, this)
                                             ]
                                         }, item.href, true, {
                                             fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                            lineNumber: 309,
+                                            lineNumber: 332,
                                             columnNumber: 21
                                         }, this);
                                     })
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                    lineNumber: 302,
+                                    lineNumber: 325,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1494,7 +1538,7 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                                     children: resolvedInitials
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                    lineNumber: 335,
+                                                    lineNumber: 358,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1505,7 +1549,7 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                                             children: userName
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                            lineNumber: 339,
+                                                            lineNumber: 362,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1513,19 +1557,19 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                                             children: userEmail
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                            lineNumber: 340,
+                                                            lineNumber: 363,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                    lineNumber: 338,
+                                                    lineNumber: 361,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                            lineNumber: 334,
+                                            lineNumber: 357,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1537,49 +1581,49 @@ function DashboardTopbar({ title = "Welcome back, Jordan 👋", subtitle = "Here
                                                     className: "h-3.5 w-3.5"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                    lineNumber: 348,
+                                                    lineNumber: 371,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     children: "Log out"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                                    lineNumber: 349,
+                                                    lineNumber: 372,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                            lineNumber: 343,
+                                            lineNumber: 366,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                                    lineNumber: 333,
+                                    lineNumber: 356,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/dashboard/topbar.tsx",
-                            lineNumber: 275,
+                            lineNumber: 298,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/dashboard/topbar.tsx",
-                    lineNumber: 262,
+                    lineNumber: 285,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/dashboard/topbar.tsx",
-                lineNumber: 260,
+                lineNumber: 283,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/dashboard/topbar.tsx",
-        lineNumber: 155,
+        lineNumber: 178,
         columnNumber: 5
     }, this);
 }
@@ -1873,6 +1917,7 @@ const ADMIN_INSTRUCTORS = [
     {
         initials: "RK",
         name: "Rohit Kapoor",
+        email: "rohit.kapoor@jkslearning.com",
         role: "Lead Trainer, Java Full Stack",
         assignedCourses: 2,
         students: 3520,
@@ -1881,6 +1926,7 @@ const ADMIN_INSTRUCTORS = [
     {
         initials: "MS",
         name: "Meera Subramaniam",
+        email: "meera.subramaniam@jkslearning.com",
         role: "Lead Trainer, SAP",
         assignedCourses: 2,
         students: 1500,
@@ -1889,6 +1935,7 @@ const ADMIN_INSTRUCTORS = [
     {
         initials: "DP",
         name: "Dev Patil",
+        email: "dev.patil@jkslearning.com",
         role: "Lead Trainer, Frontend",
         assignedCourses: 1,
         students: 3020,
@@ -1897,6 +1944,7 @@ const ADMIN_INSTRUCTORS = [
     {
         initials: "AF",
         name: "Aisha Farooqui",
+        email: "aisha.farooqui@jkslearning.com",
         role: "AI Interview Design Lead",
         assignedCourses: 0,
         students: 0,
@@ -2274,14 +2322,32 @@ function useMediaQuery(query) {
     _s();
     return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useSyncExternalStore"])({
         "useMediaQuery.useSyncExternalStore": (callback)=>{
-            const mql = window.matchMedia(query);
-            mql.addEventListener("change", callback);
-            return ({
-                "useMediaQuery.useSyncExternalStore": ()=>mql.removeEventListener("change", callback)
-            })["useMediaQuery.useSyncExternalStore"];
+            if (("TURBOPACK compile-time value", "object") === "undefined" || !window.matchMedia) {
+                return ({
+                    "useMediaQuery.useSyncExternalStore": ()=>{}
+                })["useMediaQuery.useSyncExternalStore"];
+            }
+            try {
+                const mql = window.matchMedia(query);
+                mql.addEventListener("change", callback);
+                return ({
+                    "useMediaQuery.useSyncExternalStore": ()=>mql.removeEventListener("change", callback)
+                })["useMediaQuery.useSyncExternalStore"];
+            } catch  {
+                return ({
+                    "useMediaQuery.useSyncExternalStore": ()=>{}
+                })["useMediaQuery.useSyncExternalStore"];
+            }
         }
     }["useMediaQuery.useSyncExternalStore"], {
-        "useMediaQuery.useSyncExternalStore": ()=>window.matchMedia(query).matches
+        "useMediaQuery.useSyncExternalStore": ()=>{
+            if (("TURBOPACK compile-time value", "object") === "undefined" || !window.matchMedia) return false;
+            try {
+                return window.matchMedia(query).matches;
+            } catch  {
+                return false;
+            }
+        }
     }["useMediaQuery.useSyncExternalStore"], {
         "useMediaQuery.useSyncExternalStore": ()=>false
     }["useMediaQuery.useSyncExternalStore"]);

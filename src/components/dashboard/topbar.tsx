@@ -62,6 +62,17 @@ const ADMIN_NAV: NavItem[] = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
+const INSTRUCTOR_NAV: NavItem[] = [
+  { href: "/instructor", label: "Overview", icon: LayoutDashboard },
+  { href: "/instructor/students", label: "My Students", icon: Users },
+  { href: "/instructor/courses", label: "My Courses", icon: BookOpen },
+  { href: "/instructor/courses/new", label: "Upload Course", icon: BookOpen },
+  { href: "/instructor/assessments", label: "Assessments & Grading", icon: ClipboardCheck },
+  { href: "/instructor/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/instructor/profile", label: "Profile", icon: User },
+  { href: "/instructor/settings", label: "Settings", icon: Settings },
+];
+
 // Explore Dropdown Items (4 dedicated sections)
 const EXPLORE_SECTIONS = [
   {
@@ -87,9 +98,9 @@ const EXPLORE_SECTIONS = [
 ];
 
 export function DashboardTopbar({
-  title = "Welcome back, Jordan 👋",
+  title = "Welcome back 👋",
   subtitle = "Here's what's happening with your platform today.",
-  userInitials = "JD",
+  userInitials,
   badgeNotification = true,
 }: {
   title?: string;
@@ -104,18 +115,30 @@ export function DashboardTopbar({
   const session = useMockSession();
 
   const isAdmin = pathname.startsWith("/admin");
-  const navItems = isAdmin ? ADMIN_NAV : STUDENT_NAV;
-  const rootHref = isAdmin ? "/admin" : "/dashboard";
+  const isInstructor = pathname.startsWith("/instructor");
+  const navItems = isAdmin ? ADMIN_NAV : isInstructor ? INSTRUCTOR_NAV : STUDENT_NAV;
+  const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
 
-  const resolvedInitials = isAdmin ? "AD" : (session?.initials ?? userInitials ?? "JD");
+  const resolvedInitials = isAdmin
+    ? "AD"
+    : isInstructor
+    ? (session?.initials ?? userInitials ?? "RK")
+    : (session?.initials ?? userInitials ?? "JD");
+
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" ? session.name : "Ava Desai")
+    : isInstructor
+    ? (session?.name ?? "Dr. Rohit Kapoor")
     : (session?.name ?? "Jordan Dsouza");
+
   const userEmail = isAdmin
     ? (session?.email && session.email !== "student@jkslearning.com"
         ? session.email
         : "admin@jkslearning.com")
+    : isInstructor
+    ? (session?.email ?? "instructor@jkslearning.dev")
     : (session?.email ?? "student@jkslearning.com");
+
 
   // Close explore dropdown on outside click
   useEffect(() => {

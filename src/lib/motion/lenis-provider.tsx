@@ -36,47 +36,67 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     });
     lenisRef.current = lenis;
 
-    lenis.on("scroll", ScrollTrigger.update);
+    lenis.on("scroll", () => {
+      try {
+        ScrollTrigger.update();
+      } catch {
+        // ignore
+      }
+    });
 
-    // ScrollTrigger.refresh() adds/removes pin spacers (About hero pins for
-    // 3–4 viewport heights), changing document height instantly — but
-    // Lenis's own ResizeObserver is debounced 250ms. Until it fires, Lenis
-    // clamps scrolling to the stale limit, which reads as the page hitting
-    // an invisible wall. Recompute the limit synchronously after every
-    // refresh instead.
-    const onStRefresh = () => lenis.resize();
+    const onStRefresh = () => {
+      try {
+        lenis.resize();
+      } catch {
+        // ignore
+      }
+    };
     ScrollTrigger.addEventListener("refresh", onStRefresh);
 
-    const onTick = (time: number) => lenis.raf(time * 1000);
+    const onTick = (time: number) => {
+      try {
+        lenis.raf(time * 1000);
+      } catch {
+        // ignore
+      }
+    };
     gsap.ticker.add(onTick);
     gsap.ticker.lagSmoothing(0);
 
     return () => {
-      ScrollTrigger.removeEventListener("refresh", onStRefresh);
-      gsap.ticker.remove(onTick);
-      lenis.destroy();
+      try {
+        ScrollTrigger.removeEventListener("refresh", onStRefresh);
+        gsap.ticker.remove(onTick);
+        lenis.destroy();
+      } catch {
+        // ignore
+      }
       lenisRef.current = null;
     };
   }, [reducedMotion]);
 
-  // After every client-side navigation (including programmatic pushes and
-  // back/forward, which stopInertiaOnNavigate's click listener can't see):
-  // hard-sync Lenis to wherever the browser actually put the window, then
-  // refresh ScrollTrigger once the new page has painted so pinned-section
-  // coordinates match the new layout.
   useEffect(() => {
     const lenis = lenisRef.current;
     if (!lenis) return;
 
-    lenis.scrollTo(window.scrollY, { immediate: true, force: true });
+    try {
+      lenis.scrollTo(window.scrollY, { immediate: true, force: true });
+    } catch {
+      // ignore
+    }
 
     const raf = requestAnimationFrame(() => {
-      const { ScrollTrigger } = getGsap();
-      ScrollTrigger.refresh();
-      lenis.resize();
+      try {
+        const { ScrollTrigger } = getGsap();
+        ScrollTrigger.refresh();
+        lenis.resize();
+      } catch {
+        // ignore
+      }
     });
     return () => cancelAnimationFrame(raf);
   }, [pathname]);
+
 
   return <>{children}</>;
 }

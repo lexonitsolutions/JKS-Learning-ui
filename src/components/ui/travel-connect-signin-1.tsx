@@ -386,7 +386,7 @@ function SubmitButton({
 // can still replay a stale prefetch captured under a different auth state.
 // A full navigation always re-evaluates proxy.ts fresh.
 function redirectAfterLogin(role: MockRole, from: string | null) {
-  const fallback = role === "admin" ? "/admin" : "/dashboard";
+  const fallback = role === "admin" ? "/admin" : role === "instructor" ? "/instructor" : "/dashboard";
   window.location.assign(from ?? fallback);
 }
 
@@ -433,22 +433,30 @@ function LoginFields() {
         <p className="mb-2 text-center text-xs font-semibold tracking-wide text-gray-400 uppercase">
           Testing — instant demo access
         </p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
             onClick={() => quickLogin("student")}
             disabled={quickLoginRole !== null}
-            className="rounded-lg border border-gray-200 bg-gray-50 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-60"
+            className="rounded-lg border border-gray-200 bg-gray-50 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-60"
           >
-            {quickLoginRole === "student" ? "Signing in…" : "Continue as Student"}
+            {quickLoginRole === "student" ? "Signing in…" : "Student"}
+          </button>
+          <button
+            type="button"
+            onClick={() => quickLogin("instructor")}
+            disabled={quickLoginRole !== null}
+            className="rounded-lg border border-purple-200 bg-purple-50 py-2 text-xs font-semibold text-purple-700 transition-colors hover:bg-purple-100 disabled:pointer-events-none disabled:opacity-60"
+          >
+            {quickLoginRole === "instructor" ? "Signing in…" : "Lecturer"}
           </button>
           <button
             type="button"
             onClick={() => quickLogin("admin")}
             disabled={quickLoginRole !== null}
-            className="rounded-lg border border-blue-200 bg-blue-50 py-2.5 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-100 disabled:pointer-events-none disabled:opacity-60"
+            className="rounded-lg border border-blue-200 bg-blue-50 py-2 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100 disabled:pointer-events-none disabled:opacity-60"
           >
-            {quickLoginRole === "admin" ? "Signing in…" : "Continue as Admin"}
+            {quickLoginRole === "admin" ? "Signing in…" : "Admin"}
           </button>
         </div>
       </div>

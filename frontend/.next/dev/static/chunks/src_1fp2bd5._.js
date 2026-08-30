@@ -408,27 +408,45 @@ function LenisProvider({ children }) {
                 anchors: true
             });
             lenisRef.current = lenis;
-            lenis.on("scroll", ScrollTrigger.update);
-            // ScrollTrigger.refresh() adds/removes pin spacers (About hero pins for
-            // 3–4 viewport heights), changing document height instantly — but
-            // Lenis's own ResizeObserver is debounced 250ms. Until it fires, Lenis
-            // clamps scrolling to the stale limit, which reads as the page hitting
-            // an invisible wall. Recompute the limit synchronously after every
-            // refresh instead.
+            lenis.on("scroll", {
+                "LenisProvider.useEffect": ()=>{
+                    try {
+                        ScrollTrigger.update();
+                    } catch  {
+                    // ignore
+                    }
+                }
+            }["LenisProvider.useEffect"]);
             const onStRefresh = {
-                "LenisProvider.useEffect.onStRefresh": ()=>lenis.resize()
+                "LenisProvider.useEffect.onStRefresh": ()=>{
+                    try {
+                        lenis.resize();
+                    } catch  {
+                    // ignore
+                    }
+                }
             }["LenisProvider.useEffect.onStRefresh"];
             ScrollTrigger.addEventListener("refresh", onStRefresh);
             const onTick = {
-                "LenisProvider.useEffect.onTick": (time)=>lenis.raf(time * 1000)
+                "LenisProvider.useEffect.onTick": (time)=>{
+                    try {
+                        lenis.raf(time * 1000);
+                    } catch  {
+                    // ignore
+                    }
+                }
             }["LenisProvider.useEffect.onTick"];
             gsap.ticker.add(onTick);
             gsap.ticker.lagSmoothing(0);
             return ({
                 "LenisProvider.useEffect": ()=>{
-                    ScrollTrigger.removeEventListener("refresh", onStRefresh);
-                    gsap.ticker.remove(onTick);
-                    lenis.destroy();
+                    try {
+                        ScrollTrigger.removeEventListener("refresh", onStRefresh);
+                        gsap.ticker.remove(onTick);
+                        lenis.destroy();
+                    } catch  {
+                    // ignore
+                    }
                     lenisRef.current = null;
                 }
             })["LenisProvider.useEffect"];
@@ -436,24 +454,27 @@ function LenisProvider({ children }) {
     }["LenisProvider.useEffect"], [
         reducedMotion
     ]);
-    // After every client-side navigation (including programmatic pushes and
-    // back/forward, which stopInertiaOnNavigate's click listener can't see):
-    // hard-sync Lenis to wherever the browser actually put the window, then
-    // refresh ScrollTrigger once the new page has painted so pinned-section
-    // coordinates match the new layout.
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "LenisProvider.useEffect": ()=>{
             const lenis = lenisRef.current;
             if (!lenis) return;
-            lenis.scrollTo(window.scrollY, {
-                immediate: true,
-                force: true
-            });
+            try {
+                lenis.scrollTo(window.scrollY, {
+                    immediate: true,
+                    force: true
+                });
+            } catch  {
+            // ignore
+            }
             const raf = requestAnimationFrame({
                 "LenisProvider.useEffect.raf": ()=>{
-                    const { ScrollTrigger } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$motion$2f$gsap$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getGsap"])();
-                    ScrollTrigger.refresh();
-                    lenis.resize();
+                    try {
+                        const { ScrollTrigger } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$motion$2f$gsap$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getGsap"])();
+                        ScrollTrigger.refresh();
+                        lenis.resize();
+                    } catch  {
+                    // ignore
+                    }
                 }
             }["LenisProvider.useEffect.raf"]);
             return ({
@@ -467,7 +488,7 @@ function LenisProvider({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/src/lib/motion/lenis-provider.tsx",
-        lineNumber: 81,
+        lineNumber: 101,
         columnNumber: 10
     }, this);
 }
@@ -498,14 +519,32 @@ function useMediaQuery(query) {
     _s();
     return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useSyncExternalStore"])({
         "useMediaQuery.useSyncExternalStore": (callback)=>{
-            const mql = window.matchMedia(query);
-            mql.addEventListener("change", callback);
-            return ({
-                "useMediaQuery.useSyncExternalStore": ()=>mql.removeEventListener("change", callback)
-            })["useMediaQuery.useSyncExternalStore"];
+            if (("TURBOPACK compile-time value", "object") === "undefined" || !window.matchMedia) {
+                return ({
+                    "useMediaQuery.useSyncExternalStore": ()=>{}
+                })["useMediaQuery.useSyncExternalStore"];
+            }
+            try {
+                const mql = window.matchMedia(query);
+                mql.addEventListener("change", callback);
+                return ({
+                    "useMediaQuery.useSyncExternalStore": ()=>mql.removeEventListener("change", callback)
+                })["useMediaQuery.useSyncExternalStore"];
+            } catch  {
+                return ({
+                    "useMediaQuery.useSyncExternalStore": ()=>{}
+                })["useMediaQuery.useSyncExternalStore"];
+            }
         }
     }["useMediaQuery.useSyncExternalStore"], {
-        "useMediaQuery.useSyncExternalStore": ()=>window.matchMedia(query).matches
+        "useMediaQuery.useSyncExternalStore": ()=>{
+            if (("TURBOPACK compile-time value", "object") === "undefined" || !window.matchMedia) return false;
+            try {
+                return window.matchMedia(query).matches;
+            } catch  {
+                return false;
+            }
+        }
     }["useMediaQuery.useSyncExternalStore"], {
         "useMediaQuery.useSyncExternalStore": ()=>false
     }["useMediaQuery.useSyncExternalStore"]);

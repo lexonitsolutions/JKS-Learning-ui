@@ -48,24 +48,87 @@ export function useMockSession(): MockSession | null {
 
 export type LoginResult = { ok: true; session: MockSession } | { ok: false; error: string };
 
-export function loginWithMockCredentials(email: string, password: string): LoginResult {
-  const user = MOCK_USERS.find(
-    (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password
-  );
-  if (!user) return { ok: false, error: "Invalid email or password." };
+const INSTRUCTORS_STORAGE_KEY = "jks_admin_instructors_v1";
 
-  const session: MockSession = {
-    email: user.email,
-    name: user.name,
-    initials: user.initials,
-    role: user.role,
-  };
-  document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
-  window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
-  return { ok: true, session };
+function getApprovedInstructors(): Array<{ name: string; email: string; initials: string; role: string }> {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(INSTRUCTORS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch {
+    // ignore
+  }
+  return [
+    { name: "Dr. Rohit Kapoor", email: "instructor@jkslearning.dev", initials: "RK", role: "Lead Trainer, Java Full Stack" },
+    { name: "Rohit Kapoor", email: "rohit.kapoor@jkslearning.com", initials: "RK", role: "Lead Trainer, Java Full Stack" },
+    { name: "Meera Subramaniam", email: "meera.subramaniam@jkslearning.com", initials: "MS", role: "Lead Trainer, SAP" },
+    { name: "Dev Patil", email: "dev.patil@jkslearning.com", initials: "DP", role: "Lead Trainer, Frontend" },
+    { name: "Aisha Farooqui", email: "aisha.farooqui@jkslearning.com", initials: "AF", role: "AI Interview Design Lead" },
+  ];
+}
+
+export function loginWithMockCredentials(email: string, password: string): LoginResult {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // First check static MOCK_USERS
+  const staticUser = MOCK_USERS.find(
+    (u) => u.email.toLowerCase() === normalizedEmail && u.password === password
+  );
+
+  if (staticUser) {
+    // If it's an instructor account, double-check that they are in the approved instructors list
+    if (staticUser.role === "instructor") {
+      const approved = getApprovedInstructors();
+      const isApproved = approved.some(
+        (inst) => inst.email?.toLowerCase() === normalizedEmail || staticUser.email === "instructor@jkslearning.dev"
+      );
+      if (!isApproved) {
+        return {
+          ok: false,
+          error: "Access Denied: You have not been registered as an instructor by an Administrator.",
+        };
+      }
+    }
+
+    const session: MockSession = {
+      email: staticUser.email,
+      name: staticUser.name,
+      initials: staticUser.initials,
+      role: staticUser.role,
+    };
+    document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+    window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+    return { ok: true, session };
+  }
+
+  // Check dynamically admin-added instructors in localStorage
+  const dynamicInstructors = getApprovedInstructors();
+  const matchedInstructor = dynamicInstructors.find(
+    (inst) => inst.email?.toLowerCase() === normalizedEmail
+  );
+
+  if (matchedInstructor) {
+    // Dynamic instructors accept default password 'instructor123' or 'admin123' or their password
+    if (password === "instructor123" || password === "admin123" || password.length >= 6) {
+      const session: MockSession = {
+        email: matchedInstructor.email,
+        name: matchedInstructor.name,
+        initials: matchedInstructor.initials || "IN",
+        role: "instructor",
+      };
+      document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+      window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+      return { ok: true, session };
+    }
+  }
+
+  return { ok: false, error: "Invalid email or password." };
 }
 
 export function logoutMockSession() {
   document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0`;
   window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
 }
+

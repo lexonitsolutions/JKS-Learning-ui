@@ -59,15 +59,31 @@ const ADMIN_SEC_NAV: NavItem[] = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
+const INSTRUCTOR_MAIN_NAV: NavItem[] = [
+  { href: "/instructor", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/instructor/students", label: "Students", icon: Users },
+  { href: "/instructor/courses", label: "Courses", icon: BookOpen },
+  { href: "/instructor/assessments", label: "Assessments", icon: ClipboardCheck, badge: "New" },
+  { href: "/instructor/analytics", label: "Analytics", icon: BarChart3 },
+];
+
+
+const INSTRUCTOR_SEC_NAV: NavItem[] = [
+  { href: "/instructor/profile", label: "Profile & Hours", icon: User },
+  { href: "/instructor/settings", label: "Settings", icon: Settings },
+];
+
 const SIDEBAR_STORAGE_KEY = "jks_sidebar_collapsed";
 
-export function DashboardSidebar({ role = "student" }: { role?: "student" | "admin" }) {
+export function DashboardSidebar({ role = "student" }: { role?: "student" | "admin" | "instructor" }) {
   const pathname = usePathname();
   const session = useMockSession();
   const isAdmin = role === "admin";
-  const mainItems = isAdmin ? ADMIN_MAIN_NAV : STUDENT_MAIN_NAV;
-  const secItems = isAdmin ? ADMIN_SEC_NAV : STUDENT_SEC_NAV;
-  const rootHref = isAdmin ? "/admin" : "/dashboard";
+  const isInstructor = role === "instructor";
+  
+  const mainItems = isAdmin ? ADMIN_MAIN_NAV : isInstructor ? INSTRUCTOR_MAIN_NAV : STUDENT_MAIN_NAV;
+  const secItems = isAdmin ? ADMIN_SEC_NAV : isInstructor ? INSTRUCTOR_SEC_NAV : STUDENT_SEC_NAV;
+  const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -99,19 +115,32 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
     window.location.assign("/login");
   };
 
-  const userInitials = isAdmin ? "AD" : (session?.initials ?? "JD");
+  const userInitials = isAdmin
+    ? "AD"
+    : isInstructor
+    ? (session?.initials ?? "RK")
+    : (session?.initials ?? "JD");
+
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" ? session.name : "Ava Desai")
+    : isInstructor
+    ? (session?.name ?? "Dr. Rohit Kapoor")
     : (session?.name ?? "Student");
+
   const userEmail = isAdmin
     ? (session?.email && session.email !== "student@jkslearning.com" ? session.email : "admin@jkslearning.com")
+    : isInstructor
+    ? (session?.email ?? "instructor@jkslearning.dev")
     : (session?.email ?? "student@jkslearning.com");
-  const userRole = isAdmin ? "Administrator" : "Student";
+
+  const userRole = isAdmin ? "Administrator" : isInstructor ? "Faculty / Lecturer" : "Student";
+
 
   const renderNavGroup = (items: NavItem[]) => {
     return items.map((item) => {
-      const isCoursesNav = isAdmin && item.href === "/admin/courses";
-      const isCoursesActive = pathname.startsWith("/admin/courses");
+      const isCoursesNav = (isAdmin && item.href === "/admin/courses") || (isInstructor && item.href === "/instructor/courses");
+      const isCoursesActive = pathname.startsWith(item.href);
+      const coursesBaseHref = isInstructor ? "/instructor/courses" : "/admin/courses";
       const active =
         item.href === pathname ||
         (item.href !== rootHref && pathname.startsWith(item.href));
@@ -122,7 +151,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
             <Link
               href={item.href}
               className={`group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium transition-all duration-200 ${
-                isCoursesActive && pathname === "/admin/courses"
+                isCoursesActive && pathname === coursesBaseHref
                   ? "bg-blue-600 text-white font-semibold shadow-sm shadow-blue-500/25"
                   : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
               }`}
@@ -130,7 +159,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
               <div className="flex items-center gap-3">
                 <item.icon
                   className={`h-4 w-4 shrink-0 transition-colors ${
-                    isCoursesActive && pathname === "/admin/courses"
+                    isCoursesActive && pathname === coursesBaseHref
                       ? "text-white"
                       : "text-slate-400 group-hover:text-slate-700"
                   }`}
@@ -142,9 +171,9 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
             {/* Sub-menu under Courses */}
             <div className="pl-6 pr-1 py-0.5 space-y-1 border-l-2 border-slate-100 ml-4">
               <Link
-                href="/admin/courses"
+                href={coursesBaseHref}
                 className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-colors ${
-                  pathname === "/admin/courses"
+                  pathname === coursesBaseHref
                     ? "bg-blue-50 text-[#2563EB] font-bold"
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 }`}
@@ -154,16 +183,16 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
               </Link>
 
               <Link
-                href="/admin/courses/new"
+                href={`${coursesBaseHref}/new`}
                 className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-colors ${
-                  pathname === "/admin/courses/new"
+                  pathname === `${coursesBaseHref}/new`
                     ? "bg-blue-50 text-[#2563EB] font-bold"
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-                  <span>New Course</span>
+                  <span>Upload / New</span>
                 </div>
                 <span className="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold text-white leading-none">
                   +
@@ -335,8 +364,11 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                   <div className="truncate text-[13px] font-bold text-slate-900 leading-tight">
                     {userName}
                   </div>
-                  <div className="truncate text-[11px] text-slate-400">{userEmail}</div>
+                  <div className="truncate text-[11px] text-slate-400">
+                    {isInstructor ? "Faculty ID: JKS.L0047" : userEmail}
+                  </div>
                 </div>
+
               </div>
               <button
                 type="button"
