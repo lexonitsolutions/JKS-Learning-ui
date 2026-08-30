@@ -22,6 +22,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
+import { JksLogo } from "@/components/common/jks-logo";
+
 
 interface NavItem {
   href: string;
@@ -278,30 +280,19 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
         >
           {!isCollapsed ? (
             <>
-              <Link href={rootHref} className="flex items-center gap-2.5 truncate group">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#2563EB] to-[#60A5FA] text-white font-extrabold text-sm shadow-md shadow-blue-500/25 ring-1 ring-white/30 group-hover:scale-105 transition-transform">
-                  JKS
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[15px] font-bold tracking-tight text-slate-900 leading-tight">
-                    JKS <span className="text-[#2563EB]">Learning</span>
-                  </span>
-                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
-                    {userRole}
-                  </span>
-                </div>
-              </Link>
+              <JksLogo size="sm" href={rootHref} showSubtitle={userRole} />
               <button
                 type="button"
                 onClick={toggleSidebar}
                 aria-label="Collapse sidebar"
                 title="Collapse sidebar"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors shrink-0"
               >
                 <PanelLeftClose className="h-4 w-4 stroke-[2]" />
               </button>
             </>
           ) : (
+
             <div className="relative group flex items-center justify-center">
               <button
                 type="button"

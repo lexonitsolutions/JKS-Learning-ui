@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
+import { JksLogo } from "@/components/common/jks-logo";
 
 const NAV_LINKS = [
   { href: "/courses", label: "Courses" },
@@ -43,9 +44,8 @@ export function SiteHeader() {
       }`}
     >
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-6 lg:px-16">
-        <Link href="/" className="text-h3 font-bold tracking-tight text-text-heading">
-          JKS<span className="text-primary-blue"> Learning</span>
-        </Link>
+        <JksLogo size="md" className="py-1" />
+
 
         <nav className="hidden items-center gap-8 md:flex">
           {NAV_LINKS.map((link) => {

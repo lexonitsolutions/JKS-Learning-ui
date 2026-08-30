@@ -7,11 +7,17 @@ import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { loginWithMockCredentials } from "@/lib/auth/use-mock-auth";
 import { MOCK_USERS, type MockRole } from "@/lib/auth/mock-users";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
+import { JksLogo } from "@/components/common/jks-logo";
+
+
+
+
 
 // Adapted from a 21st.dev "travel-connect-signin-1" submission. Kept as one
 // file at the requested path/name, but with real changes from the source:
@@ -251,8 +257,12 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
       {/* Right side — form */}
       <div className="flex w-full flex-col justify-center bg-white p-8 md:w-1/2 md:p-10">
         <FadeIn reducedMotion={reducedMotion} delay={0} y={20}>
+          <div className="mb-5">
+            <JksLogo size="md" />
+          </div>
           <h1 className="mb-1 text-2xl font-bold text-gray-800 md:text-3xl">{copy.heading}</h1>
           <p className="mb-8 text-gray-500">{copy.subheading}</p>
+
 
           <div className="mb-6">
             <button
