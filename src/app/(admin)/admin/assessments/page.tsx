@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { ClipboardCheck, CheckCircle2, Clock, Plus } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { ADMIN_ASSESSMENTS, type AdminAssessmentRow } from "@/lib/data/admin";
 import { AddAssignmentModal } from "@/components/admin/add-assignment-modal";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
+
 
 export default function AdminAssessmentsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,8 +30,16 @@ export default function AdminAssessmentsPage() {
       />
 
       <div className="flex-1 space-y-5 p-3 sm:p-6 lg:p-8 lg:pt-4">
-        {/* Top Action Bar - Placed at Right Side Corner */}
-        <div className="flex justify-end">
+        {/* Top Action Bar */}
+        <div className="flex flex-wrap items-center justify-end gap-2.5">
+          <Link
+            href="/admin/assessments/questions"
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-[#2563EB] hover:bg-blue-100 transition-all cursor-pointer"
+          >
+            <ClipboardCheck className="h-4 w-4" />
+            <span>Manage Question Bank</span>
+          </Link>
+
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
@@ -39,6 +49,7 @@ export default function AdminAssessmentsPage() {
             <span>New Assignment</span>
           </button>
         </div>
+
 
         {/* Metric Cards */}
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">

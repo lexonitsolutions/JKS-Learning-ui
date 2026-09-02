@@ -35,13 +35,14 @@ const SIZE_MAP = {
         class: "h-14 w-auto"
     }
 };
-function JksLogo({ size = "md", href = "/", className = "", imgClassName = "", showSubtitle, priority = true }) {
+function JksLogo({ size = "md", href = "/", className = "", imgClassName = "", showSubtitle, priority = true, variant = "light" }) {
     const dim = SIZE_MAP[size] || SIZE_MAP.md;
+    const logoSrc = variant === "dark" ? "/images/jks-logo-white.png" : "/images/jks-logo.png";
     const content = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: `inline-flex items-center gap-2.5 select-none ${className}`,
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                src: "/images/jks-logo.png",
+                src: logoSrc,
                 alt: "JKS Learning",
                 width: dim.width,
                 height: dim.height,
@@ -49,7 +50,7 @@ function JksLogo({ size = "md", href = "/", className = "", imgClassName = "", s
                 className: `object-contain transition-transform duration-200 hover:opacity-95 ${dim.class} ${imgClassName}`
             }, void 0, false, {
                 fileName: "[project]/src/components/common/jks-logo.tsx",
-                lineNumber: 35,
+                lineNumber: 38,
                 columnNumber: 7
             }, this),
             showSubtitle && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -57,13 +58,13 @@ function JksLogo({ size = "md", href = "/", className = "", imgClassName = "", s
                 children: showSubtitle
             }, void 0, false, {
                 fileName: "[project]/src/components/common/jks-logo.tsx",
-                lineNumber: 44,
+                lineNumber: 47,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/common/jks-logo.tsx",
-        lineNumber: 34,
+        lineNumber: 37,
         columnNumber: 5
     }, this);
     if (href) {
@@ -73,7 +74,7 @@ function JksLogo({ size = "md", href = "/", className = "", imgClassName = "", s
             children: content
         }, void 0, false, {
             fileName: "[project]/src/components/common/jks-logo.tsx",
-            lineNumber: 53,
+            lineNumber: 57,
             columnNumber: 7
         }, this);
     }

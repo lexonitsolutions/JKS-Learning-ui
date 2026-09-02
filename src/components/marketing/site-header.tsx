@@ -10,6 +10,7 @@ import { JksLogo } from "@/components/common/jks-logo";
 
 const NAV_LINKS = [
   { href: "/courses", label: "Courses" },
+  { href: "/register-course", label: "Enroll Now" },
   { href: "/ai-mock-interview", label: "AI Mock Interview" },
   { href: "/success-stories", label: "Success Stories" },
   { href: "/about", label: "About" },
@@ -47,23 +48,32 @@ export function SiteHeader() {
         <JksLogo size="md" className="py-1" />
 
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-7 md:flex">
           {NAV_LINKS.map((link) => {
             const active = pathname.startsWith(link.href);
+            const isEnroll = link.href === "/register-course";
+
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`group relative text-sm font-medium transition-colors hover:text-text-heading ${
-                  active ? "text-primary-blue" : "text-text-heading/70"
+                className={`group relative text-sm font-semibold transition-colors hover:text-text-heading flex items-center gap-1.5 ${
+                  active
+                    ? "text-primary-blue"
+                    : isEnroll
+                    ? "text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200 hover:bg-blue-100"
+                    : "text-text-heading/70"
                 }`}
               >
+                {isEnroll && <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />}
                 {link.label}
-                <span
-                  className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-primary-blue transition-all duration-300 ease-out ${
-                    active ? "w-full" : "w-0 group-hover:w-full"
-                  }`}
-                />
+                {!isEnroll && (
+                  <span
+                    className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-primary-blue transition-all duration-300 ease-out ${
+                      active ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
+                  />
+                )}
               </Link>
             );
           })}
@@ -77,12 +87,13 @@ export function SiteHeader() {
             Log in
           </Link>
           <Link
-            href="/register"
-            className="group inline-flex items-center gap-2 rounded-xl bg-primary-blue px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary-blue/25 transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-primary-blue/30"
+            href="/register-course"
+            className="group inline-flex items-center gap-2 rounded-xl bg-primary-blue px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-primary-blue/25 transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-primary-blue/30"
           >
-            Get Started
+            Enroll Now
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
           </Link>
+
 
           <button
             type="button"

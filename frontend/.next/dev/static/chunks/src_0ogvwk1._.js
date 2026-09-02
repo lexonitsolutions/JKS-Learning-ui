@@ -228,10 +228,11 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-function AnimatedScoreBar({ label, score }) {
+function AnimatedScoreBar({ label, score, maxScore = 100 }) {
     _s();
     const fillRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const reducedMotion = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$motion$2f$use$2d$reduced$2d$motion$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useReducedMotion"])();
+    const percent = Math.min(100, Math.round(score / maxScore * 100));
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AnimatedScoreBar.useEffect": ()=>{
             if (reducedMotion || !fillRef.current) return;
@@ -241,8 +242,8 @@ function AnimatedScoreBar({ label, score }) {
                     gsap.fromTo(fillRef.current, {
                         width: "0%"
                     }, {
-                        width: `${score}%`,
-                        duration: 1.1,
+                        width: `${percent}%`,
+                        duration: 1.0,
                         ease: "power2.out",
                         scrollTrigger: {
                             trigger: fillRef.current,
@@ -258,55 +259,75 @@ function AnimatedScoreBar({ label, score }) {
         }
     }["AnimatedScoreBar.useEffect"], [
         reducedMotion,
-        score
+        percent
     ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        className: "rounded-xl border border-white/5 bg-white/[0.02] p-3 hover:bg-white/[0.04] transition-colors",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex justify-between text-sm text-white/70",
+                className: "flex items-center justify-between text-xs mb-2",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                        className: "font-semibold text-slate-200",
                         children: label
                     }, void 0, false, {
                         fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-                        lineNumber: 34,
+                        lineNumber: 43,
                         columnNumber: 9
                     }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        children: score
-                    }, void 0, false, {
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-1.5 font-mono",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "font-bold text-cyan-300",
+                                children: score
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
+                                lineNumber: 45,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "text-[10px] text-slate-500",
+                                children: "/ 100"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
+                                lineNumber: 46,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
                         fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-                        lineNumber: 35,
+                        lineNumber: 44,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-                lineNumber: 33,
+                lineNumber: 42,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "mt-1 h-1 rounded-full bg-white/10",
+                className: "relative h-2 w-full rounded-full bg-slate-800/90 overflow-hidden border border-white/5",
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     ref: fillRef,
-                    className: "h-full rounded-full bg-primary-blue",
+                    className: "h-full rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 shadow-xs shadow-cyan-500/30",
                     style: {
-                        width: reducedMotion ? `${score}%` : undefined
+                        width: reducedMotion ? `${percent}%` : undefined
                     }
                 }, void 0, false, {
                     fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-                    lineNumber: 38,
+                    lineNumber: 50,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-                lineNumber: 37,
+                lineNumber: 49,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-        lineNumber: 32,
+        lineNumber: 41,
         columnNumber: 5
     }, this);
 }

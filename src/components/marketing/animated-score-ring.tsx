@@ -10,10 +10,12 @@ export function AnimatedScoreRing({
   score,
   size,
   label,
+  variant = "light",
 }: {
   score: number;
   size?: number;
   label?: string;
+  variant?: "light" | "dark";
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [revealed, setRevealed] = useState(false);
@@ -36,7 +38,8 @@ export function AnimatedScoreRing({
 
   return (
     <div ref={ref}>
-      <ScoreRing score={revealed ? score : 0} size={size} label={label} />
+      <ScoreRing score={revealed ? score : 0} size={size} label={label} variant={variant} />
     </div>
   );
 }
+

@@ -11,6 +11,7 @@ interface JksLogoProps {
   imgClassName?: string;
   showSubtitle?: string;
   priority?: boolean;
+  variant?: "light" | "dark";
 }
 
 const SIZE_MAP = {
@@ -27,13 +28,15 @@ export function JksLogo({
   imgClassName = "",
   showSubtitle,
   priority = true,
+  variant = "light",
 }: JksLogoProps) {
   const dim = SIZE_MAP[size] || SIZE_MAP.md;
+  const logoSrc = variant === "dark" ? "/images/jks-logo-white.png" : "/images/jks-logo.png";
 
   const content = (
     <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
       <Image
-        src="/images/jks-logo.png"
+        src={logoSrc}
         alt="JKS Learning"
         width={dim.width}
         height={dim.height}
@@ -47,6 +50,7 @@ export function JksLogo({
       )}
     </div>
   );
+
 
   if (href) {
     return (

@@ -28,6 +28,8 @@ import {
   Bookmark,
   Code2,
   Sparkles,
+  Megaphone,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,25 +44,29 @@ interface NavItem {
 const STUDENT_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/my-courses", label: "My Courses", icon: BookOpen },
+  { href: "/dashboard/resume-builder", label: "Resume Maker", icon: FileText },
   { href: "/dashboard/assessments", label: "Assessments", icon: ClipboardCheck },
   { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
-  { href: "/dashboard/payments", label: "Payment History", icon: CreditCard },
+  { href: "/dashboard/payments", label: "Invoices & Billing", icon: CreditCard },
   { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
 
 const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone },
   { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/instructors", label: "Instructors", icon: GraduationCap },
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
+  { href: "/admin/assessments/questions", label: "Question Bank", icon: ClipboardCheck },
   { href: "/admin/ai-interviews", label: "AI Interviews", icon: BrainCircuit },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
-  { href: "/admin/payments", label: "Payments", icon: CreditCard },
+  { href: "/admin/payments", label: "Invoices & Billing", icon: CreditCard },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
+
 
 const INSTRUCTOR_NAV: NavItem[] = [
   { href: "/instructor", label: "Overview", icon: LayoutDashboard },

@@ -1,289 +1,256 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, EffectFade } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/effect-fade";
+import Link from "next/link";
+import { ArrowRight, ArrowDown } from "lucide-react";
 import { getGsap } from "@/lib/motion/gsap";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
-import { HeroPanel, HERO_PANELS } from "./about-hero-panel";
+import { About3dBackdrop } from "@/components/three/about-3d-backdrop";
+import { aboutScrollProgress } from "@/components/three/about-progress";
+import { ABOUT_CHAPTERS } from "./about-chapters";
 
-// Adapted from a 21st.dev "home-hero-landing-scroll-animation" submission,
-// restored to the original's full mechanic per client direction (icons fly
-// from a bottom strip into inline slots inside the headline, shuffled
-// reveal order, background parallax fade) — but with its real bugs fixed
-// rather than reproduced:
-//  - gsap.context(fn, heroSectionRef) passed the React ref *object* as the
-//    scope arg instead of heroSectionRef.current (the DOM element).
-//  - Several `ref.current!.getBoundingClientRect()` non-null assertions
-//    could throw if a ref was momentarily null, silently breaking the
-//    entire per-frame update from that point on.
-//  - Text reveal windows were 1.5% of total scroll each — widened to 6%
-//    here; the original's width plus scrub smoothing is what most likely
-//    read as "text not showing properly."
-//  - No prefers-reduced-motion handling — added below.
-//  - Fonts (Space Grotesk/Inter via a render-blocking `@import` in a
-//    <style> tag) replaced with this project's existing Manrope; colors
-//    replaced with design tokens.
-//  - Pin distance reduced from 8x to 4x viewport height (3x on narrow
-//    screens — same mechanic, shorter total scroll commitment, since a
-//    "viewport height" is a smaller absolute scroll gesture on a phone).
-//  - Images: DESIGN.md defaults to procedural visuals over photography;
-//    this is a deliberate, client-directed exception using real,
-//    verified-resolving Pexels photos instead (see about-hero-panel.tsx).
-//  - Per-frame update wrapped in try/catch so one bad frame logs instead
-//    of silently breaking the scroll interaction for the rest of the page.
-//  - Element.remove() instead of parentNode.removeChild(node) everywhere a
-//    cloned "flying" icon is detached — removeChild throws NotFoundError if
-//    the node isn't (still) an actual child of that parent at call time;
-//    remove() is a safe no-op if already detached.
+// ── Design note ──────────────────────────────────────────────────────────
+// This replaces the previous 21st.dev-derived hero (icons flying from a
+// bottom strip into inline slots inside the headline). That mechanic had two
+// problems the redesign fixes rather than tunes:
+//   1. For roughly the first three quarters of a 4x-viewport pin the headline
+//      was fully transparent, so the section read as a bare full-bleed photo
+//      with a filmstrip taped to the bottom — the exact frame in the client
+//      screenshot. There was no premium "state" to land on, only a payoff.
+//   2. The reveal order was randomised per load, so the sentence assembled
+//      out of order and the section never told the same story twice.
 //
-// One experience across all screen sizes — the icon-dock sizing
-// (headerIconSize) and layout (the `md:` breakpoint classes below) were
-// already built responsive from the original component; the only mobile-
-// specific tuning here is a shorter total pin distance, not a different
-// mechanic. prefers-reduced-motion still gets the plain static fallback
-// below, since a long scroll-jack is exactly what that preference opts out
-// of regardless of screen size.
+// The new mechanic is a pinned chapter sequence: one fixed editorial headline
+// that is legible from frame zero, and five chapters that advance beneath it
+// as a 3D card deck rotates the next photo forward. Every scroll position
+// shows a complete, composed frame. Motion is *stepped with dwell* — each
+// chapter holds for ~58% of its window before handing over — so it reads
+// deliberate and classic rather than continuously sliding.
+//
+// Responsive: one mechanic across all sizes, re-laid-out rather than
+// re-invented. Desktop is a two-column composition (narrative left, deck
+// right); below lg the same three blocks stack into a grid whose middle row
+// flexes, so the deck takes whatever height is left over on a short phone
+// instead of pushing the rail off-screen. Pin distance is shorter on mobile
+// (2.8x vs 4.2x viewport) since a "viewport height" is a much larger physical
+// gesture on a phone.
+//
+// prefers-reduced-motion gets a genuine static composition below — the full
+// chapter list, all five visible at once — not a stripped-down stub.
+// ─────────────────────────────────────────────────────────────────────────
 
-interface AnimationOrderItem {
-  segment: HTMLElement;
-  index: number;
+const HEADLINE_LINES = ["Learning that ends", "in proof — not just", "a progress bar."];
+
+/** Hermite smoothstep, clamped. Used for the per-chapter hand-over easing. */
+function smoothstep(edge0: number, edge1: number, x: number) {
+  const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t);
 }
 
-const TEXT_SEGMENTS = [
-  "Structured courses and real projects",
-  "build the technical foundation,",
-  "where an AI mock interview",
-  "measures what you've actually learned",
-];
-const FINAL_SEGMENT_LEAD = "and a verified certificate";
-const FINAL_SEGMENT_TAIL = "becomes proof of career-ready skill.";
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 export function AboutScrollHero() {
-  const heroSectionRef = useRef<HTMLElement | null>(null);
-  const backgroundRef = useRef<HTMLDivElement | null>(null);
-  const animatedIconsRef = useRef<HTMLDivElement | null>(null);
-  const iconElementsRef = useRef<(HTMLDivElement | null)[]>([]);
-  const textSegmentsRef = useRef<(HTMLSpanElement | null)[]>([]);
-  const placeholdersRef = useRef<(HTMLSpanElement | null)[]>([]);
-  const duplicateIconsRef = useRef<HTMLElement[] | null>(null);
-  const textOrderRef = useRef<AnimationOrderItem[]>([]);
-  const isMobileRef = useRef(false);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const deckRef = useRef<HTMLDivElement | null>(null);
+  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const narratorsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const railFillsRef = useRef<(HTMLSpanElement | null)[]>([]);
+  const counterRef = useRef<HTMLSpanElement | null>(null);
+  const hintRef = useRef<HTMLDivElement | null>(null);
+  const introRef = useRef<HTMLDivElement | null>(null);
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    if (reducedMotion || !heroSectionRef.current || !animatedIconsRef.current) return;
+    if (reducedMotion || !sectionRef.current) return;
     const { gsap, ScrollTrigger } = getGsap();
+    const total = ABOUT_CHAPTERS.length;
 
-    const order: AnimationOrderItem[] = [];
-    textSegmentsRef.current.forEach((segment, index) => {
-      if (segment) order.push({ segment, index });
-    });
-    for (let i = order.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [order[i], order[j]] = [order[j], order[i]];
-    }
-    textOrderRef.current = order;
-
-    const updateIsMobile = () => {
-      isMobileRef.current = window.innerWidth < 1000;
-    };
-    updateIsMobile();
-    window.addEventListener("resize", updateIsMobile);
-
-    const currentIconSize = iconElementsRef.current[0]?.getBoundingClientRect().width || 1;
-    const pinDistance = window.innerHeight * (isMobileRef.current ? 3 : 4);
-
-    // Element.remove() is a safe no-op if the node is already detached —
-    // unlike parentNode.removeChild(node), which throws NotFoundError if
-    // the node isn't (still) an actual child of that parent. Reading
-    // .parentNode and calling .removeChild() on it looks race-free within
-    // one synchronous expression, but GSAP's ScrollTrigger can fire a
-    // reconciling onUpdate during pin setup/refresh/kill that reaches this
-    // cleanup a second time for the same node — remove() tolerates that.
-    const clearDuplicateIcons = () => {
-      duplicateIconsRef.current?.forEach((d) => d.remove());
-      duplicateIconsRef.current = null;
-    };
+    const isMobile = () => window.innerWidth < 1024;
+    let pinDistance = window.innerHeight * (isMobile() ? 2.8 : 4.2);
 
     const ctx = gsap.context(() => {
+      // ── Entrance (not scroll-linked) ──────────────────────────────────
+      // The hero must be composed and readable the instant it lands; the
+      // pin then *develops* it. Masked line-rise for the headline, a settle
+      // for the deck.
+      const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
+      intro
+        .from("[data-hero-eyebrow]", { opacity: 0, y: 14, duration: 0.7 })
+        .from(
+          "[data-hero-line] > span",
+          { yPercent: 115, duration: 1.05, stagger: 0.09 },
+          "-=0.45"
+        )
+        .from(
+          deckRef.current,
+          { opacity: 0, y: 44, scale: 0.94, rotateY: -12, transformPerspective: 1400, duration: 1.15 },
+          "-=0.85"
+        )
+        .from("[data-hero-narrative]", { opacity: 0, y: 20, duration: 0.8 }, "-=0.8")
+        .from("[data-hero-rail]", { opacity: 0, y: 16, duration: 0.7 }, "-=0.55")
+        .from("[data-hero-cta]", { opacity: 0, y: 16, duration: 0.7 }, "-=0.55");
+
+      // No per-card transformPerspective: the deck wrapper carries a single
+      // CSS `perspective`, so all five cards share one vanishing point and
+      // the stack reads as one object rather than five independent planes.
+
+      const render = (progress: number) => {
+        aboutScrollProgress.value = progress;
+
+        // seg ∈ [0, total) — the continuous chapter cursor.
+        const seg = clamp01(progress) * total;
+        const active = Math.min(total - 1, Math.floor(seg));
+        const frac = seg - active;
+
+        // Dwell, then hand over: cards hold still for the first 58% of a
+        // chapter's window and only then rotate the next one forward. Clamped
+        // at the last chapter so the deck settles on card five for the rest
+        // of the pin instead of rotating it away into an empty stage.
+        const cursor = Math.min(total - 1, active + smoothstep(0.58, 1, frac));
+
+        // ── Deck ──────────────────────────────────────────────────────
+        cardsRef.current.forEach((card, i) => {
+          if (!card) return;
+          const d = i - cursor;
+
+          if (d <= -1) {
+            gsap.set(card, { opacity: 0, pointerEvents: "none" });
+            return;
+          }
+
+          if (d < 0) {
+            // Departing: lifts up and rotates away from the viewer.
+            const u = -d;
+            gsap.set(card, {
+              opacity: 1 - Math.pow(u, 1.15),
+              xPercent: u * 16,
+              yPercent: -u * 18,
+              rotateY: -24 * u,
+              rotateZ: -3 * u,
+              scale: 1 + u * 0.07,
+              filter: "brightness(1)",
+              zIndex: 60 - i,
+              pointerEvents: "none",
+            });
+            return;
+          }
+
+          // Waiting: a shallow, evenly-spaced stack behind the active card.
+          const k = Math.min(d, 3);
+          gsap.set(card, {
+            opacity: k >= 2.9 ? 0 : 1,
+            xPercent: k * 3.2,
+            yPercent: k * 4.4,
+            rotateY: k * 4,
+            rotateZ: 0,
+            scale: 1 - k * 0.055,
+            filter: `brightness(${(1 - k * 0.16).toFixed(3)})`,
+            zIndex: 60 - i,
+            pointerEvents: "none",
+          });
+        });
+
+        // ── Narrative copy ────────────────────────────────────────────
+        narratorsRef.current.forEach((node, i) => {
+          if (!node) return;
+          if (i !== active) {
+            gsap.set(node, { opacity: 0, y: 0, pointerEvents: "none" });
+            return;
+          }
+          // Chapter one is already composed at progress 0 — without this it
+          // would fade in from nothing over the first pixels of scroll and
+          // the pinned hero would open on an empty column.
+          const enter = i === 0 ? 1 : clamp01((frac - 0.02) / 0.2);
+          // The final chapter holds to the end of the pin instead of fading
+          // out into an empty column.
+          const exit = i === total - 1 ? 0 : clamp01((frac - 0.64) / 0.24);
+          gsap.set(node, {
+            opacity: enter * (1 - exit),
+            y: 20 * (1 - enter) - 16 * exit,
+            pointerEvents: "auto",
+          });
+        });
+
+        // ── Rail + counter ────────────────────────────────────────────
+        railFillsRef.current.forEach((fill, i) => {
+          if (fill) gsap.set(fill, { scaleX: clamp01(seg - i) });
+        });
+        if (counterRef.current) {
+          counterRef.current.textContent = ABOUT_CHAPTERS[active].index;
+        }
+        if (hintRef.current) {
+          gsap.set(hintRef.current, { opacity: 1 - clamp01(progress / 0.05) });
+        }
+        // Intro block drifts up very slightly across the whole pin so the
+        // composition breathes without the headline ever leaving.
+        if (introRef.current) {
+          gsap.set(introRef.current, { y: -progress * 18 });
+        }
+      };
+
       ScrollTrigger.create({
-        trigger: heroSectionRef.current,
+        trigger: sectionRef.current,
         start: "top top",
-        end: `+=${pinDistance}`,
+        end: () => `+=${pinDistance}`,
         pin: true,
         pinSpacing: true,
-        scrub: 1,
+        scrub: 0.85,
+        invalidateOnRefresh: true,
+        onRefreshInit: () => {
+          pinDistance = window.innerHeight * (isMobile() ? 2.8 : 4.2);
+        },
         onUpdate: (self) => {
+          // One bad frame should log, not silently kill the rest of the pin.
           try {
-            const progress = self.progress;
-            const headerIconSize = isMobileRef.current ? 35 : 60;
-            const exactScale = headerIconSize / currentIconSize;
-            const icons = animatedIconsRef.current;
-
-            textSegmentsRef.current.forEach((segment) => {
-              if (segment) gsap.set(segment, { opacity: 0 });
-            });
-
-            if (progress < 0.3) {
-              const moveProgress = progress / 0.3;
-              const containerMoveY = -window.innerHeight * 0.3 * moveProgress;
-
-              if (backgroundRef.current) {
-                if (progress < 0.15) {
-                  const headerProgress = progress / 0.15;
-                  gsap.set(backgroundRef.current, { y: -50 * headerProgress, opacity: 1 - headerProgress });
-                } else {
-                  gsap.set(backgroundRef.current, { y: -50, opacity: 0 });
-                }
-              }
-
-              if (duplicateIconsRef.current) clearDuplicateIcons();
-
-              if (icons) gsap.set(icons, { x: 0, y: containerMoveY, scale: 1, opacity: 1 });
-
-              iconElementsRef.current.forEach((icon, index) => {
-                if (!icon) return;
-                const staggerDelay = index * 0.1;
-                const iconProgress = gsap.utils.mapRange(staggerDelay, staggerDelay + 0.5, 0, 1, moveProgress);
-                const clamped = Math.max(0, Math.min(1, iconProgress));
-                gsap.set(icon, { x: 0, y: -containerMoveY * (1 - clamped) });
-              });
-            } else if (progress < 0.6) {
-              const scaleProgress = (progress - 0.3) / 0.3;
-              if (backgroundRef.current) gsap.set(backgroundRef.current, { y: -50, opacity: 0 });
-
-              if (duplicateIconsRef.current) clearDuplicateIcons();
-
-              if (!icons) return;
-              const containerRect = icons.getBoundingClientRect();
-              const deltaX = (window.innerWidth / 2 - (containerRect.left + containerRect.width / 2)) * scaleProgress;
-              const deltaY = (window.innerHeight / 2 - (containerRect.top + containerRect.height / 2)) * scaleProgress;
-
-              gsap.set(icons, {
-                x: deltaX,
-                y: -window.innerHeight * 0.3 + deltaY,
-                scale: 1 + (exactScale - 1) * scaleProgress,
-                opacity: 1,
-              });
-
-              iconElementsRef.current.forEach((icon) => {
-                if (icon) gsap.set(icon, { x: 0, y: 0 });
-              });
-            } else if (progress < 0.75) {
-              const moveProgress = (progress - 0.6) / 0.15;
-              if (backgroundRef.current) gsap.set(backgroundRef.current, { y: -50, opacity: 0 });
-
-              if (!icons) return;
-              const containerRect = icons.getBoundingClientRect();
-              const deltaX = window.innerWidth / 2 - (containerRect.left + containerRect.width / 2);
-              const deltaY = window.innerHeight / 2 - (containerRect.top + containerRect.height / 2);
-
-              gsap.set(icons, {
-                x: deltaX,
-                y: -window.innerHeight * 0.3 + deltaY,
-                scale: exactScale,
-                opacity: 0,
-              });
-
-              iconElementsRef.current.forEach((icon) => {
-                if (icon) gsap.set(icon, { x: 0, y: 0 });
-              });
-
-              if (!duplicateIconsRef.current) {
-                duplicateIconsRef.current = [];
-                iconElementsRef.current.forEach((icon) => {
-                  if (!icon) return;
-                  const duplicate = icon.cloneNode(true) as HTMLElement;
-                  duplicate.removeAttribute("class");
-                  Object.assign(duplicate.style, {
-                    position: "absolute",
-                    width: headerIconSize + "px",
-                    height: headerIconSize + "px",
-                    zIndex: "50",
-                    borderRadius: "4px",
-                    overflow: "hidden",
-                    display: "none",
-                  });
-                  document.body.appendChild(duplicate);
-                  duplicateIconsRef.current!.push(duplicate);
-                });
-              }
-
-              duplicateIconsRef.current?.forEach((duplicate, index) => {
-                const iconEl = iconElementsRef.current[index];
-                const placeholderEl = placeholdersRef.current[index];
-                if (!iconEl || !placeholderEl) return;
-
-                const iconRect = iconEl.getBoundingClientRect();
-                const startPageX = iconRect.left + iconRect.width / 2 + window.scrollX;
-                const startPageY = iconRect.top + iconRect.height / 2 + window.scrollY;
-
-                const targetRect = placeholderEl.getBoundingClientRect();
-                const targetPageX = targetRect.left + targetRect.width / 2 + window.scrollX;
-                const targetPageY = targetRect.top + targetRect.height / 2 + window.scrollY;
-
-                const moveX = targetPageX - startPageX;
-                const moveY = targetPageY - startPageY;
-
-                let currentX = 0;
-                const currentY = moveProgress < 0.5 ? moveY * (moveProgress / 0.5) : moveY;
-                if (moveProgress >= 0.5) currentX = moveX * ((moveProgress - 0.5) / 0.5);
-
-                duplicate.style.left = startPageX + currentX - headerIconSize / 2 + "px";
-                duplicate.style.top = startPageY + currentY - headerIconSize / 2 + "px";
-                duplicate.style.opacity = "1";
-                duplicate.style.display = "block";
-              });
-            } else {
-              if (icons) gsap.set(icons, { opacity: 0 });
-
-              duplicateIconsRef.current?.forEach((duplicate, index) => {
-                const placeholderEl = placeholdersRef.current[index];
-                if (!placeholderEl) return;
-                const targetRect = placeholderEl.getBoundingClientRect();
-                const targetPageX = targetRect.left + targetRect.width / 2 + window.scrollX;
-                const targetPageY = targetRect.top + targetRect.height / 2 + window.scrollY;
-                duplicate.style.left = targetPageX - headerIconSize / 2 + "px";
-                duplicate.style.top = targetPageY - headerIconSize / 2 + "px";
-                duplicate.style.opacity = "1";
-                duplicate.style.display = "block";
-              });
-
-              // 6%-wide windows (vs. the original's 1.5%) so each segment
-              // visibly fades in rather than popping under scrub smoothing.
-              textOrderRef.current.forEach((item, i) => {
-                const segStart = 0.75 + i * 0.04;
-                const segProgress = gsap.utils.mapRange(segStart, segStart + 0.06, 0, 1, progress);
-                gsap.set(item.segment, { opacity: Math.max(0, Math.min(1, segProgress)) });
-              });
-            }
+            render(self.progress);
           } catch (err) {
             console.error("AboutScrollHero scroll update failed:", err);
           }
         },
       });
-    }, heroSectionRef.current);
+
+      render(0);
+    }, sectionRef.current);
 
     return () => {
-      window.removeEventListener("resize", updateIsMobile);
-      clearDuplicateIcons();
+      aboutScrollProgress.value = 0;
       ctx.revert();
     };
   }, [reducedMotion]);
 
   if (reducedMotion) {
     return (
-      <section className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden bg-primary-dark px-6 py-24 text-center text-white">
-        <HeroPanel variant={2} className="absolute inset-0 opacity-30" />
-        <div className="relative max-w-3xl">
-          <span className="text-label text-primary-blue">About JKS Learning</span>
-          <h1 className="text-display mt-4 text-white">
-            Structured courses, real projects, and an AI mock interview that proves you&apos;re
-            ready.
+      <section className="relative overflow-hidden bg-primary-dark text-white">
+        <HeroAtmosphere />
+        <div className="relative z-10 mx-auto max-w-[1280px] px-6 py-24 lg:px-16">
+          <Eyebrow />
+          <h1 className="mt-6 max-w-3xl text-[clamp(2rem,5vw,3.75rem)] leading-[1.08] font-bold tracking-[-0.02em]">
+            {HEADLINE_LINES.join(" ")}
           </h1>
+          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {ABOUT_CHAPTERS.map((chapter) => (
+              <article
+                key={chapter.index}
+                className="rounded-2xl border border-white/10 bg-white/[0.04] p-6"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-xs tracking-[0.2em] text-[#E9B872]">
+                    {chapter.index}
+                  </span>
+                  <span className="h-px flex-1 bg-white/15" />
+                  <span className="text-[11px] font-semibold tracking-[0.18em] text-white/50 uppercase">
+                    {chapter.kicker}
+                  </span>
+                </div>
+                <h2 className="mt-4 text-lg font-semibold">{chapter.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-white/65">{chapter.body}</p>
+                <p className="mt-4 text-xs font-semibold tracking-wide text-white/40">
+                  {chapter.metric}
+                </p>
+              </article>
+            ))}
+          </div>
+          <HeroCta className="mt-12" />
         </div>
       </section>
     );
@@ -291,91 +258,210 @@ export function AboutScrollHero() {
 
   return (
     <section
-      ref={heroSectionRef}
-      className="relative h-screen w-full overflow-hidden bg-bg-light px-4 md:px-6"
+      ref={sectionRef}
+      className="relative h-screen w-full overflow-hidden bg-primary-dark text-white"
     >
-      <div ref={backgroundRef} className="absolute inset-0 h-full w-full will-change-transform" style={{ zIndex: 0 }}>
-        <Swiper
-          modules={[Autoplay, EffectFade]}
-          effect="fade"
-          autoplay={{ delay: 3200, disableOnInteraction: false }}
-          loop
-          speed={1200}
-          // Decorative autoplay background — without this, Swiper claims
-          // touch drags across the entire pinned full-screen hero, so
-          // diagonal swipes on mobile could be eaten instead of scrolling.
-          allowTouchMove={false}
-          className="about-hero-swiper h-full w-full"
-        >
-          {HERO_PANELS.map((panel, i) => (
-            <SwiperSlide key={panel.label}>
-              <HeroPanel variant={i} className="h-full w-full" />
+      <HeroAtmosphere />
+
+      <div className="relative z-10 mx-auto grid h-full max-w-[1280px] grid-cols-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-4 px-6 pt-[4.5rem] pb-6 sm:gap-6 sm:pb-8 lg:grid-cols-[1.02fr_0.98fr] lg:grid-rows-1 lg:items-center lg:gap-16 lg:px-16 lg:pt-16 lg:pb-16">
+        {/* `contents` on mobile lets these three blocks sit directly in the
+            outer grid (headline · deck · narrative). At lg the wrapper turns
+            back into a real column and the row assignments go inert. */}
+        <div className="contents lg:col-start-1 lg:flex lg:flex-col">
+          <div ref={introRef} className="row-start-1 will-change-transform">
+            <Eyebrow />
+            <h1 className="mt-3 text-[clamp(1.6rem,5.4vw,3.9rem)] leading-[1.06] font-bold tracking-[-0.025em] sm:mt-6">
+              {HEADLINE_LINES.map((line) => (
+                <span key={line} data-hero-line className="block overflow-hidden pb-[0.08em]">
+                  <span className="block">{line}</span>
+                </span>
+              ))}
+            </h1>
+          </div>
+
+          <div className="row-start-3 lg:mt-10">
+            {/* Fixed-height stage: chapters cross-fade in place, so the rail
+                below never jumps as copy length changes. Heights are sized to
+                the longest chapter at each breakpoint; on phones the body is
+                clamped to three lines so a short viewport never has to choose
+                between the copy and the card deck. */}
+            <div
+              data-hero-narrative
+              className="relative h-[138px] sm:h-[168px] lg:h-[196px]"
+            >
+              {ABOUT_CHAPTERS.map((chapter, i) => (
+                <div
+                  key={chapter.index}
+                  ref={(el) => {
+                    narratorsRef.current[i] = el;
+                  }}
+                  className="absolute inset-0 opacity-0 will-change-transform"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-[11px] font-semibold tracking-[0.22em] text-[#E9B872] uppercase">
+                      {chapter.kicker}
+                    </span>
+                    <span className="h-px w-10 bg-[#E9B872]/40" />
+                    <span className="text-[11px] font-medium tracking-[0.12em] text-white/45">
+                      {chapter.metric}
+                    </span>
+                  </div>
+                  <h2 className="mt-2.5 text-lg leading-snug font-semibold tracking-[-0.01em] sm:mt-3 sm:text-2xl lg:text-[28px]">
+                    {chapter.title}
+                  </h2>
+                  <p className="mt-2 line-clamp-3 max-w-lg text-[13px] leading-relaxed text-white/60 sm:mt-2.5 sm:line-clamp-none sm:text-sm lg:text-[15px]">
+                    {chapter.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div data-hero-rail className="mt-5 flex items-center gap-4 lg:mt-7">
+              <span className="font-mono text-xs tracking-[0.2em] text-white/70">
+                <span ref={counterRef}>01</span>
+                <span className="text-white/30"> / 0{ABOUT_CHAPTERS.length}</span>
+              </span>
+              <div className="flex flex-1 gap-1.5">
+                {ABOUT_CHAPTERS.map((chapter, i) => (
+                  <span key={chapter.index} className="h-px flex-1 bg-white/15">
+                    <span
+                      ref={(el) => {
+                        railFillsRef.current[i] = el;
+                      }}
+                      className="block h-px origin-left scale-x-0 bg-[#E9B872]"
+                    />
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <HeroCta data-hero-cta className="mt-6 hidden lg:flex" />
+          </div>
+        </div>
+
+        {/* ── Card deck ── */}
+        <div className="row-start-2 flex min-h-0 items-center justify-center lg:col-start-2 lg:row-start-1">
+          <div
+            ref={deckRef}
+            className="relative h-full w-full max-w-[280px] will-change-transform sm:max-w-[320px] lg:aspect-[4/5] lg:h-auto lg:max-w-[430px]"
+            style={{ perspective: "1400px" }}
+          >
+            {/* Ground shadow keeps the stack from floating in the dark. */}
+            <div
+              aria-hidden
+              className="absolute -inset-x-6 -bottom-6 h-16 rounded-[50%] bg-black/45 blur-2xl"
+            />
+            {ABOUT_CHAPTERS.map((chapter, i) => (
               <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(to bottom, rgba(245,248,255,0.5) 0%, rgba(245,248,255,0.25) 45%, rgba(245,248,255,0.85) 100%)",
+                key={chapter.index}
+                ref={(el) => {
+                  cardsRef.current[i] = el;
                 }}
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+                className="absolute inset-0 overflow-hidden rounded-2xl border border-white/12 bg-primary-dark shadow-[0_30px_60px_-18px_rgba(0,0,0,0.75)] will-change-transform"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- hotlinked
+                    stock photo; matches the existing About panel exception. */}
+                <img
+                  src={chapter.photoUrl}
+                  alt={chapter.photoAlt}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050c1c] via-[#050c1c]/35 to-transparent" />
+                <div className="absolute inset-0 bg-primary-dark/25 mix-blend-multiply" />
+                {/* Inner hairline — the "framed print" detail. */}
+                <div className="absolute inset-3 rounded-xl border border-white/10" />
+
+                <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                  <div className="flex items-end justify-between gap-4">
+                    <div>
+                      <span className="text-[10px] font-semibold tracking-[0.24em] text-[#E9B872] uppercase">
+                        {chapter.kicker}
+                      </span>
+                      <p className="mt-1.5 text-sm leading-snug font-semibold text-white sm:text-base">
+                        {chapter.title}
+                      </p>
+                    </div>
+                    <span className="font-mono text-2xl leading-none font-light text-white/25 sm:text-3xl">
+                      {chapter.index}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <HeroCta data-hero-cta className="row-start-4 lg:hidden" />
       </div>
 
       <div
-        ref={animatedIconsRef}
-        className="fixed bottom-10 left-1/2 z-[2] flex w-[90%] -translate-x-1/2 items-center gap-1.5 will-change-transform md:left-16 md:w-[75%] md:translate-x-0"
+        ref={hintRef}
+        className="pointer-events-none absolute inset-x-0 bottom-4 z-10 hidden justify-center lg:flex"
       >
-        {HERO_PANELS.map((panel, index) => (
-          <div
-            key={panel.label}
-            ref={(el) => {
-              iconElementsRef.current[index] = el;
-            }}
-            className="aspect-square flex-1 overflow-hidden rounded-sm shadow-md will-change-transform"
-          >
-            <HeroPanel variant={index} className="h-full w-full" />
-          </div>
-        ))}
-      </div>
-
-      <div className="relative z-10 flex h-full items-center justify-center">
-        <h1 className="max-w-[90vw] text-center text-[clamp(1.4rem,5vw,4.25rem)] leading-[1.3] font-bold tracking-tight text-text-heading md:max-w-[75vw] md:leading-[1.2]">
-          {TEXT_SEGMENTS.map((text, i) => (
-            <span key={i}>
-              <span
-                ref={(el) => {
-                  textSegmentsRef.current[i] = el;
-                }}
-                className="opacity-0"
-              >
-                {text}
-              </span>
-              <span
-                ref={(el) => {
-                  placeholdersRef.current[i] = el;
-                }}
-                className="mx-1 inline-block h-8 w-8 align-middle will-change-transform invisible md:-mt-1.5 md:h-16 md:w-16"
-              />
-            </span>
-          ))}
-          <span
-            ref={(el) => {
-              textSegmentsRef.current[4] = el;
-            }}
-            className="opacity-0"
-          >
-            {FINAL_SEGMENT_LEAD}
-            <span
-              ref={(el) => {
-                placeholdersRef.current[4] = el;
-              }}
-              className="mx-1 inline-block h-8 w-8 align-middle will-change-transform invisible md:-mt-1.5 md:h-16 md:w-16"
-            />
-            {FINAL_SEGMENT_TAIL}
-          </span>
-        </h1>
+        <span className="flex items-center gap-2 text-[11px] font-medium tracking-[0.22em] text-white/35 uppercase">
+          Scroll <ArrowDown className="h-3.5 w-3.5" />
+        </span>
       </div>
     </section>
+  );
+}
+
+function Eyebrow() {
+  return (
+    <div data-hero-eyebrow className="flex items-center gap-3">
+      <span className="h-px w-8 bg-[#E9B872]" />
+      <span className="text-[11px] font-semibold tracking-[0.28em] text-[#E9B872] uppercase">
+        About JKS Learning
+      </span>
+    </div>
+  );
+}
+
+function HeroCta({ className = "", ...rest }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={`flex flex-wrap items-center gap-3 ${className}`} {...rest}>
+      <Link
+        href="/courses"
+        className="group inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-primary-dark transition-colors hover:bg-[#E9B872]"
+      >
+        Explore courses
+        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+      </Link>
+      <Link
+        href="/ai-mock-interview"
+        className="inline-flex items-center gap-2 rounded-full border border-white/25 px-5 py-2.5 text-sm font-semibold text-white/85 transition-colors hover:border-white/50 hover:text-white"
+      >
+        Try the AI interview
+      </Link>
+    </div>
+  );
+}
+
+/** Layered backdrop: 3D constellation, fine grid, and a vignette. */
+function HeroAtmosphere() {
+  return (
+    <>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_70%_20%,#12285180_0%,transparent_60%)]"
+      />
+      <About3dBackdrop className="absolute inset-0 opacity-70" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.05]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)",
+          backgroundSize: "72px 72px",
+          maskImage: "radial-gradient(80% 60% at 50% 40%, #000 0%, transparent 75%)",
+          WebkitMaskImage: "radial-gradient(80% 60% at 50% 40%, #000 0%, transparent 75%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(110%_75%_at_50%_45%,transparent_35%,rgba(3,8,20,0.7)_100%)]"
+      />
+    </>
   );
 }

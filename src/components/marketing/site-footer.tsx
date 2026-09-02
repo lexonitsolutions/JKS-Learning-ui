@@ -33,10 +33,9 @@ export function SiteFooter() {
       <div className="mx-auto max-w-[1280px] px-6 py-16 lg:px-16">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
           <div className="col-span-2">
-            <div className="inline-block rounded-xl bg-white/95 p-2 shadow-md">
-              <JksLogo size="md" />
-            </div>
+            <JksLogo size="md" variant="dark" />
             <p className="mt-4 max-w-xs text-sm">
+
 
               Career-focused IT upskilling with structured courses and AI-powered
               interview readiness for Full Stack, Frontend, and SAP professionals.

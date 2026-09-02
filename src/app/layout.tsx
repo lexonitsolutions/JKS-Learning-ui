@@ -3,6 +3,7 @@ import { Manrope } from "next/font/google";
 import "./globals.css";
 import { ChunkErrorHandler } from "@/components/common/chunk-error-handler";
 import { PageTransitionProvider } from "@/components/common/page-transition-provider";
+import { WebsiteChatbot } from "@/components/common/website-chatbot";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -57,10 +58,12 @@ export default function RootLayout({
         <ChunkErrorHandler />
         <PageTransitionProvider>
           {children}
+          <WebsiteChatbot />
         </PageTransitionProvider>
       </body>
     </html>
   );
 }
+
 
 

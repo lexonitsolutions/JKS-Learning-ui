@@ -1459,10 +1459,11 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-function AnimatedScoreBar({ label, score }) {
+function AnimatedScoreBar({ label, score, maxScore = 100 }) {
     _s();
     const fillRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const reducedMotion = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$motion$2f$use$2d$reduced$2d$motion$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useReducedMotion"])();
+    const percent = Math.min(100, Math.round(score / maxScore * 100));
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AnimatedScoreBar.useEffect": ()=>{
             if (reducedMotion || !fillRef.current) return;
@@ -1472,8 +1473,8 @@ function AnimatedScoreBar({ label, score }) {
                     gsap.fromTo(fillRef.current, {
                         width: "0%"
                     }, {
-                        width: `${score}%`,
-                        duration: 1.1,
+                        width: `${percent}%`,
+                        duration: 1.0,
                         ease: "power2.out",
                         scrollTrigger: {
                             trigger: fillRef.current,
@@ -1489,55 +1490,75 @@ function AnimatedScoreBar({ label, score }) {
         }
     }["AnimatedScoreBar.useEffect"], [
         reducedMotion,
-        score
+        percent
     ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        className: "rounded-xl border border-white/5 bg-white/[0.02] p-3 hover:bg-white/[0.04] transition-colors",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex justify-between text-sm text-white/70",
+                className: "flex items-center justify-between text-xs mb-2",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                        className: "font-semibold text-slate-200",
                         children: label
                     }, void 0, false, {
                         fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-                        lineNumber: 34,
+                        lineNumber: 43,
                         columnNumber: 9
                     }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        children: score
-                    }, void 0, false, {
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-1.5 font-mono",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "font-bold text-cyan-300",
+                                children: score
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
+                                lineNumber: 45,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "text-[10px] text-slate-500",
+                                children: "/ 100"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
+                                lineNumber: 46,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
                         fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-                        lineNumber: 35,
+                        lineNumber: 44,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-                lineNumber: 33,
+                lineNumber: 42,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "mt-1 h-1 rounded-full bg-white/10",
+                className: "relative h-2 w-full rounded-full bg-slate-800/90 overflow-hidden border border-white/5",
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     ref: fillRef,
-                    className: "h-full rounded-full bg-primary-blue",
+                    className: "h-full rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 shadow-xs shadow-cyan-500/30",
                     style: {
-                        width: reducedMotion ? `${score}%` : undefined
+                        width: reducedMotion ? `${percent}%` : undefined
                     }
                 }, void 0, false, {
                     fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-                    lineNumber: 38,
+                    lineNumber: 50,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-                lineNumber: 37,
+                lineNumber: 49,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/marketing/animated-score-bar.tsx",
-        lineNumber: 32,
+        lineNumber: 41,
         columnNumber: 5
     }, this);
 }
@@ -1568,7 +1589,7 @@ var _s = __turbopack_context__.k.signature();
 "use client";
 ;
 ;
-function AnimatedScoreRing({ score, size, label }) {
+function AnimatedScoreRing({ score, size, label, variant = "light" }) {
     _s();
     const ref = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const [revealed, setRevealed] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
@@ -1597,15 +1618,16 @@ function AnimatedScoreRing({ score, size, label }) {
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$score$2d$ring$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ScoreRing"], {
             score: revealed ? score : 0,
             size: size,
-            label: label
+            label: label,
+            variant: variant
         }, void 0, false, {
             fileName: "[project]/src/components/marketing/animated-score-ring.tsx",
-            lineNumber: 39,
+            lineNumber: 41,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/marketing/animated-score-ring.tsx",
-        lineNumber: 38,
+        lineNumber: 40,
         columnNumber: 5
     }, this);
 }
@@ -1727,17 +1749,16 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/framer-motion/dist/es/render/components/motion/proxy.mjs [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/framer-motion/dist/es/components/AnimatePresence/index.mjs [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trending$2d$up$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__TrendingUp$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/trending-up.mjs [app-client] (ecmascript) <export default as TrendingUp>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$brain$2d$circuit$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BrainCircuit$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/brain-circuit.mjs [app-client] (ecmascript) <export default as BrainCircuit>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2d$big$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/circle-check-big.mjs [app-client] (ecmascript) <export default as CheckCircle>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$triangle$2d$alert$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertTriangle$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs [app-client] (ecmascript) <export default as AlertTriangle>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$book$2d$open$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BookOpen$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/book-open.mjs [app-client] (ecmascript) <export default as BookOpen>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chart$2d$column$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BarChart3$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chart-column.mjs [app-client] (ecmascript) <export default as BarChart3>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$marketing$2f$animated$2d$score$2d$ring$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/marketing/animated-score-ring.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$marketing$2f$animated$2d$score$2d$bar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/marketing/animated-score-bar.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/badge.tsx [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
-;
 ;
 ;
 ;
@@ -1840,7 +1861,7 @@ function InteractiveReportShowcase() {
     const [activeView, setActiveView] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("categories");
     const report = REPORT_ATTEMPTS[attemptKey];
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "relative mx-auto max-w-[1280px] px-6 lg:px-16",
+        className: "relative mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-16",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8",
@@ -1848,19 +1869,28 @@ function InteractiveReportShowcase() {
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "text-label text-cyan-400",
-                                children: "Interactive Diagnostic Engine"
-                            }, void 0, false, {
+                                className: "inline-flex items-center gap-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$brain$2d$circuit$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BrainCircuit$3e$__["BrainCircuit"], {
+                                        className: "h-3.5 w-3.5 text-cyan-400"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
+                                        lineNumber: 86,
+                                        columnNumber: 13
+                                    }, this),
+                                    " Interactive Diagnostic Engine"
+                                ]
+                            }, void 0, true, {
                                 fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
                                 lineNumber: 85,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                className: "text-h2 mt-1 text-white",
+                                className: "text-2xl sm:text-3xl lg:text-4xl font-extrabold mt-3 text-white tracking-tight",
                                 children: "Live Readiness Report Architecture"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                lineNumber: 86,
+                                lineNumber: 88,
                                 columnNumber: 11
                             }, this)
                         ]
@@ -1870,30 +1900,32 @@ function InteractiveReportShowcase() {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "inline-flex rounded-xl border border-white/15 bg-white/5 p-1 backdrop-blur-md",
+                        className: "inline-flex rounded-xl border border-white/10 bg-slate-900/90 p-1.5 backdrop-blur-md shadow-inner",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                type: "button",
                                 onClick: ()=>setAttemptKey("attempt1"),
-                                className: `rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${attemptKey === "attempt1" ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "text-white/60 hover:text-white"}`,
+                                className: `rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${attemptKey === "attempt1" ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm shadow-amber-500/20" : "text-slate-400 hover:text-white"}`,
                                 children: "Attempt #1 (Baseline 68%)"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                lineNumber: 91,
+                                lineNumber: 95,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                type: "button",
                                 onClick: ()=>setAttemptKey("attempt2"),
-                                className: `rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${attemptKey === "attempt2" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "text-white/60 hover:text-white"}`,
+                                className: `rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${attemptKey === "attempt2" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm shadow-emerald-500/20" : "text-slate-400 hover:text-white"}`,
                                 children: "Attempt #2 (Retake 92% 🚀)"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                lineNumber: 101,
+                                lineNumber: 106,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                        lineNumber: 90,
+                        lineNumber: 94,
                         columnNumber: 9
                     }, this)
                 ]
@@ -1903,16 +1935,16 @@ function InteractiveReportShowcase() {
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "relative overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-b from-white/[0.08] to-white/[0.02] p-6 lg:p-8 backdrop-blur-xl shadow-2xl",
+                className: "relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-6 sm:p-8 lg:p-10 backdrop-blur-xl shadow-2xl",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full opacity-20 blur-3xl",
+                        className: "pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full opacity-20 blur-3xl transition-all duration-700",
                         style: {
                             background: attemptKey === "attempt2" ? "#10B981" : "#F59E0B"
                         }
                     }, void 0, false, {
                         fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                        lineNumber: 117,
+                        lineNumber: 123,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -1939,102 +1971,104 @@ function InteractiveReportShowcase() {
                                     className: "grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "lg:col-span-5 flex flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] p-6 text-center",
+                                            className: "lg:col-span-5 flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-slate-950/70 p-6 sm:p-8 text-center shadow-inner",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$marketing$2f$animated$2d$score$2d$ring$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatedScoreRing"], {
                                                     score: report.overallScore,
                                                     size: 170,
-                                                    label: "Overall Readiness"
+                                                    label: "Overall Readiness",
+                                                    variant: "dark"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                    lineNumber: 137,
+                                                    lineNumber: 143,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "mt-4 flex items-center gap-2",
+                                                    className: "mt-5 flex flex-wrap items-center justify-center gap-2",
                                                     children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
-                                                            variant: report.badgeVariant,
-                                                            className: "text-xs font-semibold",
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: `rounded-full px-3 py-1 text-xs font-bold ${report.badgeVariant === "success" ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30" : "bg-amber-500/15 text-amber-300 border border-amber-500/30"}`,
                                                             children: report.readinessLevel
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                            lineNumber: 143,
+                                                            lineNumber: 150,
                                                             columnNumber: 19
                                                         }, this),
                                                         attemptKey === "attempt2" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "flex items-center gap-1 text-xs font-semibold text-emerald-400",
+                                                            className: "flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 text-xs font-bold text-emerald-300",
                                                             children: [
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trending$2d$up$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__TrendingUp$3e$__["TrendingUp"], {
                                                                     className: "h-3.5 w-3.5"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                                    lineNumber: 148,
+                                                                    lineNumber: 161,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 " +24% Boost"
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                            lineNumber: 147,
+                                                            lineNumber: 160,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                    lineNumber: 142,
+                                                    lineNumber: 149,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "mt-2 text-xs text-white/60 max-w-xs",
+                                                    className: "mt-3 text-xs text-slate-400 max-w-xs leading-relaxed",
                                                     children: [
                                                         report.label,
                                                         " • Benchmarked against 22,000+ candidate evaluations"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                    lineNumber: 152,
+                                                    lineNumber: 165,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                            lineNumber: 136,
+                                            lineNumber: 142,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "lg:col-span-7 flex flex-col gap-4",
+                                            className: "lg:col-span-7 flex flex-col gap-5",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex border-b border-white/10 pb-2",
+                                                    className: "flex border-b border-white/10 pb-2 gap-4",
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                            type: "button",
                                                             onClick: ()=>setActiveView("categories"),
-                                                            className: `flex items-center gap-2 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer border-b-2 ${activeView === "categories" ? "border-cyan-400 text-cyan-400" : "border-transparent text-white/60 hover:text-white"}`,
+                                                            className: `flex items-center gap-2 pb-2 text-xs font-bold transition-all cursor-pointer border-b-2 -mb-2 ${activeView === "categories" ? "border-cyan-400 text-cyan-300" : "border-transparent text-slate-400 hover:text-slate-200"}`,
                                                             children: [
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chart$2d$column$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BarChart3$3e$__["BarChart3"], {
-                                                                    className: "h-3.5 w-3.5"
+                                                                    className: "h-4 w-4 text-cyan-400"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                                    lineNumber: 168,
+                                                                    lineNumber: 182,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 "5-Axis Evaluation"
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                            lineNumber: 160,
+                                                            lineNumber: 173,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                            type: "button",
                                                             onClick: ()=>setActiveView("study-plan"),
-                                                            className: `flex items-center gap-2 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer border-b-2 ${activeView === "study-plan" ? "border-cyan-400 text-cyan-400" : "border-transparent text-white/60 hover:text-white"}`,
+                                                            className: `flex items-center gap-2 pb-2 text-xs font-bold transition-all cursor-pointer border-b-2 -mb-2 ${activeView === "study-plan" ? "border-cyan-400 text-cyan-300" : "border-transparent text-slate-400 hover:text-slate-200"}`,
                                                             children: [
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$book$2d$open$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BookOpen$3e$__["BookOpen"], {
-                                                                    className: "h-3.5 w-3.5"
+                                                                    className: "h-4 w-4 text-cyan-400"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                                    lineNumber: 179,
+                                                                    lineNumber: 194,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 "Targeted Study Plan (",
@@ -2043,213 +2077,235 @@ function InteractiveReportShowcase() {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                            lineNumber: 171,
+                                                            lineNumber: 185,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                    lineNumber: 159,
+                                                    lineNumber: 172,
                                                     columnNumber: 17
                                                 }, this),
                                                 activeView === "categories" ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "grid grid-cols-1 gap-3.5 sm:grid-cols-2",
-                                                    children: report.scores.map(([label, score])=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$marketing$2f$animated$2d$score$2d$bar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatedScoreBar"], {
-                                                            label: label,
-                                                            score: score
+                                                    className: "grid grid-cols-1 gap-3 sm:grid-cols-2",
+                                                    children: report.scores.map(([label, score], idx)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: idx === 4 ? "sm:col-span-2" : "",
+                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$marketing$2f$animated$2d$score$2d$bar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatedScoreBar"], {
+                                                                label: label,
+                                                                score: score
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
+                                                                lineNumber: 203,
+                                                                columnNumber: 25
+                                                            }, this)
                                                         }, label, false, {
                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                            lineNumber: 187,
+                                                            lineNumber: 202,
                                                             columnNumber: 23
                                                         }, this))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                    lineNumber: 185,
+                                                    lineNumber: 200,
                                                     columnNumber: 19
                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "space-y-2.5",
+                                                    className: "space-y-3",
                                                     children: report.actionItems.map((item, idx)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] p-3 hover:bg-white/[0.05] transition-colors",
+                                                            className: "flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] p-3.5 hover:bg-white/[0.05] transition-colors",
                                                             children: [
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                    className: "flex items-center gap-3",
+                                                                    className: "flex items-center gap-3 min-w-0",
                                                                     children: [
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                            className: "flex h-7 w-7 items-center justify-center rounded-md bg-cyan-400/10 text-xs font-bold text-cyan-400 font-mono",
+                                                                            className: "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/15 text-xs font-bold text-cyan-300 font-mono border border-cyan-500/30",
                                                                             children: [
                                                                                 "0",
                                                                                 idx + 1
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                                            lineNumber: 198,
+                                                                            lineNumber: 215,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            className: "min-w-0",
                                                                             children: [
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                                    className: "text-xs font-semibold text-white",
+                                                                                    className: "text-xs sm:text-sm font-bold text-white truncate",
                                                                                     children: item.topic
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                                                    lineNumber: 202,
+                                                                                    lineNumber: 219,
                                                                                     columnNumber: 29
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                                    className: "text-[11px] text-white/50",
+                                                                                    className: "text-[11px] text-slate-400",
                                                                                     children: item.courseRef
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                                                    lineNumber: 203,
+                                                                                    lineNumber: 220,
                                                                                     columnNumber: 29
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                                            lineNumber: 201,
+                                                                            lineNumber: 218,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                                    lineNumber: 197,
+                                                                    lineNumber: 214,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                    className: "rounded-md bg-white/10 px-2 py-1 text-[11px] font-mono text-cyan-300",
+                                                                    className: "shrink-0 rounded-lg bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 text-[11px] font-mono text-cyan-300",
                                                                     children: item.estTime
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                                    lineNumber: 206,
+                                                                    lineNumber: 223,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, idx, true, {
                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                            lineNumber: 193,
+                                                            lineNumber: 210,
                                                             columnNumber: 23
                                                         }, this))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                    lineNumber: 191,
+                                                    lineNumber: 208,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                            lineNumber: 158,
+                                            lineNumber: 171,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                    lineNumber: 134,
+                                    lineNumber: 140,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "grid grid-cols-1 gap-4 md:grid-cols-2 pt-4 border-t border-white/10",
+                                    className: "grid grid-cols-1 gap-4 md:grid-cols-2 pt-6 border-t border-white/10",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4",
+                                            className: "flex items-start gap-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-5 shadow-xs",
                                             children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2d$big$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle$3e$__["CheckCircle"], {
-                                                    className: "h-5 w-5 text-emerald-400 shrink-0 mt-0.5"
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400",
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2d$big$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle$3e$__["CheckCircle"], {
+                                                        className: "h-4 w-4"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
+                                                        lineNumber: 237,
+                                                        columnNumber: 19
+                                                    }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                    lineNumber: 219,
+                                                    lineNumber: 236,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "text-xs font-bold text-emerald-400",
+                                                            className: "text-xs font-bold text-emerald-300 uppercase tracking-wider",
                                                             children: "Primary Strength Identified"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                            lineNumber: 221,
+                                                            lineNumber: 240,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                            className: "mt-1 text-xs text-white/80",
+                                                            className: "mt-1 text-xs sm:text-sm text-slate-200 leading-relaxed font-medium",
                                                             children: report.highlightStrength
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                            lineNumber: 222,
+                                                            lineNumber: 241,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                    lineNumber: 220,
+                                                    lineNumber: 239,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                            lineNumber: 218,
+                                            lineNumber: 235,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4",
+                                            className: "flex items-start gap-3.5 rounded-2xl border border-amber-500/30 bg-amber-950/20 p-5 shadow-xs",
                                             children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$triangle$2d$alert$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertTriangle$3e$__["AlertTriangle"], {
-                                                    className: "h-5 w-5 text-amber-400 shrink-0 mt-0.5"
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400",
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$triangle$2d$alert$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertTriangle$3e$__["AlertTriangle"], {
+                                                        className: "h-4 w-4"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
+                                                        lineNumber: 247,
+                                                        columnNumber: 19
+                                                    }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                    lineNumber: 227,
+                                                    lineNumber: 246,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "text-xs font-bold text-amber-400",
+                                                            className: "text-xs font-bold text-amber-300 uppercase tracking-wider",
                                                             children: "Recommended Optimization Area"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                            lineNumber: 229,
+                                                            lineNumber: 250,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                            className: "mt-1 text-xs text-white/80",
+                                                            className: "mt-1 text-xs sm:text-sm text-slate-200 leading-relaxed font-medium",
                                                             children: report.highlightGap
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                            lineNumber: 230,
+                                                            lineNumber: 251,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                                    lineNumber: 228,
+                                                    lineNumber: 249,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                            lineNumber: 226,
+                                            lineNumber: 245,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                                    lineNumber: 217,
+                                    lineNumber: 234,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, attemptKey, true, {
                             fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                            lineNumber: 125,
+                            lineNumber: 131,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                        lineNumber: 124,
+                        lineNumber: 130,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/marketing/interactive-report-showcase.tsx",
-                lineNumber: 115,
+                lineNumber: 121,
                 columnNumber: 7
             }, this)
         ]
@@ -3392,59 +3448,79 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 ;
-function ScoreRing({ score, size = 140, label = "Overall Score" }) {
+function ScoreRing({ score, size = 140, label = "Overall Score", variant = "light" }) {
     const stroke = size * 0.09;
     const radius = (size - stroke) / 2;
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - Math.max(0, Math.min(100, score)) / 100 * circumference;
+    const isDark = variant === "dark";
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "inline-flex flex-col items-center gap-2",
+        className: "inline-flex flex-col items-center gap-2 select-none",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                 width: size,
                 height: size,
                 viewBox: `0 0 ${size} ${size}`,
                 children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
-                        cx: size / 2,
-                        cy: size / 2,
-                        r: radius,
-                        stroke: "var(--color-border)",
-                        strokeWidth: stroke,
-                        fill: "none"
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("defs", {
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("linearGradient", {
+                            id: "scoreRingGrad",
+                            x1: "0%",
+                            y1: "0%",
+                            x2: "100%",
+                            y2: "100%",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
+                                    offset: "0%",
+                                    stopColor: "#2563EB"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/ui/score-ring.tsx",
+                                    lineNumber: 23,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
+                                    offset: "100%",
+                                    stopColor: "#22D3EE"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/ui/score-ring.tsx",
+                                    lineNumber: 24,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/ui/score-ring.tsx",
+                            lineNumber: 22,
+                            columnNumber: 11
+                        }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/score-ring.tsx",
-                        lineNumber: 18,
+                        lineNumber: 21,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
                         cx: size / 2,
                         cy: size / 2,
                         r: radius,
-                        stroke: "var(--color-primary-blue)",
+                        stroke: isDark ? "rgba(255, 255, 255, 0.12)" : "var(--color-border)",
+                        strokeWidth: stroke,
+                        fill: "none"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/ui/score-ring.tsx",
+                        lineNumber: 29,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
+                        cx: size / 2,
+                        cy: size / 2,
+                        r: radius,
+                        stroke: isDark ? "url(#scoreRingGrad)" : "var(--color-primary-blue)",
                         strokeWidth: stroke,
                         fill: "none",
                         strokeDasharray: circumference,
                         strokeDashoffset: offset,
                         strokeLinecap: "round",
                         transform: `rotate(-90 ${size / 2} ${size / 2})`,
-                        className: "transition-[stroke-dashoffset] duration-500"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/ui/score-ring.tsx",
-                        lineNumber: 26,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("text", {
-                        x: "50%",
-                        y: "47%",
-                        textAnchor: "middle",
-                        dominantBaseline: "middle",
-                        className: "fill-text-heading",
-                        style: {
-                            fontSize: size * 0.22,
-                            fontWeight: 700
-                        },
-                        children: score
+                        className: "transition-[stroke-dashoffset] duration-700 ease-out"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/score-ring.tsx",
                         lineNumber: 39,
@@ -3452,37 +3528,56 @@ function ScoreRing({ score, size = 140, label = "Overall Score" }) {
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("text", {
                         x: "50%",
+                        y: "46%",
+                        textAnchor: "middle",
+                        dominantBaseline: "middle",
+                        fill: isDark ? "#FFFFFF" : "var(--color-text-heading, #0F172A)",
+                        style: {
+                            fontSize: size * 0.23,
+                            fontWeight: 800,
+                            fontFamily: "inherit"
+                        },
+                        children: score
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/ui/score-ring.tsx",
+                        lineNumber: 54,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("text", {
+                        x: "50%",
                         y: "65%",
                         textAnchor: "middle",
                         dominantBaseline: "middle",
-                        className: "fill-text-body",
+                        fill: isDark ? "#94A3B8" : "var(--color-text-body, #64748B)",
                         style: {
-                            fontSize: size * 0.09
+                            fontSize: size * 0.085,
+                            fontWeight: 600,
+                            fontFamily: "inherit"
                         },
                         children: "/ 100"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/score-ring.tsx",
-                        lineNumber: 49,
+                        lineNumber: 66,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/score-ring.tsx",
-                lineNumber: 17,
+                lineNumber: 20,
                 columnNumber: 7
             }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                className: "text-label text-text-body",
+            label && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                className: `text-[11px] font-bold uppercase tracking-wider ${isDark ? "text-slate-300" : "text-text-body"}`,
                 children: label
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/score-ring.tsx",
-                lineNumber: 60,
-                columnNumber: 7
+                lineNumber: 78,
+                columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/ui/score-ring.tsx",
-        lineNumber: 16,
+        lineNumber: 19,
         columnNumber: 5
     }, this);
 }

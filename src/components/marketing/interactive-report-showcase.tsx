@@ -78,32 +78,38 @@ export function InteractiveReportShowcase() {
   const report = REPORT_ATTEMPTS[attemptKey];
 
   return (
-    <div className="relative mx-auto max-w-[1280px] px-6 lg:px-16">
+    <div className="relative mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-16">
       {/* Header with Mode Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <span className="text-label text-cyan-400">Interactive Diagnostic Engine</span>
-          <h3 className="text-h2 mt-1 text-white">Live Readiness Report Architecture</h3>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">
+            <BrainCircuit className="h-3.5 w-3.5 text-cyan-400" /> Interactive Diagnostic Engine
+          </span>
+          <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mt-3 text-white tracking-tight">
+            Live Readiness Report Architecture
+          </h3>
         </div>
 
         {/* Before / After Toggle */}
-        <div className="inline-flex rounded-xl border border-white/15 bg-white/5 p-1 backdrop-blur-md">
+        <div className="inline-flex rounded-xl border border-white/10 bg-slate-900/90 p-1.5 backdrop-blur-md shadow-inner">
           <button
+            type="button"
             onClick={() => setAttemptKey("attempt1")}
-            className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+            className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
               attemptKey === "attempt1"
-                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                : "text-white/60 hover:text-white"
+                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm shadow-amber-500/20"
+                : "text-slate-400 hover:text-white"
             }`}
           >
             Attempt #1 (Baseline 68%)
           </button>
           <button
+            type="button"
             onClick={() => setAttemptKey("attempt2")}
-            className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+            className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
               attemptKey === "attempt2"
-                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                : "text-white/60 hover:text-white"
+                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm shadow-emerald-500/20"
+                : "text-slate-400 hover:text-white"
             }`}
           >
             Attempt #2 (Retake 92% 🚀)
@@ -112,10 +118,10 @@ export function InteractiveReportShowcase() {
       </div>
 
       {/* Main Glass Card */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-b from-white/[0.08] to-white/[0.02] p-6 lg:p-8 backdrop-blur-xl shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-6 sm:p-8 lg:p-10 backdrop-blur-xl shadow-2xl">
         {/* Subtle Ambient Radial Glow */}
         <div
-          className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full opacity-20 blur-3xl"
+          className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full opacity-20 blur-3xl transition-all duration-700"
           style={{
             background: attemptKey === "attempt2" ? "#10B981" : "#F59E0B",
           }}
@@ -133,77 +139,88 @@ export function InteractiveReportShowcase() {
             {/* Top Score Summary Row */}
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
               {/* Score Ring & Overall Level */}
-              <div className="lg:col-span-5 flex flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] p-6 text-center">
+              <div className="lg:col-span-5 flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-slate-950/70 p-6 sm:p-8 text-center shadow-inner">
                 <AnimatedScoreRing
                   score={report.overallScore}
                   size={170}
                   label="Overall Readiness"
+                  variant="dark"
                 />
-                <div className="mt-4 flex items-center gap-2">
-                  <Badge variant={report.badgeVariant} className="text-xs font-semibold">
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-bold ${
+                      report.badgeVariant === "success"
+                        ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+                        : "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                    }`}
+                  >
                     {report.readinessLevel}
-                  </Badge>
+                  </span>
                   {attemptKey === "attempt2" && (
-                    <span className="flex items-center gap-1 text-xs font-semibold text-emerald-400">
+                    <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 text-xs font-bold text-emerald-300">
                       <TrendingUp className="h-3.5 w-3.5" /> +24% Boost
                     </span>
                   )}
                 </div>
-                <p className="mt-2 text-xs text-white/60 max-w-xs">
+                <p className="mt-3 text-xs text-slate-400 max-w-xs leading-relaxed">
                   {report.label} • Benchmarked against 22,000+ candidate evaluations
                 </p>
               </div>
 
               {/* View Switcher & Detailed Category Bars */}
-              <div className="lg:col-span-7 flex flex-col gap-4">
-                <div className="flex border-b border-white/10 pb-2">
+              <div className="lg:col-span-7 flex flex-col gap-5">
+                <div className="flex border-b border-white/10 pb-2 gap-4">
                   <button
+                    type="button"
                     onClick={() => setActiveView("categories")}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer border-b-2 ${
+                    className={`flex items-center gap-2 pb-2 text-xs font-bold transition-all cursor-pointer border-b-2 -mb-2 ${
                       activeView === "categories"
-                        ? "border-cyan-400 text-cyan-400"
-                        : "border-transparent text-white/60 hover:text-white"
+                        ? "border-cyan-400 text-cyan-300"
+                        : "border-transparent text-slate-400 hover:text-slate-200"
                     }`}
                   >
-                    <BarChart3 className="h-3.5 w-3.5" />
+                    <BarChart3 className="h-4 w-4 text-cyan-400" />
                     5-Axis Evaluation
                   </button>
                   <button
+                    type="button"
                     onClick={() => setActiveView("study-plan")}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer border-b-2 ${
+                    className={`flex items-center gap-2 pb-2 text-xs font-bold transition-all cursor-pointer border-b-2 -mb-2 ${
                       activeView === "study-plan"
-                        ? "border-cyan-400 text-cyan-400"
-                        : "border-transparent text-white/60 hover:text-white"
+                        ? "border-cyan-400 text-cyan-300"
+                        : "border-transparent text-slate-400 hover:text-slate-200"
                     }`}
                   >
-                    <BookOpen className="h-3.5 w-3.5" />
+                    <BookOpen className="h-4 w-4 text-cyan-400" />
                     Targeted Study Plan ({report.actionItems.length} modules)
                   </button>
                 </div>
 
                 {activeView === "categories" ? (
-                  <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-                    {report.scores.map(([label, score]) => (
-                      <AnimatedScoreBar key={label} label={label} score={score} />
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {report.scores.map(([label, score], idx) => (
+                      <div key={label} className={idx === 4 ? "sm:col-span-2" : ""}>
+                        <AnimatedScoreBar label={label} score={score} />
+                      </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     {report.actionItems.map((item, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] p-3 hover:bg-white/[0.05] transition-colors"
+                        className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] p-3.5 hover:bg-white/[0.05] transition-colors"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-cyan-400/10 text-xs font-bold text-cyan-400 font-mono">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/15 text-xs font-bold text-cyan-300 font-mono border border-cyan-500/30">
                             0{idx + 1}
                           </div>
-                          <div>
-                            <div className="text-xs font-semibold text-white">{item.topic}</div>
-                            <div className="text-[11px] text-white/50">{item.courseRef}</div>
+                          <div className="min-w-0">
+                            <div className="text-xs sm:text-sm font-bold text-white truncate">{item.topic}</div>
+                            <div className="text-[11px] text-slate-400">{item.courseRef}</div>
                           </div>
                         </div>
-                        <span className="rounded-md bg-white/10 px-2 py-1 text-[11px] font-mono text-cyan-300">
+                        <span className="shrink-0 rounded-lg bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 text-[11px] font-mono text-cyan-300">
                           {item.estTime}
                         </span>
                       </div>
@@ -214,20 +231,24 @@ export function InteractiveReportShowcase() {
             </div>
 
             {/* Diagnostic Signals Footer */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 pt-4 border-t border-white/10">
-              <div className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                <CheckCircle className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 pt-6 border-t border-white/10">
+              <div className="flex items-start gap-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-5 shadow-xs">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+                  <CheckCircle className="h-4 w-4" />
+                </div>
                 <div>
-                  <div className="text-xs font-bold text-emerald-400">Primary Strength Identified</div>
-                  <p className="mt-1 text-xs text-white/80">{report.highlightStrength}</p>
+                  <div className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Primary Strength Identified</div>
+                  <p className="mt-1 text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">{report.highlightStrength}</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
-                <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3.5 rounded-2xl border border-amber-500/30 bg-amber-950/20 p-5 shadow-xs">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+                  <AlertTriangle className="h-4 w-4" />
+                </div>
                 <div>
-                  <div className="text-xs font-bold text-amber-400">Recommended Optimization Area</div>
-                  <p className="mt-1 text-xs text-white/80">{report.highlightGap}</p>
+                  <div className="text-xs font-bold text-amber-300 uppercase tracking-wider">Recommended Optimization Area</div>
+                  <p className="mt-1 text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">{report.highlightGap}</p>
                 </div>
               </div>
             </div>
@@ -237,3 +258,4 @@ export function InteractiveReportShowcase() {
     </div>
   );
 }
+

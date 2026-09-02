@@ -139,12 +139,13 @@ export default async function CourseDetailPage({
             </div>
             <MagneticButton className="mt-5 block w-full">
               <Link
-                href={`/checkout?course=${course.slug}`}
+                href={`/register-course?course=${course.slug}`}
                 className={buttonVariants({ size: "lg" }) + " w-full"}
               >
                 Enroll Now
               </Link>
             </MagneticButton>
+
             <button className={buttonVariants({ variant: "secondary", size: "md" }) + " mt-3 w-full"}>
               <Download className="h-4 w-4" /> Download Brochure
             </button>

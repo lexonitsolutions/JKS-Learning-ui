@@ -19,6 +19,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Sparkles,
+  Megaphone,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
@@ -35,18 +37,21 @@ interface NavItem {
 const STUDENT_MAIN_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/my-courses", label: "My Courses", icon: BookOpen },
+  { href: "/dashboard/resume-builder", label: "Resume Maker", icon: FileText, badge: "New" },
   { href: "/dashboard/assessments", label: "Assessments", icon: ClipboardCheck },
   { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit, badge: "AI" },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
 ];
 
+
 const STUDENT_SEC_NAV: NavItem[] = [
-  { href: "/dashboard/payments", label: "Payment History", icon: CreditCard },
+  { href: "/dashboard/payments", label: "Invoices & Billing", icon: CreditCard },
   { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
 
 const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone, badge: "New" },
   { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/instructors", label: "Instructors", icon: GraduationCap },
@@ -55,11 +60,13 @@ const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin/certificates", label: "Certificates", icon: Award },
 ];
 
+
 const ADMIN_SEC_NAV: NavItem[] = [
-  { href: "/admin/payments", label: "Payments", icon: CreditCard },
+  { href: "/admin/payments", label: "Invoices & Billing", icon: CreditCard },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
+
 
 const INSTRUCTOR_MAIN_NAV: NavItem[] = [
   { href: "/instructor", label: "Dashboard", icon: LayoutDashboard },
@@ -275,23 +282,34 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
         {/* Header: Logo & Toggle */}
         <div
           className={`flex h-[72px] shrink-0 items-center border-b border-slate-100/70 transition-all duration-300 ${
-            isCollapsed ? "flex-col justify-center gap-1 px-2" : "justify-between px-5"
+            isCollapsed ? "flex-col justify-center gap-1 px-2" : "items-center px-4"
           }`}
         >
           {!isCollapsed ? (
-            <>
-              <JksLogo size="sm" href={rootHref} showSubtitle={userRole} />
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                aria-label="Collapse sidebar"
-                title="Collapse sidebar"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors shrink-0"
-              >
-                <PanelLeftClose className="h-4 w-4 stroke-[2]" />
-              </button>
-            </>
+            <div className="flex items-center justify-between w-full gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                {/* Minimize/Collapse icon placed on the LEFT */}
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  aria-label="Collapse sidebar"
+                  title="Collapse sidebar"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors shrink-0"
+                >
+                  <PanelLeftClose className="h-4 w-4 stroke-[2]" />
+                </button>
+
+                {/* Logo without long overlapping subtitle */}
+                <JksLogo size="sm" href={rootHref} />
+              </div>
+
+              {/* Compact Role Badge on the right */}
+              <span className="text-[9.5px] font-bold text-slate-500 uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200/70 shrink-0">
+                {isAdmin ? "Admin" : isInstructor ? "Faculty" : "Student"}
+              </span>
+            </div>
           ) : (
+
 
             <div className="relative group flex items-center justify-center">
               <button
