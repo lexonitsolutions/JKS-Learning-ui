@@ -44,6 +44,9 @@ function LinkedinIcon({ className = "h-4 w-4" }: { className?: string }) {
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
 import { TiltCard } from "@/components/interactions/tilt-card";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { getClientSessionEmail } from "@/lib/data/enrollments-api";
+import { fetchStudentDetail } from "@/lib/data/students-api";
 
 // Preset Banner Themes for Quick LinkedIn-style Cover Customization
 const BANNER_PRESETS = [
@@ -90,16 +93,20 @@ const STORAGE_KEYS = {
 };
 
 export default function StudentProfilePage() {
+  const session = useMockSession();
+  const effectiveEmail = session?.email || getClientSessionEmail();
+
   // Profile State
-  const [name, setName] = useState("Jordan Dsouza");
-  const [role, setRole] = useState("Java Full Stack & Cloud Developer");
+  const [name, setName] = useState(session?.name || "Student Learner");
+  const [role, setRole] = useState("Enterprise Full Stack Developer");
   const [bio, setBio] = useState("Passionate software engineer building resilient enterprise web applications.");
   const [location, setLocation] = useState("Bengaluru, India");
   const [avatar, setAvatar] = useState("/images/hero-developer.png");
+  const [enrolledTrack, setEnrolledTrack] = useState("Java Track");
 
   // Banner State (Custom image URL or preset gradient class)
   const [bannerType, setBannerType] = useState<"preset" | "image">("preset");
-  const [bannerVal, setBannerVal] = useState("bg-gradient-to-r from-amber-500 via-orange-500 to-rose-600");
+  const [bannerVal, setBannerVal] = useState("bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700");
 
   // Public/Private Visibility Toggles
   const [isStreakPublic, setIsStreakPublic] = useState(true);
@@ -117,48 +124,88 @@ export default function StudentProfilePage() {
   const bannerFileRef = useRef<HTMLInputElement>(null);
   const avatarFileRef = useRef<HTMLInputElement>(null);
 
-  // Load from localStorage on mount
+  // Load from session, API and localStorage on mount
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const savedName = localStorage.getItem(STORAGE_KEYS.PROFILE_NAME);
-      if (savedName) setName(savedName);
-
-      const savedRole = localStorage.getItem(STORAGE_KEYS.PROFILE_ROLE);
-      if (savedRole) setRole(savedRole);
-
-      const savedBio = localStorage.getItem(STORAGE_KEYS.PROFILE_BIO);
-      if (savedBio) setBio(savedBio);
-
-      const savedLoc = localStorage.getItem(STORAGE_KEYS.PROFILE_LOC);
-      if (savedLoc) setLocation(savedLoc);
-
-      const savedAvatar = localStorage.getItem(STORAGE_KEYS.PROFILE_AVATAR);
-      if (savedAvatar) setAvatar(savedAvatar);
-
-      const savedBannerType = localStorage.getItem(STORAGE_KEYS.PROFILE_BANNER_TYPE) as "preset" | "image" | null;
-      const savedBannerVal = localStorage.getItem(STORAGE_KEYS.PROFILE_BANNER_VAL);
-      if (savedBannerType && savedBannerVal) {
-        setBannerType(savedBannerType);
-        setBannerVal(savedBannerVal);
-      }
-    } catch {
-      // ignore
+    if (session?.name) {
+      setName(session.name);
     }
-  }, []);
 
-  // Save profile updates to localStorage
+    if (effectiveEmail) {
+      fetchStudentDetail(effectiveEmail)
+        .then((st) => {
+          if (st) {
+            if (st.name) setName(st.name);
+            if (st.phone && st.phone !== "N/A") setLocation(`${st.phone} · India`);
+            if (st.enrollments && st.enrollments.length > 0) {
+              setRole(`${st.enrollments[0].courseTitle} Cohort`);
+              setEnrolledTrack(`${st.enrollments[0].track || "Full Stack"} Track`);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+
+    if (typeof window !== "undefined") {
+      try {
+        const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
+        const savedName = localStorage.getItem(STORAGE_KEYS.PROFILE_NAME + keySuffix);
+        if (savedName) setName(savedName);
+
+        const savedRole = localStorage.getItem(STORAGE_KEYS.PROFILE_ROLE + keySuffix);
+        if (savedRole) setRole(savedRole);
+
+        const savedBio = localStorage.getItem(STORAGE_KEYS.PROFILE_BIO + keySuffix);
+        if (savedBio) setBio(savedBio);
+
+        const savedLoc = localStorage.getItem(STORAGE_KEYS.PROFILE_LOC + keySuffix);
+        if (savedLoc) setLocation(savedLoc);
+
+        const savedAvatar = localStorage.getItem(STORAGE_KEYS.PROFILE_AVATAR + keySuffix);
+        if (savedAvatar) setAvatar(savedAvatar);
+
+        const savedBannerType = localStorage.getItem(STORAGE_KEYS.PROFILE_BANNER_TYPE + keySuffix) as "preset" | "image" | null;
+        const savedBannerVal = localStorage.getItem(STORAGE_KEYS.PROFILE_BANNER_VAL + keySuffix);
+        if (savedBannerType && savedBannerVal) {
+          setBannerType(savedBannerType);
+          setBannerVal(savedBannerVal);
+        }
+      } catch {}
+    }
+  }, [session?.name, session?.email, effectiveEmail]);
+
+  // Save profile updates to localStorage & session cookie
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
     try {
-      localStorage.setItem(STORAGE_KEYS.PROFILE_NAME, name);
-      localStorage.setItem(STORAGE_KEYS.PROFILE_ROLE, role);
-      localStorage.setItem(STORAGE_KEYS.PROFILE_BIO, bio);
-      localStorage.setItem(STORAGE_KEYS.PROFILE_LOC, location);
-      localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR, avatar);
-    } catch {
-      // ignore
-    }
+      localStorage.setItem(STORAGE_KEYS.PROFILE_NAME + keySuffix, name);
+      localStorage.setItem(STORAGE_KEYS.PROFILE_ROLE + keySuffix, role);
+      localStorage.setItem(STORAGE_KEYS.PROFILE_BIO + keySuffix, bio);
+      localStorage.setItem(STORAGE_KEYS.PROFILE_LOC + keySuffix, location);
+      localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR + keySuffix, avatar);
+
+      // Update active session cookie so sidebar and topbar update immediately
+      if (typeof document !== "undefined") {
+        const trimmedName = name.trim();
+        const initials =
+          trimmedName
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()
+            .substring(0, 2) || "ST";
+
+        const updatedSession = {
+          email: effectiveEmail || "student@jkslearning.dev",
+          name: trimmedName,
+          initials,
+          role: session?.role || "student",
+        };
+
+        document.cookie = `jks_mock_session=${encodeURIComponent(JSON.stringify(updatedSession))}; path=/; max-age=604800; SameSite=Lax`;
+        window.dispatchEvent(new Event("jks-mock-session-change"));
+      }
+    } catch {}
     setIsEditModalOpen(false);
   };
 
@@ -270,12 +317,23 @@ export default function StudentProfilePage() {
     { label: "Hard Solved", solved: 20, total: 38, percent: 53, color: "text-rose-500", stroke: "#E11D48" },
   ];
 
+  const initials =
+    session?.initials ||
+    name
+      .trim()
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2) ||
+    "ST";
+
   return (
     <>
       <DashboardTopbar
         title="Student Profile"
         subtitle="Manage your public learning profile, achievements, and contributions ledger."
-        userInitials="JD"
+        userInitials={initials}
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
@@ -368,7 +426,7 @@ export default function StudentProfilePage() {
                         <Globe className="h-3 w-3 text-slate-400" /> {location}
                       </span>
                       <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-[#2563EB]">
-                        <BookOpen className="h-3 w-3" /> Java Track
+                        <BookOpen className="h-3 w-3" /> {enrolledTrack}
                       </span>
                     </div>
                   </div>

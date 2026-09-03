@@ -1,8 +1,9 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { MOCK_USERS } from "./mock-users";
+import { MOCK_USERS, type MockRole } from "./mock-users";
 import { SESSION_COOKIE_NAME, encodeSession, decodeSession, type MockSession } from "./session";
+
 
 const SESSION_CHANGE_EVENT = "jks-mock-session-change";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
@@ -127,8 +128,85 @@ export function loginWithMockCredentials(email: string, password: string): Login
   return { ok: false, error: "Invalid email or password." };
 }
 
+export async function loginWithApi(email: string, password: string): Promise<LoginResult> {
+  const normalizedEmail = email.trim().toLowerCase();
+  try {
+    const res = await fetch("http://localhost:4000/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email: normalizedEmail, password }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const u = data.user;
+      let role: MockRole = "student";
+      if (u.role === "SUPER_ADMIN" || u.role === "ADMIN") {
+        role = "admin";
+      } else if (u.role === "INSTRUCTOR") {
+        role = "instructor";
+      }
+
+      const session: MockSession = {
+        email: u.email,
+        name: u.name,
+        initials: u.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2) || "JK",
+        role,
+      };
+      document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+      window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+      return { ok: true, session };
+    }
+  } catch {
+    // ignore
+  }
+
+  // Fallback to local credentials
+  return loginWithMockCredentials(email, password);
+}
+
+export async function registerWithApi(name: string, email: string, password: string): Promise<LoginResult> {
+  const normalizedEmail = email.trim().toLowerCase();
+  try {
+    const res = await fetch("http://localhost:4000/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ name, email: normalizedEmail, password }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const u = data.user;
+      const session: MockSession = {
+        email: u.email,
+        name: u.name,
+        initials: u.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2) || "ST",
+        role: "student",
+      };
+      document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+      window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+      return { ok: true, session };
+    }
+  } catch {
+    // ignore
+  }
+
+  const session: MockSession = {
+    email: normalizedEmail,
+    name: name,
+    initials: name.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2) || "ST",
+    role: "student",
+  };
+  document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+  window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+  return { ok: true, session };
+}
+
 export function logoutMockSession() {
   document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0`;
   window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
 }
+
 

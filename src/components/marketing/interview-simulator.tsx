@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BrainCircuit,
@@ -295,8 +296,16 @@ export function InterviewSimulator() {
                 >
                   {/* AI Question Bubble */}
                   <div className="rounded-xl border border-primary-blue/30 bg-primary-blue/10 p-4">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-cyan-300">
-                      <Sparkles className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-2.5 text-xs font-semibold text-cyan-300">
+                      <div className="relative h-6 w-6 overflow-hidden rounded-full ring-1 ring-cyan-400/60 shadow-xs shrink-0">
+                        <Image
+                          src="/software-agent.png"
+                          alt="AI Interviewer"
+                          width={24}
+                          height={24}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
                       <span>AI INTERVIEWER QUESTION</span>
                       <span className="ml-auto text-[11px] font-normal text-white/40">
                         {current.category}

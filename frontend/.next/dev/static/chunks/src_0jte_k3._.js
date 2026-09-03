@@ -2303,8 +2303,8 @@ function DashboardTopbar({ title = "Welcome back 👋", subtitle = "Here's what'
     const isInstructor = pathname.startsWith("/instructor");
     const navItems = isAdmin ? ADMIN_NAV : isInstructor ? INSTRUCTOR_NAV : STUDENT_NAV;
     const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
-    const resolvedInitials = isAdmin ? "AD" : isInstructor ? session?.initials ?? userInitials ?? "RK" : session?.initials ?? userInitials ?? "JD";
-    const userName = isAdmin ? session?.name && session.name !== "John Doe" ? session.name : "Ava Desai" : isInstructor ? session?.name ?? "Dr. Rohit Kapoor" : session?.name ?? "Jordan Dsouza";
+    const resolvedInitials = isAdmin ? "AD" : isInstructor ? session?.initials ?? userInitials ?? "RK" : session?.initials ?? userInitials ?? "ST";
+    const userName = isAdmin ? session?.name && session.name !== "John Doe" ? session.name : "Ava Desai" : isInstructor ? session?.name ?? "Dr. Rohit Kapoor" : session?.name ?? "Student Learner";
     const userEmail = isAdmin ? session?.email && session.email !== "student@jkslearning.com" ? session.email : "admin@jkslearning.com" : isInstructor ? session?.email ?? "instructor@jkslearning.dev" : session?.email ?? "student@jkslearning.com";
     // Close explore dropdown on outside click
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
@@ -3302,11 +3302,8 @@ function safeLocalStorageSet(key, value) {
         console.error("Failed to write to localStorage:", err);
     }
 }
-// Initial student owned courses (default student enrolled in Java Full Stack & React Frontend)
-const DEFAULT_ENROLLED_SLUGS = [
-    "java-full-stack-mastery",
-    "modern-frontend-engineering"
-];
+// Default student owned courses (empty by default for real authentication)
+const DEFAULT_ENROLLED_SLUGS = [];
 function getStoredCourses() {
     return safeLocalStorageGet(STORAGE_KEYS.COURSES, INITIAL_COURSES);
 }

@@ -53,11 +53,14 @@ function AdminPaymentsPage() {
     });
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AdminPaymentsPage.useEffect": ()=>{
-            setInvoices((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2f$invoices$2d$store$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getStoredInvoices"])());
+            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2f$invoices$2d$store$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["fetchInvoicesFromApi"])().then({
+                "AdminPaymentsPage.useEffect": (list)=>setInvoices(list)
+            }["AdminPaymentsPage.useEffect"]);
         }
     }["AdminPaymentsPage.useEffect"], []);
-    const refreshInvoices = ()=>{
-        setInvoices((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2f$invoices$2d$store$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getStoredInvoices"])());
+    const refreshInvoices = async ()=>{
+        const list = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2f$invoices$2d$store$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["fetchInvoicesFromApi"])();
+        setInvoices(list);
     };
     const handleCreate = (e)=>{
         e.preventDefault();
@@ -93,7 +96,7 @@ function AdminPaymentsPage() {
                 userInitials: "AD"
             }, void 0, false, {
                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                lineNumber: 79,
+                lineNumber: 81,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -115,7 +118,7 @@ function AdminPaymentsPage() {
                                                     children: "Gross Settled (MTD)"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 91,
+                                                    lineNumber: 93,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -124,18 +127,18 @@ function AdminPaymentsPage() {
                                                         className: "h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                        lineNumber: 93,
+                                                        lineNumber: 95,
                                                         columnNumber: 19
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 92,
+                                                    lineNumber: 94,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 90,
+                                            lineNumber: 92,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -147,7 +150,7 @@ function AdminPaymentsPage() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 96,
+                                            lineNumber: 98,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -155,18 +158,18 @@ function AdminPaymentsPage() {
                                             children: "+14.5% vs last month"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 99,
+                                            lineNumber: 101,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                    lineNumber: 89,
+                                    lineNumber: 91,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                lineNumber: 88,
+                                lineNumber: 90,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$interactions$2f$tilt$2d$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TiltCard"], {
@@ -181,7 +184,7 @@ function AdminPaymentsPage() {
                                                     children: "Payment Success Rate"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 106,
+                                                    lineNumber: 108,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -190,18 +193,18 @@ function AdminPaymentsPage() {
                                                         className: "h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                        lineNumber: 108,
+                                                        lineNumber: 110,
                                                         columnNumber: 19
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 107,
+                                                    lineNumber: 109,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 105,
+                                            lineNumber: 107,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -209,7 +212,7 @@ function AdminPaymentsPage() {
                                             children: "99.2%"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 111,
+                                            lineNumber: 113,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -217,18 +220,18 @@ function AdminPaymentsPage() {
                                             children: "18% GST Compliant & Reconciled"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 112,
+                                            lineNumber: 114,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                    lineNumber: 104,
+                                    lineNumber: 106,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                lineNumber: 103,
+                                lineNumber: 105,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$interactions$2f$tilt$2d$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TiltCard"], {
@@ -243,7 +246,7 @@ function AdminPaymentsPage() {
                                                     children: "Payment Gateways"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 119,
+                                                    lineNumber: 121,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -252,18 +255,18 @@ function AdminPaymentsPage() {
                                                         className: "h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                        lineNumber: 121,
+                                                        lineNumber: 123,
                                                         columnNumber: 19
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 120,
+                                                    lineNumber: 122,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 118,
+                                            lineNumber: 120,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -271,7 +274,7 @@ function AdminPaymentsPage() {
                                             children: "UPI / Cards / EMI"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 124,
+                                            lineNumber: 126,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -279,24 +282,24 @@ function AdminPaymentsPage() {
                                             children: "Instant automated invoice numbering"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 125,
+                                            lineNumber: 127,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                    lineNumber: 117,
+                                    lineNumber: 119,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                lineNumber: 116,
+                                lineNumber: 118,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                        lineNumber: 87,
+                        lineNumber: 89,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -309,7 +312,7 @@ function AdminPaymentsPage() {
                                         className: "absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                        lineNumber: 133,
+                                        lineNumber: 135,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -320,13 +323,13 @@ function AdminPaymentsPage() {
                                         className: "w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2 text-xs text-slate-900 outline-none focus:border-[#2563EB] focus:bg-white"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                        lineNumber: 134,
+                                        lineNumber: 136,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                lineNumber: 132,
+                                lineNumber: 134,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -342,7 +345,7 @@ function AdminPaymentsPage() {
                                                 children: "All Invoices"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                lineNumber: 149,
+                                                lineNumber: 151,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -350,7 +353,7 @@ function AdminPaymentsPage() {
                                                 children: "Paid"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                lineNumber: 150,
+                                                lineNumber: 152,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -358,13 +361,13 @@ function AdminPaymentsPage() {
                                                 children: "Pending"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                lineNumber: 151,
+                                                lineNumber: 153,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                        lineNumber: 144,
+                                        lineNumber: 146,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -376,26 +379,26 @@ function AdminPaymentsPage() {
                                                 className: "h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                lineNumber: 159,
+                                                lineNumber: 161,
                                                 columnNumber: 15
                                             }, this),
                                             " Create Invoice"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                        lineNumber: 154,
+                                        lineNumber: 156,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                lineNumber: 143,
+                                lineNumber: 145,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                        lineNumber: 131,
+                        lineNumber: 133,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -414,7 +417,7 @@ function AdminPaymentsPage() {
                                                     children: "Invoice #"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 170,
+                                                    lineNumber: 172,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -422,7 +425,7 @@ function AdminPaymentsPage() {
                                                     children: "Student Details"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 171,
+                                                    lineNumber: 173,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -430,7 +433,7 @@ function AdminPaymentsPage() {
                                                     children: "Course Track"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 172,
+                                                    lineNumber: 174,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -438,7 +441,7 @@ function AdminPaymentsPage() {
                                                     children: "Total Amount"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 173,
+                                                    lineNumber: 175,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -446,7 +449,7 @@ function AdminPaymentsPage() {
                                                     children: "Status"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 174,
+                                                    lineNumber: 176,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -454,18 +457,18 @@ function AdminPaymentsPage() {
                                                     children: "Actions"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 175,
+                                                    lineNumber: 177,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 169,
+                                            lineNumber: 171,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                        lineNumber: 168,
+                                        lineNumber: 170,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -482,13 +485,13 @@ function AdminPaymentsPage() {
                                                                 children: new Date(inv.issueDate).toLocaleDateString("en-IN")
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                                lineNumber: 183,
+                                                                lineNumber: 185,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                        lineNumber: 181,
+                                                        lineNumber: 183,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -499,7 +502,7 @@ function AdminPaymentsPage() {
                                                                 children: inv.studentName
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                                lineNumber: 188,
+                                                                lineNumber: 190,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -507,13 +510,13 @@ function AdminPaymentsPage() {
                                                                 children: inv.studentPhone
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                                lineNumber: 189,
+                                                                lineNumber: 191,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                        lineNumber: 187,
+                                                        lineNumber: 189,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -521,7 +524,7 @@ function AdminPaymentsPage() {
                                                         children: inv.items[0]?.description || "Enrolled Course"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                        lineNumber: 191,
+                                                        lineNumber: 193,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -532,7 +535,7 @@ function AdminPaymentsPage() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                        lineNumber: 194,
+                                                        lineNumber: 196,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -544,19 +547,19 @@ function AdminPaymentsPage() {
                                                                     className: "h-3 w-3"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                                    lineNumber: 199,
+                                                                    lineNumber: 201,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 inv.paymentStatus
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                            lineNumber: 198,
+                                                            lineNumber: 200,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                        lineNumber: 197,
+                                                        lineNumber: 199,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -570,52 +573,52 @@ function AdminPaymentsPage() {
                                                                     className: "h-3.5 w-3.5"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                                    lineNumber: 209,
+                                                                    lineNumber: 211,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 " View / Print PDF"
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                            lineNumber: 204,
+                                                            lineNumber: 206,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                        lineNumber: 203,
+                                                        lineNumber: 205,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, inv.id, true, {
                                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                lineNumber: 180,
+                                                lineNumber: 182,
                                                 columnNumber: 19
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                        lineNumber: 178,
+                                        lineNumber: 180,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                lineNumber: 167,
+                                lineNumber: 169,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                            lineNumber: 166,
+                            lineNumber: 168,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                        lineNumber: 165,
+                        lineNumber: 167,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                lineNumber: 85,
+                lineNumber: 87,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$common$2f$invoice$2d$modal$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["InvoiceModal"], {
@@ -623,7 +626,7 @@ function AdminPaymentsPage() {
                 onClose: ()=>setSelectedInvoice(null)
             }, void 0, false, {
                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                lineNumber: 221,
+                lineNumber: 223,
                 columnNumber: 7
             }, this),
             showCreateModal && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -639,7 +642,7 @@ function AdminPaymentsPage() {
                                     children: "Generate New Tax Invoice"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                    lineNumber: 231,
+                                    lineNumber: 233,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -650,18 +653,18 @@ function AdminPaymentsPage() {
                                         className: "h-4 w-4"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                        lineNumber: 237,
+                                        lineNumber: 239,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                    lineNumber: 232,
+                                    lineNumber: 234,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                            lineNumber: 230,
+                            lineNumber: 232,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -678,7 +681,7 @@ function AdminPaymentsPage() {
                                                     children: "Student Name *"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 244,
+                                                    lineNumber: 246,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -693,13 +696,13 @@ function AdminPaymentsPage() {
                                                     className: "mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB]"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 245,
+                                                    lineNumber: 247,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 243,
+                                            lineNumber: 245,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -709,7 +712,7 @@ function AdminPaymentsPage() {
                                                     children: "Mobile / WhatsApp *"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 255,
+                                                    lineNumber: 257,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -724,19 +727,19 @@ function AdminPaymentsPage() {
                                                     className: "mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB]"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 256,
+                                                    lineNumber: 258,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 254,
+                                            lineNumber: 256,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                    lineNumber: 242,
+                                    lineNumber: 244,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -746,7 +749,7 @@ function AdminPaymentsPage() {
                                             children: "Course Track"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 268,
+                                            lineNumber: 270,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -761,40 +764,40 @@ function AdminPaymentsPage() {
                                                     children: "Java Full Stack Developer Mastery"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 274,
+                                                    lineNumber: 276,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                     children: "Modern Frontend Engineering (React 19 & Next.js)"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 275,
+                                                    lineNumber: 277,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                     children: "SAP S/4HANA Enterprise Systems"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 276,
+                                                    lineNumber: 278,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                     children: ".NET 9 Enterprise Microservices & Cloud"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 277,
+                                                    lineNumber: 279,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 269,
+                                            lineNumber: 271,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                    lineNumber: 267,
+                                    lineNumber: 269,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -807,7 +810,7 @@ function AdminPaymentsPage() {
                                                     children: "Standard Fee (₹)"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 283,
+                                                    lineNumber: 285,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -820,13 +823,13 @@ function AdminPaymentsPage() {
                                                     className: "mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB]"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 284,
+                                                    lineNumber: 286,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 282,
+                                            lineNumber: 284,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -836,7 +839,7 @@ function AdminPaymentsPage() {
                                                     children: "Discount / Scholarship (₹)"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 292,
+                                                    lineNumber: 294,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -849,19 +852,19 @@ function AdminPaymentsPage() {
                                                     className: "mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB]"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 293,
+                                                    lineNumber: 295,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 291,
+                                            lineNumber: 293,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                    lineNumber: 281,
+                                    lineNumber: 283,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -874,7 +877,7 @@ function AdminPaymentsPage() {
                                                     children: "Payment Mode"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 304,
+                                                    lineNumber: 306,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -890,7 +893,7 @@ function AdminPaymentsPage() {
                                                             children: "UPI"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                            lineNumber: 310,
+                                                            lineNumber: 312,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -898,7 +901,7 @@ function AdminPaymentsPage() {
                                                             children: "Credit/Debit Card"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                            lineNumber: 311,
+                                                            lineNumber: 313,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -906,7 +909,7 @@ function AdminPaymentsPage() {
                                                             children: "Net Banking"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                            lineNumber: 312,
+                                                            lineNumber: 314,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -914,19 +917,19 @@ function AdminPaymentsPage() {
                                                             children: "No-Cost EMI"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                            lineNumber: 313,
+                                                            lineNumber: 315,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 305,
+                                                    lineNumber: 307,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 303,
+                                            lineNumber: 305,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -936,7 +939,7 @@ function AdminPaymentsPage() {
                                                     children: "Batch Timing"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 317,
+                                                    lineNumber: 319,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -951,39 +954,39 @@ function AdminPaymentsPage() {
                                                             children: "Weekday Morning (7:30 AM - 9:30 AM)"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                            lineNumber: 323,
+                                                            lineNumber: 325,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                             children: "Weekend Intensive (10:00 AM - 2:00 PM)"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                            lineNumber: 324,
+                                                            lineNumber: 326,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                             children: "Weekday Evening (7:00 PM - 9:00 PM)"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                            lineNumber: 325,
+                                                            lineNumber: 327,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 318,
+                                                    lineNumber: 320,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 316,
+                                            lineNumber: 318,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                    lineNumber: 302,
+                                    lineNumber: 304,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -996,7 +999,7 @@ function AdminPaymentsPage() {
                                                     children: "Net Payable (Includes 18% GST):"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 332,
+                                                    lineNumber: 334,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1006,13 +1009,13 @@ function AdminPaymentsPage() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                                    lineNumber: 333,
+                                                    lineNumber: 335,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 331,
+                                            lineNumber: 333,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1020,13 +1023,13 @@ function AdminPaymentsPage() {
                                             children: "Auto-calculates CGST (9%) + SGST (9%) and allocates sequential tax invoice number."
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 335,
+                                            lineNumber: 337,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                    lineNumber: 330,
+                                    lineNumber: 332,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1039,7 +1042,7 @@ function AdminPaymentsPage() {
                                             children: "Cancel"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 341,
+                                            lineNumber: 343,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1048,36 +1051,36 @@ function AdminPaymentsPage() {
                                             children: "Generate & View Invoice"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                            lineNumber: 348,
+                                            lineNumber: 350,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                                    lineNumber: 340,
+                                    lineNumber: 342,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                            lineNumber: 241,
+                            lineNumber: 243,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                    lineNumber: 229,
+                    lineNumber: 231,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-                lineNumber: 228,
+                lineNumber: 230,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(admin)/admin/payments/page.tsx",
-        lineNumber: 78,
+        lineNumber: 80,
         columnNumber: 5
     }, this);
 }
@@ -1102,6 +1105,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$printer$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Printer$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/printer.mjs [app-client] (ecmascript) <export default as Printer>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/circle-check.mjs [app-client] (ecmascript) <export default as CheckCircle2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$shield$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ShieldCheck$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/shield-check.mjs [app-client] (ecmascript) <export default as ShieldCheck>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$file$2d$text$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__FileText$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/file-text.mjs [app-client] (ecmascript) <export default as FileText>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$common$2f$jks$2d$logo$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/common/jks-logo.tsx [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
@@ -1112,44 +1116,75 @@ var _s = __turbopack_context__.k.signature();
 function InvoiceModal({ invoice, onClose }) {
     _s();
     const printRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].useEffect({
+        "InvoiceModal.useEffect": ()=>{
+            if (!invoice) return;
+            const handleKeyDown = {
+                "InvoiceModal.useEffect.handleKeyDown": (e)=>{
+                    if (e.key === "Escape") {
+                        onClose();
+                    }
+                }
+            }["InvoiceModal.useEffect.handleKeyDown"];
+            window.addEventListener("keydown", handleKeyDown);
+            return ({
+                "InvoiceModal.useEffect": ()=>window.removeEventListener("keydown", handleKeyDown)
+            })["InvoiceModal.useEffect"];
+        }
+    }["InvoiceModal.useEffect"], [
+        invoice,
+        onClose
+    ]);
     if (!invoice) return null;
     const handlePrint = ()=>{
         window.print();
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static",
+        className: "fixed inset-0 z-[100] flex items-start justify-center bg-slate-950/80 p-2 sm:p-4 md:p-6 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static",
+        onClick: (e)=>{
+            if (e.target === e.currentTarget) {
+                onClose();
+            }
+        },
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "relative w-full max-w-3xl rounded-3xl border border-slate-700/50 bg-white shadow-2xl overflow-hidden print:border-none print:shadow-none print:max-w-full my-6",
+            className: "relative w-full max-w-3xl rounded-2xl sm:rounded-3xl border border-slate-700/50 bg-white shadow-2xl overflow-hidden print:border-none print:shadow-none print:max-w-full my-4 sm:my-8",
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex items-center justify-between border-b border-slate-200 bg-slate-900 px-6 py-4 text-white print:hidden",
+                    className: "sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-900 px-4 sm:px-6 py-3.5 text-white shadow-md print:hidden",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex items-center gap-2.5",
+                            className: "flex items-center gap-2 sm:gap-2.5",
                             children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: "text-xs font-bold uppercase tracking-wider text-cyan-300",
-                                    children: "GST Tax Invoice & Official Receipt"
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$file$2d$text$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__FileText$3e$__["FileText"], {
+                                    className: "h-4 w-4 text-cyan-400 shrink-0"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                    lineNumber: 28,
+                                    lineNumber: 48,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: "rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-0.5 text-[10px] font-bold text-emerald-400",
+                                    className: "text-xs font-bold uppercase tracking-wider text-cyan-300",
+                                    children: "GST Tax Invoice"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                    lineNumber: 49,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-bold text-emerald-400 shrink-0",
                                     children: [
                                         "● ",
                                         invoice.paymentStatus.toUpperCase()
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                    lineNumber: 29,
+                                    lineNumber: 50,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                            lineNumber: 27,
+                            lineNumber: 47,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1158,108 +1193,126 @@ function InvoiceModal({ invoice, onClose }) {
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     type: "button",
                                     onClick: handlePrint,
-                                    className: "flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white hover:bg-blue-600 transition-colors shadow-md cursor-pointer",
+                                    className: "flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3 sm:px-4 py-2 text-xs font-bold text-white hover:bg-blue-600 active:scale-95 transition-all shadow-md cursor-pointer",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$printer$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Printer$3e$__["Printer"], {
                                             className: "h-3.5 w-3.5"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 40,
+                                            lineNumber: 61,
                                             columnNumber: 15
                                         }, this),
-                                        " Download / Print A4 PDF"
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "hidden sm:inline",
+                                            children: "Download / Print A4 PDF"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                            lineNumber: 62,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "sm:hidden",
+                                            children: "Print PDF"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                            lineNumber: 63,
+                                            columnNumber: 15
+                                        }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                    lineNumber: 35,
+                                    lineNumber: 56,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     type: "button",
                                     onClick: onClose,
-                                    className: "rounded-xl p-1.5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors",
+                                    className: "rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors cursor-pointer",
+                                    "aria-label": "Close invoice modal",
                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
                                         className: "h-4 w-4"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                        lineNumber: 47,
+                                        lineNumber: 71,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                    lineNumber: 42,
+                                    lineNumber: 65,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                            lineNumber: 34,
+                            lineNumber: 55,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                    lineNumber: 26,
+                    lineNumber: 46,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     ref: printRef,
-                    className: "relative p-8 sm:p-12 space-y-8 text-slate-800 bg-white print:p-6 print:space-y-6",
+                    className: "relative p-4 sm:p-8 md:p-10 space-y-6 sm:space-y-8 text-slate-800 bg-white print:p-6 print:space-y-6",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.03] select-none",
+                            className: "pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.03] select-none overflow-hidden",
                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "text-9xl font-black rotate-[-30deg] tracking-widest text-slate-950",
+                                className: "text-6xl sm:text-8xl md:text-9xl font-black rotate-[-30deg] tracking-widest text-slate-950 whitespace-nowrap",
                                 children: "JKS LEARNING"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                lineNumber: 59,
+                                lineNumber: 83,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                            lineNumber: 58,
+                            lineNumber: 82,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex flex-col sm:flex-row sm:items-start justify-between gap-6 border-b-2 border-slate-900 pb-6",
+                            className: "flex flex-col sm:flex-row sm:items-start justify-between gap-5 border-b-2 border-slate-900 pb-5 sm:pb-6",
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "space-y-2",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$common$2f$jks$2d$logo$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["JksLogo"], {
                                             size: "md"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 67,
+                                            lineNumber: 91,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "mt-3 text-xs text-slate-600 space-y-0.5 leading-relaxed",
+                                            className: "text-xs text-slate-600 space-y-0.5 leading-relaxed",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "font-extrabold text-slate-950",
+                                                    className: "font-extrabold text-slate-950 text-sm",
                                                     children: "JKS Learning Technologies Private Limited"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 69,
+                                                    lineNumber: 93,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                    className: "text-slate-600",
                                                     children: "Tech Park Phase II, Outer Ring Road, Bengaluru, Karnataka - 560103"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 70,
+                                                    lineNumber: 94,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "font-mono text-slate-700",
+                                                    className: "font-mono text-slate-700 break-words",
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                             className: "font-bold",
                                                             children: "GSTIN:"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                            lineNumber: 72,
+                                                            lineNumber: 96,
                                                             columnNumber: 19
                                                         }, this),
                                                         " 29AAACJ1234F1Z8 • ",
@@ -1268,57 +1321,57 @@ function InvoiceModal({ invoice, onClose }) {
                                                             children: "CIN:"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                            lineNumber: 72,
+                                                            lineNumber: 96,
                                                             columnNumber: 79
                                                         }, this),
                                                         " U72200KA2026PTC099881"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 71,
+                                                    lineNumber: 95,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-slate-500",
+                                                    className: "text-slate-500 text-[11px]",
                                                     children: "SAC Code: 999293 (Commercial Training & Education Services)"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 74,
+                                                    lineNumber: 98,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 68,
+                                            lineNumber: 92,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                    lineNumber: 66,
+                                    lineNumber: 90,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "text-right sm:self-start",
+                                    className: "sm:text-right space-y-1.5 shrink-0 bg-slate-50 sm:bg-transparent p-3 sm:p-0 rounded-xl sm:rounded-none border sm:border-none border-slate-200",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "text-xl font-black text-slate-900 tracking-tight",
+                                            className: "text-lg sm:text-xl font-black text-slate-900 tracking-tight",
                                             children: "ORIGINAL TAX INVOICE"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 79,
+                                            lineNumber: 103,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "mt-1 text-xs font-mono font-bold text-[#2563EB] bg-blue-50 border border-blue-200 rounded-lg px-2.5 py-1 inline-block",
+                                            className: "text-xs font-mono font-bold text-[#2563EB] bg-blue-50 border border-blue-200 rounded-lg px-2.5 py-1 inline-block",
                                             children: invoice.invoiceNumber
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 80,
+                                            lineNumber: 104,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "mt-2.5 text-xs text-slate-600 space-y-0.5",
+                                            className: "text-xs text-slate-600 space-y-0.5 pt-1",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                     children: [
@@ -1326,17 +1379,19 @@ function InvoiceModal({ invoice, onClose }) {
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                             className: "font-semibold text-slate-900",
                                                             children: new Date(invoice.issueDate).toLocaleDateString("en-IN", {
-                                                                dateStyle: "long"
+                                                                day: "numeric",
+                                                                month: "long",
+                                                                year: "numeric"
                                                             })
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                            lineNumber: 84,
+                                                            lineNumber: 108,
                                                             columnNumber: 35
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 84,
+                                                    lineNumber: 108,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1347,17 +1402,17 @@ function InvoiceModal({ invoice, onClose }) {
                                                             children: invoice.paymentMode
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                            lineNumber: 85,
+                                                            lineNumber: 109,
                                                             columnNumber: 34
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 85,
+                                                    lineNumber: 109,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "font-mono text-[11px]",
+                                                    className: "font-mono text-[11px] break-all",
                                                     children: [
                                                         "Txn Ref: ",
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1365,60 +1420,61 @@ function InvoiceModal({ invoice, onClose }) {
                                                             children: invoice.transactionRef
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                            lineNumber: 86,
-                                                            columnNumber: 63
+                                                            lineNumber: 110,
+                                                            columnNumber: 73
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 86,
+                                                    lineNumber: 110,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 83,
+                                            lineNumber: 107,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                    lineNumber: 78,
+                                    lineNumber: 102,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                            lineNumber: 65,
+                            lineNumber: 89,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "rounded-2xl border border-slate-200 bg-slate-50/80 p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs",
+                            className: "rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-50/90 p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs",
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "space-y-1",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             className: "font-bold text-slate-400 uppercase text-[10px] tracking-wider",
                                             children: "Billed To (Student)"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 94,
+                                            lineNumber: 118,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "mt-1.5 font-black text-sm text-slate-900",
+                                            className: "font-black text-sm text-slate-900",
                                             children: invoice.studentName
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 95,
+                                            lineNumber: 119,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "text-slate-600 mt-0.5",
+                                            className: "text-slate-600 break-all",
                                             children: invoice.studentEmail
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 96,
+                                            lineNumber: 120,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1426,7 +1482,7 @@ function InvoiceModal({ invoice, onClose }) {
                                             children: invoice.studentPhone
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 97,
+                                            lineNumber: 121,
                                             columnNumber: 15
                                         }, this),
                                         invoice.studentCity && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1434,45 +1490,45 @@ function InvoiceModal({ invoice, onClose }) {
                                             children: invoice.studentCity
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 98,
+                                            lineNumber: 122,
                                             columnNumber: 39
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                    lineNumber: 93,
+                                    lineNumber: 117,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "sm:text-right space-y-1",
+                                    className: "sm:text-right space-y-1.5 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-200",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             className: "font-bold text-slate-400 uppercase text-[10px] tracking-wider",
                                             children: "Enrollment Standing"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 102,
+                                            lineNumber: 126,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "mt-1.5 flex items-center gap-1.5 sm:justify-end text-emerald-700 font-bold",
+                                            className: "flex items-center gap-1.5 sm:justify-end text-emerald-700 font-bold text-xs",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__["CheckCircle2"], {
-                                                    className: "h-4 w-4 text-emerald-600"
+                                                    className: "h-4 w-4 text-emerald-600 shrink-0"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 104,
+                                                    lineNumber: 128,
                                                     columnNumber: 17
                                                 }, this),
                                                 " 100% Verified Admission"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 103,
+                                            lineNumber: 127,
                                             columnNumber: 15
                                         }, this),
                                         invoice.batchTiming && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "text-slate-600 font-medium",
+                                            className: "text-slate-600 text-xs",
                                             children: [
                                                 "Assigned Cohort: ",
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1480,29 +1536,29 @@ function InvoiceModal({ invoice, onClose }) {
                                                     children: invoice.batchTiming
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 108,
+                                                    lineNumber: 132,
                                                     columnNumber: 36
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 107,
+                                            lineNumber: 131,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                    lineNumber: 101,
+                                    lineNumber: 125,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                            lineNumber: 92,
+                            lineNumber: 116,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "overflow-x-auto",
+                            className: "hidden sm:block overflow-x-auto",
                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("table", {
                                 className: "w-full text-left text-xs border-collapse",
                                 children: [
@@ -1515,7 +1571,7 @@ function InvoiceModal({ invoice, onClose }) {
                                                     children: "SAC"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 119,
+                                                    lineNumber: 143,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1523,7 +1579,7 @@ function InvoiceModal({ invoice, onClose }) {
                                                     children: "Item / Course Description"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 120,
+                                                    lineNumber: 144,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1531,7 +1587,7 @@ function InvoiceModal({ invoice, onClose }) {
                                                     children: "Qty"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 121,
+                                                    lineNumber: 145,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1539,7 +1595,7 @@ function InvoiceModal({ invoice, onClose }) {
                                                     children: "Tuition Fee"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 122,
+                                                    lineNumber: 146,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1547,18 +1603,18 @@ function InvoiceModal({ invoice, onClose }) {
                                                     children: "Taxable Total"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 123,
+                                                    lineNumber: 147,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 118,
+                                            lineNumber: 142,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                        lineNumber: 117,
+                                        lineNumber: 141,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -1566,94 +1622,204 @@ function InvoiceModal({ invoice, onClose }) {
                                         children: invoice.items.map((item, idx)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                        className: "py-3.5 px-2 font-mono text-slate-500 text-[11px]",
+                                                        className: "py-3.5 px-2 font-mono text-slate-500 text-[11px] align-top",
                                                         children: "999293"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                        lineNumber: 129,
+                                                        lineNumber: 153,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                        className: "py-3.5 px-2",
+                                                        className: "py-3.5 px-2 align-top",
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                 className: "font-bold text-slate-900 text-xs",
                                                                 children: item.description
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                                lineNumber: 131,
+                                                                lineNumber: 155,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                className: "text-[11px] text-slate-500",
+                                                                className: "text-[11px] text-slate-500 mt-0.5",
                                                                 children: "Live Faculty Mentorship + Production Capstones + Placement Support"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                                lineNumber: 132,
+                                                                lineNumber: 156,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                        lineNumber: 130,
+                                                        lineNumber: 154,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                        className: "py-3.5 px-2 text-center font-mono",
+                                                        className: "py-3.5 px-2 text-center font-mono align-top",
                                                         children: item.qty
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                        lineNumber: 134,
+                                                        lineNumber: 158,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                        className: "py-3.5 px-2 text-right font-mono font-medium",
+                                                        className: "py-3.5 px-2 text-right font-mono font-medium align-top",
                                                         children: [
                                                             "₹",
                                                             item.unitPrice.toLocaleString("en-IN")
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                        lineNumber: 135,
+                                                        lineNumber: 159,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                        className: "py-3.5 px-2 text-right font-mono font-black text-slate-900",
+                                                        className: "py-3.5 px-2 text-right font-mono font-black text-slate-900 align-top",
                                                         children: [
                                                             "₹",
                                                             item.totalPrice.toLocaleString("en-IN")
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                        lineNumber: 136,
+                                                        lineNumber: 160,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, idx, true, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 128,
+                                                lineNumber: 152,
                                                 columnNumber: 19
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                        lineNumber: 126,
+                                        lineNumber: 150,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                lineNumber: 116,
+                                lineNumber: 140,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                            lineNumber: 115,
+                            lineNumber: 139,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "block sm:hidden space-y-3",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-1",
+                                    children: "Course Line Items"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                    lineNumber: 169,
+                                    columnNumber: 13
+                                }, this),
+                                invoice.items.map((item, idx)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "rounded-xl border border-slate-200 bg-slate-50/50 p-3.5 space-y-2 text-xs",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex justify-between items-start gap-2",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "font-bold text-slate-900 text-xs",
+                                                        children: item.description
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                                        lineNumber: 173,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "font-mono text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded shrink-0",
+                                                        children: [
+                                                            "Qty: ",
+                                                            item.qty
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                                        lineNumber: 174,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                                lineNumber: 172,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "text-[11px] text-slate-500",
+                                                children: "Live Faculty Mentorship + Capstones + Placement Support"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                                lineNumber: 176,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex justify-between items-center border-t border-slate-200 pt-2 text-xs",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-slate-500 text-[11px]",
+                                                        children: "SAC: 999293"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                                        lineNumber: 178,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "text-right",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "text-slate-500 text-[11px] mr-2",
+                                                                children: [
+                                                                    "Tuition: ₹",
+                                                                    item.unitPrice.toLocaleString("en-IN")
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                                                lineNumber: 180,
+                                                                columnNumber: 21
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "font-mono font-black text-slate-900",
+                                                                children: [
+                                                                    "Total: ₹",
+                                                                    item.totalPrice.toLocaleString("en-IN")
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                                                lineNumber: 181,
+                                                                columnNumber: 21
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                                        lineNumber: 179,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                                lineNumber: 177,
+                                                columnNumber: 17
+                                            }, this)
+                                        ]
+                                    }, idx, true, {
+                                        fileName: "[project]/src/components/common/invoice-modal.tsx",
+                                        lineNumber: 171,
+                                        columnNumber: 15
+                                    }, this))
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/common/invoice-modal.tsx",
+                            lineNumber: 168,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "flex justify-end pt-2 border-t-2 border-slate-900",
                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "w-full max-w-sm space-y-2 text-xs",
+                                className: "w-full sm:max-w-sm space-y-2 text-xs",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex justify-between text-slate-600",
@@ -1662,7 +1828,7 @@ function InvoiceModal({ invoice, onClose }) {
                                                 children: "Gross Tuition Fee:"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 147,
+                                                lineNumber: 192,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1673,13 +1839,13 @@ function InvoiceModal({ invoice, onClose }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 148,
+                                                lineNumber: 193,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                        lineNumber: 146,
+                                        lineNumber: 191,
                                         columnNumber: 15
                                     }, this),
                                     invoice.discountAmount > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1693,7 +1859,7 @@ function InvoiceModal({ invoice, onClose }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 153,
+                                                lineNumber: 198,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1704,13 +1870,13 @@ function InvoiceModal({ invoice, onClose }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 154,
+                                                lineNumber: 199,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                        lineNumber: 152,
+                                        lineNumber: 197,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1720,7 +1886,7 @@ function InvoiceModal({ invoice, onClose }) {
                                                 children: "Taxable Value (Net of Discount):"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 159,
+                                                lineNumber: 204,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1731,13 +1897,13 @@ function InvoiceModal({ invoice, onClose }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 160,
+                                                lineNumber: 205,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                        lineNumber: 158,
+                                        lineNumber: 203,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1747,7 +1913,7 @@ function InvoiceModal({ invoice, onClose }) {
                                                 children: "Central GST (CGST 9%):"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 164,
+                                                lineNumber: 209,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1758,13 +1924,13 @@ function InvoiceModal({ invoice, onClose }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 165,
+                                                lineNumber: 210,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                        lineNumber: 163,
+                                        lineNumber: 208,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1774,7 +1940,7 @@ function InvoiceModal({ invoice, onClose }) {
                                                 children: "State GST (SGST 9%):"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 169,
+                                                lineNumber: 214,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1785,13 +1951,13 @@ function InvoiceModal({ invoice, onClose }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 170,
+                                                lineNumber: 215,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                        lineNumber: 168,
+                                        lineNumber: 213,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1801,7 +1967,7 @@ function InvoiceModal({ invoice, onClose }) {
                                                 children: "Total Amount Paid:"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 174,
+                                                lineNumber: 219,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1812,28 +1978,28 @@ function InvoiceModal({ invoice, onClose }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                lineNumber: 175,
+                                                lineNumber: 220,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                        lineNumber: 173,
+                                        lineNumber: 218,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                lineNumber: 145,
+                                lineNumber: 190,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                            lineNumber: 144,
+                            lineNumber: 189,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-slate-200 pt-6 text-xs text-slate-500",
+                            className: "flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6 border-t border-slate-200 pt-5 text-xs text-slate-500",
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "flex items-center gap-3",
@@ -1842,17 +2008,17 @@ function InvoiceModal({ invoice, onClose }) {
                                             className: "h-8 w-8 text-emerald-600 shrink-0"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 183,
+                                            lineNumber: 228,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "font-bold text-slate-900",
+                                                    className: "font-bold text-slate-900 text-xs",
                                                     children: "Digitally Verified & Reconciled Tax Invoice"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 185,
+                                                    lineNumber: 230,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1860,30 +2026,30 @@ function InvoiceModal({ invoice, onClose }) {
                                                     children: "This is a system-generated computer invoice under Section 31 of CGST Act."
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                                    lineNumber: 186,
+                                                    lineNumber: 231,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 184,
+                                            lineNumber: 229,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                    lineNumber: 182,
+                                    lineNumber: 227,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "text-right",
+                                    className: "text-center sm:text-right self-center sm:self-auto",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "font-serif italic font-bold text-slate-900 text-sm",
                                             children: "P. Sharma"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 191,
+                                            lineNumber: 236,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1891,7 +2057,7 @@ function InvoiceModal({ invoice, onClose }) {
                                             children: "Authorized Finance Officer"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 192,
+                                            lineNumber: 237,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1899,40 +2065,40 @@ function InvoiceModal({ invoice, onClose }) {
                                             children: "JKS Learning Technologies Pvt. Ltd."
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                            lineNumber: 193,
+                                            lineNumber: 238,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                                    lineNumber: 190,
+                                    lineNumber: 235,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/common/invoice-modal.tsx",
-                            lineNumber: 181,
+                            lineNumber: 226,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/common/invoice-modal.tsx",
-                    lineNumber: 53,
+                    lineNumber: 77,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/common/invoice-modal.tsx",
-            lineNumber: 24,
+            lineNumber: 42,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/common/invoice-modal.tsx",
-        lineNumber: 23,
+        lineNumber: 34,
         columnNumber: 5
     }, this);
 }
-_s(InvoiceModal, "GFo43F1pcInHi7YRxOjX7f0n4kQ=");
+_s(InvoiceModal, "1iXbP+ZRR8yBQdu5J1N+ahOMGFU=");
 _c = InvoiceModal;
 var _c;
 __turbopack_context__.k.register(_c, "InvoiceModal");
@@ -2166,8 +2332,8 @@ function DashboardTopbar({ title = "Welcome back 👋", subtitle = "Here's what'
     const isInstructor = pathname.startsWith("/instructor");
     const navItems = isAdmin ? ADMIN_NAV : isInstructor ? INSTRUCTOR_NAV : STUDENT_NAV;
     const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
-    const resolvedInitials = isAdmin ? "AD" : isInstructor ? session?.initials ?? userInitials ?? "RK" : session?.initials ?? userInitials ?? "JD";
-    const userName = isAdmin ? session?.name && session.name !== "John Doe" ? session.name : "Ava Desai" : isInstructor ? session?.name ?? "Dr. Rohit Kapoor" : session?.name ?? "Jordan Dsouza";
+    const resolvedInitials = isAdmin ? "AD" : isInstructor ? session?.initials ?? userInitials ?? "RK" : session?.initials ?? userInitials ?? "ST";
+    const userName = isAdmin ? session?.name && session.name !== "John Doe" ? session.name : "Ava Desai" : isInstructor ? session?.name ?? "Dr. Rohit Kapoor" : session?.name ?? "Student Learner";
     const userEmail = isAdmin ? session?.email && session.email !== "student@jkslearning.com" ? session.email : "admin@jkslearning.com" : isInstructor ? session?.email ?? "instructor@jkslearning.dev" : session?.email ?? "student@jkslearning.com";
     // Close explore dropdown on outside click
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
@@ -2826,8 +2992,12 @@ __turbopack_context__.s([
     ()=>INITIAL_INVOICES,
     "createInvoice",
     ()=>createInvoice,
+    "fetchInvoicesFromApi",
+    ()=>fetchInvoicesFromApi,
     "getStoredInvoices",
     ()=>getStoredInvoices,
+    "registerCourseOnline",
+    ()=>registerCourseOnline,
     "saveStoredInvoices",
     ()=>saveStoredInvoices
 ]);
@@ -3002,6 +3172,122 @@ function createInvoice(data) {
     ];
     saveStoredInvoices(updated);
     return newInvoice;
+}
+async function registerCourseOnline(data) {
+    try {
+        const res = await fetch("http://localhost:4000/enrollments/register-public", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                studentName: data.studentName,
+                studentEmail: data.studentEmail,
+                studentPhone: data.studentPhone,
+                studentAddress: data.studentCity || "Online",
+                courseSlug: data.courseSlug,
+                batchTiming: data.batchTiming || "Weekday Batch",
+                couponCode: data.discountCode,
+                paymentMode: data.paymentMode
+            })
+        });
+        if (res.ok) {
+            const json = await res.json();
+            const inv = json.invoice;
+            const formatted = {
+                id: inv.id,
+                invoiceNumber: inv.invoiceNumber,
+                issueDate: inv.paidAt || new Date().toISOString(),
+                dueDate: inv.paidAt || new Date().toISOString(),
+                studentName: inv.studentName,
+                studentEmail: inv.studentEmail,
+                studentPhone: inv.studentPhone,
+                studentAddress: inv.studentAddress,
+                studentCity: data.studentCity || "Bengaluru, India",
+                items: [
+                    {
+                        description: `${inv.courseTitle} (Live Cohort)`,
+                        courseSlug: data.courseSlug,
+                        qty: 1,
+                        unitPrice: inv.baseAmount,
+                        totalPrice: inv.baseAmount
+                    }
+                ],
+                subtotal: inv.baseAmount,
+                discountAmount: inv.discount,
+                discountCode: data.discountCode,
+                taxableAmount: inv.taxableAmount,
+                cgstRate: 9,
+                cgstAmount: inv.cgst,
+                sgstRate: 9,
+                sgstAmount: inv.sgst,
+                totalAmount: inv.totalAmount,
+                paymentMode: data.paymentMode,
+                paymentStatus: "Paid",
+                transactionRef: `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`,
+                batchTiming: inv.batchTiming
+            };
+            const current = getStoredInvoices();
+            saveStoredInvoices([
+                formatted,
+                ...current
+            ]);
+            return formatted;
+        }
+    } catch (err) {
+        console.warn("Backend API unavailable, falling back to local invoice generator:", err);
+    }
+    // Fallback to local invoice store
+    return createInvoice(data);
+}
+async function fetchInvoicesFromApi() {
+    try {
+        const res = await fetch("http://localhost:4000/payments/invoices/admin", {
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (res.ok) {
+            const list = await res.json();
+            if (Array.isArray(list) && list.length > 0) {
+                return list.map((inv)=>({
+                        id: inv.id,
+                        invoiceNumber: inv.invoiceNumber,
+                        issueDate: inv.paidAt || inv.createdAt || new Date().toISOString(),
+                        dueDate: inv.paidAt || inv.createdAt || new Date().toISOString(),
+                        studentName: inv.studentName,
+                        studentEmail: inv.studentEmail,
+                        studentPhone: inv.studentPhone,
+                        studentAddress: inv.studentAddress,
+                        studentCity: inv.studentAddress || "India",
+                        items: [
+                            {
+                                description: inv.courseTitle,
+                                courseSlug: "course",
+                                qty: 1,
+                                unitPrice: inv.baseAmount,
+                                totalPrice: inv.baseAmount
+                            }
+                        ],
+                        subtotal: inv.baseAmount,
+                        discountAmount: inv.discount,
+                        taxableAmount: inv.taxableAmount,
+                        cgstRate: 9,
+                        cgstAmount: inv.cgst,
+                        sgstRate: 9,
+                        sgstAmount: inv.sgst,
+                        totalAmount: inv.totalAmount,
+                        paymentMode: inv.paymentMethod || "UPI",
+                        paymentStatus: inv.status === "PAID" ? "Paid" : "Pending",
+                        transactionRef: `TXN-${inv.invoiceNumber.replace(/[^0-9]/g, "")}`,
+                        batchTiming: inv.batchTiming
+                    }));
+            }
+        }
+    } catch (err) {
+        console.warn("Could not fetch invoices from backend, using local store:", err);
+    }
+    return getStoredInvoices();
 }
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);

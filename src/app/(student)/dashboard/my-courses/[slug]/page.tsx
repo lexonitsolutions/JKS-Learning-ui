@@ -49,6 +49,13 @@ import {
   type SubSection,
 } from "@/lib/data/courses-store";
 import { InAppVideoPlayer } from "@/components/ui/in-app-video-player";
+import {
+  saveVideoProgress,
+  fetchCourseProgress,
+  syncAllCourseProgress,
+  getClientSessionEmail,
+} from "@/lib/data/enrollments-api";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
 
 function TwitterIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -78,13 +85,13 @@ function YoutubeIcon({ className = "h-4 w-4" }: { className?: string }) {
 type TabType = "overview" | "curriculum" | "qa" | "notes" | "announcements" | "reviews" | "tools";
 
 export default function CourseLearningHubPage({
-
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
+  const session = useMockSession();
 
   const [course, setCourse] = useState<FullCourse | null>(null);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
@@ -143,36 +150,83 @@ export default function CourseLearningHubPage({
   const [activeAssignmentSection, setActiveAssignmentSection] = useState<Section | null>(null);
   const [showCertModal, setShowCertModal] = useState(false);
 
-  // Load course on mount or slug change
+  // Load course & real-time progress on mount or slug change
   useEffect(() => {
-    const loadedCourse = getFullCourseBySlug(slug) || getStoredCourses()[0];
-    if (loadedCourse) {
-      setCourse(loadedCourse);
+    const userEmail = session?.email || getClientSessionEmail();
 
-      // Find first video
-      let firstVid: VideoItem | null = null;
-      let firstSecId = "";
-      for (const sec of loadedCourse.sections || []) {
-        if (sec.subsections && sec.subsections.length > 0 && sec.subsections[0].videos.length > 0) {
-          firstVid = sec.subsections[0].videos[0];
-          firstSecId = sec.id;
-          break;
-        } else if (sec.directVideos && sec.directVideos.length > 0) {
-          firstVid = sec.directVideos[0];
-          firstSecId = sec.id;
-          break;
+    const loadData = async () => {
+      const loadedCourse = getFullCourseBySlug(slug) || getStoredCourses()[0];
+      if (loadedCourse) {
+        setCourse(loadedCourse);
+
+        // Fetch persisted video & assignment progress from Supabase DB
+        try {
+          const prog = await fetchCourseProgress(slug, userEmail);
+          let initialVideos = prog.completedVideoIds || [];
+          let initialAssignments = prog.completedAssignmentIds || [];
+
+          // Also check fallback local cache
+          if (initialVideos.length === 0 && typeof window !== "undefined") {
+            try {
+              const localKey = `jks_prog_${slug}_${userEmail || "student"}`;
+              const fallbackKey = `jks_prog_${slug}_student`;
+              const cached = localStorage.getItem(localKey) || localStorage.getItem(fallbackKey);
+              if (cached) {
+                const parsed = JSON.parse(cached);
+                if (parsed.completedVideoIds?.length > 0) {
+                  initialVideos = parsed.completedVideoIds;
+                }
+                if (parsed.completedAssignmentIds?.length > 0) {
+                  initialAssignments = parsed.completedAssignmentIds;
+                }
+              }
+            } catch {}
+          }
+
+          if (initialVideos.length > 0) {
+            setCompletedVideoIds(initialVideos);
+          }
+          if (initialAssignments.length > 0) {
+            setCompletedAssignmentIds(initialAssignments);
+          }
+
+          // Batch sync to backend to ensure DB is current
+          if (userEmail && (initialVideos.length > 0 || initialAssignments.length > 0)) {
+            syncAllCourseProgress({
+              courseSlug: slug,
+              studentEmail: userEmail,
+              completedVideoIds: initialVideos,
+              completedAssignmentIds: initialAssignments,
+            }).catch(() => {});
+          }
+        } catch (e) {
+          console.warn("Could not load backend progress:", e);
+        }
+
+        // Find first video
+        let firstVid: VideoItem | null = null;
+        let firstSecId = "";
+        for (const sec of loadedCourse.sections || []) {
+          if (sec.subsections && sec.subsections.length > 0 && sec.subsections[0].videos.length > 0) {
+            firstVid = sec.subsections[0].videos[0];
+            firstSecId = sec.id;
+            break;
+          } else if (sec.directVideos && sec.directVideos.length > 0) {
+            firstVid = sec.directVideos[0];
+            firstSecId = sec.id;
+            break;
+          }
+        }
+
+        if (firstVid) {
+          setActiveVideo(firstVid);
+          setActiveSectionId(firstSecId);
         }
       }
+    };
 
-      if (firstVid) {
-        setActiveVideo(firstVid);
-        setActiveSectionId(firstSecId);
-        if (firstVid.completed || firstVid.isFreeDemo) {
-          setCompletedVideoIds([firstVid.id]);
-        }
-      }
-    }
-  }, [slug]);
+    loadData();
+  }, [slug, session?.email]);
 
   if (!course) {
     return (
@@ -182,7 +236,7 @@ export default function CourseLearningHubPage({
     );
   }
 
-  // Calculate total items for overall progress
+  // Calculate total items for overall progress (6 videos + 3 assignments = 9)
   const allVideos: VideoItem[] = [];
   const allSections = course.sections || [];
   allSections.forEach((sec) => {
@@ -201,9 +255,24 @@ export default function CourseLearningHubPage({
   const overallPercent = totalItems > 0 ? Math.min(100, Math.round((completedCount / totalItems) * 100)) : 0;
   const isCourseComplete = overallPercent >= 100;
 
-  const handleVideoCompleted = (vidId: string) => {
-    if (!completedVideoIds.includes(vidId)) {
-      setCompletedVideoIds((prev) => [...prev, vidId]);
+  const handleVideoCompleted = async (vidId: string) => {
+    const userEmail = session?.email || getClientSessionEmail();
+    const updatedVideos = completedVideoIds.includes(vidId)
+      ? completedVideoIds
+      : [...completedVideoIds, vidId];
+
+    setCompletedVideoIds(updatedVideos);
+
+    // Persist real-time progress to Supabase Backend
+    try {
+      await syncAllCourseProgress({
+        courseSlug: slug,
+        studentEmail: userEmail,
+        completedVideoIds: updatedVideos,
+        completedAssignmentIds,
+      });
+    } catch (err) {
+      console.warn("Failed to persist video progress to backend:", err);
     }
   };
 
@@ -212,13 +281,27 @@ export default function CourseLearningHubPage({
     setActiveSectionId(secId);
   };
 
-  const handleSubmitAssignment = (sec: Section) => {
+  const handleSubmitAssignment = async (sec: Section) => {
     const asgId = sec.assignment.id;
-    if (!completedAssignmentIds.includes(asgId)) {
-      setCompletedAssignmentIds((prev) => [...prev, asgId]);
-      setAssignmentScores((prev) => ({ ...prev, [asgId]: 94 }));
-    }
+    const updatedAssignments = completedAssignmentIds.includes(asgId)
+      ? completedAssignmentIds
+      : [...completedAssignmentIds, asgId];
+
+    setCompletedAssignmentIds(updatedAssignments);
+    setAssignmentScores((prev) => ({ ...prev, [asgId]: 94 }));
     setActiveAssignmentSection(null);
+
+    const userEmail = session?.email || getClientSessionEmail();
+    try {
+      await syncAllCourseProgress({
+        courseSlug: slug,
+        studentEmail: userEmail,
+        completedVideoIds,
+        completedAssignmentIds: updatedAssignments,
+      });
+    } catch (e) {
+      console.warn("Failed to save assignment progress:", e);
+    }
   };
 
   const handleAddNote = () => {

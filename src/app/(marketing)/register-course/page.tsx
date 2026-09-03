@@ -29,8 +29,9 @@ import {
   Lock,
 } from "lucide-react";
 import { JksLogo } from "@/components/common/jks-logo";
-import { createInvoice, type Invoice } from "@/lib/data/invoices-store";
+import { registerCourseOnline, createInvoice, type Invoice } from "@/lib/data/invoices-store";
 import { InvoiceModal } from "@/components/common/invoice-modal";
+
 
 const AVAILABLE_COURSES = [
   {
@@ -152,12 +153,12 @@ function CourseRegistrationContent() {
     }
   };
 
-  const handleSubmitEnrollment = (e: React.FormEvent) => {
+  const handleSubmitEnrollment = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
-    setTimeout(() => {
-      const invoice = createInvoice({
+    try {
+      const invoice = await registerCourseOnline({
         studentName: studentInfo.name,
         studentEmail: studentInfo.email,
         studentPhone: studentInfo.phone,
@@ -172,10 +173,16 @@ function CourseRegistrationContent() {
       });
 
       setGeneratedInvoice(invoice);
-      setIsProcessing(false);
+      setShowInvoiceModal(true);
       setStep(4);
-    }, 1200);
+    } catch (err) {
+
+      console.error("Enrollment failed:", err);
+    } finally {
+      setIsProcessing(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-bg-light text-text-heading py-12 px-4 sm:px-6 lg:px-16 font-sans">
@@ -657,10 +664,11 @@ function CourseRegistrationContent() {
 
         {/* Printable Tax Invoice Modal */}
         <InvoiceModal
-          invoice={generatedInvoice}
+          invoice={showInvoiceModal ? generatedInvoice : null}
           onClose={() => setShowInvoiceModal(false)}
         />
       </div>
+
     </div>
   );
 }

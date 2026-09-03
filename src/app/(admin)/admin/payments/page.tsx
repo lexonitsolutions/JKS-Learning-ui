@@ -5,7 +5,7 @@ import { CreditCard, IndianRupee, CheckCircle2, Download, Plus, Printer, Search,
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
-import { getStoredInvoices, createInvoice, type Invoice } from "@/lib/data/invoices-store";
+import { getStoredInvoices, fetchInvoicesFromApi, registerCourseOnline, createInvoice, type Invoice } from "@/lib/data/invoices-store";
 import { InvoiceModal } from "@/components/common/invoice-modal";
 
 export default function AdminPaymentsPage() {
@@ -31,12 +31,14 @@ export default function AdminPaymentsPage() {
   });
 
   useEffect(() => {
-    setInvoices(getStoredInvoices());
+    fetchInvoicesFromApi().then((list) => setInvoices(list));
   }, []);
 
-  const refreshInvoices = () => {
-    setInvoices(getStoredInvoices());
+  const refreshInvoices = async () => {
+    const list = await fetchInvoicesFromApi();
+    setInvoices(list);
   };
+
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();

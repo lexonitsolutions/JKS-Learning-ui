@@ -219,3 +219,130 @@ export function createInvoice(data: {
   saveStoredInvoices(updated);
   return newInvoice;
 }
+
+export async function registerCourseOnline(data: {
+  studentName: string;
+  studentEmail: string;
+  studentPhone: string;
+  studentCity?: string;
+  courseSlug: string;
+  courseTitle: string;
+  price: number;
+  discount: number;
+  discountCode?: string;
+  paymentMode: Invoice["paymentMode"];
+  batchTiming?: string;
+}): Promise<Invoice> {
+  try {
+    const res = await fetch("http://localhost:4000/enrollments/register-public", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        studentName: data.studentName,
+        studentEmail: data.studentEmail,
+        studentPhone: data.studentPhone,
+        studentAddress: data.studentCity || "Online",
+        courseSlug: data.courseSlug,
+        batchTiming: data.batchTiming || "Weekday Batch",
+        couponCode: data.discountCode,
+        paymentMode: data.paymentMode,
+      }),
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      const inv = json.invoice;
+      const formatted: Invoice = {
+        id: inv.id,
+        invoiceNumber: inv.invoiceNumber,
+        issueDate: inv.paidAt || new Date().toISOString(),
+        dueDate: inv.paidAt || new Date().toISOString(),
+        studentName: inv.studentName,
+        studentEmail: inv.studentEmail,
+        studentPhone: inv.studentPhone,
+        studentAddress: inv.studentAddress,
+        studentCity: data.studentCity || "Bengaluru, India",
+        items: [
+          {
+            description: `${inv.courseTitle} (Live Cohort)`,
+            courseSlug: data.courseSlug,
+            qty: 1,
+            unitPrice: inv.baseAmount,
+            totalPrice: inv.baseAmount,
+          },
+        ],
+        subtotal: inv.baseAmount,
+        discountAmount: inv.discount,
+        discountCode: data.discountCode,
+        taxableAmount: inv.taxableAmount,
+        cgstRate: 9,
+        cgstAmount: inv.cgst,
+        sgstRate: 9,
+        sgstAmount: inv.sgst,
+        totalAmount: inv.totalAmount,
+        paymentMode: data.paymentMode,
+        paymentStatus: "Paid",
+        transactionRef: `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`,
+        batchTiming: inv.batchTiming,
+      };
+
+      const current = getStoredInvoices();
+      saveStoredInvoices([formatted, ...current]);
+      return formatted;
+    }
+  } catch (err) {
+    console.warn("Backend API unavailable, falling back to local invoice generator:", err);
+  }
+
+  // Fallback to local invoice store
+  return createInvoice(data);
+}
+
+export async function fetchInvoicesFromApi(): Promise<Invoice[]> {
+  try {
+    const res = await fetch("http://localhost:4000/payments/invoices/admin", {
+      headers: { "Content-Type": "application/json" },
+    });
+    if (res.ok) {
+      const list = await res.json();
+      if (Array.isArray(list) && list.length > 0) {
+        return list.map((inv: any) => ({
+          id: inv.id,
+          invoiceNumber: inv.invoiceNumber,
+          issueDate: inv.paidAt || inv.createdAt || new Date().toISOString(),
+          dueDate: inv.paidAt || inv.createdAt || new Date().toISOString(),
+          studentName: inv.studentName,
+          studentEmail: inv.studentEmail,
+          studentPhone: inv.studentPhone,
+          studentAddress: inv.studentAddress,
+          studentCity: inv.studentAddress || "India",
+          items: [
+            {
+              description: inv.courseTitle,
+              courseSlug: "course",
+              qty: 1,
+              unitPrice: inv.baseAmount,
+              totalPrice: inv.baseAmount,
+            },
+          ],
+          subtotal: inv.baseAmount,
+          discountAmount: inv.discount,
+          taxableAmount: inv.taxableAmount,
+          cgstRate: 9,
+          cgstAmount: inv.cgst,
+          sgstRate: 9,
+          sgstAmount: inv.sgst,
+          totalAmount: inv.totalAmount,
+          paymentMode: inv.paymentMethod || "UPI",
+          paymentStatus: inv.status === "PAID" ? "Paid" : "Pending",
+          transactionRef: `TXN-${inv.invoiceNumber.replace(/[^0-9]/g, "")}`,
+          batchTiming: inv.batchTiming,
+        }));
+      }
+    }
+  } catch (err) {
+    console.warn("Could not fetch invoices from backend, using local store:", err);
+  }
+  return getStoredInvoices();
+}
+

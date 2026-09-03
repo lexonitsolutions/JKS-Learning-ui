@@ -1000,10 +1000,14 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 "use strict";
 
 __turbopack_context__.s([
+    "loginWithApi",
+    ()=>loginWithApi,
     "loginWithMockCredentials",
     ()=>loginWithMockCredentials,
     "logoutMockSession",
     ()=>logoutMockSession,
+    "registerWithApi",
+    ()=>registerWithApi,
     "useMockSession",
     ()=>useMockSession
 ]);
@@ -1150,6 +1154,95 @@ function loginWithMockCredentials(email, password) {
     return {
         ok: false,
         error: "Invalid email or password."
+    };
+}
+async function loginWithApi(email, password) {
+    const normalizedEmail = email.trim().toLowerCase();
+    try {
+        const res = await fetch("http://localhost:4000/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                email: normalizedEmail,
+                password
+            })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const u = data.user;
+            let role = "student";
+            if (u.role === "SUPER_ADMIN" || u.role === "ADMIN") {
+                role = "admin";
+            } else if (u.role === "INSTRUCTOR") {
+                role = "instructor";
+            }
+            const session = {
+                email: u.email,
+                name: u.name,
+                initials: u.name.split(" ").map((n)=>n[0]).join("").toUpperCase().substring(0, 2) || "JK",
+                role
+            };
+            document.cookie = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SESSION_COOKIE_NAME"]}=${(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["encodeSession"])(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+            window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+            return {
+                ok: true,
+                session
+            };
+        }
+    } catch  {
+    // ignore
+    }
+    // Fallback to local credentials
+    return loginWithMockCredentials(email, password);
+}
+async function registerWithApi(name, email, password) {
+    const normalizedEmail = email.trim().toLowerCase();
+    try {
+        const res = await fetch("http://localhost:4000/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                name,
+                email: normalizedEmail,
+                password
+            })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const u = data.user;
+            const session = {
+                email: u.email,
+                name: u.name,
+                initials: u.name.split(" ").map((n)=>n[0]).join("").toUpperCase().substring(0, 2) || "ST",
+                role: "student"
+            };
+            document.cookie = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SESSION_COOKIE_NAME"]}=${(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["encodeSession"])(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+            window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+            return {
+                ok: true,
+                session
+            };
+        }
+    } catch  {
+    // ignore
+    }
+    const session = {
+        email: normalizedEmail,
+        name: name,
+        initials: name.split(" ").map((n)=>n[0]).join("").toUpperCase().substring(0, 2) || "ST",
+        role: "student"
+    };
+    document.cookie = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SESSION_COOKIE_NAME"]}=${(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["encodeSession"])(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+    window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+    return {
+        ok: true,
+        session
     };
 }
 function logoutMockSession() {

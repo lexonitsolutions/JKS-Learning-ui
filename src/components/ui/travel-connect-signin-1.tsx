@@ -10,8 +10,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { z } from "zod";
 import { cn } from "@/lib/utils";
-import { loginWithMockCredentials } from "@/lib/auth/use-mock-auth";
+import { loginWithApi, registerWithApi, loginWithMockCredentials } from "@/lib/auth/use-mock-auth";
 import { MOCK_USERS, type MockRole } from "@/lib/auth/mock-users";
+
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { JksLogo } from "@/components/common/jks-logo";
 
@@ -229,70 +230,49 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   return (
     <motion.div
       {...cardMotion}
-      className="flex w-full max-w-4xl flex-col md:flex-row overflow-hidden rounded-2xl bg-white shadow-xl"
+      className="flex w-full max-w-4xl flex-col md:flex-row overflow-hidden rounded-3xl bg-white shadow-2xl border border-slate-100"
     >
-      {/* Mobile Top — animated dot map + brand header */}
-      <div className="relative block h-[150px] w-full overflow-hidden border-b border-gray-100 md:hidden shrink-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100">
-          {!reducedMotion && <DotMap />}
-
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4">
-            <FadeIn reducedMotion={reducedMotion} delay={0.2} className="mb-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-200">
-                <ArrowRight className="h-4 w-4 text-white" />
-              </div>
-            </FadeIn>
-            <FadeIn reducedMotion={reducedMotion} delay={0.3}>
-              <h2 className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-center text-lg font-extrabold text-transparent">
-                {copy.panelTitle}
-              </h2>
-            </FadeIn>
-            <FadeIn reducedMotion={reducedMotion} delay={0.4}>
-              <p className="max-w-xs text-center text-xs text-gray-600">{copy.panelBody}</p>
-            </FadeIn>
-          </div>
-        </div>
-      </div>
-
       {/* Desktop Left side — animated dot map + brand */}
-      <div className="relative hidden h-[600px] w-1/2 overflow-hidden border-r border-gray-100 md:block">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="relative hidden h-[620px] w-1/2 overflow-hidden border-r border-slate-100 md:block">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/70">
           {!reducedMotion && <DotMap />}
 
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8 text-center">
             <FadeIn reducedMotion={reducedMotion} delay={0.6} className="mb-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-200">
-                <ArrowRight className="h-6 w-6 text-white" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2563EB] to-indigo-600 shadow-xl shadow-blue-500/25">
+                <ArrowRight className="h-7 w-7 text-white" />
               </div>
             </FadeIn>
             <FadeIn reducedMotion={reducedMotion} delay={0.7}>
-              <h2 className="mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-center text-3xl font-bold text-transparent">
+              <h2 className="mb-2 bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-3xl font-black text-transparent">
                 {copy.panelTitle}
               </h2>
             </FadeIn>
             <FadeIn reducedMotion={reducedMotion} delay={0.8}>
-              <p className="max-w-xs text-center text-sm text-gray-600">{copy.panelBody}</p>
+              <p className="max-w-xs text-sm text-slate-600 font-medium leading-relaxed">{copy.panelBody}</p>
             </FadeIn>
           </div>
         </div>
       </div>
 
-
       {/* Right side — form */}
-      <div className="flex w-full flex-col justify-center bg-white p-8 md:w-1/2 md:p-10">
+      <div className="flex w-full flex-col justify-center bg-white p-6 sm:p-8 md:w-1/2 md:p-10">
         <FadeIn reducedMotion={reducedMotion} delay={0} y={20}>
-          <div className="mb-5">
+          <div className="mb-6 flex items-center justify-between">
             <JksLogo size="md" />
+            <span className="rounded-full bg-blue-50 border border-blue-100 px-3 py-1 text-[11px] font-bold text-[#2563EB]">
+              {mode === "login" ? "Secure Login" : "New Account"}
+            </span>
           </div>
-          <h1 className="mb-1 text-2xl font-bold text-gray-800 md:text-3xl">{copy.heading}</h1>
-          <p className="mb-8 text-gray-500">{copy.subheading}</p>
 
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">{copy.heading}</h1>
+          <p className="mt-1 mb-6 text-xs text-slate-500 font-medium">{copy.subheading}</p>
 
           <div className="mb-6">
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-gray-700 shadow-sm transition-all duration-300 hover:bg-gray-100"
-              onClick={() => console.log("Google sign-in (not wired — no OAuth backend yet)")}
+              className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:bg-slate-100 hover:border-slate-300 cursor-pointer"
+              onClick={() => console.log("Google sign-in")}
             >
               <GoogleIcon />
               <span>{mode === "login" ? "Login with Google" : "Sign up with Google"}</span>
@@ -301,10 +281,10 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+              <div className="w-full border-t border-slate-200" />
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500">or</span>
+            <div className="relative flex justify-center text-xs uppercase font-bold tracking-wider">
+              <span className="bg-white px-3 text-slate-400">or</span>
             </div>
           </div>
 
@@ -437,13 +417,14 @@ function LoginFields() {
 
   const onSubmit = async (values: LoginValues) => {
     setFormError(null);
-    const result = loginWithMockCredentials(values.email, values.password);
+    const result = await loginWithApi(values.email, values.password);
     if (!result.ok) {
       setFormError(result.error);
       return;
     }
     redirectAfterLogin(result.session.role, searchParams.get("from"));
   };
+
 
   // Testing convenience — skip typing the demo credentials. Wired to the
   // same MOCK_USERS the real form validates against, so it can never drift
@@ -566,6 +547,8 @@ function LoginFields() {
 function RegisterFields() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
   const {
     register,
     handleSubmit,
@@ -573,12 +556,19 @@ function RegisterFields() {
   } = useForm<RegisterValues>({ resolver: zodResolver(registerSchema) });
 
   const onSubmit = async (values: RegisterValues) => {
-    // TODO: wire to POST /auth/register once the backend API client exists.
-    console.log("register submit", values);
+    setFormError(null);
+    const result = await registerWithApi(values.name, values.email, values.password);
+    if (!result.ok) {
+      setFormError(result.error);
+      return;
+    }
+    redirectAfterLogin("student", searchParams.get("from"));
   };
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+      {formError && <p className="text-sm text-red-600">{formError}</p>}
+
       <div>
         <label htmlFor="register-name" className="mb-1 block text-sm font-medium text-gray-700">
           Full name <span className="text-blue-500">*</span>

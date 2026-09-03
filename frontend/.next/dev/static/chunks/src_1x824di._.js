@@ -2475,10 +2475,10 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/image.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/framer-motion/dist/es/render/components/motion/proxy.mjs [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/framer-motion/dist/es/components/AnimatePresence/index.mjs [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$brain$2d$circuit$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BrainCircuit$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/brain-circuit.mjs [app-client] (ecmascript) <export default as BrainCircuit>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sparkles$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Sparkles$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/sparkles.mjs [app-client] (ecmascript) <export default as Sparkles>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$mic$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Mic$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/mic.mjs [app-client] (ecmascript) <export default as Mic>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$volume$2d$2$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Volume2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/volume-2.mjs [app-client] (ecmascript) <export default as Volume2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/circle-check.mjs [app-client] (ecmascript) <export default as CheckCircle2>");
@@ -2493,6 +2493,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$interac
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
+;
 ;
 ;
 ;
@@ -2602,7 +2603,7 @@ function InterviewSimulator() {
                 }
             }, void 0, false, {
                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                lineNumber: 142,
+                lineNumber: 143,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2626,12 +2627,12 @@ function InterviewSimulator() {
                                                             className: "h-4 w-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                            lineNumber: 157,
+                                                            lineNumber: 158,
                                                             columnNumber: 19
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                        lineNumber: 156,
+                                                        lineNumber: 157,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2641,7 +2642,7 @@ function InterviewSimulator() {
                                                                 children: "AI Question Generator"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                lineNumber: 160,
+                                                                lineNumber: 161,
                                                                 columnNumber: 19
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2649,19 +2650,19 @@ function InterviewSimulator() {
                                                                 children: "Select a track to simulate live prompt"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                lineNumber: 161,
+                                                                lineNumber: 162,
                                                                 columnNumber: 19
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                        lineNumber: 159,
+                                                        lineNumber: 160,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 155,
+                                                lineNumber: 156,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
@@ -2670,13 +2671,13 @@ function InterviewSimulator() {
                                                 children: "Adaptive AI L5"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 164,
+                                                lineNumber: 165,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                        lineNumber: 154,
+                                        lineNumber: 155,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2699,12 +2700,12 @@ function InterviewSimulator() {
                                                                     className: "h-4 w-4"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                    lineNumber: 192,
+                                                                    lineNumber: 193,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                lineNumber: 187,
+                                                                lineNumber: 188,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2714,7 +2715,7 @@ function InterviewSimulator() {
                                                                         children: scenario.track
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                        lineNumber: 195,
+                                                                        lineNumber: 196,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2726,38 +2727,38 @@ function InterviewSimulator() {
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                        lineNumber: 196,
+                                                                        lineNumber: 197,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                lineNumber: 194,
+                                                                lineNumber: 195,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                        lineNumber: 186,
+                                                        lineNumber: 187,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__["ChevronRight"], {
                                                         className: `h-4 w-4 transition-transform ${isSelected ? "text-white translate-x-0.5" : "text-text-body/40 group-hover:translate-x-0.5"}`
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                        lineNumber: 205,
+                                                        lineNumber: 206,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, scenario.id, true, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 175,
+                                                lineNumber: 176,
                                                 columnNumber: 19
                                             }, this);
                                         })
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                        lineNumber: 170,
+                                        lineNumber: 171,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2773,14 +2774,14 @@ function InterviewSimulator() {
                                                                 className: `h-4 w-4 ${isSpeaking ? "animate-pulse" : ""}`
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                lineNumber: 219,
+                                                                lineNumber: 220,
                                                                 columnNumber: 19
                                                             }, this),
                                                             isSpeaking ? "AI Synthesizing Question..." : "AI Ready to Evaluate"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                        lineNumber: 218,
+                                                        lineNumber: 219,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2788,13 +2789,13 @@ function InterviewSimulator() {
                                                         children: "48kHz Voice Engine"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                        lineNumber: 222,
+                                                        lineNumber: 223,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 217,
+                                                lineNumber: 218,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2823,24 +2824,24 @@ function InterviewSimulator() {
                                                         }
                                                     }, i, false, {
                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                        lineNumber: 227,
+                                                        lineNumber: 228,
                                                         columnNumber: 19
                                                     }, this))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 225,
+                                                lineNumber: 226,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                        lineNumber: 216,
+                                        lineNumber: 217,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                lineNumber: 153,
+                                lineNumber: 154,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2854,7 +2855,7 @@ function InterviewSimulator() {
                                                 children: "120ms"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 250,
+                                                lineNumber: 251,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2862,13 +2863,13 @@ function InterviewSimulator() {
                                                 children: "Evaluation Latency"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 251,
+                                                lineNumber: 252,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                        lineNumber: 249,
+                                        lineNumber: 250,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2879,7 +2880,7 @@ function InterviewSimulator() {
                                                 children: "5-Axis"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 254,
+                                                lineNumber: 255,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2887,13 +2888,13 @@ function InterviewSimulator() {
                                                 children: "Scoring Vector"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 255,
+                                                lineNumber: 256,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                        lineNumber: 253,
+                                        lineNumber: 254,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2904,7 +2905,7 @@ function InterviewSimulator() {
                                                 children: "100%"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 258,
+                                                lineNumber: 259,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2912,25 +2913,25 @@ function InterviewSimulator() {
                                                 children: "Adaptive Flow"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 259,
+                                                lineNumber: 260,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                        lineNumber: 257,
+                                        lineNumber: 258,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                lineNumber: 248,
+                                lineNumber: 249,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                        lineNumber: 152,
+                        lineNumber: 153,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2948,21 +2949,21 @@ function InterviewSimulator() {
                                                     className: "h-3 w-3 rounded-full bg-rose-500/80"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                    lineNumber: 270,
+                                                    lineNumber: 271,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     className: "h-3 w-3 rounded-full bg-amber-500/80"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                    lineNumber: 271,
+                                                    lineNumber: 272,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     className: "h-3 w-3 rounded-full bg-emerald-500/80"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                    lineNumber: 272,
+                                                    lineNumber: 273,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2973,13 +2974,13 @@ function InterviewSimulator() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                    lineNumber: 273,
+                                                    lineNumber: 274,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                            lineNumber: 269,
+                                            lineNumber: 270,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2991,25 +2992,25 @@ function InterviewSimulator() {
                                                         className: "h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                        lineNumber: 279,
+                                                        lineNumber: 280,
                                                         columnNumber: 19
                                                     }, this),
                                                     "Live Interviewer Active"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                lineNumber: 278,
+                                                lineNumber: 279,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                            lineNumber: 277,
+                                            lineNumber: 278,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                    lineNumber: 268,
+                                    lineNumber: 269,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3038,20 +3039,31 @@ function InterviewSimulator() {
                                                     className: "rounded-xl border border-primary-blue/30 bg-primary-blue/10 p-4",
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "flex items-center gap-2 text-xs font-semibold text-cyan-300",
+                                                            className: "flex items-center gap-2.5 text-xs font-semibold text-cyan-300",
                                                             children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sparkles$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Sparkles$3e$__["Sparkles"], {
-                                                                    className: "h-3.5 w-3.5"
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "relative h-6 w-6 overflow-hidden rounded-full ring-1 ring-cyan-400/60 shadow-xs shrink-0",
+                                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
+                                                                        src: "/software-agent.png",
+                                                                        alt: "AI Interviewer",
+                                                                        width: 24,
+                                                                        height: 24,
+                                                                        className: "h-full w-full object-cover"
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/src/components/marketing/interview-simulator.tsx",
+                                                                        lineNumber: 301,
+                                                                        columnNumber: 25
+                                                                    }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                    lineNumber: 299,
+                                                                    lineNumber: 300,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                     children: "AI INTERVIEWER QUESTION"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                    lineNumber: 300,
+                                                                    lineNumber: 309,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3059,13 +3071,13 @@ function InterviewSimulator() {
                                                                     children: current.category
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                    lineNumber: 301,
+                                                                    lineNumber: 310,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                            lineNumber: 298,
+                                                            lineNumber: 299,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3077,13 +3089,13 @@ function InterviewSimulator() {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                            lineNumber: 305,
+                                                            lineNumber: 314,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                    lineNumber: 297,
+                                                    lineNumber: 298,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3099,14 +3111,14 @@ function InterviewSimulator() {
                                                                             className: "h-3.5 w-3.5"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                            lineNumber: 321,
+                                                                            lineNumber: 330,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         "AI Diagnostic Scoring"
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                    lineNumber: 313,
+                                                                    lineNumber: 322,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3117,20 +3129,20 @@ function InterviewSimulator() {
                                                                             className: "h-3.5 w-3.5"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                            lineNumber: 332,
+                                                                            lineNumber: 341,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         "Candidate Response"
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                    lineNumber: 324,
+                                                                    lineNumber: 333,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                            lineNumber: 312,
+                                                            lineNumber: 321,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3172,7 +3184,7 @@ function InterviewSimulator() {
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                        lineNumber: 352,
+                                                                                        lineNumber: 361,
                                                                                         columnNumber: 33
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3180,7 +3192,7 @@ function InterviewSimulator() {
                                                                                         children: m.label
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                        lineNumber: 355,
+                                                                                        lineNumber: 364,
                                                                                         columnNumber: 33
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3199,23 +3211,23 @@ function InterviewSimulator() {
                                                                                             }
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                            lineNumber: 359,
+                                                                                            lineNumber: 368,
                                                                                             columnNumber: 35
                                                                                         }, this)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                        lineNumber: 358,
+                                                                                        lineNumber: 367,
                                                                                         columnNumber: 33
                                                                                     }, this)
                                                                                 ]
                                                                             }, m.label, true, {
                                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                lineNumber: 348,
+                                                                                lineNumber: 357,
                                                                                 columnNumber: 31
                                                                             }, this))
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                        lineNumber: 341,
+                                                                        lineNumber: 350,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3228,14 +3240,14 @@ function InterviewSimulator() {
                                                                                         className: "h-4 w-4"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                        lineNumber: 373,
+                                                                                        lineNumber: 382,
                                                                                         columnNumber: 31
                                                                                     }, this),
                                                                                     " Strong Signal Detected"
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                lineNumber: 372,
+                                                                                lineNumber: 381,
                                                                                 columnNumber: 29
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3243,13 +3255,13 @@ function InterviewSimulator() {
                                                                                 children: current.keyTakeaway
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                lineNumber: 375,
+                                                                                lineNumber: 384,
                                                                                 columnNumber: 29
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                        lineNumber: 371,
+                                                                        lineNumber: 380,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3260,7 +3272,7 @@ function InterviewSimulator() {
                                                                                 children: "Targeted Study Recommendation:"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                lineNumber: 380,
+                                                                                lineNumber: 389,
                                                                                 columnNumber: 29
                                                                             }, this),
                                                                             " ",
@@ -3269,19 +3281,19 @@ function InterviewSimulator() {
                                                                                 children: current.studyTip
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                lineNumber: 383,
+                                                                                lineNumber: 392,
                                                                                 columnNumber: 29
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                        lineNumber: 379,
+                                                                        lineNumber: 388,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                lineNumber: 339,
+                                                                lineNumber: 348,
                                                                 columnNumber: 25
                                                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                 className: "space-y-3",
@@ -3294,7 +3306,7 @@ function InterviewSimulator() {
                                                                                 children: "> Transcribed Response:"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                lineNumber: 389,
+                                                                                lineNumber: 398,
                                                                                 columnNumber: 29
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3302,13 +3314,13 @@ function InterviewSimulator() {
                                                                                 children: current.sampleAnswer
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                lineNumber: 390,
+                                                                                lineNumber: 399,
                                                                                 columnNumber: 29
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                        lineNumber: 388,
+                                                                        lineNumber: 397,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3318,70 +3330,70 @@ function InterviewSimulator() {
                                                                                 className: "inline-block h-2 w-2 rounded-full bg-cyan-400"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                                lineNumber: 393,
+                                                                                lineNumber: 402,
                                                                                 columnNumber: 29
                                                                             }, this),
                                                                             "Speech pace: 142 wpm • Sentiment: Confident • Zero filler word penalty"
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                        lineNumber: 392,
+                                                                        lineNumber: 401,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                                lineNumber: 387,
+                                                                lineNumber: 396,
                                                                 columnNumber: 25
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                            lineNumber: 337,
+                                                            lineNumber: 346,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                                    lineNumber: 311,
+                                                    lineNumber: 320,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, current.id, true, {
                                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                            lineNumber: 288,
+                                            lineNumber: 289,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                        lineNumber: 287,
+                                        lineNumber: 288,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                                    lineNumber: 286,
+                                    lineNumber: 287,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                            lineNumber: 266,
+                            lineNumber: 267,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                        lineNumber: 265,
+                        lineNumber: 266,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-                lineNumber: 150,
+                lineNumber: 151,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/marketing/interview-simulator.tsx",
-        lineNumber: 140,
+        lineNumber: 141,
         columnNumber: 5
     }, this);
 }

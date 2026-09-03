@@ -14,6 +14,14 @@ export const metadata: Metadata = {
   title: "JKS Learning — Career-Ready IT Upskilling",
   description:
     "AI-powered learning platform for Java Full Stack, Frontend, and SAP professionals — structured courses, AI mock interviews, and verified certification.",
+  icons: {
+    icon: [
+      { url: "/images/jks-logo.png", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
+    shortcut: "/images/jks-logo.png",
+    apple: "/images/jks-logo.png",
+  },
 };
 
 const chunkErrorScript = `

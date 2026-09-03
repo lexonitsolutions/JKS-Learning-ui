@@ -399,8 +399,9 @@ function safeLocalStorageSet(key: string, value: unknown) {
   }
 }
 
-// Initial student owned courses (default student enrolled in Java Full Stack & React Frontend)
-const DEFAULT_ENROLLED_SLUGS = ["java-full-stack-mastery", "modern-frontend-engineering"];
+// Default student owned courses (empty by default for real authentication)
+const DEFAULT_ENROLLED_SLUGS: string[] = [];
+
 
 export function getStoredCourses(): FullCourse[] {
   return safeLocalStorageGet<FullCourse[]>(STORAGE_KEYS.COURSES, INITIAL_COURSES);

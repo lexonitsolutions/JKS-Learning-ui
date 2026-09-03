@@ -220,12 +220,12 @@ function DotMap() {
             className: "absolute inset-0 h-full w-full"
         }, void 0, false, {
             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-            lineNumber: 179,
+            lineNumber: 180,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-        lineNumber: 178,
+        lineNumber: 179,
         columnNumber: 5
     }, this);
 }
@@ -288,7 +288,7 @@ function TravelConnectSignIn({ mode }) {
                     children: [
                         !reducedMotion && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DotMap, {}, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 237,
+                            lineNumber: 238,
                             columnNumber: 30
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -304,17 +304,17 @@ function TravelConnectSignIn({ mode }) {
                                             className: "h-4 w-4 text-white"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                            lineNumber: 242,
+                                            lineNumber: 243,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 241,
+                                        lineNumber: 242,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                    lineNumber: 240,
+                                    lineNumber: 241,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FadeIn, {
@@ -325,12 +325,12 @@ function TravelConnectSignIn({ mode }) {
                                         children: copy.panelTitle
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 246,
+                                        lineNumber: 247,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                    lineNumber: 245,
+                                    lineNumber: 246,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FadeIn, {
@@ -341,29 +341,29 @@ function TravelConnectSignIn({ mode }) {
                                         children: copy.panelBody
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 251,
+                                        lineNumber: 252,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                    lineNumber: 250,
+                                    lineNumber: 251,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 239,
+                            lineNumber: 240,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                    lineNumber: 236,
+                    lineNumber: 237,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 235,
+                lineNumber: 236,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -373,7 +373,7 @@ function TravelConnectSignIn({ mode }) {
                     children: [
                         !reducedMotion && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DotMap, {}, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 260,
+                            lineNumber: 261,
                             columnNumber: 30
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -389,17 +389,17 @@ function TravelConnectSignIn({ mode }) {
                                             className: "h-6 w-6 text-white"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                            lineNumber: 265,
+                                            lineNumber: 266,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 264,
+                                        lineNumber: 265,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                    lineNumber: 263,
+                                    lineNumber: 264,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FadeIn, {
@@ -410,12 +410,12 @@ function TravelConnectSignIn({ mode }) {
                                         children: copy.panelTitle
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 269,
+                                        lineNumber: 270,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                    lineNumber: 268,
+                                    lineNumber: 269,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FadeIn, {
@@ -426,29 +426,29 @@ function TravelConnectSignIn({ mode }) {
                                         children: copy.panelBody
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 274,
+                                        lineNumber: 275,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                    lineNumber: 273,
+                                    lineNumber: 274,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 262,
+                            lineNumber: 263,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                    lineNumber: 259,
+                    lineNumber: 260,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 258,
+                lineNumber: 259,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -464,12 +464,12 @@ function TravelConnectSignIn({ mode }) {
                                 size: "md"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 285,
+                                lineNumber: 286,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 284,
+                            lineNumber: 285,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -477,7 +477,7 @@ function TravelConnectSignIn({ mode }) {
                             children: copy.heading
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 287,
+                            lineNumber: 288,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -485,7 +485,7 @@ function TravelConnectSignIn({ mode }) {
                             children: copy.subheading
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 288,
+                            lineNumber: 289,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -497,25 +497,25 @@ function TravelConnectSignIn({ mode }) {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(GoogleIcon, {}, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 297,
+                                        lineNumber: 298,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         children: mode === "login" ? "Login with Google" : "Sign up with Google"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 298,
+                                        lineNumber: 299,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 292,
+                                lineNumber: 293,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 291,
+                            lineNumber: 292,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -527,12 +527,12 @@ function TravelConnectSignIn({ mode }) {
                                         className: "w-full border-t border-gray-200"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 304,
+                                        lineNumber: 305,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                    lineNumber: 303,
+                                    lineNumber: 304,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -542,44 +542,44 @@ function TravelConnectSignIn({ mode }) {
                                         children: "or"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 307,
+                                        lineNumber: 308,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                    lineNumber: 306,
+                                    lineNumber: 307,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 302,
+                            lineNumber: 303,
                             columnNumber: 11
                         }, this),
                         mode === "login" ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(LoginFields, {}, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 311,
+                            lineNumber: 312,
                             columnNumber: 31
                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(RegisterFields, {}, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 311,
+                            lineNumber: 312,
                             columnNumber: 49
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                    lineNumber: 283,
+                    lineNumber: 284,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 282,
+                lineNumber: 283,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-        lineNumber: 230,
+        lineNumber: 231,
         columnNumber: 5
     }, this);
 }
@@ -595,7 +595,7 @@ function FadeIn({ children, reducedMotion, delay, y = -20, className }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-        lineNumber: 331,
+        lineNumber: 332,
         columnNumber: 29
     }, this);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
@@ -615,7 +615,7 @@ function FadeIn({ children, reducedMotion, delay, y = -20, className }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-        lineNumber: 333,
+        lineNumber: 334,
         columnNumber: 5
     }, this);
 }
@@ -631,7 +631,7 @@ function PasswordInput({ id, visible, onToggle, className, ...props }) {
                 ...props
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 353,
+                lineNumber: 354,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -643,24 +643,24 @@ function PasswordInput({ id, visible, onToggle, className, ...props }) {
                     size: 18
                 }, void 0, false, {
                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                    lineNumber: 368,
+                    lineNumber: 369,
                     columnNumber: 20
                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$eye$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Eye$3e$__["Eye"], {
                     size: 18
                 }, void 0, false, {
                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                    lineNumber: 368,
+                    lineNumber: 369,
                     columnNumber: 43
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 362,
+                lineNumber: 363,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-        lineNumber: 352,
+        lineNumber: 353,
         columnNumber: 5
     }, this);
 }
@@ -692,13 +692,13 @@ function SubmitButton({ children, disabled }) {
                             className: "ml-2 h-4 w-4"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 402,
+                            lineNumber: 403,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                    lineNumber: 400,
+                    lineNumber: 401,
                     columnNumber: 9
                 }, this),
                 isHovered && !reducedMotion && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].span, {
@@ -718,18 +718,18 @@ function SubmitButton({ children, disabled }) {
                     }
                 }, void 0, false, {
                     fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                    lineNumber: 405,
+                    lineNumber: 406,
                     columnNumber: 11
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-            lineNumber: 392,
+            lineNumber: 393,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-        lineNumber: 385,
+        lineNumber: 386,
         columnNumber: 5
     }, this);
 }
@@ -758,7 +758,7 @@ function LoginFields() {
     });
     const onSubmit = async (values)=>{
         setFormError(null);
-        const result = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$use$2d$mock$2d$auth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["loginWithMockCredentials"])(values.email, values.password);
+        const result = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$use$2d$mock$2d$auth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["loginWithApi"])(values.email, values.password);
         if (!result.ok) {
             setFormError(result.error);
             return;
@@ -790,7 +790,7 @@ function LoginFields() {
                         children: "Testing — instant demo access"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 467,
+                        lineNumber: 469,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -804,7 +804,7 @@ function LoginFields() {
                                 children: quickLoginRole === "student" ? "Signing in…" : "Student"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 471,
+                                lineNumber: 473,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -815,7 +815,7 @@ function LoginFields() {
                                 children: quickLoginRole === "instructor" ? "Signing in…" : "Lecturer"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 479,
+                                lineNumber: 481,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -826,19 +826,19 @@ function LoginFields() {
                                 children: quickLoginRole === "admin" ? "Signing in…" : "Admin"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 487,
+                                lineNumber: 489,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 470,
+                        lineNumber: 472,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 466,
+                lineNumber: 468,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -850,12 +850,12 @@ function LoginFields() {
                             className: "w-full border-t border-gray-200"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 500,
+                            lineNumber: 502,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 499,
+                        lineNumber: 501,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -865,18 +865,18 @@ function LoginFields() {
                             children: "or continue manually"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 503,
+                            lineNumber: 505,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 502,
+                        lineNumber: 504,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 498,
+                lineNumber: 500,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -896,13 +896,13 @@ function LoginFields() {
                                         children: "*"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 510,
+                                        lineNumber: 512,
                                         columnNumber: 19
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 509,
+                                lineNumber: 511,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -914,7 +914,7 @@ function LoginFields() {
                                 ...register("email")
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 512,
+                                lineNumber: 514,
                                 columnNumber: 11
                             }, this),
                             errors.email && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -922,13 +922,13 @@ function LoginFields() {
                                 children: errors.email.message
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 520,
+                                lineNumber: 522,
                                 columnNumber: 28
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 508,
+                        lineNumber: 510,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -943,13 +943,13 @@ function LoginFields() {
                                         children: "*"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                        lineNumber: 525,
+                                        lineNumber: 527,
                                         columnNumber: 22
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 524,
+                                lineNumber: 526,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(PasswordInput, {
@@ -961,7 +961,7 @@ function LoginFields() {
                                 ...register("password")
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 527,
+                                lineNumber: 529,
                                 columnNumber: 11
                             }, this),
                             errors.password && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -969,13 +969,13 @@ function LoginFields() {
                                 children: errors.password.message
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 536,
+                                lineNumber: 538,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 523,
+                        lineNumber: 525,
                         columnNumber: 9
                     }, this),
                     formError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -983,7 +983,7 @@ function LoginFields() {
                         children: formError
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 540,
+                        lineNumber: 542,
                         columnNumber: 23
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -994,12 +994,12 @@ function LoginFields() {
                             children: "Forgot password?"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                            lineNumber: 543,
+                            lineNumber: 545,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 542,
+                        lineNumber: 544,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SubmitButton, {
@@ -1007,7 +1007,7 @@ function LoginFields() {
                         children: isSubmitting ? "Signing in…" : "Sign in"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 551,
+                        lineNumber: 553,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1021,25 +1021,25 @@ function LoginFields() {
                                 children: "Sign up"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 557,
+                                lineNumber: 559,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 555,
+                        lineNumber: 557,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 507,
+                lineNumber: 509,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-        lineNumber: 465,
+        lineNumber: 467,
         columnNumber: 5
     }, this);
 }
@@ -1054,18 +1054,33 @@ function RegisterFields() {
     _s4();
     const [passwordVisible, setPasswordVisible] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [confirmVisible, setConfirmVisible] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [formError, setFormError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const searchParams = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useSearchParams"])();
     const { register, handleSubmit, formState: { errors, isSubmitting } } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hook$2d$form$2f$dist$2f$index$2e$esm$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useForm"])({
         resolver: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$hookform$2f$resolvers$2f$zod$2f$dist$2f$zod$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["zodResolver"])(registerSchema)
     });
     const onSubmit = async (values)=>{
-        // TODO: wire to POST /auth/register once the backend API client exists.
-        console.log("register submit", values);
+        setFormError(null);
+        const result = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$use$2d$mock$2d$auth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["registerWithApi"])(values.name, values.email, values.password);
+        if (!result.ok) {
+            setFormError(result.error);
+            return;
+        }
+        redirectAfterLogin("student", searchParams.get("from"));
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
         className: "space-y-5",
         onSubmit: handleSubmit(onSubmit),
         noValidate: true,
         children: [
+            formError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                className: "text-sm text-red-600",
+                children: formError
+            }, void 0, false, {
+                fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
+                lineNumber: 591,
+                columnNumber: 21
+            }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -1078,13 +1093,13 @@ function RegisterFields() {
                                 children: "*"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 584,
+                                lineNumber: 595,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 583,
+                        lineNumber: 594,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1096,7 +1111,7 @@ function RegisterFields() {
                         ...register("name")
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 586,
+                        lineNumber: 597,
                         columnNumber: 9
                     }, this),
                     errors.name && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1104,13 +1119,13 @@ function RegisterFields() {
                         children: errors.name.message
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 594,
+                        lineNumber: 605,
                         columnNumber: 25
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 582,
+                lineNumber: 593,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1125,13 +1140,13 @@ function RegisterFields() {
                                 children: "*"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 599,
+                                lineNumber: 610,
                                 columnNumber: 17
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 598,
+                        lineNumber: 609,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1143,7 +1158,7 @@ function RegisterFields() {
                         ...register("email")
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 601,
+                        lineNumber: 612,
                         columnNumber: 9
                     }, this),
                     errors.email && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1151,13 +1166,13 @@ function RegisterFields() {
                         children: errors.email.message
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 609,
+                        lineNumber: 620,
                         columnNumber: 26
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 597,
+                lineNumber: 608,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1172,13 +1187,13 @@ function RegisterFields() {
                                 children: "*"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 614,
+                                lineNumber: 625,
                                 columnNumber: 20
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 613,
+                        lineNumber: 624,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(PasswordInput, {
@@ -1190,7 +1205,7 @@ function RegisterFields() {
                         ...register("password")
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 616,
+                        lineNumber: 627,
                         columnNumber: 9
                     }, this),
                     errors.password && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1198,13 +1213,13 @@ function RegisterFields() {
                         children: errors.password.message
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 624,
+                        lineNumber: 635,
                         columnNumber: 29
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 612,
+                lineNumber: 623,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1219,13 +1234,13 @@ function RegisterFields() {
                                 children: "*"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                                lineNumber: 629,
+                                lineNumber: 640,
                                 columnNumber: 28
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 628,
+                        lineNumber: 639,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(PasswordInput, {
@@ -1237,7 +1252,7 @@ function RegisterFields() {
                         ...register("confirmPassword")
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 631,
+                        lineNumber: 642,
                         columnNumber: 9
                     }, this),
                     errors.confirmPassword && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1245,13 +1260,13 @@ function RegisterFields() {
                         children: errors.confirmPassword.message
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 640,
+                        lineNumber: 651,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 627,
+                lineNumber: 638,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SubmitButton, {
@@ -1259,7 +1274,7 @@ function RegisterFields() {
                 children: isSubmitting ? "Creating account…" : "Create account"
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 644,
+                lineNumber: 655,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1273,24 +1288,25 @@ function RegisterFields() {
                         children: "Log in"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                        lineNumber: 650,
+                        lineNumber: 661,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 648,
+                lineNumber: 659,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-        lineNumber: 581,
+        lineNumber: 590,
         columnNumber: 5
     }, this);
 }
-_s4(RegisterFields, "IaJXPuBYYxO6/DSDbpEsE7UUQls=", false, function() {
+_s4(RegisterFields, "aKTCepMxSnmM9xm9RJ/U3j1iVJc=", false, function() {
     return [
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useSearchParams"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hook$2d$form$2f$dist$2f$index$2e$esm$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useForm"]
     ];
 });
@@ -1306,7 +1322,7 @@ function GoogleIcon() {
                 d: "M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 661,
+                lineNumber: 672,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -1314,7 +1330,7 @@ function GoogleIcon() {
                 d: "M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 666,
+                lineNumber: 677,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -1322,7 +1338,7 @@ function GoogleIcon() {
                 d: "M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 670,
+                lineNumber: 681,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -1330,7 +1346,7 @@ function GoogleIcon() {
                 d: "M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 674,
+                lineNumber: 685,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -1339,13 +1355,13 @@ function GoogleIcon() {
                 d: "M1 1h22v22H1z"
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-                lineNumber: 678,
+                lineNumber: 689,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/ui/travel-connect-signin-1.tsx",
-        lineNumber: 660,
+        lineNumber: 671,
         columnNumber: 5
     }, this);
 }
@@ -1428,10 +1444,14 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 "use strict";
 
 __turbopack_context__.s([
+    "loginWithApi",
+    ()=>loginWithApi,
     "loginWithMockCredentials",
     ()=>loginWithMockCredentials,
     "logoutMockSession",
     ()=>logoutMockSession,
+    "registerWithApi",
+    ()=>registerWithApi,
     "useMockSession",
     ()=>useMockSession
 ]);
@@ -1578,6 +1598,95 @@ function loginWithMockCredentials(email, password) {
     return {
         ok: false,
         error: "Invalid email or password."
+    };
+}
+async function loginWithApi(email, password) {
+    const normalizedEmail = email.trim().toLowerCase();
+    try {
+        const res = await fetch("http://localhost:4000/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                email: normalizedEmail,
+                password
+            })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const u = data.user;
+            let role = "student";
+            if (u.role === "SUPER_ADMIN" || u.role === "ADMIN") {
+                role = "admin";
+            } else if (u.role === "INSTRUCTOR") {
+                role = "instructor";
+            }
+            const session = {
+                email: u.email,
+                name: u.name,
+                initials: u.name.split(" ").map((n)=>n[0]).join("").toUpperCase().substring(0, 2) || "JK",
+                role
+            };
+            document.cookie = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SESSION_COOKIE_NAME"]}=${(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["encodeSession"])(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+            window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+            return {
+                ok: true,
+                session
+            };
+        }
+    } catch  {
+    // ignore
+    }
+    // Fallback to local credentials
+    return loginWithMockCredentials(email, password);
+}
+async function registerWithApi(name, email, password) {
+    const normalizedEmail = email.trim().toLowerCase();
+    try {
+        const res = await fetch("http://localhost:4000/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                name,
+                email: normalizedEmail,
+                password
+            })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const u = data.user;
+            const session = {
+                email: u.email,
+                name: u.name,
+                initials: u.name.split(" ").map((n)=>n[0]).join("").toUpperCase().substring(0, 2) || "ST",
+                role: "student"
+            };
+            document.cookie = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SESSION_COOKIE_NAME"]}=${(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["encodeSession"])(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+            window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+            return {
+                ok: true,
+                session
+            };
+        }
+    } catch  {
+    // ignore
+    }
+    const session = {
+        email: normalizedEmail,
+        name: name,
+        initials: name.split(" ").map((n)=>n[0]).join("").toUpperCase().substring(0, 2) || "ST",
+        role: "student"
+    };
+    document.cookie = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SESSION_COOKIE_NAME"]}=${(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["encodeSession"])(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+    window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+    return {
+        ok: true,
+        session
     };
 }
 function logoutMockSession() {

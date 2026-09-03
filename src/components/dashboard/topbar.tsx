@@ -129,13 +129,13 @@ export function DashboardTopbar({
     ? "AD"
     : isInstructor
     ? (session?.initials ?? userInitials ?? "RK")
-    : (session?.initials ?? userInitials ?? "JD");
+    : (session?.initials ?? userInitials ?? "ST");
 
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" ? session.name : "Ava Desai")
     : isInstructor
     ? (session?.name ?? "Dr. Rohit Kapoor")
-    : (session?.name ?? "Jordan Dsouza");
+    : (session?.name ?? "Student Learner");
 
   const userEmail = isAdmin
     ? (session?.email && session.email !== "student@jkslearning.com"
