@@ -18,60 +18,82 @@ const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isInstructorRoute = createRouteMatcher(["/instructor(.*)"]);
 const isStudentRoute = createRouteMatcher(["/dashboard(.*)"]);
 const isAuthPage = createRouteMatcher(["/login", "/register"]);
+const publishableKey =
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  "pk_test_ZWFzeS1jb3VnYXItMzY0MC5jbGVyay5hY2NvdW50cy5kZXYk";
 
-export default clerkMiddleware(async (auth, request: NextRequest) => {
-  const { pathname } = request.nextUrl;
-  const session = decodeSession(request.cookies.get(SESSION_COOKIE_NAME)?.value);
+const secretKey =
+  process.env.CLERK_SECRET_KEY ||
+  "sk_test_AnhmAMsfNmYebHqQx0CfqqA6IpmpjC39Nuevq0efiy";
 
-  // Clerk's own view of the session — authoritative for OAuth sign-ins, which
-  // land here before ClerkSessionSync has had a chance to write the mock cookie.
-  const { userId } = await auth();
-  const isAuthenticated = !!session || !!userId;
+export default clerkMiddleware(
+  async (auth, request: NextRequest) => {
+    const { pathname } = request.nextUrl;
+    const session = decodeSession(request.cookies.get(SESSION_COOKIE_NAME)?.value);
 
-  const protectedRoute =
-    isAdminRoute(request) || isInstructorRoute(request) || isStudentRoute(request);
+    // Clerk's own view of the session — authoritative for OAuth sign-ins, which
+    // land here before ClerkSessionSync has had a chance to write the mock cookie.
+    let userId: string | null = null;
+    try {
+      const authObj = await auth();
+      userId = authObj.userId;
+    } catch {
+      // Fallback gracefully if auth handshake evaluation fails
+      userId = null;
+    }
+    const isAuthenticated = !!session || !!userId;
 
-  if (protectedRoute && !isAuthenticated) {
-    const url = new URL("/login", request.url);
-    url.searchParams.set("from", pathname);
-    return NextResponse.redirect(url);
+    const protectedRoute =
+      isAdminRoute(request) || isInstructorRoute(request) || isStudentRoute(request);
+
+    if (protectedRoute && !isAuthenticated) {
+      const url = new URL("/login", request.url);
+      url.searchParams.set("from", pathname);
+      return NextResponse.redirect(url);
+    }
+
+    // Role gating only applies once we have a decoded mock session with a role.
+    // A Clerk-only session (fresh OAuth sign-in) is treated as a student and is
+    // allowed through to /dashboard.
+    if (isAdminRoute(request) && session && session.role !== "admin") {
+      const target = session.role === "instructor" ? "/instructor" : "/dashboard";
+      return NextResponse.redirect(new URL(target, request.url));
+    }
+
+    if (
+      isInstructorRoute(request) &&
+      session &&
+      session.role !== "instructor" &&
+      session.role !== "admin"
+    ) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    if (isStudentRoute(request) && session?.role === "admin") {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+    if (isStudentRoute(request) && session?.role === "instructor") {
+      return NextResponse.redirect(new URL("/instructor", request.url));
+    }
+
+    // Already signed in and visiting /login or /register — send them to their
+    // workspace instead of showing the form again.
+    if (isAuthPage(request) && isAuthenticated) {
+      let dest = "/dashboard";
+      if (session?.role === "admin") dest = "/admin";
+      else if (session?.role === "instructor") dest = "/instructor";
+      return NextResponse.redirect(new URL(dest, request.url));
+    }
+
+    return NextResponse.next();
+  },
+  {
+    publishableKey,
+    secretKey,
+    signInUrl: "/login",
+    signUpUrl: "/register",
   }
-
-  // Role gating only applies once we have a decoded mock session with a role.
-  // A Clerk-only session (fresh OAuth sign-in) is treated as a student and is
-  // allowed through to /dashboard.
-  if (isAdminRoute(request) && session && session.role !== "admin") {
-    const target = session.role === "instructor" ? "/instructor" : "/dashboard";
-    return NextResponse.redirect(new URL(target, request.url));
-  }
-
-  if (
-    isInstructorRoute(request) &&
-    session &&
-    session.role !== "instructor" &&
-    session.role !== "admin"
-  ) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  if (isStudentRoute(request) && session?.role === "admin") {
-    return NextResponse.redirect(new URL("/admin", request.url));
-  }
-  if (isStudentRoute(request) && session?.role === "instructor") {
-    return NextResponse.redirect(new URL("/instructor", request.url));
-  }
-
-  // Already signed in and visiting /login or /register — send them to their
-  // workspace instead of showing the form again.
-  if (isAuthPage(request) && isAuthenticated) {
-    let dest = "/dashboard";
-    if (session?.role === "admin") dest = "/admin";
-    else if (session?.role === "instructor") dest = "/instructor";
-    return NextResponse.redirect(new URL(dest, request.url));
-  }
-
-  return NextResponse.next();
-});
+);
 
 export const config = {
   // Clerk's recommended matcher: everything except Next internals and static

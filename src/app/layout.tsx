@@ -26,6 +26,10 @@ export const metadata: Metadata = {
   },
 };
 
+const CLERK_PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  "pk_test_ZWFzeS1jb3VnYXItMzY0MC5jbGVyay5hY2NvdW50cy5kZXYk";
+
 export default function RootLayout({
   children,
 }: {
@@ -34,7 +38,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${manrope.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-bg-light text-text-heading">
-        <ClerkProvider afterSignOutUrl="/login">
+        <ClerkProvider
+          publishableKey={CLERK_PUBLISHABLE_KEY}
+          signInUrl="/login"
+          signUpUrl="/register"
+          afterSignOutUrl="/login"
+        >
           <ClerkSessionSync />
           <ChunkErrorHandler />
           <PageTransitionProvider>
