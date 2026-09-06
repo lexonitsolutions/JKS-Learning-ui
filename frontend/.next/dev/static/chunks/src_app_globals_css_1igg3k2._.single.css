@@ -2102,6 +2102,11 @@
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
+  .translate-x-0 {
+    --tw-translate-x: 0px;
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+
   .translate-x-0\.5 {
     --tw-translate-x: calc(var(--spacing) * .5);
     translate: var(--tw-translate-x) var(--tw-translate-y);
@@ -2977,6 +2982,10 @@
 
   .border-blue-300 {
     border-color: var(--color-blue-300);
+  }
+
+  .border-blue-400 {
+    border-color: var(--color-blue-400);
   }
 
   .border-blue-400\/20 {
@@ -4058,6 +4067,16 @@
   @supports (color: color-mix(in lab, red, red)) {
     .bg-emerald-50\/70 {
       background-color: color-mix(in oklab, var(--color-emerald-50) 70%, transparent);
+    }
+  }
+
+  .bg-emerald-50\/80 {
+    background-color: #ecfdf5cc;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-emerald-50\/80 {
+      background-color: color-mix(in oklab, var(--color-emerald-50) 80%, transparent);
     }
   }
 
@@ -7673,7 +7692,17 @@
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
 
-  .ring, .ring-1 {
+  .ring {
+    --tw-ring-shadow: var(--tw-ring-inset, ) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+
+  .ring-0 {
+    --tw-ring-shadow: var(--tw-ring-inset, ) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+
+  .ring-1 {
     --tw-ring-shadow: var(--tw-ring-inset, ) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
@@ -8506,6 +8535,16 @@
 
     .hover\:bg-blue-50:hover {
       background-color: var(--color-blue-50);
+    }
+
+    .hover\:bg-blue-50\/20:hover {
+      background-color: #eff6ff33;
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-blue-50\/20:hover {
+        background-color: color-mix(in oklab, var(--color-blue-50) 20%, transparent);
+      }
     }
 
     .hover\:bg-blue-50\/40:hover {
