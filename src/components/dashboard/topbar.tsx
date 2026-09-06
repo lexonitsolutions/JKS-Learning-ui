@@ -139,15 +139,13 @@ export function DashboardTopbar({
     ? (session?.name && session.name !== "John Doe" ? session.name : "Ava Desai")
     : isInstructor
     ? (session?.name ?? "Dr. Rohit Kapoor")
-    : (clerkUser?.fullName || clerkUser?.firstName || session?.name || "Student Learner");
+    : (clerkUser?.fullName || clerkUser?.firstName || session?.name || "Student");
 
   const userEmail = isAdmin
-    ? (session?.email && session.email !== "student@jkslearning.com"
-        ? session.email
-        : "admin@jkslearning.com")
+    ? (session?.email ? session.email : "admin@jkslearning.dev")
     : isInstructor
     ? (session?.email ?? "instructor@jkslearning.dev")
-    : (clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "student@jkslearning.com");
+    : (clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "");
 
 
   // Close explore dropdown on outside click

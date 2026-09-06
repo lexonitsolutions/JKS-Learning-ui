@@ -326,16 +326,6 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   const handleSocialAuth = async (strategy: "oauth_google" | "oauth_github") => {
     setOauthError(null);
 
-    // Already authenticated in this browser — nothing to negotiate.
-    if (isSignedIn) {
-      // Hard navigation on purpose, same reason as redirectAfterLogin below:
-      // proxy.ts must re-evaluate against the fresh session rather than let the
-      // client Router Cache replay a prefetch captured while signed out.
-      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-      window.location.assign("/dashboard");
-      return;
-    }
-
     if (!isSignInLoaded || !signIn) {
       setOauthError("Authentication is still loading. Please try again in a moment.");
       return;

@@ -57,16 +57,6 @@ export default function proxy(request: NextRequest) {
       if (isStudentRoute && session.role === "instructor") {
         return NextResponse.redirect(new URL("/instructor", request.url));
       }
-
-      // Already authenticated users visiting /login or /register -> send to workspace
-      if (isAuthPage) {
-        let dest = "/dashboard";
-        if (session.role === "admin") dest = "/admin";
-        else if (session.role === "instructor") dest = "/instructor";
-        return NextResponse.redirect(new URL(dest, request.url));
-      }
-    } else if (hasClerkSession && isAuthPage) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
     return NextResponse.next();

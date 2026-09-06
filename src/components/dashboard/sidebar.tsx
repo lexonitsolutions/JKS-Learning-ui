@@ -148,10 +148,10 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
     : (session?.name ?? clerkName ?? "Student");
 
   const userEmail = isAdmin
-    ? (session?.email && session.email !== "student@jkslearning.com" ? session.email : "admin@jkslearning.com")
+    ? (session?.email ? session.email : "admin@jkslearning.dev")
     : isInstructor
     ? (session?.email ?? "instructor@jkslearning.dev")
-    : (session?.email ?? clerkEmail ?? "student@jkslearning.com");
+    : (session?.email ?? clerkEmail ?? "");
 
   const userRole = isAdmin ? "Administrator" : isInstructor ? "Faculty / Lecturer" : "Student";
 
