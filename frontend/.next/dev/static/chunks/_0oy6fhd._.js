@@ -2767,6 +2767,20 @@ const MOCK_USERS = [
         role: "student"
     },
     {
+        email: "pathandavood123@gmail.com",
+        password: "davood@123",
+        name: "Asif khan",
+        initials: "AK",
+        role: "student"
+    },
+    {
+        email: "pattandavood123@gmail.com",
+        password: "davood@123",
+        name: "Davood Khan",
+        initials: "DK",
+        role: "student"
+    },
+    {
         email: "admin@jkslearning.dev",
         password: "admin123",
         name: "Ava Desai",

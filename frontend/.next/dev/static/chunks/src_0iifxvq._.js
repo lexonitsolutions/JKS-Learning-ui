@@ -5239,6 +5239,8 @@ __turbopack_context__.s([
     "syncAllCourseProgress",
     ()=>syncAllCourseProgress
 ]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/api/base-url.ts [app-client] (ecmascript)");
+;
 function getClientSessionEmail() {
     if (typeof document !== "undefined") {
         try {
@@ -5262,7 +5264,7 @@ async function fetchStudentEnrollments(userEmailOrId) {
     const emailToQuery = userEmailOrId || getClientSessionEmail();
     try {
         // 1. Try fetching via authenticated session /me
-        const meRes = await fetch("http://localhost:4000/enrollments/me", {
+        const meRes = await fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/enrollments/me"), {
             headers: {
                 "Content-Type": "application/json"
             },
@@ -5276,7 +5278,7 @@ async function fetchStudentEnrollments(userEmailOrId) {
         }
         // 2. Lookup by email or ID
         if (emailToQuery) {
-            const studentRes = await fetch(`http://localhost:4000/enrollments/student/${encodeURIComponent(emailToQuery)}`, {
+            const studentRes = await fetch(`${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["API_BASE_URL"]}/enrollments/student/${encodeURIComponent(emailToQuery)}`, {
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -5324,7 +5326,7 @@ async function saveVideoProgress(params) {
     }
     // 2. Send request to Supabase API
     try {
-        const res = await fetch("http://localhost:4000/enrollments/progress", {
+        const res = await fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/enrollments/progress"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -5385,7 +5387,7 @@ async function syncAllCourseProgress(params) {
     }
     // 2. Post to Supabase API
     try {
-        const res = await fetch("http://localhost:4000/enrollments/sync-progress", {
+        const res = await fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/enrollments/sync-progress"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -5409,7 +5411,7 @@ async function syncAllCourseProgress(params) {
 async function fetchCourseProgress(courseSlug, studentEmailOrId) {
     const effectiveEmail = studentEmailOrId || getClientSessionEmail();
     try {
-        const url = effectiveEmail ? `http://localhost:4000/enrollments/student/${encodeURIComponent(effectiveEmail)}/course/${encodeURIComponent(courseSlug)}/progress` : `http://localhost:4000/enrollments/progress/${encodeURIComponent(courseSlug)}`;
+        const url = effectiveEmail ? `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["API_BASE_URL"]}/enrollments/student/${encodeURIComponent(effectiveEmail)}/course/${encodeURIComponent(courseSlug)}/progress` : `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["API_BASE_URL"]}/enrollments/progress/${encodeURIComponent(courseSlug)}`;
         const res = await fetch(url, {
             headers: {
                 "Content-Type": "application/json"
