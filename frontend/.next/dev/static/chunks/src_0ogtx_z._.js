@@ -4,7 +4,9 @@
 
 __turbopack_context__.s([
     "default",
-    ()=>AdminStudentsPage
+    ()=>AdminStudentsPage,
+    "getStudentProgressRating",
+    ()=>getStudentProgressRating
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
@@ -22,6 +24,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/circle-check.mjs [app-client] (ecmascript) <export default as CheckCircle2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sparkles$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Sparkles$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/sparkles.mjs [app-client] (ecmascript) <export default as Sparkles>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-right.mjs [app-client] (ecmascript) <export default as ChevronRight>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/star.mjs [app-client] (ecmascript) <export default as Star>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$dashboard$2f$topbar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/dashboard/topbar.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$interactions$2f$tilt$2d$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/interactions/tilt-card.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$motion$2f$reveal$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/motion/reveal.tsx [app-client] (ecmascript)");
@@ -37,6 +40,60 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
+function getStudentProgressRating(progress) {
+    if (progress >= 85) {
+        return {
+            stars: 5,
+            score: "5.0",
+            tier: "Top Performer",
+            badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+            barColor: "bg-gradient-to-r from-emerald-500 to-teal-500"
+        };
+    }
+    if (progress >= 70) {
+        return {
+            stars: 5,
+            score: "4.8",
+            tier: "Star Learner",
+            badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+            barColor: "bg-gradient-to-r from-emerald-500 to-cyan-500"
+        };
+    }
+    if (progress >= 50) {
+        return {
+            stars: 4,
+            score: "4.0",
+            tier: "Advanced",
+            badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
+            barColor: "bg-gradient-to-r from-[#2563EB] to-cyan-500"
+        };
+    }
+    if (progress >= 20) {
+        return {
+            stars: 3,
+            score: "3.5",
+            tier: "Active Learner",
+            badgeColor: "bg-amber-50 text-amber-700 border-amber-200",
+            barColor: "bg-gradient-to-r from-amber-500 to-orange-500"
+        };
+    }
+    if (progress > 0) {
+        return {
+            stars: 2,
+            score: "2.5",
+            tier: "Beginner",
+            badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+            barColor: "bg-slate-400"
+        };
+    }
+    return {
+        stars: 1,
+        score: "1.0",
+        tier: "Not Started",
+        badgeColor: "bg-slate-100 text-slate-500 border-slate-200",
+        barColor: "bg-slate-200"
+    };
+}
 function AdminStudentsPage() {
     _s();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
@@ -164,17 +221,23 @@ function AdminStudentsPage() {
             "Phone",
             "Registration Date",
             "Enrolled Courses Count",
-            "Enrolled Courses & Progress"
+            "Overall Rating",
+            "Average Progress"
         ];
-        const rows = students.map((s)=>[
+        const rows = students.map((s)=>{
+            const avgProgress = s.enrollments.length > 0 ? Math.round(s.enrollments.reduce((sum, e)=>sum + (e.progress || 0), 0) / s.enrollments.length) : 0;
+            const rating = getStudentProgressRating(avgProgress);
+            return [
                 `"${s.id}"`,
                 `"${s.name.replace(/"/g, '""')}"`,
                 `"${s.email}"`,
                 `"${s.phone || "N/A"}"`,
                 `"${new Date(s.registeredAt).toLocaleString("en-IN")}"`,
                 `"${s.totalEnrolled}"`,
-                `"${s.enrollments.map((e)=>`${e.courseTitle} (${e.progress}%)`).join("; ") || "No courses enrolled yet."}"`
-            ]);
+                `"${s.enrollments.length > 0 ? `${rating.score}/5.0 Stars (${rating.tier})` : "Unrated"}"`,
+                `"${s.enrollments.length > 0 ? `${avgProgress}%` : "0%"}"`
+            ];
+        });
         const csvContent = "data:text/csv;charset=utf-8," + [
             headers.join(","),
             ...rows.map((r)=>r.join(","))
@@ -196,7 +259,7 @@ function AdminStudentsPage() {
                 userInitials: "AD"
             }, void 0, false, {
                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                lineNumber: 178,
+                lineNumber: 244,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -209,20 +272,20 @@ function AdminStudentsPage() {
                                 className: "h-4 w-4 text-[#2563EB] shrink-0"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                lineNumber: 190,
+                                lineNumber: 256,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 children: toastMessage
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                lineNumber: 191,
+                                lineNumber: 257,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                        lineNumber: 189,
+                        lineNumber: 255,
                         columnNumber: 11
                     }, this),
                     isLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -241,45 +304,45 @@ function AdminStudentsPage() {
                                                 className: "h-3.5 w-28 rounded bg-slate-200"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 204,
+                                                lineNumber: 270,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "h-8 w-8 rounded-full bg-slate-200"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 205,
+                                                lineNumber: 271,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                        lineNumber: 203,
+                                        lineNumber: 269,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "h-8 w-16 rounded bg-slate-300"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                        lineNumber: 207,
+                                        lineNumber: 273,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "h-3 w-36 rounded bg-slate-200"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                        lineNumber: 208,
+                                        lineNumber: 274,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, n, true, {
                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                lineNumber: 199,
+                                lineNumber: 265,
                                 columnNumber: 15
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                        lineNumber: 197,
+                        lineNumber: 263,
                         columnNumber: 11
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$motion$2f$reveal$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Reveal"], {
                         variant: "stagger",
@@ -297,7 +360,7 @@ function AdminStudentsPage() {
                                                     children: "Total Registered"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 217,
+                                                    lineNumber: 283,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -306,18 +369,18 @@ function AdminStudentsPage() {
                                                         className: "h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 219,
+                                                        lineNumber: 285,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 218,
+                                                    lineNumber: 284,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                            lineNumber: 216,
+                                            lineNumber: 282,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -325,7 +388,7 @@ function AdminStudentsPage() {
                                             children: totalRegistered
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                            lineNumber: 222,
+                                            lineNumber: 288,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -335,25 +398,25 @@ function AdminStudentsPage() {
                                                     className: "h-3 w-3"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 224,
+                                                    lineNumber: 290,
                                                     columnNumber: 19
                                                 }, this),
                                                 " Live from API database"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                            lineNumber: 223,
+                                            lineNumber: 289,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                    lineNumber: 215,
+                                    lineNumber: 281,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                lineNumber: 214,
+                                lineNumber: 280,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$interactions$2f$tilt$2d$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TiltCard"], {
@@ -368,7 +431,7 @@ function AdminStudentsPage() {
                                                     children: "Enrolled Learners"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 232,
+                                                    lineNumber: 298,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -377,18 +440,18 @@ function AdminStudentsPage() {
                                                         className: "h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 234,
+                                                        lineNumber: 300,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 233,
+                                                    lineNumber: 299,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                            lineNumber: 231,
+                                            lineNumber: 297,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -396,7 +459,7 @@ function AdminStudentsPage() {
                                             children: enrolledCount
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                            lineNumber: 237,
+                                            lineNumber: 303,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -404,18 +467,18 @@ function AdminStudentsPage() {
                                             children: totalRegistered > 0 ? `${Math.round(enrolledCount / totalRegistered * 100)}% conversion rate` : "0%"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                            lineNumber: 238,
+                                            lineNumber: 304,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                    lineNumber: 230,
+                                    lineNumber: 296,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                lineNumber: 229,
+                                lineNumber: 295,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$interactions$2f$tilt$2d$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TiltCard"], {
@@ -430,7 +493,7 @@ function AdminStudentsPage() {
                                                     children: "No Courses Yet"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 249,
+                                                    lineNumber: 315,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -439,18 +502,18 @@ function AdminStudentsPage() {
                                                         className: "h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 251,
+                                                        lineNumber: 317,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 250,
+                                                    lineNumber: 316,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                            lineNumber: 248,
+                                            lineNumber: 314,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -458,7 +521,7 @@ function AdminStudentsPage() {
                                             children: noCoursesCount
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                            lineNumber: 254,
+                                            lineNumber: 320,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -466,24 +529,24 @@ function AdminStudentsPage() {
                                             children: "New registered accounts"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                            lineNumber: 255,
+                                            lineNumber: 321,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                    lineNumber: 247,
+                                    lineNumber: 313,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                lineNumber: 246,
+                                lineNumber: 312,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                        lineNumber: 213,
+                        lineNumber: 279,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -499,7 +562,7 @@ function AdminStudentsPage() {
                                                 className: "absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 265,
+                                                lineNumber: 331,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -510,13 +573,13 @@ function AdminStudentsPage() {
                                                 className: "w-full rounded-xl border border-slate-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-slate-800 outline-none shadow-xs transition-colors focus:border-[#2563EB]"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 266,
+                                                lineNumber: 332,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                        lineNumber: 264,
+                                        lineNumber: 330,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -541,18 +604,18 @@ function AdminStudentsPage() {
                                                 children: tab.label
                                             }, tab.id, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 282,
+                                                lineNumber: 348,
                                                 columnNumber: 17
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                        lineNumber: 276,
+                                        lineNumber: 342,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                lineNumber: 263,
+                                lineNumber: 329,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -569,20 +632,20 @@ function AdminStudentsPage() {
                                                 className: `h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-[#2563EB]" : ""}`
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 306,
+                                                lineNumber: 372,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 children: isRefreshing ? "Refreshing..." : "Refresh"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 309,
+                                                lineNumber: 375,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                        lineNumber: 299,
+                                        lineNumber: 365,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -594,32 +657,32 @@ function AdminStudentsPage() {
                                                 className: "h-3.5 w-3.5 text-[#2563EB]"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 317,
+                                                lineNumber: 383,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 children: "Export CSV"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 318,
+                                                lineNumber: 384,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                        lineNumber: 312,
+                                        lineNumber: 378,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                lineNumber: 298,
+                                lineNumber: 364,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                        lineNumber: 262,
+                        lineNumber: 328,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -638,15 +701,15 @@ function AdminStudentsPage() {
                                                     children: "Student Profile"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 329,
+                                                    lineNumber: 395,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                     className: "px-4 pb-3",
-                                                    children: "Enrolled Courses & Progress"
+                                                    children: "Student Rating"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 330,
+                                                    lineNumber: 396,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -654,7 +717,7 @@ function AdminStudentsPage() {
                                                     children: "Contact Details"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 331,
+                                                    lineNumber: 397,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -662,7 +725,7 @@ function AdminStudentsPage() {
                                                     children: "Registration Date"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 332,
+                                                    lineNumber: 398,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -670,18 +733,18 @@ function AdminStudentsPage() {
                                                     children: "Actions"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 333,
+                                                    lineNumber: 399,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                            lineNumber: 328,
+                                            lineNumber: 394,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                        lineNumber: 327,
+                                        lineNumber: 393,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -704,7 +767,7 @@ function AdminStudentsPage() {
                                                                     className: "h-9 w-9 rounded-full bg-slate-200 shrink-0"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 343,
+                                                                    lineNumber: 409,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -714,31 +777,31 @@ function AdminStudentsPage() {
                                                                             className: "h-3.5 w-28 rounded bg-slate-300"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                            lineNumber: 345,
+                                                                            lineNumber: 411,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                             className: "h-2.5 w-40 rounded bg-slate-200"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                            lineNumber: 346,
+                                                                            lineNumber: 412,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 344,
+                                                                    lineNumber: 410,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 342,
+                                                            lineNumber: 408,
                                                             columnNumber: 25
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 341,
+                                                        lineNumber: 407,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -747,12 +810,12 @@ function AdminStudentsPage() {
                                                             className: "h-10 w-48 rounded-xl bg-slate-200"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 351,
+                                                            lineNumber: 417,
                                                             columnNumber: 25
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 350,
+                                                        lineNumber: 416,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -761,12 +824,12 @@ function AdminStudentsPage() {
                                                             className: "h-3.5 w-24 rounded bg-slate-200"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 354,
+                                                            lineNumber: 420,
                                                             columnNumber: 25
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 353,
+                                                        lineNumber: 419,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -778,25 +841,25 @@ function AdminStudentsPage() {
                                                                     className: "h-3.5 w-20 rounded bg-slate-200"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 358,
+                                                                    lineNumber: 424,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                     className: "h-2.5 w-14 rounded bg-slate-100"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 359,
+                                                                    lineNumber: 425,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 357,
+                                                            lineNumber: 423,
                                                             columnNumber: 25
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 356,
+                                                        lineNumber: 422,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -805,18 +868,18 @@ function AdminStudentsPage() {
                                                             className: "inline-block h-8 w-24 rounded-xl bg-slate-200"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 363,
+                                                            lineNumber: 429,
                                                             columnNumber: 25
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 362,
+                                                        lineNumber: 428,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, i, true, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 340,
+                                                lineNumber: 406,
                                                 columnNumber: 21
                                             }, this)) : filtered.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -829,7 +892,7 @@ function AdminStudentsPage() {
                                                             className: "h-8 w-8 text-slate-300"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 371,
+                                                            lineNumber: 437,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -837,7 +900,7 @@ function AdminStudentsPage() {
                                                             children: "No students found"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 372,
+                                                            lineNumber: 438,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -845,23 +908,23 @@ function AdminStudentsPage() {
                                                             children: searchQuery ? "No registered students match your search criteria." : "No registered student records exist in the database."
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 373,
+                                                            lineNumber: 439,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                    lineNumber: 370,
+                                                    lineNumber: 436,
                                                     columnNumber: 23
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 369,
+                                                lineNumber: 435,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                            lineNumber: 368,
+                                            lineNumber: 434,
                                             columnNumber: 19
                                         }, this) : filtered.map((s)=>{
                                             const initials = s.name ? s.name.split(" ").map((n)=>n[0]).slice(0, 2).join("").toUpperCase() : "ST";
@@ -880,7 +943,7 @@ function AdminStudentsPage() {
                                                                     children: initials
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 402,
+                                                                    lineNumber: 468,
                                                                     columnNumber: 29
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -892,7 +955,7 @@ function AdminStudentsPage() {
                                                                                     children: s.name
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                                    lineNumber: 407,
+                                                                                    lineNumber: 473,
                                                                                     columnNumber: 33
                                                                                 }, this),
                                                                                 s.totalEnrolled > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -900,13 +963,13 @@ function AdminStudentsPage() {
                                                                                     children: "Enrolled"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                                    lineNumber: 409,
+                                                                                    lineNumber: 475,
                                                                                     columnNumber: 35
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                            lineNumber: 406,
+                                                                            lineNumber: 472,
                                                                             columnNumber: 31
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -915,120 +978,139 @@ function AdminStudentsPage() {
                                                                                 children: s.email
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                                lineNumber: 415,
+                                                                                lineNumber: 481,
                                                                                 columnNumber: 33
                                                                             }, this)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                            lineNumber: 414,
+                                                                            lineNumber: 480,
                                                                             columnNumber: 31
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 405,
+                                                                    lineNumber: 471,
                                                                     columnNumber: 29
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 401,
+                                                            lineNumber: 467,
                                                             columnNumber: 27
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 400,
+                                                        lineNumber: 466,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                        className: "px-4 py-4 max-w-xs",
-                                                        children: s.enrollments && s.enrollments.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "space-y-2",
-                                                            children: s.enrollments.map((e)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                    className: "rounded-xl border border-slate-200/90 bg-slate-50/80 p-2 text-xs space-y-1",
-                                                                    children: [
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                            className: "flex items-center justify-between gap-2",
-                                                                            children: [
-                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                                    className: "font-bold text-slate-900 truncate",
-                                                                                    title: e.courseTitle,
-                                                                                    children: e.courseTitle
-                                                                                }, void 0, false, {
-                                                                                    fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                                    lineNumber: 431,
-                                                                                    columnNumber: 37
-                                                                                }, this),
-                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                                    className: "text-[10px] font-black text-[#2563EB] shrink-0 bg-blue-100/70 px-1.5 py-0.5 rounded",
-                                                                                    children: [
-                                                                                        e.progress,
-                                                                                        "%"
-                                                                                    ]
-                                                                                }, void 0, true, {
-                                                                                    fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                                    lineNumber: 437,
-                                                                                    columnNumber: 37
-                                                                                }, this)
-                                                                            ]
-                                                                        }, void 0, true, {
-                                                                            fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                            lineNumber: 430,
-                                                                            columnNumber: 35
-                                                                        }, this),
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                            className: "h-1.5 w-full rounded-full bg-slate-200 overflow-hidden",
-                                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                                className: "h-full bg-gradient-to-r from-[#2563EB] to-cyan-500 rounded-full",
-                                                                                style: {
-                                                                                    width: `${Math.max(4, Math.min(100, e.progress))}%`
-                                                                                }
+                                                        className: "px-4 py-4 whitespace-nowrap",
+                                                        children: s.enrollments && s.enrollments.length > 0 ? (()=>{
+                                                            const avgProgress = Math.round(s.enrollments.reduce((sum, e)=>sum + (e.progress || 0), 0) / s.enrollments.length);
+                                                            const rating = getStudentProgressRating(avgProgress);
+                                                            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                className: "flex items-center gap-2.5",
+                                                                children: [
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                        className: "flex items-center gap-1 shrink-0",
+                                                                        children: [
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__["Star"], {
+                                                                                className: "h-4 w-4 text-amber-500 fill-amber-500 shrink-0"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                                lineNumber: 442,
+                                                                                lineNumber: 501,
+                                                                                columnNumber: 37
+                                                                            }, this),
+                                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                className: "text-[13px] font-black text-slate-900",
+                                                                                children: [
+                                                                                    rating.score,
+                                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                        className: "text-[11px] font-bold text-slate-400",
+                                                                                        children: "/5"
+                                                                                    }, void 0, false, {
+                                                                                        fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
+                                                                                        lineNumber: 504,
+                                                                                        columnNumber: 39
+                                                                                    }, this)
+                                                                                ]
+                                                                            }, void 0, true, {
+                                                                                fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
+                                                                                lineNumber: 502,
                                                                                 columnNumber: 37
                                                                             }, this)
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                            lineNumber: 441,
-                                                                            columnNumber: 35
-                                                                        }, this)
-                                                                    ]
-                                                                }, e.enrollmentId, true, {
-                                                                    fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 426,
-                                                                    columnNumber: 33
-                                                                }, this))
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 424,
-                                                            columnNumber: 29
-                                                        }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "inline-flex items-center gap-1.5 rounded-lg bg-amber-50 border border-amber-200/70 px-2.5 py-1 text-[11px] font-bold text-amber-800",
+                                                                        ]
+                                                                    }, void 0, true, {
+                                                                        fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
+                                                                        lineNumber: 500,
+                                                                        columnNumber: 35
+                                                                    }, this),
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                        className: `inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border ${rating.badgeColor} shrink-0`,
+                                                                        children: rating.tier
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
+                                                                        lineNumber: 509,
+                                                                        columnNumber: 35
+                                                                    }, this),
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                        className: "text-[11px] font-medium text-slate-400",
+                                                                        children: [
+                                                                            "(",
+                                                                            s.enrollments.length,
+                                                                            " ",
+                                                                            s.enrollments.length === 1 ? "Course" : "Courses",
+                                                                            ")"
+                                                                        ]
+                                                                    }, void 0, true, {
+                                                                        fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
+                                                                        lineNumber: 516,
+                                                                        columnNumber: 35
+                                                                    }, this)
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
+                                                                lineNumber: 498,
+                                                                columnNumber: 33
+                                                            }, this);
+                                                        })() : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "flex items-center gap-1.5 text-slate-400",
                                                             children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$user$2d$x$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__UserX$3e$__["UserX"], {
-                                                                    className: "h-3 w-3 text-amber-600"
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__["Star"], {
+                                                                    className: "h-4 w-4 text-slate-300 shrink-0"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 454,
+                                                                    lineNumber: 524,
                                                                     columnNumber: 31
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                    children: "No courses enrolled yet."
-                                                                }, void 0, false, {
+                                                                    className: "text-xs font-medium text-slate-400",
+                                                                    children: [
+                                                                        "—/5 ",
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                            className: "text-slate-300",
+                                                                            children: "•"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
+                                                                            lineNumber: 526,
+                                                                            columnNumber: 37
+                                                                        }, this),
+                                                                        " Unrated"
+                                                                    ]
+                                                                }, void 0, true, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 455,
+                                                                    lineNumber: 525,
                                                                     columnNumber: 31
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 453,
+                                                            lineNumber: 523,
                                                             columnNumber: 29
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 422,
+                                                        lineNumber: 488,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1040,25 +1122,25 @@ function AdminStudentsPage() {
                                                                     className: "h-3.5 w-3.5 text-slate-400 shrink-0"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 463,
+                                                                    lineNumber: 535,
                                                                     columnNumber: 29
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                     children: s.phone && s.phone !== "N/A" ? s.phone : "No phone provided"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 464,
+                                                                    lineNumber: 536,
                                                                     columnNumber: 29
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 462,
+                                                            lineNumber: 534,
                                                             columnNumber: 27
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 461,
+                                                        lineNumber: 533,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1071,7 +1153,7 @@ function AdminStudentsPage() {
                                                                         className: "h-3.5 w-3.5 text-slate-400 shrink-0"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                        lineNumber: 473,
+                                                                        lineNumber: 545,
                                                                         columnNumber: 29
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1082,13 +1164,13 @@ function AdminStudentsPage() {
                                                                         })
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                        lineNumber: 474,
+                                                                        lineNumber: 546,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                lineNumber: 472,
+                                                                lineNumber: 544,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1099,13 +1181,13 @@ function AdminStudentsPage() {
                                                                 })
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                lineNumber: 482,
+                                                                lineNumber: 554,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 471,
+                                                        lineNumber: 543,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1122,20 +1204,20 @@ function AdminStudentsPage() {
                                                                             children: "View Profile"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                            lineNumber: 500,
+                                                                            lineNumber: 572,
                                                                             columnNumber: 31
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__["ChevronRight"], {
                                                                             className: "h-3.5 w-3.5"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                            lineNumber: 501,
+                                                                            lineNumber: 573,
                                                                             columnNumber: 31
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 496,
+                                                                    lineNumber: 568,
                                                                     columnNumber: 29
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1147,63 +1229,63 @@ function AdminStudentsPage() {
                                                                         className: "h-3.5 w-3.5"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                        lineNumber: 512,
+                                                                        lineNumber: 584,
                                                                         columnNumber: 31
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                                    lineNumber: 504,
+                                                                    lineNumber: 576,
                                                                     columnNumber: 29
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                            lineNumber: 492,
+                                                            lineNumber: 564,
                                                             columnNumber: 27
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                        lineNumber: 491,
+                                                        lineNumber: 563,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, s.id, true, {
                                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                                lineNumber: 393,
+                                                lineNumber: 459,
                                                 columnNumber: 23
                                             }, this);
                                         })
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                        lineNumber: 336,
+                                        lineNumber: 402,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                                lineNumber: 326,
+                                lineNumber: 392,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                            lineNumber: 325,
+                            lineNumber: 391,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                        lineNumber: 324,
+                        lineNumber: 390,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-                lineNumber: 186,
+                lineNumber: 252,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(admin)/admin/students/page.tsx",
-        lineNumber: 177,
+        lineNumber: 243,
         columnNumber: 5
     }, this);
 }
@@ -2132,7 +2214,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d
 ;
 async function fetchAdminStudents() {
     try {
-        const res = await fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/admin/students"), {
+        const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])("/admin/students", {
             headers: {
                 "Content-Type": "application/json"
             },
@@ -2149,7 +2231,7 @@ async function fetchAdminStudents() {
 }
 async function fetchStudentDetail(idOrSlug) {
     try {
-        const res = await fetch(`${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["API_BASE_URL"]}/admin/students/${encodeURIComponent(idOrSlug)}`, {
+        const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])(`/admin/students/${encodeURIComponent(idOrSlug)}`, {
             headers: {
                 "Content-Type": "application/json"
             },

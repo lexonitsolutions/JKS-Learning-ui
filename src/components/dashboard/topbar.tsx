@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
+import { useUser, UserButton } from "@clerk/nextjs";
 
 interface NavItem {
   href: string;
@@ -119,6 +120,7 @@ export function DashboardTopbar({
   const [exploreOpen, setExploreOpen] = useState(false);
   const exploreRef = useRef<HTMLDivElement>(null);
   const session = useMockSession();
+  const { user: clerkUser } = useUser();
 
   const isAdmin = pathname.startsWith("/admin");
   const isInstructor = pathname.startsWith("/instructor");
@@ -129,13 +131,15 @@ export function DashboardTopbar({
     ? "AD"
     : isInstructor
     ? (session?.initials ?? userInitials ?? "RK")
-    : (session?.initials ?? userInitials ?? "ST");
+    : clerkUser?.firstName && clerkUser?.lastName
+    ? `${clerkUser.firstName[0]}${clerkUser.lastName[0]}`.toUpperCase()
+    : (session?.initials ?? userInitials ?? (clerkUser?.firstName ? clerkUser.firstName.slice(0, 2).toUpperCase() : "ST"));
 
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" ? session.name : "Ava Desai")
     : isInstructor
     ? (session?.name ?? "Dr. Rohit Kapoor")
-    : (session?.name ?? "Student Learner");
+    : (clerkUser?.fullName || clerkUser?.firstName || session?.name || "Student Learner");
 
   const userEmail = isAdmin
     ? (session?.email && session.email !== "student@jkslearning.com"
@@ -143,7 +147,7 @@ export function DashboardTopbar({
         : "admin@jkslearning.com")
     : isInstructor
     ? (session?.email ?? "instructor@jkslearning.dev")
-    : (session?.email ?? "student@jkslearning.com");
+    : (clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "student@jkslearning.com");
 
 
   // Close explore dropdown on outside click
@@ -272,16 +276,30 @@ export function DashboardTopbar({
             )}
           </button>
 
-          {/* User Avatar with Dropdown Arrow */}
-          <Link
-            href="/dashboard/profile"
-            className="flex items-center gap-1.5 rounded-full p-0.5 transition-transform hover:scale-105 shrink-0"
-          >
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-xs sm:text-sm font-bold text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)]">
-              {resolvedInitials}
+          {/* User Avatar: Clerk UserButton when signed in, or custom avatar link */}
+          {clerkUser ? (
+            <div className="flex items-center shrink-0">
+              {/* afterSignOutUrl moved to <ClerkProvider> in @clerk/nextjs v7 —
+                  it is no longer a UserButton prop. */}
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "h-8 w-8 sm:h-10 sm:w-10 ring-2 ring-blue-500/30",
+                  },
+                }}
+              />
             </div>
-            <ChevronDown className="h-3.5 w-3.5 text-slate-400 hidden sm:block" />
-          </Link>
+          ) : (
+            <Link
+              href="/dashboard/profile"
+              className="flex items-center gap-1.5 rounded-full p-0.5 transition-transform hover:scale-105 shrink-0"
+            >
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-xs sm:text-sm font-bold text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)]">
+                {resolvedInitials}
+              </div>
+              <ChevronDown className="h-3.5 w-3.5 text-slate-400 hidden sm:block" />
+            </Link>
+          )}
         </div>
       </header>
 

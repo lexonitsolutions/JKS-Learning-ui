@@ -30,6 +30,8 @@ import {
   enrollStudentCourse,
 } from "@/lib/data/courses-store";
 import { EXTENDED_CATALOG, type CatalogCourse } from "@/app/(student)/dashboard/courses/page";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { useUser } from "@clerk/nextjs";
 
 // Promotional Offers & Discounts Carousel Data (JKS Official Branding)
 const OFFERS = [
@@ -114,6 +116,20 @@ export default function StudentDashboardPage() {
   }, [isPaused]);
 
   const activeOffer = OFFERS[currentSlide];
+  const session = useMockSession();
+  const { user: clerkUser } = useUser();
+
+  const studentName =
+    clerkUser?.fullName ||
+    clerkUser?.firstName ||
+    session?.name ||
+    "Learner";
+
+  const studentInitials =
+    clerkUser?.firstName && clerkUser?.lastName
+      ? `${clerkUser.firstName[0]}${clerkUser.lastName[0]}`.toUpperCase()
+      : session?.initials ||
+        (studentName !== "Learner" ? studentName.slice(0, 2).toUpperCase() : "ST");
 
   const handleQuickEnroll = (course: CatalogCourse) => {
     enrollStudentCourse(course.slug);
@@ -124,9 +140,9 @@ export default function StudentDashboardPage() {
   return (
     <>
       <DashboardTopbar
-        title="Welcome back, Jordan 👋"
+        title={`Welcome back, ${studentName} 👋`}
         subtitle="Let's keep the momentum going."
-        userInitials="JD"
+        userInitials={studentInitials}
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">

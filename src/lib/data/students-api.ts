@@ -1,3 +1,5 @@
+import { apiFetch } from "@/lib/api/base-url";
+
 export interface StudentEnrollment {
   enrollmentId: string;
   courseId: string;
@@ -73,7 +75,7 @@ export interface AdminStudentDetail {
 
 export async function fetchAdminStudents(): Promise<AdminStudentRecord[]> {
   try {
-    const res = await fetch("http://localhost:4000/admin/students", {
+    const res = await apiFetch("/admin/students", {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });
@@ -89,7 +91,7 @@ export async function fetchAdminStudents(): Promise<AdminStudentRecord[]> {
 
 export async function fetchStudentDetail(idOrSlug: string): Promise<AdminStudentDetail | null> {
   try {
-    const res = await fetch(`http://localhost:4000/admin/students/${encodeURIComponent(idOrSlug)}`, {
+    const res = await apiFetch(`/admin/students/${encodeURIComponent(idOrSlug)}`, {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });

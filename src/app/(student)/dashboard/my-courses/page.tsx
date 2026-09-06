@@ -24,20 +24,24 @@ import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { useUser } from "@clerk/nextjs";
 import { fetchStudentEnrollments, getClientSessionEmail, type EnrolledCourseItem } from "@/lib/data/enrollments-api";
 
 export default function MyCoursesPage() {
   const session = useMockSession();
+  const { user: clerkUser } = useUser();
   const [courses, setCourses] = useState<EnrolledCourseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<"all" | "in-progress" | "completed">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
+
   const loadEnrollments = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage(null);
-    const userEmail = session?.email || getClientSessionEmail();
+    const userEmail = (clerkEmail || session?.email || getClientSessionEmail() || "").toLowerCase().trim();
     try {
       const data = await fetchStudentEnrollments(userEmail);
       const enriched = data.map((c) => {
@@ -66,7 +70,7 @@ export default function MyCoursesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [session?.email]);
+  }, [clerkEmail, session?.email]);
 
   useEffect(() => {
     loadEnrollments();

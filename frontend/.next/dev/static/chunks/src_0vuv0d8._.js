@@ -3146,7 +3146,7 @@ async function fetchStudentEnrollments(userEmailOrId) {
     const emailToQuery = userEmailOrId || getClientSessionEmail();
     try {
         // 1. Try fetching via authenticated session /me
-        const meRes = await fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/enrollments/me"), {
+        const meRes = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])("/enrollments/me", {
             headers: {
                 "Content-Type": "application/json"
             },
@@ -3160,7 +3160,7 @@ async function fetchStudentEnrollments(userEmailOrId) {
         }
         // 2. Lookup by email or ID
         if (emailToQuery) {
-            const studentRes = await fetch(`${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["API_BASE_URL"]}/enrollments/student/${encodeURIComponent(emailToQuery)}`, {
+            const studentRes = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])(`/enrollments/student/${encodeURIComponent(emailToQuery)}`, {
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -3208,7 +3208,7 @@ async function saveVideoProgress(params) {
     }
     // 2. Send request to Supabase API
     try {
-        const res = await fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/enrollments/progress"), {
+        const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])("/enrollments/progress", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -3269,7 +3269,7 @@ async function syncAllCourseProgress(params) {
     }
     // 2. Post to Supabase API
     try {
-        const res = await fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/enrollments/sync-progress"), {
+        const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])("/enrollments/sync-progress", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -3293,8 +3293,8 @@ async function syncAllCourseProgress(params) {
 async function fetchCourseProgress(courseSlug, studentEmailOrId) {
     const effectiveEmail = studentEmailOrId || getClientSessionEmail();
     try {
-        const url = effectiveEmail ? `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["API_BASE_URL"]}/enrollments/student/${encodeURIComponent(effectiveEmail)}/course/${encodeURIComponent(courseSlug)}/progress` : `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["API_BASE_URL"]}/enrollments/progress/${encodeURIComponent(courseSlug)}`;
-        const res = await fetch(url, {
+        const url = effectiveEmail ? `/enrollments/student/${encodeURIComponent(effectiveEmail)}/course/${encodeURIComponent(courseSlug)}/progress` : `/enrollments/progress/${encodeURIComponent(courseSlug)}`;
+        const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])(url, {
             headers: {
                 "Content-Type": "application/json"
             },
@@ -3350,7 +3350,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d
 ;
 async function fetchAdminStudents() {
     try {
-        const res = await fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/admin/students"), {
+        const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])("/admin/students", {
             headers: {
                 "Content-Type": "application/json"
             },
@@ -3367,7 +3367,7 @@ async function fetchAdminStudents() {
 }
 async function fetchStudentDetail(idOrSlug) {
     try {
-        const res = await fetch(`${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["API_BASE_URL"]}/admin/students/${encodeURIComponent(idOrSlug)}`, {
+        const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])(`/admin/students/${encodeURIComponent(idOrSlug)}`, {
             headers: {
                 "Content-Type": "application/json"
             },

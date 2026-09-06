@@ -92,6 +92,7 @@ __turbopack_context__.s([
     ()=>ClerkSessionSync
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$clerk$2f$react$2f$dist$2f$hooks$2d$66XwX3F0$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__$3c$export__x__as__useAuth$3e$__ = __turbopack_context__.i("[project]/node_modules/@clerk/react/dist/hooks-66XwX3F0.mjs [app-client] (ecmascript) <locals> <export x as useAuth>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$clerk$2f$shared$2f$dist$2f$react$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__useUser__as__g$3e$__$3c$export__g__as__useUser$3e$__ = __turbopack_context__.i("[project]/node_modules/@clerk/shared/dist/react/index.mjs [app-client] (ecmascript) <export useUser as g> <export g as useUser>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/auth/session.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$mock$2d$users$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/auth/mock-users.ts [app-client] (ecmascript)");
@@ -108,6 +109,7 @@ const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 function ClerkSessionSync() {
     _s();
     const { user, isLoaded } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$clerk$2f$shared$2f$dist$2f$react$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__useUser__as__g$3e$__$3c$export__g__as__useUser$3e$__["useUser"])();
+    const { getToken } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$clerk$2f$react$2f$dist$2f$hooks$2d$66XwX3F0$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__$3c$export__x__as__useAuth$3e$__["useAuth"])();
     const lastSyncedEmail = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "ClerkSessionSync.useEffect": ()=>{
@@ -147,23 +149,40 @@ function ClerkSessionSync() {
                         localStorage.setItem("jks_student_avatar_v2", user.imageUrl);
                     }
                 } catch  {}
-                // Background register/sync to PostgreSQL backend so course/profile records persist
-                try {
-                    fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/auth/register"), {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        credentials: "include",
-                        body: JSON.stringify({
-                            name: fullName,
-                            email,
-                            password: `clerk_oauth_${user.id || "verified"}`
-                        })
-                    }).catch({
-                        "ClerkSessionSync.useEffect": ()=>{}
-                    }["ClerkSessionSync.useEffect"]);
-                } catch  {}
+                // Exchange the Clerk session for this API's own auth cookies, and create
+                // the local user row on first sign-in.
+                //
+                // This used to POST /auth/register with a synthesised password. That
+                // endpoint 409s when the email already exists, so it worked exactly once
+                // per account and threw a Conflict on every later Google login -- the
+                // errors visible in the network tab. /auth/clerk-sync is idempotent.
+                //
+                // Only the Clerk token is sent: the backend resolves the email from it
+                // server-side, so nothing here can claim to be another user.
+                void ({
+                    "ClerkSessionSync.useEffect": async ()=>{
+                        try {
+                            const token = await getToken();
+                            if (!token) return;
+                            const res = await fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/auth/clerk-sync"), {
+                                method: "POST",
+                                headers: {
+                                    Authorization: `Bearer ${token}`
+                                },
+                                credentials: "include"
+                            });
+                            if (!res.ok) {
+                                // Allow a retry on the next mount rather than leaving the user
+                                // with a Clerk session but no API cookies.
+                                lastSyncedEmail.current = null;
+                                console.warn("[ClerkSessionSync] /auth/clerk-sync failed:", res.status);
+                            }
+                        } catch (err) {
+                            lastSyncedEmail.current = null;
+                            console.warn("[ClerkSessionSync] /auth/clerk-sync error:", err);
+                        }
+                    }
+                })["ClerkSessionSync.useEffect"]();
                 // Dispatch event to notify all components
                 window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
             } else {
@@ -180,7 +199,8 @@ function ClerkSessionSync() {
         }
     }["ClerkSessionSync.useEffect"], [
         user,
-        isLoaded
+        isLoaded,
+        getToken
     ]);
     // No DOM output. This component used to render a second
     // <div id="clerk-captcha" className="hidden"> here; because it lives in the
@@ -189,9 +209,10 @@ function ClerkSessionSync() {
     // one, silently breaking sign-up/sign-in challenges.
     return null;
 }
-_s(ClerkSessionSync, "AE4obhcowVuzsP4M94wB+sYlUis=", false, function() {
+_s(ClerkSessionSync, "rD2vLMbQUzV4eBBUkhA/43YssiA=", false, function() {
     return [
-        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$clerk$2f$shared$2f$dist$2f$react$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__useUser__as__g$3e$__$3c$export__g__as__useUser$3e$__["useUser"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$clerk$2f$shared$2f$dist$2f$react$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__useUser__as__g$3e$__$3c$export__g__as__useUser$3e$__["useUser"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$clerk$2f$react$2f$dist$2f$hooks$2d$66XwX3F0$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__$3c$export__x__as__useAuth$3e$__["useAuth"]
     ];
 });
 _c = ClerkSessionSync;
@@ -1427,6 +1448,10 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 __turbopack_context__.s([
     "API_BASE_URL",
     ()=>API_BASE_URL,
+    "ApiError",
+    ()=>ApiError,
+    "apiFetch",
+    ()=>apiFetch,
     "apiUrl",
     ()=>apiUrl
 ]);
@@ -1457,6 +1482,40 @@ const API_BASE_URL = resolveBaseUrl();
 function apiUrl(path) {
     return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
+/**
+ * How long to wait before giving up on the API.
+ *
+ * The backend's Mongo driver gives up after ~30s. A browser fetch left hanging
+ * that long is routinely aborted first — by a React StrictMode double-effect,
+ * an unmount, or a dev-server hot reload — and an aborted fetch surfaces as a
+ * bare `TypeError: Failed to fetch` with no status and no message. Failing here
+ * first turns that into an error that says what actually happened.
+ */ const API_TIMEOUT_MS = 15_000;
+class ApiError extends Error {
+    status;
+    cause;
+    constructor(message, status, cause){
+        super(message), this.status = status, this.cause = cause;
+        this.name = "ApiError";
+    }
+}
+async function apiFetch(path, init = {}) {
+    try {
+        return await fetch(apiUrl(path), {
+            ...init,
+            credentials: "include",
+            signal: init.signal ?? AbortSignal.timeout(API_TIMEOUT_MS)
+        });
+    } catch (err) {
+        if (err instanceof DOMException && err.name === "TimeoutError") {
+            throw new ApiError(`The API did not respond within ${API_TIMEOUT_MS / 1000}s. It may be running but unable to reach its database — check ${API_BASE_URL}/health/db.`, null, err);
+        }
+        if (err instanceof DOMException && err.name === "AbortError") {
+            throw new ApiError("Request cancelled.", null, err);
+        }
+        throw new ApiError(`Could not reach the API at ${API_BASE_URL}. Is the backend running?`, null, err);
+    }
+}
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
@@ -1469,13 +1528,6 @@ __turbopack_context__.s([
     ()=>MOCK_USERS
 ]);
 const MOCK_USERS = [
-    {
-        email: "student@jkslearning.dev",
-        password: "student123",
-        name: "Jordan Dsouza",
-        initials: "JD",
-        role: "student"
-    },
     {
         email: "pathandavood123@gmail.com",
         password: "davood@123",

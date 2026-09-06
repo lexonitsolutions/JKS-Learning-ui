@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { MOCK_USERS, type MockRole } from "./mock-users";
 import { SESSION_COOKIE_NAME, encodeSession, decodeSession, type MockSession } from "./session";
+import { apiFetch } from "@/lib/api/base-url";
 
 
 const SESSION_CHANGE_EVENT = "jks-mock-session-change";
@@ -131,10 +132,9 @@ export function loginWithMockCredentials(email: string, password: string): Login
 export async function loginWithApi(email: string, password: string): Promise<LoginResult> {
   const normalizedEmail = email.trim().toLowerCase();
   try {
-    const res = await fetch("http://localhost:4000/auth/login", {
+    const res = await apiFetch("/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ email: normalizedEmail, password }),
     });
 
@@ -169,10 +169,9 @@ export async function loginWithApi(email: string, password: string): Promise<Log
 export async function registerWithApi(name: string, email: string, password: string): Promise<LoginResult> {
   const normalizedEmail = email.trim().toLowerCase();
   try {
-    const res = await fetch("http://localhost:4000/auth/register", {
+    const res = await apiFetch("/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ name, email: normalizedEmail, password }),
     });
 

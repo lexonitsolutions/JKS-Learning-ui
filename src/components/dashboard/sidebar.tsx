@@ -24,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { JksLogo } from "@/components/common/jks-logo";
 
 
@@ -51,13 +52,13 @@ const STUDENT_SEC_NAV: NavItem[] = [
 
 const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone, badge: "New" },
   { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/instructors", label: "Instructors", icon: GraduationCap },
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
-  { href: "/admin/ai-interviews", label: "AI Interviews", icon: BrainCircuit, badge: "AI" },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
+  { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone, badge: "Soon" },
+  { href: "/admin/ai-interviews", label: "AI Interviews", icon: BrainCircuit, badge: "Soon" },
 ];
 
 
@@ -86,7 +87,6 @@ const SIDEBAR_STORAGE_KEY = "jks_sidebar_collapsed";
 
 export function DashboardSidebar({ role = "student" }: { role?: "student" | "admin" | "instructor" }) {
   const pathname = usePathname();
-  const session = useMockSession();
   const isAdmin = role === "admin";
   const isInstructor = role === "instructor";
   
@@ -95,6 +95,10 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
   const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const session = useMockSession();
+  const { signOut } = useClerk();
+  const { user: clerkUser } = useUser();
 
   useEffect(() => {
     try {
@@ -119,28 +123,35 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
     });
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch {}
     logoutMockSession();
     window.location.assign("/login");
   };
+
+  const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
+  const clerkName = clerkUser?.fullName || [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") || clerkUser?.username;
+  const userAvatarUrl = clerkUser?.imageUrl;
 
   const userInitials = isAdmin
     ? "AD"
     : isInstructor
     ? (session?.initials ?? "RK")
-    : (session?.initials ?? "JD");
+    : (session?.initials ?? (clerkName ? clerkName.slice(0, 2).toUpperCase() : "ST"));
 
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" ? session.name : "Ava Desai")
     : isInstructor
     ? (session?.name ?? "Dr. Rohit Kapoor")
-    : (session?.name ?? "Student");
+    : (session?.name ?? clerkName ?? "Student");
 
   const userEmail = isAdmin
     ? (session?.email && session.email !== "student@jkslearning.com" ? session.email : "admin@jkslearning.com")
     : isInstructor
     ? (session?.email ?? "instructor@jkslearning.dev")
-    : (session?.email ?? "student@jkslearning.com");
+    : (session?.email ?? clerkEmail ?? "student@jkslearning.com");
 
   const userRole = isAdmin ? "Administrator" : isInstructor ? "Faculty / Lecturer" : "Student";
 
@@ -208,6 +219,48 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                 </span>
               </Link>
             </div>
+          </div>
+        );
+      }
+
+      const isSoon = item.badge === "Soon";
+
+      if (isSoon) {
+        return (
+          <div key={item.href} className="relative group flex items-center justify-center">
+            <div
+              className={`relative flex items-center select-none cursor-not-allowed opacity-55 transition-all duration-200 ${
+                isCollapsed
+                  ? "h-10 w-10 justify-center rounded-xl"
+                  : "w-full gap-3 px-3.5 py-2.5 rounded-xl text-[13.5px]"
+              } text-slate-400 hover:bg-slate-50/50`}
+              title={`${item.label} (Feature Coming Soon — Disabled)`}
+            >
+              <item.icon
+                className={`shrink-0 text-slate-400 ${
+                  isCollapsed ? "h-[19px] w-[19px]" : "h-4 w-4"
+                }`}
+              />
+              {!isCollapsed && (
+                <>
+                  <span className="truncate flex-1 font-medium text-slate-400">{item.label}</span>
+                  <span className="rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 px-1.5 py-0.5 text-[10px] font-bold leading-none">
+                    Soon
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Premium Floating Tooltip in Minimized Mode */}
+            {isCollapsed && (
+              <div className="pointer-events-none absolute left-full top-1/2 ml-3.5 -translate-y-1/2 z-50 hidden rounded-xl bg-slate-950/95 px-3 py-2 text-xs font-semibold text-white shadow-2xl backdrop-blur-md border border-slate-800 group-hover:flex items-center gap-2 whitespace-nowrap animate-in fade-in-50 zoom-in-95 duration-150">
+                <span>{item.label}</span>
+                <span className="rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 text-[10px] font-bold">
+                  Coming Soon
+                </span>
+                <div className="absolute right-full top-1/2 -mr-1 -translate-y-1/2 border-[5px] border-transparent border-r-slate-950" />
+              </div>
+            )}
           </div>
         );
       }
@@ -366,9 +419,17 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
           {!isCollapsed ? (
             <div className="rounded-2xl border border-slate-100/90 bg-gradient-to-b from-slate-50/80 to-white/90 p-3 shadow-xs">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-xs font-bold text-white shadow-xs ring-1 ring-white">
-                  {userInitials}
-                </div>
+                {userAvatarUrl ? (
+                  <img
+                    src={userAvatarUrl}
+                    alt={userName}
+                    className="h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-slate-200"
+                  />
+                ) : (
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-xs font-bold text-white shadow-xs ring-1 ring-white">
+                    {userInitials}
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[13px] font-bold text-slate-900 leading-tight">
                     {userName}
@@ -377,7 +438,6 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                     {isInstructor ? "Faculty ID: JKS.L0047" : userEmail}
                   </div>
                 </div>
-
               </div>
               <button
                 type="button"
@@ -392,8 +452,12 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
             <div className="flex flex-col items-center gap-2">
               {/* Minimized User Avatar */}
               <div className="relative group">
-                <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-xs font-bold text-white shadow-sm ring-2 ring-white/90 hover:ring-blue-400 cursor-pointer transition-all">
-                  {userInitials}
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-xs font-bold text-white shadow-sm ring-2 ring-white/90 hover:ring-blue-400 cursor-pointer transition-all overflow-hidden">
+                  {userAvatarUrl ? (
+                    <img src={userAvatarUrl} alt={userName} className="h-full w-full object-cover" />
+                  ) : (
+                    userInitials
+                  )}
                   <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
                 </div>
 

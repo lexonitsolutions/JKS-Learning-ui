@@ -1998,12 +1998,6 @@ const ADMIN_MAIN_NAV = [
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$layout$2d$dashboard$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__LayoutDashboard$3e$__["LayoutDashboard"]
     },
     {
-        href: "/admin/leads",
-        label: "Leads & CRM",
-        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$megaphone$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Megaphone$3e$__["Megaphone"],
-        badge: "New"
-    },
-    {
         href: "/admin/students",
         label: "Students",
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$users$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Users$3e$__["Users"]
@@ -2024,15 +2018,21 @@ const ADMIN_MAIN_NAV = [
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$clipboard$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ClipboardCheck$3e$__["ClipboardCheck"]
     },
     {
-        href: "/admin/ai-interviews",
-        label: "AI Interviews",
-        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$brain$2d$circuit$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BrainCircuit$3e$__["BrainCircuit"],
-        badge: "AI"
-    },
-    {
         href: "/admin/certificates",
         label: "Certificates",
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$award$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Award$3e$__["Award"]
+    },
+    {
+        href: "/admin/leads",
+        label: "Leads & CRM",
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$megaphone$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Megaphone$3e$__["Megaphone"],
+        badge: "Soon"
+    },
+    {
+        href: "/admin/ai-interviews",
+        label: "AI Interviews",
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$brain$2d$circuit$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BrainCircuit$3e$__["BrainCircuit"],
+        badge: "Soon"
     }
 ];
 const ADMIN_SEC_NAV = [
@@ -2268,6 +2268,90 @@ function DashboardSidebar({ role = "student" }) {
                     columnNumber: 11
                 }, this);
             }
+            const isSoon = item.badge === "Soon";
+            if (isSoon) {
+                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "relative group flex items-center justify-center",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: `relative flex items-center select-none cursor-not-allowed opacity-55 transition-all duration-200 ${isCollapsed ? "h-10 w-10 justify-center rounded-xl" : "w-full gap-3 px-3.5 py-2.5 rounded-xl text-[13.5px]"} text-slate-400 hover:bg-slate-50/50`,
+                            title: `${item.label} (Feature Coming Soon — Disabled)`,
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(item.icon, {
+                                    className: `shrink-0 text-slate-400 ${isCollapsed ? "h-[19px] w-[19px]" : "h-4 w-4"}`
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/dashboard/sidebar.tsx",
+                                    lineNumber: 239,
+                                    columnNumber: 15
+                                }, this),
+                                !isCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "truncate flex-1 font-medium text-slate-400",
+                                            children: item.label
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/dashboard/sidebar.tsx",
+                                            lineNumber: 246,
+                                            columnNumber: 19
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 px-1.5 py-0.5 text-[10px] font-bold leading-none",
+                                            children: "Soon"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/dashboard/sidebar.tsx",
+                                            lineNumber: 247,
+                                            columnNumber: 19
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/components/dashboard/sidebar.tsx",
+                                    lineNumber: 245,
+                                    columnNumber: 17
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/dashboard/sidebar.tsx",
+                            lineNumber: 231,
+                            columnNumber: 13
+                        }, this),
+                        isCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "pointer-events-none absolute left-full top-1/2 ml-3.5 -translate-y-1/2 z-50 hidden rounded-xl bg-slate-950/95 px-3 py-2 text-xs font-semibold text-white shadow-2xl backdrop-blur-md border border-slate-800 group-hover:flex items-center gap-2 whitespace-nowrap animate-in fade-in-50 zoom-in-95 duration-150",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    children: item.label
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/dashboard/sidebar.tsx",
+                                    lineNumber: 257,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 text-[10px] font-bold",
+                                    children: "Coming Soon"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/dashboard/sidebar.tsx",
+                                    lineNumber: 258,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "absolute right-full top-1/2 -mr-1 -translate-y-1/2 border-[5px] border-transparent border-r-slate-950"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/dashboard/sidebar.tsx",
+                                    lineNumber: 261,
+                                    columnNumber: 17
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/dashboard/sidebar.tsx",
+                            lineNumber: 256,
+                            columnNumber: 15
+                        }, this)
+                    ]
+                }, item.href, true, {
+                    fileName: "[project]/src/components/dashboard/sidebar.tsx",
+                    lineNumber: 230,
+                    columnNumber: 11
+                }, this);
+            }
             return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "relative group flex items-center justify-center",
                 children: [
@@ -2279,7 +2363,7 @@ function DashboardSidebar({ role = "student" }) {
                                 className: `shrink-0 transition-colors ${isCollapsed ? "h-[19px] w-[19px]" : "h-4 w-4"} ${active ? "text-white" : "text-slate-400 group-hover:text-slate-700"}`
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 242,
+                                lineNumber: 284,
                                 columnNumber: 13
                             }, this),
                             !isCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -2289,7 +2373,7 @@ function DashboardSidebar({ role = "student" }) {
                                         children: item.label
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 253,
+                                        lineNumber: 295,
                                         columnNumber: 17
                                     }, this),
                                     item.badge && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2297,19 +2381,19 @@ function DashboardSidebar({ role = "student" }) {
                                         children: item.badge
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 255,
+                                        lineNumber: 297,
                                         columnNumber: 19
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 252,
+                                lineNumber: 294,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                        lineNumber: 228,
+                        lineNumber: 270,
                         columnNumber: 11
                     }, this),
                     isCollapsed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2319,7 +2403,7 @@ function DashboardSidebar({ role = "student" }) {
                                 children: item.label
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 272,
+                                lineNumber: 314,
                                 columnNumber: 15
                             }, this),
                             item.badge && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2327,26 +2411,26 @@ function DashboardSidebar({ role = "student" }) {
                                 children: item.badge
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 274,
+                                lineNumber: 316,
                                 columnNumber: 17
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "absolute right-full top-1/2 -mr-1 -translate-y-1/2 border-[5px] border-transparent border-r-slate-950"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 278,
+                                lineNumber: 320,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                        lineNumber: 271,
+                        lineNumber: 313,
                         columnNumber: 13
                     }, this)
                 ]
             }, item.href, true, {
                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                lineNumber: 227,
+                lineNumber: 269,
                 columnNumber: 9
             }, this);
         });
@@ -2374,12 +2458,12 @@ function DashboardSidebar({ role = "student" }) {
                                             className: "h-4 w-4 stroke-[2]"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                            lineNumber: 310,
+                                            lineNumber: 352,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 303,
+                                        lineNumber: 345,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$common$2f$jks$2d$logo$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["JksLogo"], {
@@ -2387,13 +2471,13 @@ function DashboardSidebar({ role = "student" }) {
                                         href: rootHref
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 314,
+                                        lineNumber: 356,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 301,
+                                lineNumber: 343,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2401,13 +2485,13 @@ function DashboardSidebar({ role = "student" }) {
                                 children: isAdmin ? "Admin" : isInstructor ? "Faculty" : "Student"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 318,
+                                lineNumber: 360,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                        lineNumber: 300,
+                        lineNumber: 342,
                         columnNumber: 13
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "relative group flex items-center justify-center",
@@ -2424,7 +2508,7 @@ function DashboardSidebar({ role = "student" }) {
                                         children: "JKS"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 333,
+                                        lineNumber: 375,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2433,18 +2517,18 @@ function DashboardSidebar({ role = "student" }) {
                                             className: "h-2.5 w-2.5 stroke-[2.5]"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                            lineNumber: 335,
+                                            lineNumber: 377,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 334,
+                                        lineNumber: 376,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 326,
+                                lineNumber: 368,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2454,38 +2538,38 @@ function DashboardSidebar({ role = "student" }) {
                                         className: "h-3 w-3 text-amber-400"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 341,
+                                        lineNumber: 383,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         children: "Click to Expand Sidebar"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 342,
+                                        lineNumber: 384,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "absolute right-full top-1/2 -mr-1 -translate-y-1/2 border-[5px] border-transparent border-r-slate-950"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 343,
+                                        lineNumber: 385,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 340,
+                                lineNumber: 382,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                        lineNumber: 325,
+                        lineNumber: 367,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                    lineNumber: 294,
+                    lineNumber: 336,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
@@ -2496,7 +2580,7 @@ function DashboardSidebar({ role = "student" }) {
                             children: renderNavGroup(mainItems)
                         }, void 0, false, {
                             fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                            lineNumber: 356,
+                            lineNumber: 398,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2505,12 +2589,12 @@ function DashboardSidebar({ role = "student" }) {
                                 className: "h-px w-full bg-slate-100"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 362,
+                                lineNumber: 404,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                            lineNumber: 361,
+                            lineNumber: 403,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2518,13 +2602,13 @@ function DashboardSidebar({ role = "student" }) {
                             children: renderNavGroup(secItems)
                         }, void 0, false, {
                             fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                            lineNumber: 366,
+                            lineNumber: 408,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                    lineNumber: 350,
+                    lineNumber: 392,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2541,14 +2625,14 @@ function DashboardSidebar({ role = "student" }) {
                                         className: "h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-slate-200"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 381,
+                                        lineNumber: 423,
                                         columnNumber: 19
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-xs font-bold text-white shadow-xs ring-1 ring-white",
                                         children: userInitials
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 387,
+                                        lineNumber: 429,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2559,7 +2643,7 @@ function DashboardSidebar({ role = "student" }) {
                                                 children: userName
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                                lineNumber: 392,
+                                                lineNumber: 434,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2567,19 +2651,19 @@ function DashboardSidebar({ role = "student" }) {
                                                 children: isInstructor ? "Faculty ID: JKS.L0047" : userEmail
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                                lineNumber: 395,
+                                                lineNumber: 437,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 391,
+                                        lineNumber: 433,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 379,
+                                lineNumber: 421,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2591,26 +2675,26 @@ function DashboardSidebar({ role = "student" }) {
                                         className: "h-3.5 w-3.5"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 405,
+                                        lineNumber: 447,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         children: "Log out"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 406,
+                                        lineNumber: 448,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 400,
+                                lineNumber: 442,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                        lineNumber: 378,
+                        lineNumber: 420,
                         columnNumber: 13
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex flex-col items-center gap-2",
@@ -2627,20 +2711,20 @@ function DashboardSidebar({ role = "student" }) {
                                                 className: "h-full w-full object-cover"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                                lineNumber: 415,
+                                                lineNumber: 457,
                                                 columnNumber: 21
                                             }, this) : userInitials,
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                                lineNumber: 419,
+                                                lineNumber: 461,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 413,
+                                        lineNumber: 455,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2651,7 +2735,7 @@ function DashboardSidebar({ role = "student" }) {
                                                 children: userName
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                                lineNumber: 424,
+                                                lineNumber: 466,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2659,7 +2743,7 @@ function DashboardSidebar({ role = "student" }) {
                                                 children: userEmail
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                                lineNumber: 425,
+                                                lineNumber: 467,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2667,26 +2751,26 @@ function DashboardSidebar({ role = "student" }) {
                                                 children: userRole
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                                lineNumber: 426,
+                                                lineNumber: 468,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "absolute right-full bottom-3 -mr-1 border-[5px] border-transparent border-r-slate-950"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                                lineNumber: 429,
+                                                lineNumber: 471,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 423,
+                                        lineNumber: 465,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 412,
+                                lineNumber: 454,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2701,12 +2785,12 @@ function DashboardSidebar({ role = "student" }) {
                                             className: "h-4 w-4 stroke-[2]"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                            lineNumber: 441,
+                                            lineNumber: 483,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 435,
+                                        lineNumber: 477,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2716,55 +2800,55 @@ function DashboardSidebar({ role = "student" }) {
                                                 className: "h-3 w-3 text-rose-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                                lineNumber: 446,
+                                                lineNumber: 488,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 children: "Log out"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                                lineNumber: 447,
+                                                lineNumber: 489,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "absolute right-full top-1/2 -mr-1 -translate-y-1/2 border-[5px] border-transparent border-r-slate-950"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                                lineNumber: 448,
+                                                lineNumber: 490,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                        lineNumber: 445,
+                                        lineNumber: 487,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                                lineNumber: 434,
+                                lineNumber: 476,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                        lineNumber: 410,
+                        lineNumber: 452,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/dashboard/sidebar.tsx",
-                    lineNumber: 372,
+                    lineNumber: 414,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/dashboard/sidebar.tsx",
-            lineNumber: 292,
+            lineNumber: 334,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/dashboard/sidebar.tsx",
-        lineNumber: 287,
+        lineNumber: 329,
         columnNumber: 5
     }, this);
 }
@@ -2948,12 +3032,11 @@ function loginWithMockCredentials(email, password) {
 async function loginWithApi(email, password) {
     const normalizedEmail = email.trim().toLowerCase();
     try {
-        const res = await fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/auth/login"), {
+        const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])("/auth/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            credentials: "include",
             body: JSON.stringify({
                 email: normalizedEmail,
                 password
@@ -2990,12 +3073,11 @@ async function loginWithApi(email, password) {
 async function registerWithApi(name, email, password) {
     const normalizedEmail = email.trim().toLowerCase();
     try {
-        const res = await fetch((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiUrl"])("/auth/register"), {
+        const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])("/auth/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            credentials: "include",
             body: JSON.stringify({
                 name,
                 email: normalizedEmail,

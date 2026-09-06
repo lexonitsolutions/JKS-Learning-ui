@@ -21,11 +21,67 @@ import {
   Sparkles,
   ExternalLink,
   ChevronRight,
+  Star,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import { fetchAdminStudents, type AdminStudentRecord } from "@/lib/data/students-api";
+
+export function getStudentProgressRating(progress: number) {
+  if (progress >= 85) {
+    return {
+      stars: 5,
+      score: "5.0",
+      tier: "Top Performer",
+      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      barColor: "bg-gradient-to-r from-emerald-500 to-teal-500",
+    };
+  }
+  if (progress >= 70) {
+    return {
+      stars: 5,
+      score: "4.8",
+      tier: "Star Learner",
+      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      barColor: "bg-gradient-to-r from-emerald-500 to-cyan-500",
+    };
+  }
+  if (progress >= 50) {
+    return {
+      stars: 4,
+      score: "4.0",
+      tier: "Advanced",
+      badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
+      barColor: "bg-gradient-to-r from-[#2563EB] to-cyan-500",
+    };
+  }
+  if (progress >= 20) {
+    return {
+      stars: 3,
+      score: "3.5",
+      tier: "Active Learner",
+      badgeColor: "bg-amber-50 text-amber-700 border-amber-200",
+      barColor: "bg-gradient-to-r from-amber-500 to-orange-500",
+    };
+  }
+  if (progress > 0) {
+    return {
+      stars: 2,
+      score: "2.5",
+      tier: "Beginner",
+      badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+      barColor: "bg-slate-400",
+    };
+  }
+  return {
+    stars: 1,
+    score: "1.0",
+    tier: "Not Started",
+    badgeColor: "bg-slate-100 text-slate-500 border-slate-200",
+    barColor: "bg-slate-200",
+  };
+}
 
 export default function AdminStudentsPage() {
   const router = useRouter();
@@ -141,20 +197,30 @@ export default function AdminStudentsPage() {
       "Phone",
       "Registration Date",
       "Enrolled Courses Count",
-      "Enrolled Courses & Progress",
+      "Overall Rating",
+      "Average Progress",
     ];
-    const rows = students.map((s) => [
-      `"${s.id}"`,
-      `"${s.name.replace(/"/g, '""')}"`,
-      `"${s.email}"`,
-      `"${s.phone || "N/A"}"`,
-      `"${new Date(s.registeredAt).toLocaleString("en-IN")}"`,
-      `"${s.totalEnrolled}"`,
-      `"${
-        s.enrollments.map((e) => `${e.courseTitle} (${e.progress}%)`).join("; ") ||
-        "No courses enrolled yet."
-      }"`,
-    ]);
+    const rows = students.map((s) => {
+      const avgProgress =
+        s.enrollments.length > 0
+          ? Math.round(
+              s.enrollments.reduce((sum, e) => sum + (e.progress || 0), 0) /
+                s.enrollments.length
+            )
+          : 0;
+      const rating = getStudentProgressRating(avgProgress);
+
+      return [
+        `"${s.id}"`,
+        `"${s.name.replace(/"/g, '""')}"`,
+        `"${s.email}"`,
+        `"${s.phone || "N/A"}"`,
+        `"${new Date(s.registeredAt).toLocaleString("en-IN")}"`,
+        `"${s.totalEnrolled}"`,
+        `"${s.enrollments.length > 0 ? `${rating.score}/5.0 Stars (${rating.tier})` : "Unrated"}"`,
+        `"${s.enrollments.length > 0 ? `${avgProgress}%` : "0%"}"`,
+      ];
+    });
 
     const csvContent =
       "data:text/csv;charset=utf-8," +
@@ -327,7 +393,7 @@ export default function AdminStudentsPage() {
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
                   <th className="pb-3 pr-4 pl-0">Student Profile</th>
-                  <th className="px-4 pb-3">Enrolled Courses & Progress</th>
+                  <th className="px-4 pb-3">Student Rating</th>
                   <th className="px-4 pb-3">Contact Details</th>
                   <th className="px-4 pb-3">Registration Date</th>
                   <th className="pr-0 pb-3 pl-4 text-right">Actions</th>
@@ -418,42 +484,48 @@ export default function AdminStudentsPage() {
                           </div>
                         </td>
 
-                        {/* List Enrolled Courses with Progress */}
-                        <td className="px-4 py-4 max-w-xs">
+                        {/* Overall Student Rating (Calculated from entire courses average progress - No course names shown outside) */}
+                        <td className="px-4 py-4 whitespace-nowrap">
                           {s.enrollments && s.enrollments.length > 0 ? (
-                            <div className="space-y-2">
-                              {s.enrollments.map((e) => (
-                                <div
-                                  key={e.enrollmentId}
-                                  className="rounded-xl border border-slate-200/90 bg-slate-50/80 p-2 text-xs space-y-1"
-                                >
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span
-                                      className="font-bold text-slate-900 truncate"
-                                      title={e.courseTitle}
-                                    >
-                                      {e.courseTitle}
-                                    </span>
-                                    <span className="text-[10px] font-black text-[#2563EB] shrink-0 bg-blue-100/70 px-1.5 py-0.5 rounded">
-                                      {e.progress}%
+                            (() => {
+                              const avgProgress = Math.round(
+                                s.enrollments.reduce((sum, e) => sum + (e.progress || 0), 0) /
+                                  s.enrollments.length
+                              );
+                              const rating = getStudentProgressRating(avgProgress);
+
+                              return (
+                                <div className="flex items-center gap-2.5">
+                                  {/* Single Star Icon + Score (e.g. 4.8/5) */}
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <Star className="h-4 w-4 text-amber-500 fill-amber-500 shrink-0" />
+                                    <span className="text-[13px] font-black text-slate-900">
+                                      {rating.score}
+                                      <span className="text-[11px] font-bold text-slate-400">/5</span>
                                     </span>
                                   </div>
-                                  <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
-                                    <div
-                                      className="h-full bg-gradient-to-r from-[#2563EB] to-cyan-500 rounded-full"
-                                      style={{
-                                        width: `${Math.max(4, Math.min(100, e.progress))}%`,
-                                      }}
-                                    />
-                                  </div>
+
+                                  {/* Tier Badge */}
+                                  <span
+                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border ${rating.badgeColor} shrink-0`}
+                                  >
+                                    {rating.tier}
+                                  </span>
+
+                                  {/* Enrolled Courses Count */}
+                                  <span className="text-[11px] font-medium text-slate-400">
+                                    ({s.enrollments.length} {s.enrollments.length === 1 ? "Course" : "Courses"})
+                                  </span>
                                 </div>
-                              ))}
-                            </div>
+                              );
+                            })()
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 border border-amber-200/70 px-2.5 py-1 text-[11px] font-bold text-amber-800">
-                              <UserX className="h-3 w-3 text-amber-600" />
-                              <span>No courses enrolled yet.</span>
-                            </span>
+                            <div className="flex items-center gap-1.5 text-slate-400">
+                              <Star className="h-4 w-4 text-slate-300 shrink-0" />
+                              <span className="text-xs font-medium text-slate-400">
+                                —/5 <span className="text-slate-300">•</span> Unrated
+                              </span>
+                            </div>
                           )}
                         </td>
 

@@ -21,8 +21,9 @@ const COLUMNS = [
   {
     title: "Company",
     links: [
-      { href: "/about", label: "About" },
-      { href: "/contact", label: "Contact" },
+      { href: "/about", label: "About Us" },
+      { href: "/privacy-policy", label: "Privacy Policy" },
+      { href: "/terms", label: "Terms of Service" },
     ],
   },
 ];
@@ -34,9 +35,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
           <div className="col-span-2">
             <JksLogo size="md" variant="dark" />
-            <p className="mt-4 max-w-xs text-sm">
-
-
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/60">
               Career-focused IT upskilling with structured courses and AI-powered
               interview readiness for Full Stack, Frontend, and SAP professionals.
             </p>
@@ -47,7 +46,7 @@ export function SiteFooter() {
               <ul className="mt-4 space-y-3">
                 {col.links.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="text-sm hover:text-white">
+                    <Link href={link.href} className="text-sm transition-colors hover:text-white">
                       {link.label}
                     </Link>
                   </li>
@@ -57,13 +56,13 @@ export function SiteFooter() {
           ))}
         </div>
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 text-sm sm:flex-row">
-          <p>&copy; {new Date().getFullYear()} JKS Learning. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="hover:text-white">
-              Privacy
+          <p className="text-white/60">&copy; {new Date().getFullYear()} JKS Learning. All rights reserved.</p>
+          <div className="flex items-center gap-6">
+            <Link href="/privacy-policy" className="transition-colors hover:text-white">
+              Privacy Policy
             </Link>
-            <Link href="/terms" className="hover:text-white">
-              Terms
+            <Link href="/terms" className="transition-colors hover:text-white">
+              Terms of Service
             </Link>
           </div>
         </div>

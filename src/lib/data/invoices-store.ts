@@ -1,3 +1,5 @@
+import { apiFetch } from "@/lib/api/base-url";
+
 export interface InvoiceItem {
   description: string;
   courseSlug: string;
@@ -32,117 +34,18 @@ export interface Invoice {
   batchTiming?: string;
 }
 
-export const INITIAL_INVOICES: Invoice[] = [
-  {
-    id: "inv-1",
-    invoiceNumber: "JKS-INV-2026-00891",
-    issueDate: "2026-08-25T10:00:00Z",
-    dueDate: "2026-08-25T10:00:00Z",
-    studentName: "Meera Patel",
-    studentEmail: "meera.patel@gmail.com",
-    studentPhone: "+91 98980 12345",
-    studentCity: "Bengaluru, Karnataka",
-    items: [
-      {
-        description: "Java Full Stack Developer Mastery (Spring Boot 3, Microservices & AWS)",
-        courseSlug: "java-full-stack-mastery",
-        qty: 1,
-        unitPrice: 45000,
-        totalPrice: 45000,
-      },
-    ],
-    subtotal: 45000,
-    discountAmount: 5000,
-    discountCode: "EARLYBIRD10",
-    taxableAmount: 33898.3,
-    cgstRate: 9,
-    cgstAmount: 3050.85,
-    sgstRate: 9,
-    sgstAmount: 3050.85,
-    totalAmount: 40000,
-    paymentMode: "UPI",
-    paymentStatus: "Paid",
-    transactionRef: "UPI-RZP-992019283",
-    batchTiming: "Weekday Morning (7:30 AM - 9:30 AM IST)",
-  },
-  {
-    id: "inv-2",
-    invoiceNumber: "JKS-INV-2026-00892",
-    issueDate: "2026-08-28T14:30:00Z",
-    dueDate: "2026-08-28T14:30:00Z",
-    studentName: "Karthik Sundaram",
-    studentEmail: "karthik.sundaram@gmail.com",
-    studentPhone: "+91 99401 88990",
-    studentCity: "Hyderabad, Telangana",
-    items: [
-      {
-        description: "Modern Frontend Engineering with React 19 & Next.js 15",
-        courseSlug: "modern-frontend-engineering",
-        qty: 1,
-        unitPrice: 35000,
-        totalPrice: 35000,
-      },
-    ],
-    subtotal: 35000,
-    discountAmount: 0,
-    taxableAmount: 29661.02,
-    cgstRate: 9,
-    cgstAmount: 2669.49,
-    sgstRate: 9,
-    sgstAmount: 2669.49,
-    totalAmount: 35000,
-    paymentMode: "Credit/Debit Card",
-    paymentStatus: "Paid",
-    transactionRef: "CARD-RZP-88392011",
-    batchTiming: "Weekend Intensive (10:00 AM - 2:00 PM IST)",
-  },
-  {
-    id: "inv-3",
-    invoiceNumber: "JKS-INV-2026-00893",
-    issueDate: "2026-08-29T11:20:00Z",
-    dueDate: "2026-09-02T11:20:00Z",
-    studentName: "Aditya Nair",
-    studentEmail: "aditya.nair@yahoo.com",
-    studentPhone: "+91 98450 11223",
-    studentCity: "Pune, Maharashtra",
-    items: [
-      {
-        description: "SAP S/4HANA Enterprise Systems Professional Track",
-        courseSlug: "sap-s4hana-enterprise",
-        qty: 1,
-        unitPrice: 65000,
-        totalPrice: 65000,
-      },
-    ],
-    subtotal: 65000,
-    discountAmount: 6500,
-    discountCode: "SAPPRO10",
-    taxableAmount: 49576.27,
-    cgstRate: 9,
-    cgstAmount: 4461.86,
-    sgstRate: 9,
-    sgstAmount: 4461.86,
-    totalAmount: 58500,
-    paymentMode: "No-Cost EMI",
-    paymentStatus: "Paid",
-    transactionRef: "EMI-BAJAJ-7729103",
-    batchTiming: "Weekday Evening (7:00 PM - 9:00 PM IST)",
-  },
-];
+export const INITIAL_INVOICES: Invoice[] = [];
 
-const INVOICES_STORAGE_KEY = "jks_invoices_store_v1";
+const INVOICES_STORAGE_KEY = "jks_invoices_store_v2";
 
 export function getStoredInvoices(): Invoice[] {
-  if (typeof window === "undefined") return INITIAL_INVOICES;
+  if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(INVOICES_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(INITIAL_INVOICES));
-      return INITIAL_INVOICES;
-    }
+    if (!raw) return [];
     return JSON.parse(raw);
-  } catch {
-    return INITIAL_INVOICES;
+  } catch (err) {
+    return [];
   }
 }
 
@@ -234,7 +137,7 @@ export async function registerCourseOnline(data: {
   batchTiming?: string;
 }): Promise<Invoice> {
   try {
-    const res = await fetch("http://localhost:4000/enrollments/register-public", {
+    const res = await apiFetch("/enrollments/register-public", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -300,7 +203,7 @@ export async function registerCourseOnline(data: {
 
 export async function fetchInvoicesFromApi(): Promise<Invoice[]> {
   try {
-    const res = await fetch("http://localhost:4000/payments/invoices/admin", {
+    const res = await apiFetch("/payments/invoices/admin", {
       headers: { "Content-Type": "application/json" },
     });
     if (res.ok) {

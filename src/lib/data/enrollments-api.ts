@@ -1,3 +1,5 @@
+import { apiFetch } from "@/lib/api/base-url";
+
 export interface EnrolledCourseItem {
   id: string;
   enrollmentId: string;
@@ -55,7 +57,7 @@ export async function fetchStudentEnrollments(userEmailOrId?: string): Promise<E
 
   try {
     // 1. Try fetching via authenticated session /me
-    const meRes = await fetch("http://localhost:4000/enrollments/me", {
+    const meRes = await apiFetch("/enrollments/me", {
       headers: { "Content-Type": "application/json" },
       credentials: "include",
     });
@@ -69,8 +71,7 @@ export async function fetchStudentEnrollments(userEmailOrId?: string): Promise<E
 
     // 2. Lookup by email or ID
     if (emailToQuery) {
-      const studentRes = await fetch(
-        `http://localhost:4000/enrollments/student/${encodeURIComponent(emailToQuery)}`,
+      const studentRes = await apiFetch(`/enrollments/student/${encodeURIComponent(emailToQuery)}`,
         {
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
@@ -138,7 +139,7 @@ export async function saveVideoProgress(params: {
 
   // 2. Send request to Supabase API
   try {
-    const res = await fetch("http://localhost:4000/enrollments/progress", {
+    const res = await apiFetch("/enrollments/progress", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -212,7 +213,7 @@ export async function syncAllCourseProgress(params: {
 
   // 2. Post to Supabase API
   try {
-    const res = await fetch("http://localhost:4000/enrollments/sync-progress", {
+    const res = await apiFetch("/enrollments/sync-progress", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -245,10 +246,10 @@ export async function fetchCourseProgress(
 
   try {
     const url = effectiveEmail
-      ? `http://localhost:4000/enrollments/student/${encodeURIComponent(effectiveEmail)}/course/${encodeURIComponent(courseSlug)}/progress`
-      : `http://localhost:4000/enrollments/progress/${encodeURIComponent(courseSlug)}`;
+      ? `/enrollments/student/${encodeURIComponent(effectiveEmail)}/course/${encodeURIComponent(courseSlug)}/progress`
+      : `/enrollments/progress/${encodeURIComponent(courseSlug)}`;
 
-    const res = await fetch(url, {
+    const res = await apiFetch(url, {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Menu, X } from "lucide-react";
+import { SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { JksLogo } from "@/components/common/jks-logo";
 
@@ -80,12 +81,25 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="hidden text-sm font-medium text-text-heading/70 transition-colors hover:text-text-heading sm:block"
-          >
-            Log in
-          </Link>
+          <Show when="signed-out">
+            <Link
+              href="/login"
+              className="hidden text-sm font-semibold text-text-heading/80 transition-colors hover:text-text-heading sm:block px-3 py-1.5 rounded-lg hover:bg-slate-100"
+            >
+              Log in
+            </Link>
+            <Link
+              href="/register"
+              className="hidden text-sm font-semibold text-primary-blue bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-lg transition-colors hover:bg-blue-100 sm:block"
+            >
+              Register
+            </Link>
+          </Show>
+
+          <Show when="signed-in">
+            <UserButton />
+          </Show>
+
           <Link
             href="/register-course"
             className="group inline-flex items-center gap-2 rounded-xl bg-primary-blue px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-primary-blue/25 transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-primary-blue/30"
@@ -93,7 +107,6 @@ export function SiteHeader() {
             Enroll Now
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
           </Link>
-
 
           <button
             type="button"

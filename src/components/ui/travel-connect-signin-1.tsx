@@ -15,6 +15,10 @@ import { MOCK_USERS, type MockRole } from "@/lib/auth/mock-users";
 
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { JksLogo } from "@/components/common/jks-logo";
+// `useSignIn` comes from /legacy on purpose — see handleSocialAuth below.
+import { useAuth } from "@clerk/nextjs";
+import { useSignIn } from "@clerk/nextjs/legacy";
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 
 
 
@@ -218,10 +222,142 @@ const registerSchema = z
     path: ["confirmPassword"],
   });
 type RegisterValues = z.infer<typeof registerSchema>;
+const PROVIDER_LABEL: Record<string, string> = {
+  oauth_google: "Google",
+  oauth_github: "GitHub",
+};
+
+// Turn whatever Clerk throws into one sentence a user can act on. The most
+// common real-world failure is the provider simply not being enabled on the
+// Clerk instance (SSO connection missing), which otherwise surfaces only as an
+// opaque console warning.
+// v7's `signIn.sso()` resolves with a `ClerkError` instance instead of
+// throwing. That class lives in @clerk/shared, which is a transitive package
+// here, so it is matched structurally rather than imported.
+type ClerkErrorLike = { clerkError: true; code: string; message: string; longMessage?: string };
+
+function isClerkErrorLike(val: unknown): val is ClerkErrorLike {
+  return (
+    typeof val === "object" &&
+    val !== null &&
+    (val as { clerkError?: unknown }).clerkError === true &&
+    typeof (val as { code?: unknown }).code === "string"
+  );
+}
+
+function readClerkError(err: unknown, strategy: string): string {
+  const provider = PROVIDER_LABEL[strategy] ?? "this provider";
+
+  // v7's `signIn.sso()` resolves with a ClerkError instance rather than
+  // throwing; thrown API failures are still ClerkAPIResponseError. Read both.
+  const code = isClerkErrorLike(err)
+    ? err.code
+    : isClerkAPIResponseError(err)
+      ? (err.errors?.[0]?.code ?? "")
+      : "";
+
+  if (
+    code === "oauth_provider_not_enabled" ||
+    code === "strategy_invalid" ||
+    code === "external_account_not_found"
+  ) {
+    return `${provider} sign-in is not enabled on this Clerk instance. Turn on the ${provider} SSO connection in the Clerk dashboard under User & Authentication -> SSO connections.`;
+  }
+
+  if (isClerkErrorLike(err)) {
+    return err.longMessage || err.message || `Could not sign in with ${provider}.`;
+  }
+
+  if (isClerkAPIResponseError(err)) {
+    const first = err.errors?.[0];
+    return first?.longMessage || first?.message || `Could not sign in with ${provider}.`;
+  }
+
+  if (err instanceof Error && err.message) {
+    return `Could not sign in with ${provider}: ${err.message}`;
+  }
+
+  return `Could not sign in with ${provider}. Please try again.`;
+}
 
 export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   const reducedMotion = useReducedMotion();
   const copy = COPY[mode];
+  const { signIn, isLoaded: isSignInLoaded } = useSignIn();
+  const { isSignedIn } = useAuth();
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+  const [oauthError, setOauthError] = useState<string | null>(null);
+
+  // Auto-reset loading state if the redirect does not happen within 15s.
+  useEffect(() => {
+    if (!oauthLoading) return;
+    const timer = setTimeout(() => setOauthLoading(null), 15000);
+    return () => clearTimeout(timer);
+  }, [oauthLoading]);
+
+  // OAuth (Google / GitHub) via Clerk.
+  //
+  // Two separate bugs lived here, both caused by a STALE SIGN-IN ATTEMPT.
+  // Clerk persists `client.signIn` across page loads, so an abandoned attempt
+  // keeps its `id` until it completes or is reset — and both code paths below
+  // skip creating a new attempt when an `id` is already present:
+  //
+  //   legacy: `this.id && continueSignIn || await this.create(...)`
+  //   future: `(!this.id || hasRedirectURL) && await this._create(...)`
+  //
+  //  1. The original code called `authenticateWithRedirect({ continueSignIn: true })`.
+  //     With a stale id that skipped `create()`, so `firstFactorVerification`
+  //     was never refreshed and clerk-js hit its unknown-status branch —
+  //     literally `Response: verified not supported yet. For more information
+  //     contact us at support@...`, the reported error.
+  //  2. Switching to v7's `signIn.sso()` moved the failure rather than fixing
+  //     it: with a stale id it skipped `_create()` too, so NO network request
+  //     was made, nothing navigated, and it resolved `{ error: null }` — the
+  //     button sat on "Connecting…" until the timeout above cleared it.
+  //
+  // The fix is to always start a fresh attempt. `useSignIn` is imported from
+  // `@clerk/nextjs/legacy` because `authenticateWithRedirect` WITHOUT
+  // `continueSignIn` unconditionally calls `create()`. The v7 signal API can
+  // only be forced to do that via `reset()` plus a re-read of the swapped-out
+  // `client.signIn.__internal_future`, which is private API.
+  //
+  // Sign-up is covered too: for a Google/GitHub account Clerk has not seen,
+  // it transfers the attempt to a sign-up and still returns via redirectUrl.
+  const handleSocialAuth = async (strategy: "oauth_google" | "oauth_github") => {
+    setOauthError(null);
+
+    // Already authenticated in this browser — nothing to negotiate.
+    if (isSignedIn) {
+      // Hard navigation on purpose, same reason as redirectAfterLogin below:
+      // proxy.ts must re-evaluate against the fresh session rather than let the
+      // client Router Cache replay a prefetch captured while signed out.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.assign("/dashboard");
+      return;
+    }
+
+    if (!isSignInLoaded || !signIn) {
+      setOauthError("Authentication is still loading. Please try again in a moment.");
+      return;
+    }
+
+    setOauthLoading(strategy);
+
+    try {
+      await signIn.authenticateWithRedirect({
+        strategy,
+        // Where the OAuth provider hands control back to us mid-flow.
+        redirectUrl: "/sso-callback",
+        // Where Clerk sends the user once the whole flow is complete.
+        redirectUrlComplete: "/dashboard",
+      });
+      // On success the browser navigates away; nothing runs after this.
+    } catch (err) {
+      setOauthLoading(null);
+      setOauthError(readClerkError(err, strategy));
+      console.error(`[SocialAuth] ${strategy} failed:`, err);
+    }
+  };
 
   const cardMotion = reducedMotion
     ? {}
@@ -268,16 +404,40 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">{copy.heading}</h1>
           <p className="mt-1 mb-6 text-xs text-slate-500 font-medium">{copy.subheading}</p>
 
-          <div className="mb-6">
+          <div className="mb-6 grid grid-cols-2 gap-2.5">
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:bg-slate-100 hover:border-slate-300 cursor-pointer"
-              onClick={() => console.log("Google sign-in")}
+              disabled={oauthLoading !== null}
+              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:bg-slate-100 hover:border-slate-300 cursor-pointer disabled:opacity-60"
+              onClick={() => handleSocialAuth("oauth_google")}
             >
               <GoogleIcon />
-              <span>{mode === "login" ? "Login with Google" : "Sign up with Google"}</span>
+              <span className="truncate">
+                {oauthLoading === "oauth_google" ? "Connecting…" : "Google"}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              disabled={oauthLoading !== null}
+              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:bg-slate-100 hover:border-slate-300 cursor-pointer disabled:opacity-60"
+              onClick={() => handleSocialAuth("oauth_github")}
+            >
+              <GithubIcon />
+              <span className="truncate">
+                {oauthLoading === "oauth_github" ? "Connecting…" : "GitHub"}
+              </span>
             </button>
           </div>
+
+          {oauthError && (
+            <p
+              role="alert"
+              className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium leading-relaxed text-red-700"
+            >
+              {oauthError}
+            </p>
+          )}
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
@@ -289,6 +449,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
           </div>
 
           {mode === "login" ? <LoginFields /> : <RegisterFields />}
+          <div id="clerk-captcha" />
         </FadeIn>
       </div>
     </motion.div>
@@ -666,6 +827,14 @@ function GoogleIcon() {
         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
       />
       <path fill="#EA4335" fillOpacity="0" d="M1 1h22v22H1z" />
+    </svg>
+  );
+}
+
+function GithubIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
     </svg>
   );
 }

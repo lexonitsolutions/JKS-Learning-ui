@@ -45,6 +45,7 @@ import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { useUser } from "@clerk/nextjs";
 import { getClientSessionEmail } from "@/lib/data/enrollments-api";
 import { fetchStudentDetail } from "@/lib/data/students-api";
 
@@ -61,32 +62,39 @@ const BANNER_PRESETS = [
     className: "bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700",
   },
   {
+    id: "preset-emerald",
+    label: "Emerald Growth",
+    className: "bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700",
+  },
+  {
     id: "preset-cyber",
-    label: "Cyber Matrix",
-    className: "bg-gradient-to-r from-emerald-600 via-teal-700 to-cyan-900",
+    label: "Cyberpunk Glow",
+    className: "bg-gradient-to-r from-fuchsia-600 via-purple-600 to-indigo-800",
   },
   {
     id: "preset-dark",
-    label: "Dark Mesh Tech",
-    className: "bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950",
-  },
-  {
-    id: "preset-purple",
-    label: "Vibrant Violet",
-    className: "bg-gradient-to-r from-fuchsia-600 via-purple-600 to-blue-600",
+    label: "Midnight Stealth",
+    className: "bg-gradient-to-r from-slate-900 via-slate-800 to-zinc-950",
   },
 ];
 
-const PRESET_AVATARS = [
-  "/images/hero-developer.png",
-  "/images/student-3d-developer.png",
-];
+// Built-in avatar choices offered next to "Upload Custom Photo". Inline SVG
+// data URIs so they need no network fetch and no next.config image host entry.
+const PRESET_AVATARS = ["#2563EB", "#7C3AED", "#059669", "#EA580C"].map(
+  (color) =>
+    "data:image/svg+xml;utf8," +
+    encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="${color}"/><circle cx="32" cy="25" r="12" fill="#fff" opacity="0.9"/><path d="M12 64c0-11 9-20 20-20s20 9 20 20z" fill="#fff" opacity="0.9"/></svg>`
+    )
+);
 
+// Local storage persistent keys
 const STORAGE_KEYS = {
-  PROFILE_NAME: "jks_student_name_v2",
-  PROFILE_ROLE: "jks_student_role_v2",
-  PROFILE_BIO: "jks_student_bio_v2",
-  PROFILE_LOC: "jks_student_loc_v2",
+  PROFILE_NAME: "jks_student_profile_name_v2",
+  PROFILE_ROLE: "jks_student_profile_role_v2",
+  PROFILE_BIO: "jks_student_profile_bio_v2",
+  PROFILE_LOCATION: "jks_student_profile_location_v2",
+  PROFILE_TRACK: "jks_student_profile_track_v2",
   PROFILE_AVATAR: "jks_student_avatar_v2",
   PROFILE_BANNER_TYPE: "jks_student_banner_type_v2", // "preset" | "image"
   PROFILE_BANNER_VAL: "jks_student_banner_val_v2",
@@ -94,14 +102,18 @@ const STORAGE_KEYS = {
 
 export default function StudentProfilePage() {
   const session = useMockSession();
-  const effectiveEmail = session?.email || getClientSessionEmail();
+  const { user: clerkUser } = useUser();
+  const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
+  const effectiveEmail = (clerkEmail || session?.email || getClientSessionEmail() || "").toLowerCase().trim();
+
+  const clerkName = clerkUser?.fullName || clerkUser?.firstName;
 
   // Profile State
-  const [name, setName] = useState(session?.name || "Student Learner");
+  const [name, setName] = useState(clerkName || session?.name || "Student Learner");
   const [role, setRole] = useState("Enterprise Full Stack Developer");
   const [bio, setBio] = useState("Passionate software engineer building resilient enterprise web applications.");
   const [location, setLocation] = useState("Bengaluru, India");
-  const [avatar, setAvatar] = useState("/images/hero-developer.png");
+  const [avatar, setAvatar] = useState(clerkUser?.imageUrl || "/images/hero-developer.png");
   const [enrolledTrack, setEnrolledTrack] = useState("Java Track");
 
   // Banner State (Custom image URL or preset gradient class)
@@ -157,7 +169,7 @@ export default function StudentProfilePage() {
         const savedBio = localStorage.getItem(STORAGE_KEYS.PROFILE_BIO + keySuffix);
         if (savedBio) setBio(savedBio);
 
-        const savedLoc = localStorage.getItem(STORAGE_KEYS.PROFILE_LOC + keySuffix);
+        const savedLoc = localStorage.getItem(STORAGE_KEYS.PROFILE_LOCATION + keySuffix);
         if (savedLoc) setLocation(savedLoc);
 
         const savedAvatar = localStorage.getItem(STORAGE_KEYS.PROFILE_AVATAR + keySuffix);
@@ -181,7 +193,7 @@ export default function StudentProfilePage() {
       localStorage.setItem(STORAGE_KEYS.PROFILE_NAME + keySuffix, name);
       localStorage.setItem(STORAGE_KEYS.PROFILE_ROLE + keySuffix, role);
       localStorage.setItem(STORAGE_KEYS.PROFILE_BIO + keySuffix, bio);
-      localStorage.setItem(STORAGE_KEYS.PROFILE_LOC + keySuffix, location);
+      localStorage.setItem(STORAGE_KEYS.PROFILE_LOCATION + keySuffix, location);
       localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR + keySuffix, avatar);
 
       // Update active session cookie so sidebar and topbar update immediately

@@ -14,10 +14,17 @@ export interface MockUser {
 // real (backend-issued JWT) auth is designed to look like.
 export const MOCK_USERS: MockUser[] = [
   {
-    email: "student@jkslearning.dev",
-    password: "student123",
-    name: "Jordan Dsouza",
-    initials: "JD",
+    email: "pathandavood123@gmail.com",
+    password: "davood@123",
+    name: "Asif khan",
+    initials: "AK",
+    role: "student",
+  },
+  {
+    email: "pattandavood123@gmail.com",
+    password: "davood@123",
+    name: "Davood Khan",
+    initials: "DK",
     role: "student",
   },
   {
