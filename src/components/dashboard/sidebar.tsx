@@ -95,6 +95,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
   const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [customAvatar, setCustomAvatar] = useState<string | null>(null);
 
   const session = useMockSession();
   const { signOut } = useClerk();
@@ -109,6 +110,20 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
     } catch {
       // Ignore localStorage errors
     }
+
+    const readAvatar = () => {
+      try {
+        const stored = localStorage.getItem("jks_student_avatar_v2");
+        setCustomAvatar(stored);
+      } catch {}
+    };
+    readAvatar();
+    window.addEventListener("storage", readAvatar);
+    window.addEventListener("jks_avatar_updated", readAvatar);
+    return () => {
+      window.removeEventListener("storage", readAvatar);
+      window.removeEventListener("jks_avatar_updated", readAvatar);
+    };
   }, []);
 
   const toggleSidebar = () => {
@@ -133,13 +148,12 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
   const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
   const clerkName = clerkUser?.fullName || [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") || clerkUser?.username;
-  const userAvatarUrl = clerkUser?.imageUrl;
 
-  const userInitials = isAdmin
-    ? "AD"
+  const userEmail = isAdmin
+    ? (session?.email ? session.email : "admin@jkslearning.dev")
     : isInstructor
-    ? (session?.initials ?? "RK")
-    : (session?.initials ?? (clerkName ? clerkName.slice(0, 2).toUpperCase() : "ST"));
+    ? (session?.email ?? "instructor@jkslearning.dev")
+    : (session?.email ?? clerkEmail ?? "");
 
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" ? session.name : "Ava Desai")
@@ -147,11 +161,18 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
     ? (session?.name ?? "Dr. Rohit Kapoor")
     : (session?.name ?? clerkName ?? "Student");
 
-  const userEmail = isAdmin
-    ? (session?.email ? session.email : "admin@jkslearning.dev")
+  const userAvatarUrl =
+    customAvatar ||
+    clerkUser?.imageUrl ||
+    (userEmail
+      ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || userEmail)}&background=2563eb&color=fff&bold=true&size=128`
+      : undefined);
+
+  const userInitials = isAdmin
+    ? "AD"
     : isInstructor
-    ? (session?.email ?? "instructor@jkslearning.dev")
-    : (session?.email ?? clerkEmail ?? "");
+    ? (session?.initials ?? "RK")
+    : (session?.initials ?? (clerkName ? clerkName.slice(0, 2).toUpperCase() : "ST"));
 
   const userRole = isAdmin ? "Administrator" : isInstructor ? "Faculty / Lecturer" : "Student";
 
@@ -424,8 +445,13 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                     src={userAvatarUrl}
                     alt={userName}
                     className="h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-slate-200"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = "none";
+                    }}
                   />
-                ) : (
+                ) : null}
+                {!userAvatarUrl && (
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-xs font-bold text-white shadow-xs ring-1 ring-white">
                     {userInitials}
                   </div>
@@ -454,11 +480,17 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
               <div className="relative group">
                 <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-xs font-bold text-white shadow-sm ring-2 ring-white/90 hover:ring-blue-400 cursor-pointer transition-all overflow-hidden">
                   {userAvatarUrl ? (
-                    <img src={userAvatarUrl} alt={userName} className="h-full w-full object-cover" />
-                  ) : (
-                    userInitials
-                  )}
-                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+                    <img
+                      src={userAvatarUrl}
+                      alt={userName}
+                      className="h-full w-full object-cover"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : null}
+                  <span className={userAvatarUrl ? "sr-only" : ""}>{userInitials}</span>
                 </div>
 
                 {/* Profile Tooltip */}

@@ -15,12 +15,19 @@ import { MOCK_USERS, type MockRole } from "@/lib/auth/mock-users";
 
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { JksLogo } from "@/components/common/jks-logo";
-// `useSignIn` comes from /legacy on purpose — see handleSocialAuth below.
 import { useAuth, useUser } from "@clerk/nextjs";
-import { useSignIn } from "@clerk/nextjs/legacy";
+import { useSignIn, useSignUp } from "@clerk/nextjs/legacy";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
-import { CheckCircle2 } from "lucide-react";
+import {
+  CheckCircle2,
+  ShieldCheck,
+  Mail,
+  RefreshCw,
+  Sparkles,
+  Lock,
+  ArrowLeft,
+} from "lucide-react";
 
 export type AuthMode = "login" | "register";
 
@@ -186,7 +193,7 @@ const registerSchema = z
   .object({
     name: z.string().min(2, "Enter your full name"),
     email: z.string().email("Enter a valid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z.string().min(10, "Password must be at least 10 characters"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -348,6 +355,9 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
     );
   }
 
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [verifyingEmailAddress, setVerifyingEmailAddress] = useState("");
+
   return (
     <motion.div
       {...cardMotion}
@@ -361,16 +371,24 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8 text-center">
             <FadeIn reducedMotion={reducedMotion} delay={0.6} className="mb-6">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2563EB] to-indigo-600 shadow-xl shadow-blue-500/25">
-                <ArrowRight className="h-7 w-7 text-white" />
+                {isVerifyingEmail ? (
+                  <ShieldCheck className="h-7 w-7 text-white" />
+                ) : (
+                  <ArrowRight className="h-7 w-7 text-white" />
+                )}
               </div>
             </FadeIn>
             <FadeIn reducedMotion={reducedMotion} delay={0.7}>
               <h2 className="mb-2 bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-3xl font-black text-transparent">
-                {copy.panelTitle}
+                {isVerifyingEmail ? "Security Verification" : copy.panelTitle}
               </h2>
             </FadeIn>
             <FadeIn reducedMotion={reducedMotion} delay={0.8}>
-              <p className="max-w-xs text-sm text-slate-600 font-medium leading-relaxed">{copy.panelBody}</p>
+              <p className="max-w-xs text-sm text-slate-600 font-medium leading-relaxed">
+                {isVerifyingEmail
+                  ? "Enter the 6-digit confirmation code sent to your inbox to activate your student account."
+                  : copy.panelBody}
+              </p>
             </FadeIn>
           </div>
         </div>
@@ -382,58 +400,75 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
           <div className="mb-6 flex items-center justify-between">
             <JksLogo size="md" />
             <span className="rounded-full bg-blue-50 border border-blue-100 px-3 py-1 text-[11px] font-bold text-[#2563EB]">
-              {mode === "login" ? "Secure Login" : "New Account"}
+              {isVerifyingEmail
+                ? "Security Check"
+                : mode === "login"
+                ? "Secure Login"
+                : "New Account"}
             </span>
           </div>
 
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">{copy.heading}</h1>
-          <p className="mt-1 mb-6 text-xs text-slate-500 font-medium">{copy.subheading}</p>
+          {!isVerifyingEmail && (
+            <>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">{copy.heading}</h1>
+              <p className="mt-1 mb-6 text-xs text-slate-500 font-medium">{copy.subheading}</p>
 
-          <div className="mb-6 grid grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              disabled={oauthLoading !== null}
-              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:bg-slate-100 hover:border-slate-300 cursor-pointer disabled:opacity-60"
-              onClick={() => handleSocialAuth("oauth_google")}
-            >
-              <GoogleIcon />
-              <span className="truncate">
-                {oauthLoading === "oauth_google" ? "Connecting…" : "Google"}
-              </span>
-            </button>
+              <div className="mb-6 grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  disabled={oauthLoading !== null}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:bg-slate-100 hover:border-slate-300 cursor-pointer disabled:opacity-60"
+                  onClick={() => handleSocialAuth("oauth_google")}
+                >
+                  <GoogleIcon />
+                  <span className="truncate">
+                    {oauthLoading === "oauth_google" ? "Connecting…" : "Google"}
+                  </span>
+                </button>
 
-            <button
-              type="button"
-              disabled={oauthLoading !== null}
-              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:bg-slate-100 hover:border-slate-300 cursor-pointer disabled:opacity-60"
-              onClick={() => handleSocialAuth("oauth_github")}
-            >
-              <GithubIcon />
-              <span className="truncate">
-                {oauthLoading === "oauth_github" ? "Connecting…" : "GitHub"}
-              </span>
-            </button>
-          </div>
+                <button
+                  type="button"
+                  disabled={oauthLoading !== null}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:bg-slate-100 hover:border-slate-300 cursor-pointer disabled:opacity-60"
+                  onClick={() => handleSocialAuth("oauth_github")}
+                >
+                  <GithubIcon />
+                  <span className="truncate">
+                    {oauthLoading === "oauth_github" ? "Connecting…" : "GitHub"}
+                  </span>
+                </button>
+              </div>
 
-          {oauthError && (
-            <p
-              role="alert"
-              className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium leading-relaxed text-red-700"
-            >
-              {oauthError}
-            </p>
+              {oauthError && (
+                <p
+                  role="alert"
+                  className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium leading-relaxed text-red-700"
+                >
+                  {oauthError}
+                </p>
+              )}
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase font-bold tracking-wider">
+                  <span className="bg-white px-3 text-slate-400">or</span>
+                </div>
+              </div>
+            </>
           )}
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase font-bold tracking-wider">
-              <span className="bg-white px-3 text-slate-400">or</span>
-            </div>
-          </div>
-
-          {mode === "login" ? <LoginFields /> : <RegisterFields />}
+          {mode === "login" ? (
+            <LoginFields />
+          ) : (
+            <RegisterFields
+              onVerificationChange={(verifying, email) => {
+                setIsVerifyingEmail(verifying);
+                setVerifyingEmailAddress(email || "");
+              }}
+            />
+          )}
           <div id="clerk-captcha" />
         </FadeIn>
       </div>
@@ -571,10 +606,6 @@ function LoginFields() {
     redirectAfterLogin(result.session.role, searchParams.get("from"));
   };
 
-
-  // Testing convenience — skip typing the demo credentials. Wired to the
-  // same MOCK_USERS the real form validates against, so it can never drift
-  // out of sync with what the demo-credentials hint below actually says.
   const quickLogin = (role: MockRole) => {
     const user = MOCK_USERS.find((u) => u.role === role);
     if (!user) return;
@@ -590,67 +621,34 @@ function LoginFields() {
 
   return (
     <>
-      <div className="mb-6">
-        <p className="mb-2 text-center text-xs font-semibold tracking-wide text-gray-400 uppercase">
-          Testing — instant demo access
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={() => quickLogin("student")}
-            disabled={quickLoginRole !== null}
-            className="rounded-lg border border-gray-200 bg-gray-50 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-60"
-          >
-            {quickLoginRole === "student" ? "Signing in…" : "Student"}
-          </button>
-          <button
-            type="button"
-            onClick={() => quickLogin("instructor")}
-            disabled={quickLoginRole !== null}
-            className="rounded-lg border border-purple-200 bg-purple-50 py-2 text-xs font-semibold text-purple-700 transition-colors hover:bg-purple-100 disabled:pointer-events-none disabled:opacity-60"
-          >
-            {quickLoginRole === "instructor" ? "Signing in…" : "Lecturer"}
-          </button>
-          <button
-            type="button"
-            onClick={() => quickLogin("admin")}
-            disabled={quickLoginRole !== null}
-            className="rounded-lg border border-blue-200 bg-blue-50 py-2 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100 disabled:pointer-events-none disabled:opacity-60"
-          >
-            {quickLoginRole === "admin" ? "Signing in…" : "Admin"}
-          </button>
-        </div>
-      </div>
-
-      <div className="relative mb-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-2 text-gray-500">or continue manually</span>
-        </div>
-      </div>
-
-      <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div>
-          <label htmlFor="login-email" className="mb-1 block text-sm font-medium text-gray-700">
-            Email <span className="text-blue-500">*</span>
+          <label htmlFor="login-email" className="mb-1 block text-xs font-semibold text-slate-700">
+            Email address <span className="text-blue-500">*</span>
           </label>
           <input
             id="login-email"
             type="email"
             autoComplete="email"
-            placeholder="Enter your email address"
-            className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
+            placeholder="name@example.com"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/15 transition-all"
             {...register("email")}
           />
-          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+          {errors.email && <p className="mt-1 text-xs text-rose-600 font-medium">{errors.email.message}</p>}
         </div>
 
         <div>
-          <label htmlFor="login-password" className="mb-1 block text-sm font-medium text-gray-700">
-            Password <span className="text-blue-500">*</span>
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="login-password" className="block text-xs font-semibold text-slate-700">
+              Password <span className="text-blue-500">*</span>
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <PasswordInput
             id="login-password"
             autoComplete="current-password"
@@ -660,108 +658,585 @@ function LoginFields() {
             {...register("password")}
           />
           {errors.password && (
-            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+            <p className="mt-1 text-xs text-rose-600 font-medium">{errors.password.message}</p>
           )}
         </div>
 
-        {formError && <p className="text-sm text-red-600">{formError}</p>}
-
-        <div className="flex justify-end">
-          <Link
-            href="/forgot-password"
-            className="text-sm text-blue-600 transition-colors hover:text-blue-700"
-          >
-            Forgot password?
-          </Link>
-        </div>
+        {formError && (
+          <p className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-semibold text-rose-700 leading-relaxed">
+            {formError}
+          </p>
+        )}
 
         <SubmitButton disabled={isSubmitting}>
-          {isSubmitting ? "Signing in…" : "Sign in"}
+          {isSubmitting ? "Signing in…" : "Sign in to Dashboard"}
         </SubmitButton>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="pt-1 text-center text-xs text-slate-500 font-medium">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-semibold text-blue-600 hover:underline">
-            Sign up
+          <Link href="/register" className="font-bold text-blue-600 hover:underline">
+            Create account
           </Link>
         </p>
       </form>
+
+      {/* Subtle Demo Credentials Widget */}
+      <div className="mt-6 pt-4 border-t border-slate-100">
+        <p className="mb-2 text-center text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+          Quick Demo Access
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => quickLogin("student")}
+            disabled={quickLoginRole !== null}
+            className="rounded-lg border border-slate-200 bg-slate-50 py-1.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-100 hover:border-slate-300 disabled:opacity-50 cursor-pointer"
+          >
+            {quickLoginRole === "student" ? "Signing in…" : "Student"}
+          </button>
+          <button
+            type="button"
+            onClick={() => quickLogin("instructor")}
+            disabled={quickLoginRole !== null}
+            className="rounded-lg border border-purple-200 bg-purple-50/70 py-1.5 text-xs font-semibold text-purple-700 transition-all hover:bg-purple-100 hover:border-purple-300 disabled:opacity-50 cursor-pointer"
+          >
+            {quickLoginRole === "instructor" ? "Signing in…" : "Lecturer"}
+          </button>
+          <button
+            type="button"
+            onClick={() => quickLogin("admin")}
+            disabled={quickLoginRole !== null}
+            className="rounded-lg border border-blue-200 bg-blue-50/70 py-1.5 text-xs font-semibold text-blue-700 transition-all hover:bg-blue-100 hover:border-blue-300 disabled:opacity-50 cursor-pointer"
+          >
+            {quickLoginRole === "admin" ? "Signing in…" : "Admin"}
+          </button>
+        </div>
+      </div>
     </>
   );
 }
 
-function RegisterFields() {
+interface RegisterFieldsProps {
+  onVerificationChange?: (verifying: boolean, email?: string) => void;
+}
+
+function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Clerk OTP Verification & Sign-In States
+  const { isLoaded: isSignUpLoaded, signUp, setActive } = useSignUp();
+  const { isLoaded: isSignInLoaded, signIn } = useSignIn();
+  const [isSignInVerification, setIsSignInVerification] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [verifying, setVerifying] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [otpSuccessMsg, setOtpSuccessMsg] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(30);
+  const [isResending, setIsResending] = useState(false);
+
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const searchParams = useSearchParams();
+  const from = searchParams?.get("from") || "/dashboard";
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterValues>({ resolver: zodResolver(registerSchema) });
 
+  // Auto-countdown for Resend timer
+  useEffect(() => {
+    if (!pendingVerification || resendCooldown <= 0) return;
+    const interval = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [pendingVerification, resendCooldown]);
+
+  // Auto-focus on the first OTP input when entering verification mode
+  useEffect(() => {
+    if (pendingVerification) {
+      setTimeout(() => {
+        otpInputRefs.current[0]?.focus();
+      }, 150);
+    }
+  }, [pendingVerification]);
+
   const onSubmit = async (values: RegisterValues) => {
     setFormError(null);
+
+    // If Clerk is available, use Clerk's email verification sign-up
+    if (isSignUpLoaded && signUp) {
+      const parts = values.name.trim().split(" ");
+      const firstName = parts[0] || values.name;
+      const lastName = parts.slice(1).join(" ") || "";
+
+      try {
+        await signUp.create({
+          emailAddress: values.email,
+          password: values.password,
+          firstName,
+          lastName,
+        });
+
+        await signUp.prepareEmailAddressVerification({
+          strategy: "email_code",
+        });
+
+        setRegisteredEmail(values.email);
+        setIsSignInVerification(false);
+        setPendingVerification(true);
+        onVerificationChange?.(true, values.email);
+        setResendCooldown(30);
+        setOtp(["", "", "", "", "", ""]);
+        setOtpError(null);
+        setOtpSuccessMsg("We sent a 6-digit verification code to your email.");
+      } catch (err: unknown) {
+        // Robust check for existing account error across all Clerk response formats
+        const isAlreadyTaken =
+          (isClerkAPIResponseError(err) &&
+            err.errors?.some(
+              (e) =>
+                e.code === "form_identifier_exists" ||
+                e.code === "identifier_already_exists" ||
+                e.message?.toLowerCase().includes("taken") ||
+                e.message?.toLowerCase().includes("already exists") ||
+                e.longMessage?.toLowerCase().includes("taken") ||
+                e.longMessage?.toLowerCase().includes("already exists")
+            )) ||
+          (typeof err === "object" &&
+            err !== null &&
+            "errors" in err &&
+            Array.isArray((err as { errors: unknown[] }).errors) &&
+            (err as { errors: Array<{ code?: string; message?: string }> }).errors.some(
+              (e) =>
+                e?.code === "form_identifier_exists" ||
+                e?.code === "identifier_already_exists" ||
+                e?.message?.toLowerCase().includes("taken") ||
+                e?.message?.toLowerCase().includes("already exists")
+            )) ||
+          (err instanceof Error &&
+            (err.message.toLowerCase().includes("taken") ||
+              err.message.toLowerCase().includes("already exists") ||
+              err.message.includes("form_identifier_exists")));
+
+        // If email already exists in Clerk (e.g. user deleted from local DB or existing account)
+        if (isAlreadyTaken && isSignInLoaded && signIn) {
+          try {
+            // Attempt automatic sign-in with the provided credentials
+            const signInAttempt = await signIn.create({
+              identifier: values.email,
+              password: values.password,
+            });
+
+            if (signInAttempt.status === "complete") {
+              if (setActive) {
+                await setActive({ session: signInAttempt.createdSessionId });
+              }
+              window.location.assign(from);
+              return;
+            } else if (signInAttempt.status === "needs_first_factor") {
+              const emailFactor = signInAttempt.supportedFirstFactors?.find(
+                (f) => f.strategy === "email_code"
+              );
+              if (emailFactor && "emailAddressId" in emailFactor) {
+                await signIn.prepareFirstFactor({
+                  strategy: "email_code",
+                  emailAddressId: emailFactor.emailAddressId,
+                });
+                setRegisteredEmail(values.email);
+                setIsSignInVerification(true);
+                setPendingVerification(true);
+                onVerificationChange?.(true, values.email);
+                setResendCooldown(30);
+                setOtp(["", "", "", "", "", ""]);
+                setOtpError(null);
+                setOtpSuccessMsg("We found your account! We sent a 6-digit verification code to your email.");
+                return;
+              }
+            }
+          } catch {
+            // Auto sign-in with matching password did not complete, fall through to friendly UI message
+          }
+
+          setFormError(
+            "An account with this email address already exists in our system. Please sign in with your password or use a different email address."
+          );
+          return;
+        }
+
+        // For other unexpected errors, format a clean message
+        const msg = isClerkAPIResponseError(err)
+          ? err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "Registration failed"
+          : err instanceof Error
+          ? err.message
+          : "Registration failed. Please check your details.";
+        setFormError(msg);
+      }
+      return;
+    }
+
+    // Fallback if Clerk isn't ready
     const result = await registerWithApi(values.name, values.email, values.password);
     if (!result.ok) {
       setFormError(result.error);
       return;
     }
-    redirectAfterLogin("student", searchParams.get("from"));
+    redirectAfterLogin("student", from);
   };
 
+  // OTP Input handlers
+  const handleOtpChange = (val: string, index: number) => {
+    const cleanVal = val.replace(/\D/g, "");
+    if (!cleanVal && val !== "") return;
+
+    const newOtp = [...otp];
+    newOtp[index] = cleanVal.slice(-1);
+    setOtp(newOtp);
+
+    // Auto-advance to next input if digit entered
+    if (cleanVal && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === "Backspace") {
+      if (!otp[index] && index > 0) {
+        const newOtp = [...otp];
+        newOtp[index - 1] = "";
+        setOtp(newOtp);
+        otpInputRefs.current[index - 1]?.focus();
+      }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!pasted) return;
+
+    const newOtp = [...otp];
+    for (let i = 0; i < 6; i++) {
+      newOtp[i] = pasted[i] || "";
+    }
+    setOtp(newOtp);
+
+    const nextIndex = Math.min(pasted.length, 5);
+    otpInputRefs.current[nextIndex]?.focus();
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = otp.join("");
+    if (code.length !== 6) {
+      setOtpError("Please enter all 6 digits of the verification code.");
+      return;
+    }
+
+    setVerifying(true);
+    setOtpError(null);
+    setOtpSuccessMsg(null);
+
+    try {
+      if (isSignInVerification && isSignInLoaded && signIn) {
+        const completeSignIn = await signIn.attemptFirstFactor({
+          strategy: "email_code",
+          code,
+        });
+
+        if (completeSignIn.status === "complete") {
+          if (setActive) {
+            await setActive({ session: completeSignIn.createdSessionId });
+          }
+          window.location.assign(from);
+        } else {
+          setOtpError("Verification incomplete. Please check your code and try again.");
+        }
+      } else if (isSignUpLoaded && signUp) {
+        const completeSignUp = await signUp.attemptEmailAddressVerification({ code });
+
+        if (completeSignUp.status === "complete") {
+          if (setActive) {
+            await setActive({ session: completeSignUp.createdSessionId });
+          }
+          window.location.assign(from);
+        } else {
+          setOtpError("Verification incomplete. Please check your code and try again.");
+        }
+      }
+    } catch (err: unknown) {
+      console.error("[Clerk OTP Verify Error]", err);
+      const msg = isClerkAPIResponseError(err)
+        ? err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "Invalid code"
+        : err instanceof Error
+        ? err.message
+        : "Invalid or expired verification code. Please try again.";
+      setOtpError(msg);
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (resendCooldown > 0 || isResending) return;
+    setIsResending(true);
+    setOtpError(null);
+    setOtpSuccessMsg(null);
+
+    try {
+      if (isSignInVerification && signIn) {
+        const factor = signIn.supportedFirstFactors?.find((f) => f.strategy === "email_code");
+        if (factor && "emailAddressId" in factor) {
+          await signIn.prepareFirstFactor({ strategy: "email_code", emailAddressId: factor.emailAddressId });
+          setResendCooldown(30);
+          setOtpSuccessMsg("A fresh 6-digit code has been sent to your inbox!");
+        }
+      } else if (signUp) {
+        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+        setResendCooldown(30);
+        setOtpSuccessMsg("A fresh 6-digit code has been sent to your inbox!");
+      }
+    } catch (err: unknown) {
+      const msg = isClerkAPIResponseError(err)
+        ? err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "Failed to resend code"
+        : "Failed to resend verification code. Please try again in a moment.";
+      setOtpError(msg);
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleBackToRegistration = () => {
+    setPendingVerification(false);
+    setIsSignInVerification(false);
+    setFormError(null);
+    setOtpError(null);
+    setOtpSuccessMsg(null);
+    onVerificationChange?.(false);
+  };
+
+  // =========================================================================
+  // STEP 2: SLEEK & PROFESSIONAL 6-DIGIT OTP VERIFICATION SCREEN
+  // =========================================================================
+  if (pendingVerification) {
+    return (
+      <form onSubmit={handleVerifyOtp} className="space-y-5 animate-in fade-in duration-300">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3.5 py-1 text-xs font-bold text-blue-600 shadow-xs">
+            <ShieldCheck className="h-4 w-4 text-blue-600" />
+            <span>Step 2 of 2: Security Verification</span>
+          </div>
+
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+            Check Your Email
+          </h2>
+
+          <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto leading-relaxed">
+            We sent a 6-digit confirmation code to:
+          </p>
+
+          <div className="inline-flex items-center gap-2 rounded-xl bg-slate-100 border border-slate-200 px-3 py-1.5 text-xs font-mono font-bold text-slate-800 shadow-xs">
+            <Mail className="h-3.5 w-3.5 text-blue-600" />
+            <span className="truncate max-w-[200px]">{registeredEmail}</span>
+            <button
+              type="button"
+              onClick={handleBackToRegistration}
+              className="ml-1 text-[11px] font-sans font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+            >
+              Change
+            </button>
+          </div>
+        </div>
+
+        {/* 6-Digit Interactive OTP Inputs */}
+        <div className="py-2">
+          <label className="block text-center text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">
+            Enter 6-Digit Code
+          </label>
+          <div className="flex items-center justify-center gap-2 sm:gap-2.5">
+            {otp.map((digit, index) => (
+              <input
+                key={index}
+                ref={(el) => {
+                  otpInputRefs.current[index] = el;
+                }}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleOtpChange(e.target.value, index)}
+                onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                onPaste={handleOtpPaste}
+                className={`h-12 w-10 sm:h-14 sm:w-12 rounded-xl text-center font-mono text-xl sm:text-2xl font-black text-slate-900 outline-none transition-all duration-200 ${
+                  digit
+                    ? "border-2 border-blue-600 bg-blue-50/50 shadow-md shadow-blue-500/10 scale-105"
+                    : "border border-slate-200 bg-slate-50/80 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-500/15 focus:scale-105"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Error / Success Feedback */}
+        {otpError && (
+          <p
+            role="alert"
+            className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-center text-xs font-semibold leading-relaxed text-rose-700 animate-in fade-in"
+          >
+            {otpError}
+          </p>
+        )}
+
+        {otpSuccessMsg && (
+          <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-center text-xs font-semibold leading-relaxed text-emerald-700 animate-in fade-in">
+            {otpSuccessMsg}
+          </p>
+        )}
+
+        {/* Verify Submit Button */}
+        <button
+          type="submit"
+          disabled={verifying || otp.join("").length !== 6}
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3.5 px-4 text-sm font-bold text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {verifying ? (
+            <>
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              <span>Verifying Code…</span>
+            </>
+          ) : (
+            <>
+              <span>Verify &amp; Launch Dashboard</span>
+              <ArrowRight className="h-4 w-4" />
+            </>
+          )}
+        </button>
+
+        {/* Resend Code & Back actions */}
+        <div className="flex flex-col items-center gap-2 text-center text-xs text-slate-500 pt-1">
+          <div>
+            Didn&apos;t receive the email?{" "}
+            {resendCooldown > 0 ? (
+              <span className="font-semibold text-slate-700">
+                Resend in <strong className="font-mono text-blue-600">{resendCooldown}s</strong>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={isResending}
+                className="font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer inline-flex items-center gap-1"
+              >
+                {isResending ? (
+                  <>
+                    <RefreshCw className="h-3 w-3 animate-spin" /> Sending…
+                  </>
+                ) : (
+                  "Resend code"
+                )}
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleBackToRegistration}
+            className="flex items-center gap-1 font-semibold text-slate-500 hover:text-slate-800 transition-colors pt-2 cursor-pointer"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to registration
+          </button>
+        </div>
+
+        {/* Security Seal */}
+        <div className="pt-2 border-t border-slate-100 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-slate-400">
+          <Lock className="h-3 w-3 text-slate-400" />
+          <span>256-Bit Encrypted Security &bull; Official JKS Credentials</span>
+        </div>
+      </form>
+    );
+  }
+
+  // =========================================================================
+  // STEP 1: INITIAL REGISTRATION FORM
+  // =========================================================================
   return (
-    <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate>
-      {formError && <p className="text-sm text-red-600">{formError}</p>}
+    <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+      {formError && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-semibold text-rose-700 space-y-1.5 animate-in fade-in">
+          <p>{formError}</p>
+          {formError.includes("already exists") && (
+            <div className="pt-0.5">
+              <Link
+                href={`/login?from=${encodeURIComponent(from)}`}
+                className="inline-flex items-center gap-1 font-bold text-blue-700 hover:text-blue-900 underline underline-offset-2"
+              >
+                Sign in to your account <ArrowRight className="h-3 w-3 inline" />
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
 
       <div>
-        <label htmlFor="register-name" className="mb-1 block text-sm font-medium text-gray-700">
+        <label htmlFor="register-name" className="mb-1 block text-xs font-semibold text-slate-700">
           Full name <span className="text-blue-500">*</span>
         </label>
         <input
           id="register-name"
           type="text"
           autoComplete="name"
-          placeholder="Enter your full name"
-          className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
+          placeholder="e.g. Rahul Sharma"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/15 transition-all"
           {...register("name")}
         />
-        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+        {errors.name && <p className="mt-1 text-xs text-rose-600 font-medium">{errors.name.message}</p>}
       </div>
 
       <div>
-        <label htmlFor="register-email" className="mb-1 block text-sm font-medium text-gray-700">
-          Email <span className="text-blue-500">*</span>
+        <label htmlFor="register-email" className="mb-1 block text-xs font-semibold text-slate-700">
+          Email address <span className="text-blue-500">*</span>
         </label>
         <input
           id="register-email"
           type="email"
           autoComplete="email"
-          placeholder="Enter your email address"
-          className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
+          placeholder="name@example.com"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/15 transition-all"
           {...register("email")}
         />
-        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+        {errors.email && <p className="mt-1 text-xs text-rose-600 font-medium">{errors.email.message}</p>}
       </div>
 
       <div>
-        <label htmlFor="register-password" className="mb-1 block text-sm font-medium text-gray-700">
-          Password <span className="text-blue-500">*</span>
-        </label>
+        <div className="flex items-center justify-between mb-1">
+          <label htmlFor="register-password" className="block text-xs font-semibold text-slate-700">
+            Password <span className="text-blue-500">*</span>
+          </label>
+          <span className="text-[11px] font-medium text-slate-400">Min. 10 characters</span>
+        </div>
         <PasswordInput
           id="register-password"
           autoComplete="new-password"
-          placeholder="Enter your password"
+          placeholder="Enter your password (min 10 characters)"
           visible={passwordVisible}
           onToggle={() => setPasswordVisible((v) => !v)}
           {...register("password")}
         />
-        {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+        {errors.password && <p className="mt-1 text-xs text-rose-600 font-medium">{errors.password.message}</p>}
       </div>
 
       <div>
-        <label htmlFor="register-confirm" className="mb-1 block text-sm font-medium text-gray-700">
+        <label htmlFor="register-confirm" className="mb-1 block text-xs font-semibold text-slate-700">
           Confirm password <span className="text-blue-500">*</span>
         </label>
         <PasswordInput
@@ -773,18 +1248,18 @@ function RegisterFields() {
           {...register("confirmPassword")}
         />
         {errors.confirmPassword && (
-          <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
+          <p className="mt-1 text-xs text-rose-600 font-medium">{errors.confirmPassword.message}</p>
         )}
       </div>
 
       <SubmitButton disabled={isSubmitting}>
-        {isSubmitting ? "Creating account…" : "Create account"}
+        {isSubmitting ? "Creating account…" : "Create Student Account"}
       </SubmitButton>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="pt-1 text-center text-xs text-slate-500 font-medium">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-blue-600 hover:underline">
-          Log in
+        <Link href="/login" className="font-bold text-blue-600 hover:underline">
+          Sign in
         </Link>
       </p>
     </form>

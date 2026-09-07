@@ -195,6 +195,8 @@ export default function StudentProfilePage() {
       localStorage.setItem(STORAGE_KEYS.PROFILE_BIO + keySuffix, bio);
       localStorage.setItem(STORAGE_KEYS.PROFILE_LOCATION + keySuffix, location);
       localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR + keySuffix, avatar);
+      localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR, avatar);
+      window.dispatchEvent(new Event("jks_avatar_updated"));
 
       // Update active session cookie so sidebar and topbar update immediately
       if (typeof document !== "undefined") {
@@ -255,7 +257,10 @@ export default function StudentProfilePage() {
       if (result) {
         setAvatar(result);
         try {
+          const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
+          localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR + keySuffix, result);
           localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR, result);
+          window.dispatchEvent(new Event("jks_avatar_updated"));
         } catch {
           // ignore
         }

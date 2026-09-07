@@ -34,21 +34,46 @@ export function SiteHeader() {
   const reducedMotion = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [customAvatar, setCustomAvatar] = useState<string | null>(null);
 
   const { isSignedIn, isLoaded: isAuthLoaded, signOut } = useAuth();
   const { user: clerkUser } = useUser();
   const session = useMockSession();
 
+  useEffect(() => {
+    const readAvatar = () => {
+      try {
+        const stored = localStorage.getItem("jks_student_avatar_v2");
+        setCustomAvatar(stored);
+      } catch {}
+    };
+    readAvatar();
+    window.addEventListener("storage", readAvatar);
+    window.addEventListener("jks_avatar_updated", readAvatar);
+    return () => {
+      window.removeEventListener("storage", readAvatar);
+      window.removeEventListener("jks_avatar_updated", readAvatar);
+    };
+  }, []);
+
   const isUserAuthenticated = (isAuthLoaded && !!isSignedIn) || !!session;
-  const userEmail = clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "";
-  const userName =
+  const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
+  const clerkName =
     clerkUser?.fullName ||
     [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") ||
-    session?.name ||
-    userEmail.split("@")[0] ||
-    "Student";
+    clerkUser?.username;
+
+  const userEmail = clerkEmail || session?.email || "";
+  const userName = clerkName || session?.name || userEmail.split("@")[0] || "Student";
   const userRole = session?.role || "student";
-  const userAvatar = clerkUser?.imageUrl;
+
+  const userAvatar =
+    customAvatar ||
+    clerkUser?.imageUrl ||
+    (userEmail
+      ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || userEmail)}&background=2563eb&color=fff&bold=true&size=128`
+      : undefined);
+
   const userInitials =
     clerkUser?.firstName && clerkUser?.lastName
       ? `${clerkUser.firstName[0]}${clerkUser.lastName[0]}`.toUpperCase()
@@ -162,7 +187,7 @@ export function SiteHeader() {
             </>
           ) : (
             <>
-              {/* Public Header User Avatar linking directly to Dashboard (No dropdown here) */}
+              {/* Public Header User Avatar linking directly to Dashboard */}
               <Link
                 href={dashboardHref}
                 className="flex items-center rounded-full p-0.5 transition-transform hover:scale-105 shrink-0 focus:outline-none"
@@ -170,11 +195,17 @@ export function SiteHeader() {
               >
                 <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-md ring-2 ring-blue-500/30 overflow-hidden">
                   {userAvatar ? (
-                    <img src={userAvatar} alt={userName} className="h-full w-full object-cover" />
-                  ) : (
-                    userInitials
-                  )}
-                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+                    <img
+                      src={userAvatar}
+                      alt={userName}
+                      className="h-full w-full object-cover"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : null}
+                  <span className={userAvatar ? "sr-only" : ""}>{userInitials}</span>
                 </div>
               </Link>
 

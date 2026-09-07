@@ -126,12 +126,31 @@ export function DashboardTopbar({
   const { signOut } = useAuth();
   const { user: clerkUser } = useUser();
 
+  const [customAvatar, setCustomAvatar] = useState<string | null>(null);
+
+  useEffect(() => {
+    const readAvatar = () => {
+      try {
+        const stored = localStorage.getItem("jks_student_avatar_v2");
+        setCustomAvatar(stored);
+      } catch {}
+    };
+    readAvatar();
+    window.addEventListener("storage", readAvatar);
+    window.addEventListener("jks_avatar_updated", readAvatar);
+    return () => {
+      window.removeEventListener("storage", readAvatar);
+      window.removeEventListener("jks_avatar_updated", readAvatar);
+    };
+  }, []);
+
   const isAdmin = pathname.startsWith("/admin");
   const isInstructor = pathname.startsWith("/instructor");
   const navItems = isAdmin ? ADMIN_NAV : isInstructor ? INSTRUCTOR_NAV : STUDENT_NAV;
   const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
 
-  const userAvatar = clerkUser?.imageUrl;
+  const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
+  const clerkName = clerkUser?.fullName || [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") || clerkUser?.username;
 
   const resolvedInitials = isAdmin
     ? "AD"
@@ -139,19 +158,26 @@ export function DashboardTopbar({
     ? (session?.initials ?? userInitials ?? "RK")
     : clerkUser?.firstName && clerkUser?.lastName
     ? `${clerkUser.firstName[0]}${clerkUser.lastName[0]}`.toUpperCase()
-    : (session?.initials ?? userInitials ?? (clerkUser?.firstName ? clerkUser.firstName.slice(0, 2).toUpperCase() : "ST"));
+    : (session?.initials ?? userInitials ?? (clerkName ? clerkName.slice(0, 2).toUpperCase() : "ST"));
 
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" ? session.name : "Ava Desai")
     : isInstructor
     ? (session?.name ?? "Dr. Rohit Kapoor")
-    : (clerkUser?.fullName || clerkUser?.firstName || session?.name || "Student");
+    : (clerkName || session?.name || "Student");
 
   const userEmail = isAdmin
     ? (session?.email ? session.email : "admin@jkslearning.dev")
     : isInstructor
     ? (session?.email ?? "instructor@jkslearning.dev")
-    : (clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "");
+    : (clerkEmail || session?.email || "");
+
+  const userAvatar =
+    customAvatar ||
+    clerkUser?.imageUrl ||
+    (userEmail
+      ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || userEmail)}&background=2563eb&color=fff&bold=true&size=128`
+      : undefined);
 
 
   // Close explore and profile dropdowns on outside click
@@ -290,7 +316,7 @@ export function DashboardTopbar({
             )}
           </button>
 
-          {/* Custom JKS Learning Profile Popover (Clean, no development mode badge) */}
+          {/* Custom JKS Learning Profile Popover */}
           <div ref={profileRef} className="relative shrink-0">
             <button
               type="button"
@@ -301,11 +327,17 @@ export function DashboardTopbar({
             >
               <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs sm:text-sm font-bold text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)] overflow-hidden ring-2 ring-blue-500/20">
                 {userAvatar ? (
-                  <img src={userAvatar} alt={userName} className="h-full w-full object-cover" />
-                ) : (
-                  resolvedInitials
-                )}
-                <span className="absolute bottom-0 right-0 h-2 sm:h-2.5 w-2 sm:w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+                  <img
+                    src={userAvatar}
+                    alt={userName}
+                    className="h-full w-full object-cover"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                ) : null}
+                <span className={userAvatar ? "sr-only" : ""}>{resolvedInitials}</span>
               </div>
               <ChevronDown
                 className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 hidden sm:block ${
@@ -328,10 +360,17 @@ export function DashboardTopbar({
                   <div className="flex items-center gap-3 border-b border-slate-100 p-3 bg-slate-50/70 rounded-xl mb-1.5">
                     <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white overflow-hidden shadow-xs">
                       {userAvatar ? (
-                        <img src={userAvatar} alt={userName} className="h-full w-full object-cover" />
-                      ) : (
-                        resolvedInitials
-                      )}
+                        <img
+                          src={userAvatar}
+                          alt={userName}
+                          className="h-full w-full object-cover"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      ) : null}
+                      <span className={userAvatar ? "sr-only" : ""}>{resolvedInitials}</span>
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-bold text-slate-900">{userName}</p>
