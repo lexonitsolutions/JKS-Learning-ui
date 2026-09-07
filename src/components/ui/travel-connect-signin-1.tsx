@@ -16,39 +16,11 @@ import { MOCK_USERS, type MockRole } from "@/lib/auth/mock-users";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { JksLogo } from "@/components/common/jks-logo";
 // `useSignIn` comes from /legacy on purpose — see handleSocialAuth below.
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useSignIn } from "@clerk/nextjs/legacy";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
-
-
-
-
-
-// Adapted from a 21st.dev "travel-connect-signin-1" submission. Kept as one
-// file at the requested path/name, but with real changes from the source:
-//  - Copy is rebranded for JKS Learning — the source was a travel app
-//    ("Travel Connect… connect with nomads worldwide"), which would be a
-//    glaring content bug shipped verbatim on a course platform's login page.
-//  - The source's local placeholder Button/Input helpers referenced
-//    shadcn's semantic tokens (bg-background, text-foreground, border-input,
-//    ring-ring) that don't exist in this project's theme — this app is
-//    Tailwind v4 with its own DESIGN.md token set (--color-primary-blue
-//    etc.), no tailwind.config.js, and no shadcn CSS-variable layer. Those
-//    classes would resolve to nothing. Removed the helpers; the visible
-//    elements already used explicit Tailwind palette classes (gray-50,
-//    blue-500, …), which need zero config and render identically.
-//  - The source's local `cn` was a naive `.join(" ")` with no conflict
-//    resolution; swapped for this project's real `cn` (clsx + tailwind-merge).
-//  - Sign-in now actually authenticates (loginWithMockCredentials + the
-//    existing `from`-redirect + hard-navigation pattern, same reasoning as
-//    the rest of this app's auth flow) instead of console.logging the
-//    attempt — the original was a static design demo, not a working form.
-//  - Added a `mode` prop so one component serves both /login and /register
-//    (register keeps its own fields and the existing TODO-backend submit,
-//    matching how the rest of this mock-auth app treats registration).
-//  - All motion (entrance fades, hover shimmer, the animated dot-map) is
-//    gated behind prefers-reduced-motion, matching every other animated
-//    component in this codebase.
+import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
+import { CheckCircle2 } from "lucide-react";
 
 export type AuthMode = "login" | "register";
 
@@ -227,13 +199,6 @@ const PROVIDER_LABEL: Record<string, string> = {
   oauth_github: "GitHub",
 };
 
-// Turn whatever Clerk throws into one sentence a user can act on. The most
-// common real-world failure is the provider simply not being enabled on the
-// Clerk instance (SSO connection missing), which otherwise surfaces only as an
-// opaque console warning.
-// v7's `signIn.sso()` resolves with a `ClerkError` instance instead of
-// throwing. That class lives in @clerk/shared, which is a transitive package
-// here, so it is matched structurally rather than imported.
 type ClerkErrorLike = { clerkError: true; code: string; message: string; longMessage?: string };
 
 function isClerkErrorLike(val: unknown): val is ClerkErrorLike {
@@ -248,8 +213,6 @@ function isClerkErrorLike(val: unknown): val is ClerkErrorLike {
 function readClerkError(err: unknown, strategy: string): string {
   const provider = PROVIDER_LABEL[strategy] ?? "this provider";
 
-  // v7's `signIn.sso()` resolves with a ClerkError instance rather than
-  // throwing; thrown API failures are still ClerkAPIResponseError. Read both.
   const code = isClerkErrorLike(err)
     ? err.code
     : isClerkAPIResponseError(err)
@@ -281,12 +244,30 @@ function readClerkError(err: unknown, strategy: string): string {
 }
 
 export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
+  const searchParams = useSearchParams();
+  const from = searchParams?.get("from") || "/dashboard";
   const reducedMotion = useReducedMotion();
   const copy = COPY[mode];
   const { signIn, isLoaded: isSignInLoaded } = useSignIn();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded: isAuthLoaded } = useAuth();
+  const { user: clerkUser } = useUser();
+  const session = useMockSession();
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [oauthError, setOauthError] = useState<string | null>(null);
+
+  const isAuthenticated = (isAuthLoaded && isSignedIn) || !!session;
+  const userEmail = clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "";
+  const userName = clerkUser?.fullName || clerkUser?.firstName || session?.name || "Student";
+
+  // Auto-redirect if already signed in
+  useEffect(() => {
+    if (isAuthenticated) {
+      const timer = setTimeout(() => {
+        window.location.assign(from);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, from]);
 
   // Auto-reset loading state if the redirect does not happen within 15s.
   useEffect(() => {
@@ -295,36 +276,14 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
     return () => clearTimeout(timer);
   }, [oauthLoading]);
 
-  // OAuth (Google / GitHub) via Clerk.
-  //
-  // Two separate bugs lived here, both caused by a STALE SIGN-IN ATTEMPT.
-  // Clerk persists `client.signIn` across page loads, so an abandoned attempt
-  // keeps its `id` until it completes or is reset — and both code paths below
-  // skip creating a new attempt when an `id` is already present:
-  //
-  //   legacy: `this.id && continueSignIn || await this.create(...)`
-  //   future: `(!this.id || hasRedirectURL) && await this._create(...)`
-  //
-  //  1. The original code called `authenticateWithRedirect({ continueSignIn: true })`.
-  //     With a stale id that skipped `create()`, so `firstFactorVerification`
-  //     was never refreshed and clerk-js hit its unknown-status branch —
-  //     literally `Response: verified not supported yet. For more information
-  //     contact us at support@...`, the reported error.
-  //  2. Switching to v7's `signIn.sso()` moved the failure rather than fixing
-  //     it: with a stale id it skipped `_create()` too, so NO network request
-  //     was made, nothing navigated, and it resolved `{ error: null }` — the
-  //     button sat on "Connecting…" until the timeout above cleared it.
-  //
-  // The fix is to always start a fresh attempt. `useSignIn` is imported from
-  // `@clerk/nextjs/legacy` because `authenticateWithRedirect` WITHOUT
-  // `continueSignIn` unconditionally calls `create()`. The v7 signal API can
-  // only be forced to do that via `reset()` plus a re-read of the swapped-out
-  // `client.signIn.__internal_future`, which is private API.
-  //
-  // Sign-up is covered too: for a Google/GitHub account Clerk has not seen,
-  // it transfers the attempt to a sign-up and still returns via redirectUrl.
   const handleSocialAuth = async (strategy: "oauth_google" | "oauth_github") => {
     setOauthError(null);
+
+    // If already signed in, immediately navigate to target
+    if (isSignedIn || session) {
+      window.location.assign(from);
+      return;
+    }
 
     if (!isSignInLoaded || !signIn) {
       setOauthError("Authentication is still loading. Please try again in a moment.");
@@ -336,10 +295,8 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
     try {
       await signIn.authenticateWithRedirect({
         strategy,
-        // Where the OAuth provider hands control back to us mid-flow.
         redirectUrl: "/sso-callback",
-        // Where Clerk sends the user once the whole flow is complete.
-        redirectUrlComplete: "/dashboard",
+        redirectUrlComplete: from,
       });
       // On success the browser navigates away; nothing runs after this.
     } catch (err) {
@@ -352,6 +309,44 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   const cardMotion = reducedMotion
     ? {}
     : { initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 }, transition: { duration: 0.5 } };
+
+  // If already authenticated, show friendly redirect card
+  if (isAuthenticated) {
+    return (
+      <motion.div
+        {...cardMotion}
+        className="flex w-full max-w-md flex-col items-center justify-center rounded-3xl bg-white p-8 text-center shadow-2xl border border-slate-100"
+      >
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-[#2563EB] mb-4">
+          <CheckCircle2 className="h-8 w-8 text-[#2563EB]" />
+        </div>
+        <h2 className="text-xl font-black text-slate-900">Already Signed In</h2>
+        <p className="mt-1 text-xs text-slate-500 font-medium">
+          You are currently signed in as{" "}
+          <span className="font-bold text-slate-800">{userEmail || userName}</span>.
+        </p>
+        <div className="mt-6 flex flex-col gap-3 w-full">
+          <button
+            type="button"
+            onClick={() => window.location.assign(from)}
+            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer"
+          >
+            Go to Dashboard <ArrowRight className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              logoutMockSession();
+              window.location.assign("/login");
+            }}
+            className="text-xs font-semibold text-slate-500 hover:text-slate-800 py-2 transition-colors cursor-pointer"
+          >
+            Sign in with a different account
+          </button>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

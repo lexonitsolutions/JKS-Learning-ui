@@ -27,14 +27,15 @@ import {
   Trophy,
   Bookmark,
   Code2,
+  FileText,
+  Shield,
   Sparkles,
   Megaphone,
-  FileText,
   type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
-import { useUser, UserButton } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 
 interface NavItem {
   href: string;
@@ -118,14 +119,19 @@ export function DashboardTopbar({
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [exploreOpen, setExploreOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const exploreRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
   const session = useMockSession();
+  const { signOut } = useAuth();
   const { user: clerkUser } = useUser();
 
   const isAdmin = pathname.startsWith("/admin");
   const isInstructor = pathname.startsWith("/instructor");
   const navItems = isAdmin ? ADMIN_NAV : isInstructor ? INSTRUCTOR_NAV : STUDENT_NAV;
   const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
+
+  const userAvatar = clerkUser?.imageUrl;
 
   const resolvedInitials = isAdmin
     ? "AD"
@@ -148,21 +154,25 @@ export function DashboardTopbar({
     : (clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "");
 
 
-  // Close explore dropdown on outside click
+  // Close explore and profile dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (exploreRef.current && !exploreRef.current.contains(e.target as Node)) {
         setExploreOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close mobile drawer on route change
+  // Close mobile drawer & menus on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     setExploreOpen(false);
+    setProfileOpen(false);
   }, [pathname]);
 
   // Lock body scroll when mobile drawer is open
@@ -177,7 +187,13 @@ export function DashboardTopbar({
     };
   }, [mobileMenuOpen]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    setProfileOpen(false);
+    try {
+      if (signOut) {
+        await signOut();
+      }
+    } catch {}
     logoutMockSession();
     window.location.assign("/login");
   };
@@ -274,30 +290,137 @@ export function DashboardTopbar({
             )}
           </button>
 
-          {/* User Avatar: Clerk UserButton when signed in, or custom avatar link */}
-          {clerkUser ? (
-            <div className="flex items-center shrink-0">
-              {/* afterSignOutUrl moved to <ClerkProvider> in @clerk/nextjs v7 —
-                  it is no longer a UserButton prop. */}
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "h-8 w-8 sm:h-10 sm:w-10 ring-2 ring-blue-500/30",
-                  },
-                }}
-              />
-            </div>
-          ) : (
-            <Link
-              href="/dashboard/profile"
-              className="flex items-center gap-1.5 rounded-full p-0.5 transition-transform hover:scale-105 shrink-0"
+          {/* Custom JKS Learning Profile Popover (Clean, no development mode badge) */}
+          <div ref={profileRef} className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-1.5 rounded-full p-0.5 transition-transform hover:scale-105 cursor-pointer focus:outline-none"
+              aria-label="User profile menu"
+              aria-expanded={profileOpen}
             >
-              <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-xs sm:text-sm font-bold text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)]">
-                {resolvedInitials}
+              <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs sm:text-sm font-bold text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)] overflow-hidden ring-2 ring-blue-500/20">
+                {userAvatar ? (
+                  <img src={userAvatar} alt={userName} className="h-full w-full object-cover" />
+                ) : (
+                  resolvedInitials
+                )}
+                <span className="absolute bottom-0 right-0 h-2 sm:h-2.5 w-2 sm:w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
               </div>
-              <ChevronDown className="h-3.5 w-3.5 text-slate-400 hidden sm:block" />
-            </Link>
-          )}
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 hidden sm:block ${
+                  profileOpen ? "rotate-180 text-primary-blue" : ""
+                }`}
+              />
+            </button>
+
+            {/* Profile Dropdown Menu */}
+            <AnimatePresence>
+              {profileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                  transition={{ duration: 0.16, ease: "easeOut" }}
+                  className="absolute right-0 top-full mt-2 w-64 sm:w-72 max-w-[calc(100vw-24px)] z-50 rounded-2xl border border-slate-100 bg-white p-2 shadow-[0_12px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl font-sans"
+                >
+                  {/* User Profile Header */}
+                  <div className="flex items-center gap-3 border-b border-slate-100 p-3 bg-slate-50/70 rounded-xl mb-1.5">
+                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white overflow-hidden shadow-xs">
+                      {userAvatar ? (
+                        <img src={userAvatar} alt={userName} className="h-full w-full object-cover" />
+                      ) : (
+                        resolvedInitials
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-bold text-slate-900">{userName}</p>
+                      <p className="truncate text-[11px] font-medium text-slate-500">{userEmail}</p>
+                      <div className="mt-1 flex items-center gap-1">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-100/80 px-2 py-0.5 text-[9px] font-bold text-blue-700 capitalize">
+                          {isAdmin ? (
+                            <>
+                              <Shield className="h-2.5 w-2.5" /> Admin
+                            </>
+                          ) : isInstructor ? (
+                            <>
+                              <GraduationCap className="h-2.5 w-2.5" /> Instructor
+                            </>
+                          ) : (
+                            <>
+                              <GraduationCap className="h-2.5 w-2.5" /> Student
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dropdown Action Links */}
+                  <div className="space-y-0.5">
+                    <Link
+                      href={rootHref}
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-primary-blue transition-colors"
+                    >
+                      <LayoutDashboard className="h-4 w-4 text-primary-blue" />
+                      <span>{isAdmin ? "Admin Overview" : isInstructor ? "Instructor Dashboard" : "My Dashboard"}</span>
+                    </Link>
+
+                    {!isAdmin && !isInstructor && (
+                      <Link
+                        href="/dashboard/my-courses"
+                        onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-primary-blue transition-colors"
+                      >
+                        <BookOpen className="h-4 w-4 text-emerald-600" />
+                        <span>My Enrolled Courses</span>
+                      </Link>
+                    )}
+
+                    <Link
+                      href={isAdmin ? "/admin/ai-interviews" : "/dashboard/ai-interview"}
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-primary-blue transition-colors"
+                    >
+                      <BrainCircuit className="h-4 w-4 text-purple-600" />
+                      <span>AI Mock Interview</span>
+                    </Link>
+
+                    <Link
+                      href={isAdmin ? "/admin/payments" : "/dashboard/payments"}
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-primary-blue transition-colors"
+                    >
+                      <CreditCard className="h-4 w-4 text-amber-600" />
+                      <span>Invoices & Billing</span>
+                    </Link>
+
+                    <Link
+                      href={isAdmin ? "/admin/settings" : isInstructor ? "/instructor/profile" : "/dashboard/profile"}
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-primary-blue transition-colors"
+                    >
+                      <User className="h-4 w-4 text-slate-500" />
+                      <span>Profile & Settings</span>
+                    </Link>
+                  </div>
+
+                  {/* Divider & Sign Out */}
+                  <div className="mt-1.5 border-t border-slate-100 pt-1.5">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    >
+                      <LogOut className="h-4 w-4 text-rose-600" />
+                      <span>Sign out</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </header>
 

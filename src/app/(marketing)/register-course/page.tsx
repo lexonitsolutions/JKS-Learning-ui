@@ -27,11 +27,15 @@ import {
   Star,
   Users,
   Lock,
+  X,
 } from "lucide-react";
 import { JksLogo } from "@/components/common/jks-logo";
 import { registerCourseOnline, createInvoice, type Invoice } from "@/lib/data/invoices-store";
 import { InvoiceModal } from "@/components/common/invoice-modal";
 
+
+import { useAuth, useUser } from "@clerk/nextjs";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
 
 const AVAILABLE_COURSES = [
   {
@@ -111,6 +115,20 @@ function CourseRegistrationContent() {
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
+  // Authentication State
+  const { isSignedIn, isLoaded: isAuthLoaded } = useAuth();
+  const { user: clerkUser } = useUser();
+  const session = useMockSession();
+
+  const isUserAuthenticated = (isAuthLoaded && !!isSignedIn) || !!session;
+  const authenticatedEmail =
+    clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "";
+  const authenticatedName =
+    clerkUser?.fullName ||
+    [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") ||
+    session?.name ||
+    "";
+
   // Form State
   const initialCourse =
     AVAILABLE_COURSES.find((c) => c.slug === preSelectedSlug) || AVAILABLE_COURSES[0];
@@ -126,6 +144,19 @@ function CourseRegistrationContent() {
     experience: "Fresher (2025/2026 Batch)",
     linkedin: "",
   });
+
+  const [showAuthGateModal, setShowAuthGateModal] = useState(false);
+
+  // Auto-prefill authenticated user's email and name
+  React.useEffect(() => {
+    if (authenticatedEmail || authenticatedName) {
+      setStudentInfo((prev) => ({
+        ...prev,
+        email: authenticatedEmail || prev.email,
+        name: prev.name || authenticatedName,
+      }));
+    }
+  }, [authenticatedEmail, authenticatedName]);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("ADMISSION10");
@@ -146,21 +177,37 @@ function CourseRegistrationContent() {
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
-    if (couponCode.toUpperCase() === "ADMISSION10" || couponCode.toUpperCase() === "EARLYBIRD" || couponCode.toUpperCase() === "JKS10") {
+    if (
+      couponCode.toUpperCase() === "ADMISSION10" ||
+      couponCode.toUpperCase() === "EARLYBIRD" ||
+      couponCode.toUpperCase() === "JKS10"
+    ) {
       setCouponApplied(true);
     } else {
       alert("Invalid coupon code. Try ADMISSION10 for instant discount.");
     }
   };
 
+  const handleStep1Continue = () => {
+    if (!isUserAuthenticated) {
+      setShowAuthGateModal(true);
+      return;
+    }
+    setStep(2);
+  };
+
   const handleSubmitEnrollment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isUserAuthenticated) {
+      setShowAuthGateModal(true);
+      return;
+    }
     setIsProcessing(true);
 
     try {
       const invoice = await registerCourseOnline({
         studentName: studentInfo.name,
-        studentEmail: studentInfo.email,
+        studentEmail: studentInfo.email || authenticatedEmail,
         studentPhone: studentInfo.phone,
         studentCity: studentInfo.city,
         courseTitle: selectedCourse.title,
@@ -176,7 +223,6 @@ function CourseRegistrationContent() {
       setShowInvoiceModal(true);
       setStep(4);
     } catch (err) {
-
       console.error("Enrollment failed:", err);
     } finally {
       setIsProcessing(false);
@@ -352,10 +398,41 @@ function CourseRegistrationContent() {
               </div>
             </div>
 
+            {/* Unauthenticated User Callout Banner */}
+            {!isUserAuthenticated && (
+              <div className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+                    <Lock className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-amber-900">Sign in required to complete enrollment</h4>
+                    <p className="text-[11px] text-amber-700 mt-0.5">
+                      You must be signed in with your student account so LMS credentials, course lectures, and tax invoices can be linked to your dashboard.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Link
+                    href={`/login?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
+                    className="flex-1 sm:flex-none text-center rounded-xl bg-amber-900 px-4 py-2 text-xs font-bold text-white hover:bg-amber-950 transition-colors"
+                  >
+                    Log In →
+                  </Link>
+                  <Link
+                    href={`/register?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
+                    className="flex-1 sm:flex-none text-center rounded-xl border border-amber-300 bg-white px-4 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 transition-colors"
+                  >
+                    Register
+                  </Link>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end pt-2">
               <button
                 type="button"
-                onClick={() => setStep(2)}
+                onClick={handleStep1Continue}
                 className="flex items-center justify-center gap-2 rounded-xl bg-primary-blue px-6 sm:px-7 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all cursor-pointer"
               >
                 <span>Continue</span>
@@ -379,83 +456,119 @@ function CourseRegistrationContent() {
               <span className="text-xs text-primary-blue font-bold">Step 2 of 3</span>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 text-xs">
-              <div>
-                <label className="font-bold text-slate-700">Full Legal Name (as on Govt ID / Certificate) *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Ramesh Varma"
-                  value={studentInfo.name}
-                  onChange={(e) => setStudentInfo({ ...studentInfo, name: e.target.value })}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
-                />
+            {!isUserAuthenticated ? (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-6 text-center space-y-4">
+                <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-2xl bg-amber-100 text-amber-800">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-amber-900">Sign in to fill your Student Dossier</h3>
+                  <p className="text-xs text-amber-700 mt-1 max-w-md mx-auto">
+                    Please log in or create an account to automatically link your LMS access and certificate records.
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <Link
+                    href={`/login?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
+                    className="rounded-xl bg-primary-blue px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-600 transition-colors"
+                  >
+                    Log In Now →
+                  </Link>
+                  <Link
+                    href={`/register?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
+                    className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    Create Account
+                  </Link>
+                </div>
               </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 text-xs">
+                <div>
+                  <label className="font-bold text-slate-700">Full Legal Name (as on Govt ID / Certificate) *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ramesh Varma"
+                    value={studentInfo.name}
+                    onChange={(e) => setStudentInfo({ ...studentInfo, name: e.target.value })}
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
+                  />
+                </div>
 
-              <div>
-                <label className="font-bold text-slate-700">WhatsApp / Mobile Number (for batch alerts) *</label>
-                <input
-                  type="tel"
-                  required
-                  placeholder="+91 98765 43210"
-                  value={studentInfo.phone}
-                  onChange={(e) => setStudentInfo({ ...studentInfo, phone: e.target.value })}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 font-mono"
-                />
-              </div>
+                <div>
+                  <label className="font-bold text-slate-700">WhatsApp / Mobile Number (for batch alerts) *</label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="+91 98765 43210"
+                    value={studentInfo.phone}
+                    onChange={(e) => setStudentInfo({ ...studentInfo, phone: e.target.value })}
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 font-mono"
+                  />
+                </div>
 
-              <div>
-                <label className="font-bold text-slate-700">Email Address (for LMS credentials) *</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="ramesh.varma@gmail.com"
-                  value={studentInfo.email}
-                  onChange={(e) => setStudentInfo({ ...studentInfo, email: e.target.value })}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
-                />
-              </div>
+                <div className="sm:col-span-2">
+                  <label className="font-bold text-slate-700">Email Address (for LMS credentials) *</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="ramesh.varma@gmail.com"
+                    value={studentInfo.email}
+                    onChange={(e) => setStudentInfo({ ...studentInfo, email: e.target.value })}
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
+                  />
+                  {isUserAuthenticated && (
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-3 py-1.5 rounded-lg">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                      <span>
+                        Verified account email ({authenticatedEmail || studentInfo.email}) &mdash; LMS credentials and enrolled courses will be directly linked to your student dashboard.
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-              <div>
-                <label className="font-bold text-slate-700">City / State (for Tax Invoice Address) *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Hyderabad, Telangana"
-                  value={studentInfo.city}
-                  onChange={(e) => setStudentInfo({ ...studentInfo, city: e.target.value })}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
-                />
-              </div>
+                <div>
+                  <label className="font-bold text-slate-700">City / State (for Tax Invoice Address) *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Hyderabad, Telangana"
+                    value={studentInfo.city}
+                    onChange={(e) => setStudentInfo({ ...studentInfo, city: e.target.value })}
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
+                  />
+                </div>
 
-              <div>
-                <label className="font-bold text-slate-700">Highest Academic Qualification</label>
-                <select
-                  value={studentInfo.qualification}
-                  onChange={(e) => setStudentInfo({ ...studentInfo, qualification: e.target.value })}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue"
-                >
-                  <option>B.Tech / B.E (CSE / IT / ECE)</option>
-                  <option>MCA / M.Tech</option>
-                  <option>BCA / B.Sc Computer Science</option>
-                  <option>Non-IT Graduate / Diploma</option>
-                </select>
-              </div>
+                <div>
+                  <label className="font-bold text-slate-700">Highest Academic Qualification</label>
+                  <select
+                    value={studentInfo.qualification}
+                    onChange={(e) => setStudentInfo({ ...studentInfo, qualification: e.target.value })}
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue"
+                  >
+                    <option>B.Tech / B.E (CSE / IT / ECE)</option>
+                    <option>MCA / M.Tech</option>
+                    <option>BCA / B.Sc Computer Science</option>
+                    <option>Non-IT Graduate / Diploma</option>
+                  </select>
+                </div>
 
-              <div>
-                <label className="font-bold text-slate-700">Current Experience Level</label>
-                <select
-                  value={studentInfo.experience}
-                  onChange={(e) => setStudentInfo({ ...studentInfo, experience: e.target.value })}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue"
-                >
-                  <option>Fresher (2025/2026 Batch Graduate)</option>
-                  <option>0-2 Years IT Experience</option>
-                  <option>2-5 Years IT Experience (Career Upgrade)</option>
-                  <option>Non-IT Working Professional (Career Switch)</option>
-                </select>
+                <div className="sm:col-span-2">
+                  <label className="font-bold text-slate-700">Current Experience Level</label>
+                  <select
+                    value={studentInfo.experience}
+                    onChange={(e) => setStudentInfo({ ...studentInfo, experience: e.target.value })}
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue"
+                  >
+                    <option>Fresher (2025/2026 Batch Graduate)</option>
+                    <option>0-2 Years IT Experience</option>
+                    <option>2-5 Years IT Experience (Career Upgrade)</option>
+                    <option>Non-IT Working Professional (Career Switch)</option>
+                  </select>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100">
               <button
@@ -470,7 +583,7 @@ function CourseRegistrationContent() {
 
               <button
                 type="button"
-                disabled={!studentInfo.name || !studentInfo.phone || !studentInfo.email}
+                disabled={!isUserAuthenticated || !studentInfo.name || !studentInfo.phone || !studentInfo.email}
                 onClick={() => setStep(3)}
                 className="flex items-center justify-center gap-2 rounded-xl bg-primary-blue px-5 sm:px-7 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all disabled:opacity-40 cursor-pointer"
               >
@@ -658,6 +771,64 @@ function CourseRegistrationContent() {
               >
                 Launch Student Dashboard <ArrowRight className="h-4 w-4" />
               </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Auth Gate Modal for Unauthenticated Users */}
+        {showAuthGateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="relative w-full max-w-md rounded-3xl border border-slate-100 bg-white p-6 sm:p-8 text-center shadow-2xl space-y-5">
+              <button
+                type="button"
+                onClick={() => setShowAuthGateModal(false)}
+                className="absolute top-4 right-4 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-blue-50 text-primary-blue shadow-inner ring-4 ring-blue-50">
+                <Lock className="h-8 w-8 text-primary-blue" />
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="text-xl font-bold text-slate-900">Sign in to Enroll</h3>
+                <p className="text-xs text-slate-600 leading-relaxed max-w-xs mx-auto">
+                  To enroll in <strong className="text-slate-900">{selectedCourse.title}</strong> and receive live cohort LMS access, please sign in to your student account.
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-slate-50 border border-slate-100 p-3 text-left space-y-1.5 text-xs text-slate-600">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>Automatic LMS portal access provisioning</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>Official GST Tax Invoice mapped to your profile</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>Direct live faculty mentorship link</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2.5 pt-1">
+                <Link
+                  href={`/login?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-primary-blue py-3 px-4 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all"
+                >
+                  <span>Log In to Continue</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href={`/register?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-3 px-4 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Create Free Student Account
+                </Link>
+              </div>
             </div>
           </div>
         )}

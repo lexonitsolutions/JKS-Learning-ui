@@ -2143,7 +2143,7 @@ function DashboardSidebar({ role = "student" }) {
     const userAvatarUrl = clerkUser?.imageUrl;
     const userInitials = isAdmin ? "AD" : isInstructor ? session?.initials ?? "RK" : session?.initials ?? (clerkName ? clerkName.slice(0, 2).toUpperCase() : "ST");
     const userName = isAdmin ? session?.name && session.name !== "John Doe" ? session.name : "Ava Desai" : isInstructor ? session?.name ?? "Dr. Rohit Kapoor" : session?.name ?? clerkName ?? "Student";
-    const userEmail = isAdmin ? session?.email && session.email !== "student@jkslearning.com" ? session.email : "admin@jkslearning.com" : isInstructor ? session?.email ?? "instructor@jkslearning.dev" : session?.email ?? clerkEmail ?? "student@jkslearning.com";
+    const userEmail = isAdmin ? session?.email ? session.email : "admin@jkslearning.dev" : isInstructor ? session?.email ?? "instructor@jkslearning.dev" : session?.email ?? clerkEmail ?? "";
     const userRole = isAdmin ? "Administrator" : isInstructor ? "Faculty / Lecturer" : "Student";
     const renderNavGroup = (items)=>{
         return items.map((item)=>{
@@ -3058,17 +3058,37 @@ async function loginWithApi(email, password) {
                 role
             };
             document.cookie = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SESSION_COOKIE_NAME"]}=${(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["encodeSession"])(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+            try {
+                localStorage.setItem("jks_auth_user", JSON.stringify({
+                    email: u.email,
+                    name: u.name,
+                    role
+                }));
+            } catch  {}
             window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
             return {
                 ok: true,
                 session
             };
         }
+        // If backend returned error, check demo accounts first (for offline/demo support)
+        const mockRes = loginWithMockCredentials(email, password);
+        if (mockRes.ok) return mockRes;
+        const errData = await res.json().catch(()=>({}));
+        const msg = errData?.message || (res.status === 401 ? "Invalid email or password." : "Login failed. Please check your credentials.");
+        return {
+            ok: false,
+            error: Array.isArray(msg) ? msg.join(", ") : msg
+        };
     } catch  {
-    // ignore
+        // If network or backend unreachable, try demo accounts
+        const mockRes = loginWithMockCredentials(email, password);
+        if (mockRes.ok) return mockRes;
+        return {
+            ok: false,
+            error: "Could not connect to authentication server. Please check your internet connection."
+        };
     }
-    // Fallback to local credentials
-    return loginWithMockCredentials(email, password);
 }
 async function registerWithApi(name, email, password) {
     const normalizedEmail = email.trim().toLowerCase();
@@ -3094,30 +3114,43 @@ async function registerWithApi(name, email, password) {
                 role: "student"
             };
             document.cookie = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SESSION_COOKIE_NAME"]}=${(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["encodeSession"])(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+            try {
+                localStorage.setItem("jks_auth_user", JSON.stringify({
+                    email: u.email,
+                    name: u.name,
+                    role: "student"
+                }));
+            } catch  {}
             window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
             return {
                 ok: true,
                 session
             };
         }
+        const errData = await res.json().catch(()=>({}));
+        const msg = errData?.message || (res.status === 409 ? "An account with this email address already exists." : "Registration failed. Please try again.");
+        return {
+            ok: false,
+            error: Array.isArray(msg) ? msg.join(", ") : msg
+        };
     } catch  {
-    // ignore
+        return {
+            ok: false,
+            error: "Could not reach the authentication server. Please check your internet connection."
+        };
     }
-    const session = {
-        email: normalizedEmail,
-        name: name,
-        initials: name.split(" ").map((n)=>n[0]).join("").toUpperCase().substring(0, 2) || "ST",
-        role: "student"
-    };
-    document.cookie = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SESSION_COOKIE_NAME"]}=${(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["encodeSession"])(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
-    window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
-    return {
-        ok: true,
-        session
-    };
 }
 function logoutMockSession() {
-    document.cookie = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SESSION_COOKIE_NAME"]}=; path=/; max-age=0`;
+    document.cookie = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SESSION_COOKIE_NAME"]}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    document.cookie = `__session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    document.cookie = `__client_uat=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    try {
+        localStorage.removeItem("jks_auth_user");
+        localStorage.removeItem("jks_student_avatar_v2");
+    } catch  {}
+    void (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$base$2d$url$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiFetch"])("/auth/logout", {
+        method: "POST"
+    }).catch(()=>{});
     window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
 }
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {

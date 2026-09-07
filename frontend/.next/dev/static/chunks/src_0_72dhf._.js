@@ -1470,12 +1470,16 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
  *
  * The localhost fallback keeps `npm run dev` working with no .env.local entry,
  * matching the previous hardcoded behaviour exactly.
- */ const DEFAULT_API_URL = "http://localhost:4000";
+ */ const DEFAULT_API_URL = ("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : "http://localhost:4000";
 function resolveBaseUrl() {
-    const raw = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].env.NEXT_PUBLIC_API_URL?.trim();
+    let raw = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].env.NEXT_PUBLIC_API_URL?.trim();
     if (!raw) return DEFAULT_API_URL;
-    // Tolerate a trailing slash in the dashboard value so we never build a
-    // double-slashed path like https://api.example.com//auth/login.
+    // If the protocol was omitted (e.g. "jks-learning-backend-production.up.railway.app"),
+    // automatically prepend "https://" so fetch() receives a valid absolute URL.
+    if (!/^https?:\/\//i.test(raw)) {
+        raw = `https://${raw}`;
+    }
+    // Tolerate trailing slashes so we never build double-slashed paths like https://api.example.com//auth/login.
     return raw.replace(/\/+$/, "");
 }
 const API_BASE_URL = resolveBaseUrl();
