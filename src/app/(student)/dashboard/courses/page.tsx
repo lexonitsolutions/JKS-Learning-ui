@@ -344,17 +344,17 @@ export default function StudentAllCoursesPage() {
           </div>
         </div>
 
-        {/* Course Cards Grid */}
-        <Reveal variant="stagger" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Course Cards Grid - 2 Columns on Mobile, 3 on Tablet, 4 on Desktop */}
+        <Reveal variant="stagger" className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5">
           {filteredCourses.map((course) => {
             const isOwned = ownedSlugs.includes(course.slug);
 
             return (
               <TiltCard key={course.id} className="h-full">
-                <div className="flex h-full flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200/80 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-xl hover:border-blue-200">
+                <div className="flex h-full flex-col justify-between overflow-hidden rounded-2xl sm:rounded-[20px] border border-slate-200/80 bg-white shadow-[0_2px_12px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-xl hover:border-blue-300">
                   {/* Card Thumbnail / Header Banner */}
                   <div
-                    className={`relative flex h-48 w-full flex-col items-center justify-center p-4 text-center overflow-hidden ${course.thumbnailBg}`}
+                    className={`relative flex h-28 sm:h-36 md:h-44 lg:h-48 w-full flex-col items-center justify-center p-2.5 sm:p-4 text-center overflow-hidden ${course.thumbnailBg}`}
                   >
                     {/* Background Pattern */}
                     <div
@@ -367,99 +367,100 @@ export default function StudentAllCoursesPage() {
                     />
 
                     {/* Thumbnail Artwork / Text Graphic */}
-                    <div className="relative z-10 space-y-1">
-                      <div className="text-[15px] font-black tracking-widest text-slate-200 uppercase">
+                    <div className="relative z-10 space-y-0.5 sm:space-y-1">
+                      <div className="text-[10px] sm:text-xs md:text-sm font-black tracking-widest text-slate-200 uppercase">
                         {course.bannerTitle}
                       </div>
                       <div
-                        className={`text-3xl font-black tracking-wider uppercase bg-gradient-to-r ${
+                        className={`text-base sm:text-xl md:text-2xl lg:text-3xl font-black tracking-wider uppercase bg-gradient-to-r ${
                           course.gradientText || "from-blue-400 to-cyan-400"
-                        } bg-clip-text text-transparent drop-shadow-sm`}
+                        } bg-clip-text text-transparent drop-shadow-xs line-clamp-1`}
                       >
                         {course.bannerSubtitle || course.title}
                       </div>
-                      <div className="text-[10px] font-bold text-slate-400 tracking-wider">
+                      <div className="hidden sm:block text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider">
                         MASTER SKILLS • JKS LEARNING
                       </div>
                     </div>
 
                     {/* JKS Certified Badge */}
-                    <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/40 px-2 py-0.5 backdrop-blur-md text-[9px] font-medium text-slate-300">
+                    <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 flex items-center gap-1 rounded-full bg-black/50 px-1.5 py-0.5 sm:px-2 backdrop-blur-md text-[7px] sm:text-[9px] font-medium text-slate-300">
                       <span>JKS Certified</span>
                     </div>
 
                     {isOwned && (
-                      <div className="absolute top-2 left-2 rounded-lg bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold uppercase text-white shadow-xs">
+                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 rounded-md sm:rounded-lg bg-emerald-500 px-1.5 py-0.5 sm:px-2 text-[8px] sm:text-[10px] font-extrabold uppercase text-white shadow-xs">
                         Enrolled
                       </div>
                     )}
                   </div>
 
                   {/* Card Body */}
-                  <div className="flex flex-1 flex-col justify-between p-4 space-y-3">
+                  <div className="flex flex-1 flex-col justify-between p-2.5 sm:p-3.5 md:p-4 space-y-2 sm:space-y-3">
                     <div>
                       {/* Title */}
-                      <h3 className="text-[15px] font-extrabold text-slate-900 leading-snug">
+                      <h3 className="text-xs sm:text-sm md:text-[15px] font-extrabold text-slate-900 leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
                         {course.title}
                       </h3>
 
                       {/* Tag Badges Strip */}
-                      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] font-bold">
+                      <div className="mt-1.5 sm:mt-2 flex flex-wrap items-center gap-1 sm:gap-1.5 text-[9px] sm:text-[11px] font-bold">
                         {course.isPremium ? (
-                          <span className="inline-flex items-center gap-1 rounded bg-blue-50 px-2 py-0.5 text-[10px] font-black uppercase text-[#2563EB] border border-blue-200">
-                            <Crown className="h-3 w-3 fill-[#2563EB] text-[#2563EB]" />
+                          <span className="inline-flex items-center gap-0.5 sm:gap-1 rounded bg-blue-50 px-1.5 py-0.5 text-[8px] sm:text-[10px] font-black uppercase text-[#2563EB] border border-blue-200">
+                            <Crown className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-[#2563EB] text-[#2563EB]" />
                             PREMIUM
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded bg-cyan-50 px-2 py-0.5 text-[10px] font-black uppercase text-cyan-700 border border-cyan-200">
+                          <span className="inline-flex items-center gap-0.5 sm:gap-1 rounded bg-cyan-50 px-1.5 py-0.5 text-[8px] sm:text-[10px] font-black uppercase text-cyan-700 border border-cyan-200">
                             FREE
                           </span>
                         )}
 
-                        <span className="inline-flex items-center gap-1 text-slate-500 font-medium">
-                          <Volume2 className="h-3 w-3 text-slate-400" />
+                        <span className="inline-flex items-center gap-0.5 text-slate-500 font-medium text-[9px] sm:text-[11px]">
+                          <Volume2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-slate-400" />
                           {course.language}
                         </span>
 
-                        <span className="inline-flex items-center gap-1 text-slate-700 font-bold">
-                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                          {course.rating} ({course.reviewsCount})
+                        <span className="inline-flex items-center gap-0.5 text-slate-700 font-bold text-[9px] sm:text-[11px]">
+                          <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-amber-400 text-amber-400" />
+                          <span>{course.rating}</span>
+                          <span className="hidden sm:inline font-normal text-slate-500">({course.reviewsCount})</span>
                         </span>
                       </div>
 
                       {/* Summary Tagline */}
-                      <p className="mt-2 text-xs text-slate-600 line-clamp-2 leading-relaxed font-normal">
+                      <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-slate-600 line-clamp-2 leading-relaxed font-normal">
                         {course.tagline}
                       </p>
                     </div>
 
-                    {/* Bottom CTA Button: Using JKS Primary Blue UI Color */}
-                    <div className="pt-2">
+                    {/* Bottom CTA Button */}
+                    <div className="pt-1.5 sm:pt-2">
                       {course.isBundle ? (
                         <button
                           type="button"
                           onClick={() => setIsBundleModalOpen(true)}
-                          className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2.5 px-4 text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
+                          className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
                         >
-                          <span>Build Your Custom Bundle</span>
-                          <ArrowRight className="h-3.5 w-3.5" />
+                          <span className="truncate">Build Bundle</span>
+                          <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                         </button>
                       ) : isOwned ? (
                         <Link
                           href={`/dashboard/my-courses/${course.slug}`}
-                          className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white py-2.5 px-4 text-xs font-bold shadow-xs transition-all duration-200 hover:scale-[1.02]"
+                          className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-slate-900 hover:bg-slate-800 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-xs transition-all duration-200 hover:scale-[1.02]"
                         >
-                          <BookOpen className="h-3.5 w-3.5" />
-                          <span>Continue Learning</span>
+                          <BookOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                          <span className="truncate">Continue</span>
                         </Link>
                       ) : (
                         <button
                           type="button"
                           onClick={() => handleEnroll(course)}
-                          className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2.5 px-4 text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
+                          className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
                         >
-                          <span>Enroll Now</span>
-                          <ArrowRight className="h-3.5 w-3.5" />
+                          <span className="truncate">Enroll Now</span>
+                          <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                         </button>
                       )}
                     </div>

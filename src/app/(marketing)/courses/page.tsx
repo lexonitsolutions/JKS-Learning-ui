@@ -51,7 +51,7 @@ export default async function CoursesPage({
       <Reveal
         key={track ?? "all"}
         variant="stagger"
-        className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+        className="mt-10 grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3"
       >
         {filtered.map((course) => (
           // Plain wrapper — keeps GSAP's entrance transform off CourseCard's
