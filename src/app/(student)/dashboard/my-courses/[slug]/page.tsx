@@ -337,22 +337,22 @@ export default function CourseLearningHubPage({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F8FAFC] text-slate-800 overflow-x-hidden">
+    <div className="flex min-h-screen flex-col bg-[#F8FAFC] text-slate-800 dark:bg-[#0B1020] dark:text-slate-100 overflow-x-hidden transition-colors duration-200">
       {/* Top Learning Hub Navigation Bar */}
-      <header className="sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-slate-200 bg-white/95 px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md">
+      <header className="sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-slate-200 bg-white/95 px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md dark:border-slate-800/80 dark:bg-[#111827]/95">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <Link
             href="/dashboard/courses"
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors shrink-0 dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-200 dark:hover:bg-slate-800"
           >
             <ArrowLeft className="h-4 w-4" /> Courses
           </Link>
-          <div className="h-4 w-[1px] bg-slate-200 hidden sm:block" />
+          <div className="h-4 w-[1px] bg-slate-200 hidden sm:block dark:bg-slate-800" />
           <div className="min-w-0">
-            <h1 className="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[200px] sm:max-w-md">
+            <h1 className="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[200px] sm:max-w-md dark:text-white">
               {course.title}
             </h1>
-            <div className="text-[10px] text-slate-400 font-medium">
+            <div className="text-[10px] text-slate-400 font-medium dark:text-slate-500">
               {allSections.length} Sections · {allVideos.length} Video Lessons
             </div>
           </div>
@@ -360,14 +360,14 @@ export default function CourseLearningHubPage({
 
         <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
           <div className="text-left sm:text-right">
-            <div className="text-xs font-extrabold text-slate-900">
+            <div className="text-xs font-extrabold text-slate-900 dark:text-white">
               {overallPercent}% Completed
             </div>
-            <div className="text-[10px] text-slate-500 font-medium">
+            <div className="text-[10px] text-slate-500 font-medium dark:text-slate-400">
               {completedCount} of {totalItems} Milestones Completed
             </div>
           </div>
-          <div className="h-2 w-20 sm:w-32 rounded-full bg-slate-100 overflow-hidden shrink-0">
+          <div className="h-2 w-20 sm:w-32 rounded-full bg-slate-100 overflow-hidden shrink-0 dark:bg-slate-800">
             <div
               className="h-full rounded-full bg-gradient-to-r from-blue-600 to-emerald-500 transition-all duration-500"
               style={{ width: `${overallPercent}%` }}
@@ -394,13 +394,13 @@ export default function CourseLearningHubPage({
               />
 
               {/* Video Title Bar & Completion Toggle */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800/80 dark:bg-[#111827]">
                 <div className="min-w-0">
-                  <h2 className="text-sm sm:text-base font-bold text-slate-900 truncate">{activeVideo.title}</h2>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                  <h2 className="text-sm sm:text-base font-bold text-slate-900 truncate dark:text-white">{activeVideo.title}</h2>
+                  <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                     <span>Duration: {activeVideo.durationFormatted}</span>
                     <span>•</span>
-                    <span className="font-mono text-[11px] uppercase text-[#2563EB]">
+                    <span className="font-mono text-[11px] uppercase text-[#2563EB] dark:text-blue-400">
                       {activeVideo.videoType === "upload" ? "Uploaded Lecture" : "Private Stream"}
                     </span>
                   </div>
@@ -408,7 +408,7 @@ export default function CourseLearningHubPage({
 
                 <div className="flex items-center gap-2 shrink-0">
                   {completedVideoIds.includes(activeVideo.id) ? (
-                    <span className="flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-700">
+                    <span className="flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
                       <CheckCircle2 className="h-4 w-4" /> Lesson Completed
                     </span>
                   ) : (
@@ -432,9 +432,9 @@ export default function CourseLearningHubPage({
           {/* ======================================================== */}
           {/* UDEMY-STYLE INTERACTIVE TABS & SECTIONS UNDER VIDEO       */}
           {/* ======================================================== */}
-          <div className="rounded-[24px] border border-slate-200 bg-white shadow-xs overflow-hidden">
+          <div className="rounded-[24px] border border-slate-200 bg-white shadow-xs overflow-hidden dark:border-slate-800/80 dark:bg-[#111827]">
             {/* Udemy Tabs Strip (Curriculum is first on mobile, hidden on desktop since desktop has right rail) */}
-            <div className="flex items-center gap-1 border-b border-slate-200 px-4 sm:px-6 overflow-x-auto bg-slate-50/50">
+            <div className="flex items-center gap-1 border-b border-slate-200 px-4 sm:px-6 overflow-x-auto bg-slate-50/50 dark:border-slate-800 dark:bg-[#151D2E]">
               {[
                 { id: "curriculum", label: "Curriculum & Lessons", icon: FolderTree, mobileOnly: true },
                 { id: "overview", label: "Overview", icon: BookOpen },
@@ -455,8 +455,8 @@ export default function CourseLearningHubPage({
                       tab.mobileOnly ? "lg:hidden " : ""
                     }${
                       isActive
-                        ? "border-[#2563EB] text-[#2563EB]"
-                        : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+                        ? "border-[#2563EB] text-[#2563EB] dark:text-blue-400 dark:border-blue-500"
+                        : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300 dark:text-slate-400 dark:hover:text-white dark:hover:border-slate-700"
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -471,20 +471,20 @@ export default function CourseLearningHubPage({
               {/* TAB 0: CURRICULUM & VIDEO LESSONS (Mobile only, shown directly below video) */}
               {activeTab === "curriculum" && (
                 <div className="lg:hidden space-y-6 max-w-4xl">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4 dark:border-slate-800">
                     <div>
-                      <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
                         Course Curriculum &amp; Video Lessons
                       </h3>
-                      <p className="text-xs text-slate-500 font-medium mt-0.5">
+                      <p className="text-xs text-slate-500 font-medium mt-0.5 dark:text-slate-400">
                         {allSections.length} Sections · {allVideos.length} Video Lessons · {totalItems} Milestones
                       </p>
                     </div>
 
                     <div className="flex items-center gap-3">
                       <div className="text-left sm:text-right">
-                        <div className="text-xs font-bold text-[#2563EB]">{overallPercent}% Completed</div>
-                        <div className="text-[10px] text-slate-400">{completedCount}/{totalItems} Done</div>
+                        <div className="text-xs font-bold text-[#2563EB] dark:text-blue-400">{overallPercent}% Completed</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500">{completedCount}/{totalItems} Done</div>
                       </div>
                       {isCourseComplete && (
                         <button
@@ -504,29 +504,29 @@ export default function CourseLearningHubPage({
                     {allSections.map((sec, secIdx) => (
                       <div
                         key={sec.id}
-                        className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs"
+                        className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs dark:border-slate-800 dark:bg-[#111827]"
                       >
                         {/* Section Header Accordion */}
-                        <div className="flex items-center justify-between bg-slate-50/80 p-3.5 border-b border-slate-100">
+                        <div className="flex items-center justify-between bg-slate-50/80 p-3.5 border-b border-slate-100 dark:bg-[#151D2E] dark:border-slate-800">
                           <div className="flex items-center gap-2.5">
                             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#2563EB] text-[11px] font-bold text-white">
                               {secIdx + 1}
                             </span>
-                            <span className="text-xs sm:text-sm font-bold text-slate-900">
+                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                               {sec.title}
                             </span>
                           </div>
-                          <span className="text-[11px] text-slate-400 font-medium">
+                          <span className="text-[11px] text-slate-400 font-medium dark:text-slate-500">
                             {sec.subsections ? sec.subsections.reduce((acc: number, s: SubSection) => acc + s.videos.length, 0) : (sec.directVideos?.length || 0)} Lessons
                           </span>
                         </div>
 
                         {/* Subsections & Videos */}
                         {sec.subsections && sec.subsections.length > 0 && (
-                          <div className="divide-y divide-slate-100">
+                          <div className="divide-y divide-slate-100 dark:divide-slate-800">
                             {sec.subsections.map((sub: SubSection) => (
                               <div key={sub.id} className="p-3.5 space-y-2">
-                                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">
                                   {sub.title}
                                 </div>
 
@@ -545,23 +545,23 @@ export default function CourseLearningHubPage({
                                         }}
                                         className={`flex w-full items-center justify-between gap-2 rounded-xl p-3 text-left text-xs sm:text-sm transition-all cursor-pointer ${
                                           isSelected
-                                            ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200"
-                                            : "text-slate-700 hover:bg-slate-50 border border-transparent"
+                                            ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/60"
+                                            : "text-slate-700 hover:bg-slate-50 border border-transparent dark:text-slate-300 dark:hover:bg-[#151D2E]"
                                         }`}
                                       >
                                         <div className="flex items-center gap-2.5 min-w-0">
                                           {isDone ? (
-                                            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                                            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                                           ) : (
                                             <PlayCircle
                                               className={`h-4 w-4 shrink-0 ${
-                                                isSelected ? "text-[#2563EB]" : "text-slate-400"
+                                                isSelected ? "text-[#2563EB] dark:text-blue-400" : "text-slate-400 dark:text-slate-500"
                                               }`}
                                             />
                                           )}
                                           <span className="truncate">{vid.title}</span>
                                         </div>
-                                        <span className="text-[11px] text-slate-400 shrink-0 font-mono">
+                                        <span className="text-[11px] text-slate-400 shrink-0 font-mono dark:text-slate-500">
                                           {vid.durationFormatted}
                                         </span>
                                       </button>
@@ -592,23 +592,23 @@ export default function CourseLearningHubPage({
                                   }}
                                   className={`flex w-full items-center justify-between gap-2 rounded-xl p-3 text-left text-xs sm:text-sm transition-all cursor-pointer ${
                                     isSelected
-                                      ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200"
-                                      : "text-slate-700 hover:bg-slate-50 border border-transparent"
+                                      ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/60"
+                                      : "text-slate-700 hover:bg-slate-50 border border-transparent dark:text-slate-300 dark:hover:bg-[#151D2E]"
                                   }`}
                                 >
                                   <div className="flex items-center gap-2.5 min-w-0">
                                     {isDone ? (
-                                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                                      <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                                     ) : (
                                       <PlayCircle
                                         className={`h-4 w-4 shrink-0 ${
-                                          isSelected ? "text-[#2563EB]" : "text-slate-400"
+                                          isSelected ? "text-[#2563EB] dark:text-blue-400" : "text-slate-400 dark:text-slate-500"
                                         }`}
                                       />
                                     )}
                                     <span className="truncate">{vid.title}</span>
                                   </div>
-                                  <span className="text-[11px] text-slate-400 shrink-0 font-mono">
+                                  <span className="text-[11px] text-slate-400 shrink-0 font-mono dark:text-slate-500">
                                     {vid.durationFormatted}
                                   </span>
                                 </button>
@@ -618,8 +618,8 @@ export default function CourseLearningHubPage({
                         )}
 
                         {/* Section Assignment Footer */}
-                        <div className="border-t border-slate-100 p-3 bg-slate-50/60 flex items-center justify-between text-xs">
-                          <span className="font-semibold text-emerald-800 flex items-center gap-1.5">
+                        <div className="border-t border-slate-100 p-3 bg-slate-50/60 flex items-center justify-between text-xs dark:border-slate-800 dark:bg-[#151D2E]/60">
+                          <span className="font-semibold text-emerald-800 flex items-center gap-1.5 dark:text-emerald-400">
                             <ClipboardCheck className="h-4 w-4" />
                             {completedAssignmentIds.includes(sec.assignment.id)
                               ? "Assignment Passed ✓"
@@ -628,7 +628,7 @@ export default function CourseLearningHubPage({
                           <button
                             type="button"
                             onClick={() => setActiveAssignmentSection(sec)}
-                            className="font-bold text-[#2563EB] hover:underline cursor-pointer"
+                            className="font-bold text-[#2563EB] hover:underline cursor-pointer dark:text-blue-400"
                           >
                             {completedAssignmentIds.includes(sec.assignment.id) ? "View Solution" : "Open Assignment →"}
                           </button>
@@ -645,19 +645,19 @@ export default function CourseLearningHubPage({
                 <div className="space-y-8 max-w-4xl">
                   {/* Course Header & Rating Meta */}
                   <div className="space-y-3">
-                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight dark:text-white">
                       {course.title} — Comprehensive Project-Based Enterprise Curriculum
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-600 font-medium">
-                      <div className="flex items-center gap-1.5 text-amber-600 font-bold">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-600 font-medium dark:text-slate-400">
+                      <div className="flex items-center gap-1.5 text-amber-600 font-bold dark:text-amber-400">
                         <span className="text-sm font-extrabold">{course.rating || 4.8}</span>
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => (
                             <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                           ))}
                         </div>
-                        <span className="text-slate-500 font-normal">({course.studentsEnrolled ? `${(course.studentsEnrolled * 6).toLocaleString()} ratings` : "1,240 ratings"})</span>
+                        <span className="text-slate-500 font-normal dark:text-slate-400">({course.studentsEnrolled ? `${(course.studentsEnrolled * 6).toLocaleString()} ratings` : "1,240 ratings"})</span>
                       </div>
 
                       <span>•</span>
@@ -666,7 +666,7 @@ export default function CourseLearningHubPage({
                       <span>{course.durationWeeks ? `${course.durationWeeks * 2} total hours` : "32 total hours"}</span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-1">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-1 dark:text-slate-400">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5 text-slate-400" /> Last updated 08/2026
                       </span>
@@ -683,16 +683,16 @@ export default function CourseLearningHubPage({
 
                   {/* Schedule Learning Time Box (Exact Udemy Box) */}
                   {showSchedulerBanner && (
-                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-[#151D2E]">
                       <div className="flex items-start gap-3.5">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-800 shadow-2xs">
-                          <Calendar className="h-5 w-5 text-[#2563EB]" />
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-800 shadow-2xs dark:border-slate-700 dark:bg-[#111827] dark:text-white">
+                          <Calendar className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
                         </div>
                         <div className="space-y-1">
-                          <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                             Schedule learning time
                           </h4>
-                          <p className="text-xs text-slate-600 leading-relaxed max-w-xl">
+                          <p className="text-xs text-slate-600 leading-relaxed max-w-xl dark:text-slate-300">
                             Learning a little each day adds up. Research shows that students who make learning a habit are more likely to reach their goals. Set time aside to learn and get reminders using your learning scheduler.
                           </p>
                         </div>
@@ -702,14 +702,14 @@ export default function CourseLearningHubPage({
                         <button
                           type="button"
                           onClick={() => setShowSchedulerModal(true)}
-                          className="rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors"
+                          className="rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
                         >
                           Get started
                         </button>
                         <button
                           type="button"
                           onClick={() => setShowSchedulerBanner(false)}
-                          className="rounded-xl px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200/60 transition-colors"
+                          className="rounded-xl px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200/60 transition-colors cursor-pointer dark:text-slate-400 dark:hover:bg-slate-800"
                         >
                           Dismiss
                         </button>
@@ -718,60 +718,60 @@ export default function CourseLearningHubPage({
                   )}
 
                   {/* By The Numbers Grid */}
-                  <div className="border-t border-slate-100 pt-6">
-                    <h3 className="text-sm font-extrabold text-slate-900 mb-4">By the numbers</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-xs text-slate-700">
+                  <div className="border-t border-slate-100 pt-6 dark:border-slate-800">
+                    <h3 className="text-sm font-extrabold text-slate-900 mb-4 dark:text-white">By the numbers</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-xs text-slate-700 dark:text-slate-300">
                       <div className="space-y-2">
-                        <div><span className="text-slate-500 font-medium">Skill level:</span> <span className="font-bold text-slate-900">{course.level || "All Levels"}</span></div>
-                        <div><span className="text-slate-500 font-medium">Students:</span> <span className="font-bold text-slate-900">{course.studentsEnrolled || "14,845"}</span></div>
-                        <div><span className="text-slate-500 font-medium">Languages:</span> <span className="font-bold text-slate-900">English, Hindi</span></div>
-                        <div><span className="text-slate-500 font-medium">Captions:</span> <span className="font-bold text-slate-900">Yes</span></div>
+                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Skill level:</span> <span className="font-bold text-slate-900 dark:text-white">{course.level || "All Levels"}</span></div>
+                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Students:</span> <span className="font-bold text-slate-900 dark:text-white">{course.studentsEnrolled || "14,845"}</span></div>
+                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Languages:</span> <span className="font-bold text-slate-900 dark:text-white">English, Hindi</span></div>
+                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Captions:</span> <span className="font-bold text-slate-900 dark:text-white">Yes</span></div>
                       </div>
                       <div className="space-y-2">
-                        <div><span className="text-slate-500 font-medium">Lectures:</span> <span className="font-bold text-slate-900">{allVideos.length || 42}</span></div>
-                        <div><span className="text-slate-500 font-medium">Video:</span> <span className="font-bold text-slate-900">32 total hours</span></div>
+                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Lectures:</span> <span className="font-bold text-slate-900 dark:text-white">{allVideos.length || 42}</span></div>
+                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Video:</span> <span className="font-bold text-slate-900 dark:text-white">32 total hours</span></div>
                       </div>
                     </div>
                   </div>
 
                   {/* Certificates Section */}
-                  <div className="border-t border-slate-100 pt-6">
-                    <h3 className="text-sm font-extrabold text-slate-900 mb-2">Certificates</h3>
-                    <p className="text-xs text-slate-600 mb-3">
+                  <div className="border-t border-slate-100 pt-6 dark:border-slate-800">
+                    <h3 className="text-sm font-extrabold text-slate-900 mb-2 dark:text-white">Certificates</h3>
+                    <p className="text-xs text-slate-600 mb-3 dark:text-slate-400">
                       Get JKS Learning accredited certificate by completing the entire course and milestone assessments.
                     </p>
                     <button
                       type="button"
                       onClick={() => setShowCertModal(true)}
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-800 shadow-2xs hover:bg-slate-50 hover:border-slate-300 transition-colors"
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-800 shadow-2xs hover:bg-slate-50 hover:border-slate-300 transition-colors cursor-pointer dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-200 dark:hover:bg-slate-800"
                     >
-                      <Award className="h-4 w-4 text-[#2563EB]" />
+                      <Award className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                       <span>JKS Learning Certificate</span>
                     </button>
                   </div>
 
                   {/* Features Section */}
-                  <div className="border-t border-slate-100 pt-6">
-                    <h3 className="text-sm font-extrabold text-slate-900 mb-2">Features</h3>
-                    <div className="flex items-center gap-2 text-xs text-slate-700">
+                  <div className="border-t border-slate-100 pt-6 dark:border-slate-800">
+                    <h3 className="text-sm font-extrabold text-slate-900 mb-2 dark:text-white">Features</h3>
+                    <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
                       <Smartphone className="h-4 w-4 text-slate-400" />
-                      <span>Available on <strong className="text-blue-600 hover:underline cursor-pointer">iOS</strong> and <strong className="text-emerald-600 hover:underline cursor-pointer">Android</strong> mobile devices</span>
+                      <span>Available on <strong className="text-blue-600 hover:underline cursor-pointer dark:text-blue-400">iOS</strong> and <strong className="text-emerald-600 hover:underline cursor-pointer dark:text-emerald-400">Android</strong> mobile devices</span>
                     </div>
                   </div>
 
                   {/* Description Section */}
-                  <div className="border-t border-slate-100 pt-6 space-y-4">
-                    <h3 className="text-base font-extrabold text-slate-900">Description</h3>
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                  <div className="border-t border-slate-100 pt-6 space-y-4 dark:border-slate-800">
+                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Description</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-300">
                       {course.summary} This master series takes you step-by-step from core syntax, fundamentals, architectural design patterns to enterprise-grade cloud deployments. Each section is reinforced with coding challenges, interactive stage assessments, and real-time AI interview practice.
                     </p>
 
                     {/* What You'll Learn Checklist */}
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 mt-4">
-                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 mt-4 dark:border-slate-800 dark:bg-[#151D2E]/50">
+                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 dark:text-white">
                         What you&apos;ll learn
                       </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-700">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-700 dark:text-slate-300">
                         {[
                           "Full Stack Architecture & Microservices",
                           "High-Performance Concurrency & Memory Model",
@@ -783,7 +783,7 @@ export default function CourseLearningHubPage({
                           "Scenario-based Technical & System Design Interviews",
                         ].map((item, idx) => (
                           <div key={idx} className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                            <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                             <span>{item}</span>
                           </div>
                         ))}
@@ -793,10 +793,10 @@ export default function CourseLearningHubPage({
                     {/* Prerequisites & Target Audience */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
                       <div className="space-y-2">
-                        <h4 className="text-xs font-bold text-slate-900">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">
                           Are there any course requirements or prerequisites?
                         </h4>
-                        <ul className="list-disc list-inside text-xs text-slate-600 space-y-1">
+                        <ul className="list-disc list-inside text-xs text-slate-600 dark:text-slate-400 space-y-1">
                           <li>Basic knowledge of computer operations</li>
                           <li>No prior professional programming experience required</li>
                           <li>A computer with internet connection (Windows, Mac, or Linux)</li>
@@ -804,10 +804,10 @@ export default function CourseLearningHubPage({
                       </div>
 
                       <div className="space-y-2">
-                        <h4 className="text-xs font-bold text-slate-900">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">
                           Who this course is for:
                         </h4>
-                        <ul className="list-disc list-inside text-xs text-slate-600 space-y-1">
+                        <ul className="list-disc list-inside text-xs text-slate-600 dark:text-slate-400 space-y-1">
                           <li>Students seeking Tier-1 product company software engineering jobs</li>
                           <li>Engineers wanting to transition into Full Stack & Cloud roles</li>
                           <li>Anyone wanting a solid, project-centric coding foundation</li>
@@ -817,11 +817,11 @@ export default function CourseLearningHubPage({
                   </div>
 
                   {/* Instructor Section (Udemy Reference) */}
-                  <div className="border-t border-slate-100 pt-6 space-y-4">
-                    <h3 className="text-sm font-extrabold text-slate-900">Instructor</h3>
+                  <div className="border-t border-slate-100 pt-6 space-y-4 dark:border-slate-800">
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Instructor</h3>
 
                     <div className="flex flex-col sm:flex-row items-start gap-4">
-                      <div className="relative h-16 w-16 shrink-0 rounded-full border-2 border-slate-200 overflow-hidden bg-slate-900">
+                      <div className="relative h-16 w-16 shrink-0 rounded-full border-2 border-slate-200 overflow-hidden bg-slate-900 dark:border-slate-700">
                         <Image
                           src="/images/hero-developer.png"
                           alt="Shubham Saurav"
@@ -834,26 +834,26 @@ export default function CourseLearningHubPage({
 
                       <div className="space-y-2 flex-1">
                         <div>
-                          <h4 className="text-sm font-bold text-slate-900">Shubham Saurav &amp; JKS Mentor Team</h4>
-                          <p className="text-xs text-slate-500 font-medium">
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">Shubham Saurav &amp; JKS Mentor Team</h4>
+                          <p className="text-xs text-slate-500 font-medium dark:text-slate-400">
                             Lead Enterprise Architect &amp; Engineering Educator (10+ Years Experience)
                           </p>
                         </div>
 
                         {/* Social Buttons */}
                         <div className="flex items-center gap-2">
-                          <button type="button" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">
+                          <button type="button" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800">
                             <TwitterIcon className="h-3.5 w-3.5" />
                           </button>
-                          <button type="button" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">
+                          <button type="button" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800">
                             <LinkedinIcon className="h-3.5 w-3.5" />
                           </button>
-                          <button type="button" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">
+                          <button type="button" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800">
                             <YoutubeIcon className="h-3.5 w-3.5" />
                           </button>
                         </div>
 
-                        <p className="text-xs text-slate-600 leading-relaxed">
+                        <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-300">
                           Shubham Saurav is a senior software engineer and architect with a deep passion for teaching. Over the past decade, he has mentored over 50,000+ engineers globally, helping them secure high-impact roles at leading tech companies.
                         </p>
                       </div>
@@ -873,7 +873,7 @@ export default function CourseLearningHubPage({
                         placeholder="Search all course questions..."
                         value={qaSearch}
                         onChange={(e) => setQaSearch(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-4 text-xs text-slate-900 outline-none focus:border-[#2563EB]"
+                        className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-4 text-xs text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500"
                       />
                     </div>
 
@@ -896,11 +896,11 @@ export default function CourseLearningHubPage({
                       .map((q) => (
                         <div
                           key={q.id}
-                          className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2 hover:border-slate-300 transition-colors"
+                          className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2 hover:border-slate-300 transition-colors dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-slate-700"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-3">
-                              <div className="relative h-8 w-8 shrink-0 rounded-full overflow-hidden border border-slate-200">
+                              <div className="relative h-8 w-8 shrink-0 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
                                 <Image
                                   src={q.avatar}
                                   alt={q.author}
@@ -911,8 +911,8 @@ export default function CourseLearningHubPage({
                                 />
                               </div>
                               <div>
-                                <h4 className="text-xs font-bold text-slate-900">{q.title}</h4>
-                                <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
+                                <h4 className="text-xs font-bold text-slate-900 dark:text-white">{q.title}</h4>
+                                <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500">
                                   <span>{q.author}</span>
                                   <span>•</span>
                                   <span>{q.lecture}</span>
@@ -923,18 +923,18 @@ export default function CourseLearningHubPage({
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
-                              <span className="flex items-center gap-1 text-xs text-slate-500 font-bold bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">
+                              <span className="flex items-center gap-1 text-xs text-slate-500 font-bold bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 dark:bg-[#111827] dark:border-slate-700 dark:text-slate-300">
                                 <ThumbsUp className="h-3 w-3" /> {q.upvotes}
                               </span>
-                              <span className="flex items-center gap-1 text-xs text-slate-500 font-bold bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">
+                              <span className="flex items-center gap-1 text-xs text-slate-500 font-bold bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 dark:bg-[#111827] dark:border-slate-700 dark:text-slate-300">
                                 <MessageSquare className="h-3 w-3" /> {q.replies}
                               </span>
                             </div>
                           </div>
 
                           {q.hasInstructorResponse && (
-                            <div className="mt-2 rounded-xl bg-blue-50/70 border border-blue-100 p-2.5 text-[11px] text-slate-700 flex items-center gap-1.5">
-                              <CheckCircle2 className="h-3.5 w-3.5 text-[#2563EB] shrink-0" />
+                            <div className="mt-2 rounded-xl bg-blue-50/70 border border-blue-100 p-2.5 text-[11px] text-slate-700 flex items-center gap-1.5 dark:bg-blue-950/40 dark:border-blue-900/40 dark:text-blue-300">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400 shrink-0" />
                               <span>Instructor verified answer available</span>
                             </div>
                           )}
@@ -948,12 +948,12 @@ export default function CourseLearningHubPage({
               {activeTab === "notes" && (
                 <div className="space-y-6 max-w-3xl">
                   {/* Create Note Input Box */}
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-3">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-3 dark:border-slate-800 dark:bg-[#151D2E]/50">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">
-                        Take a note at <span className="text-[#2563EB] font-mono">02:15</span>
+                      <span className="text-xs font-bold text-slate-800 dark:text-white">
+                        Take a note at <span className="text-[#2563EB] font-mono dark:text-blue-400">02:15</span>
                       </span>
-                      <span className="text-[11px] text-slate-400">{activeVideo?.title}</span>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500">{activeVideo?.title}</span>
                     </div>
 
                     <textarea
@@ -961,14 +961,14 @@ export default function CourseLearningHubPage({
                       value={newNoteText}
                       onChange={(e) => setNewNoteText(e.target.value)}
                       placeholder="Type your notes or key takeaways here..."
-                      className="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-800 outline-none focus:border-[#2563EB]"
+                      className="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500"
                     />
 
                     <div className="flex justify-end">
                       <button
                         type="button"
                         onClick={handleAddNote}
-                        className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700"
+                        className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
                       >
                         <Plus className="h-3.5 w-3.5" /> Save Note
                       </button>
@@ -977,21 +977,21 @@ export default function CourseLearningHubPage({
 
                   {/* Saved Notes Feed */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider dark:text-slate-300">
                       Saved Notes ({notesList.length})
                     </h4>
                     {notesList.map((n) => (
                       <div
                         key={n.id}
-                        className="rounded-2xl border border-slate-200 bg-white p-4 space-y-1.5 shadow-2xs"
+                        className="rounded-2xl border border-slate-200 bg-white p-4 space-y-1.5 shadow-2xs dark:border-slate-800 dark:bg-[#151D2E]"
                       >
                         <div className="flex items-center justify-between text-xs">
-                          <span className="rounded bg-blue-100 px-2 py-0.5 font-mono text-[11px] font-bold text-[#2563EB]">
+                          <span className="rounded bg-blue-100 px-2 py-0.5 font-mono text-[11px] font-bold text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-400">
                             {n.timestamp}
                           </span>
-                          <span className="text-[11px] text-slate-400">{n.lecture}</span>
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500">{n.lecture}</span>
                         </div>
-                        <p className="text-xs text-slate-700 leading-relaxed font-medium">{n.text}</p>
+                        <p className="text-xs text-slate-700 leading-relaxed font-medium dark:text-slate-300">{n.text}</p>
                       </div>
                     ))}
                   </div>
@@ -1001,9 +1001,9 @@ export default function CourseLearningHubPage({
               {/* TAB 4: ANNOUNCEMENTS */}
               {activeTab === "announcements" && (
                 <div className="space-y-4 max-w-3xl">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3 shadow-2xs">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3 shadow-2xs dark:border-slate-800 dark:bg-[#151D2E]">
                     <div className="flex items-center gap-3">
-                      <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden border border-slate-200">
+                      <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
                         <Image
                           src="/images/hero-developer.png"
                           alt="Instructor"
@@ -1014,16 +1014,16 @@ export default function CourseLearningHubPage({
                         />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-slate-900">Shubham Saurav (Instructor)</h4>
-                        <span className="text-[11px] text-slate-400">Posted 3 days ago</span>
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">Shubham Saurav (Instructor)</h4>
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500">Posted 3 days ago</span>
                       </div>
                     </div>
 
-                    <h3 className="text-sm font-bold text-slate-900">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                       🚀 New Section on Spring Boot 3.3, Virtual Threads &amp; Microservices Capstone Added!
                     </h3>
 
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-300">
                       Hello learners! We have just updated this course curriculum with 4 brand-new deep dive lectures and milestone challenges focusing on Java 21 Virtual Threads, reactive resilience patterns, and cloud containerization. Make sure to check them out in Section 2 and 3!
                     </p>
                   </div>
@@ -1033,35 +1033,35 @@ export default function CourseLearningHubPage({
               {/* TAB 5: REVIEWS */}
               {activeTab === "reviews" && (
                 <div className="space-y-6 max-w-3xl">
-                  <div className="flex items-center gap-6 rounded-2xl border border-slate-200 bg-slate-50/50 p-6">
+                  <div className="flex items-center gap-6 rounded-2xl border border-slate-200 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-[#151D2E]">
                     <div className="text-center">
-                      <div className="text-4xl font-black text-slate-900">4.8</div>
+                      <div className="text-4xl font-black text-slate-900 dark:text-white">4.8</div>
                       <div className="flex items-center justify-center gap-0.5 mt-1">
                         {[...Array(5)].map((_, i) => (
                           <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                         ))}
                       </div>
-                      <span className="text-[11px] text-slate-500 font-medium">Course Rating</span>
+                      <span className="text-[11px] text-slate-500 font-medium dark:text-slate-400">Course Rating</span>
                     </div>
 
-                    <div className="flex-1 space-y-1.5 text-xs text-slate-600">
+                    <div className="flex-1 space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
                       <div className="flex items-center gap-2">
-                        <span className="w-12 text-slate-500">5 stars</span>
-                        <div className="h-2 flex-1 rounded-full bg-slate-200 overflow-hidden">
+                        <span className="w-12 text-slate-500 dark:text-slate-400">5 stars</span>
+                        <div className="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
                           <div className="h-full bg-amber-400 rounded-full" style={{ width: "82%" }} />
                         </div>
                         <span className="w-8 text-right font-bold">82%</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="w-12 text-slate-500">4 stars</span>
-                        <div className="h-2 flex-1 rounded-full bg-slate-200 overflow-hidden">
+                        <span className="w-12 text-slate-500 dark:text-slate-400">4 stars</span>
+                        <div className="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
                           <div className="h-full bg-amber-400 rounded-full" style={{ width: "14%" }} />
                         </div>
                         <span className="w-8 text-right font-bold">14%</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="w-12 text-slate-500">3 stars</span>
-                        <div className="h-2 flex-1 rounded-full bg-slate-200 overflow-hidden">
+                        <span className="w-12 text-slate-500 dark:text-slate-400">3 stars</span>
+                        <div className="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
                           <div className="h-full bg-amber-400 rounded-full" style={{ width: "3%" }} />
                         </div>
                         <span className="w-8 text-right font-bold">3%</span>
@@ -1085,17 +1085,17 @@ export default function CourseLearningHubPage({
                         text: "Crystal clear explanations. The combination of video lectures with anti-skip protection and realistic coding challenges made learning super effective.",
                       },
                     ].map((rev, idx) => (
-                      <div key={idx} className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2">
+                      <div key={idx} className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2 dark:border-slate-800 dark:bg-[#151D2E]">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-slate-900">{rev.name}</span>
-                          <span className="text-[11px] text-slate-400">{rev.date}</span>
+                          <span className="text-xs font-bold text-slate-900 dark:text-white">{rev.name}</span>
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500">{rev.date}</span>
                         </div>
                         <div className="flex items-center gap-0.5">
                           {[...Array(rev.rating)].map((_, i) => (
                             <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
                           ))}
                         </div>
-                        <p className="text-xs text-slate-600 leading-relaxed">{rev.text}</p>
+                        <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-300">{rev.text}</p>
                       </div>
                     ))}
                   </div>
@@ -1105,8 +1105,8 @@ export default function CourseLearningHubPage({
               {/* TAB 6: LEARNING TOOLS */}
               {activeTab === "tools" && (
                 <div className="space-y-4 max-w-3xl">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3 dark:border-slate-800 dark:bg-[#151D2E]">
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider dark:text-white">
                       Downloadable Source Code &amp; Repositories
                     </h4>
                     <div className="space-y-2">
@@ -1114,10 +1114,10 @@ export default function CourseLearningHubPage({
                         href="https://github.com"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#2563EB] bg-slate-50/50 text-xs font-semibold text-slate-800 transition-colors"
+                        className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#2563EB] bg-slate-50/50 text-xs font-semibold text-slate-800 transition-colors dark:border-slate-700 dark:bg-[#111827] dark:text-slate-200 dark:hover:border-blue-500"
                       >
                         <div className="flex items-center gap-2">
-                          <Code2 className="h-4 w-4 text-[#2563EB]" />
+                          <Code2 className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                           <span>Course Complete GitHub Repository &amp; Starter Boilerplate</span>
                         </div>
                         <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
@@ -1126,13 +1126,13 @@ export default function CourseLearningHubPage({
                       <button
                         type="button"
                         onClick={() => alert("Downloading Cheatsheet PDF...")}
-                        className="flex w-full items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#2563EB] bg-slate-50/50 text-xs font-semibold text-slate-800 transition-colors"
+                        className="flex w-full items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#2563EB] bg-slate-50/50 text-xs font-semibold text-slate-800 transition-colors cursor-pointer dark:border-slate-700 dark:bg-[#111827] dark:text-slate-200 dark:hover:border-blue-500"
                       >
                         <div className="flex items-center gap-2">
-                          <Download className="h-4 w-4 text-emerald-600" />
+                          <Download className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                           <span>Download Java 21 &amp; Spring Boot 3 Quick Reference PDF</span>
                         </div>
-                        <span className="text-[10px] text-slate-400 font-mono">2.4 MB</span>
+                        <span className="text-[10px] text-slate-400 font-mono dark:text-slate-500">2.4 MB</span>
                       </button>
                     </div>
                   </div>
@@ -1143,7 +1143,7 @@ export default function CourseLearningHubPage({
 
           {/* Active Section Assignments Section */}
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-900">Section Assignments &amp; Milestones</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Section Assignments &amp; Milestones</h3>
             {allSections.map((sec, secIdx) => {
               const isSecAssignmentDone = completedAssignmentIds.includes(sec.assignment.id);
               const score = assignmentScores[sec.assignment.id];
@@ -1151,29 +1151,29 @@ export default function CourseLearningHubPage({
               return (
                 <div
                   key={sec.id}
-                  className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-xs space-y-3"
+                  className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-xs space-y-3 dark:border-slate-800/80 dark:bg-[#111827]"
                 >
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
                     <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white dark:bg-slate-800">
                         {secIdx + 1}
                       </span>
-                      <h4 className="text-xs sm:text-sm font-bold text-slate-900">{sec.title}</h4>
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{sec.title}</h4>
                     </div>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                       Section {secIdx + 1}
                     </span>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-3.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-3.5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
                     <div>
                       <div className="flex items-center gap-2">
-                        <ClipboardCheck className="h-4 w-4 text-emerald-700" />
-                        <span className="text-xs font-bold text-emerald-950">
+                        <ClipboardCheck className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                        <span className="text-xs font-bold text-emerald-950 dark:text-emerald-300">
                           {sec.assignment.title}
                         </span>
                       </div>
-                      <div className="mt-1 text-[11px] font-semibold text-emerald-800">
+                      <div className="mt-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-400">
                         Type: {sec.assignment.type} · Minimum Pass: {sec.assignment.minPassingScore}%
                       </div>
                     </div>
@@ -1201,12 +1201,12 @@ export default function CourseLearningHubPage({
         </div>
 
         {/* RIGHT COLUMN: Sequential Curriculum Rail & Certificate Unlock */}
-        <aside className="hidden lg:block w-full shrink-0 border-t border-slate-200 bg-white p-4 sm:p-5 lg:w-[340px] xl:w-[380px] lg:border-t-0 lg:border-l space-y-6">
+        <aside className="hidden lg:block w-full shrink-0 border-t border-slate-200 bg-white p-4 sm:p-5 lg:w-[340px] xl:w-[380px] lg:border-t-0 lg:border-l space-y-6 dark:border-slate-800/80 dark:bg-[#111827]">
 
 
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Curriculum &amp; Video Lessons</h3>
-            <p className="text-xs text-slate-500 font-medium">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Curriculum &amp; Video Lessons</h3>
+            <p className="text-xs text-slate-500 font-medium dark:text-slate-400">
               Structured sequential progression with in-app tracking
             </p>
           </div>
@@ -1216,15 +1216,15 @@ export default function CourseLearningHubPage({
             {allSections.map((sec, secIdx) => (
               <div
                 key={sec.id}
-                className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs"
+                className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs dark:border-slate-800 dark:bg-[#111827]"
               >
                 {/* Section Header Accordion */}
-                <div className="flex items-center justify-between bg-slate-50/80 p-3.5 border-b border-slate-100">
+                <div className="flex items-center justify-between bg-slate-50/80 p-3.5 border-b border-slate-100 dark:bg-[#151D2E] dark:border-slate-800">
                   <div className="flex items-center gap-2.5">
                     <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#2563EB] text-[11px] font-bold text-white">
                       {secIdx + 1}
                     </span>
-                    <span className="text-xs font-bold text-slate-900 line-clamp-1">
+                    <span className="text-xs font-bold text-slate-900 line-clamp-1 dark:text-white">
                       {sec.title}
                     </span>
                   </div>
@@ -1232,11 +1232,11 @@ export default function CourseLearningHubPage({
 
                 {/* Subsections (if any) */}
                 {sec.subsections && sec.subsections.length > 0 && (
-                  <div className="p-3 space-y-3 bg-slate-50/30 border-b border-slate-100">
+                  <div className="p-3 space-y-3 bg-slate-50/30 border-b border-slate-100 dark:bg-[#151D2E]/30 dark:border-slate-800">
                     {sec.subsections.map((sub) => (
                       <div key={sub.id} className="space-y-2">
-                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700">
-                          <FolderTree className="h-3.5 w-3.5 text-blue-600" />
+                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                          <FolderTree className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                           <span>{sub.title}</span>
                         </div>
 
@@ -1250,25 +1250,25 @@ export default function CourseLearningHubPage({
                                 key={vid.id}
                                 type="button"
                                 onClick={() => handleSelectVideo(vid, sec.id)}
-                                className={`flex w-full items-center justify-between gap-2 rounded-xl p-2.5 text-left text-xs transition-all ${
+                                className={`flex w-full items-center justify-between gap-2 rounded-xl p-2.5 text-left text-xs transition-all cursor-pointer ${
                                   isSelected
-                                    ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200"
-                                    : "text-slate-700 hover:bg-slate-50 border border-transparent"
+                                    ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/60"
+                                    : "text-slate-700 hover:bg-slate-50 border border-transparent dark:text-slate-300 dark:hover:bg-[#151D2E]"
                                 }`}
                               >
                                 <div className="flex items-center gap-2 min-w-0">
                                   {isDone ? (
-                                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                                   ) : (
                                     <PlayCircle
                                       className={`h-4 w-4 shrink-0 ${
-                                        isSelected ? "text-[#2563EB]" : "text-slate-400"
+                                        isSelected ? "text-[#2563EB] dark:text-blue-400" : "text-slate-400 dark:text-slate-500"
                                       }`}
                                     />
                                   )}
                                   <span className="truncate">{vid.title}</span>
                                 </div>
-                                <span className="text-[10px] text-slate-400 shrink-0 font-mono">
+                                <span className="text-[10px] text-slate-400 shrink-0 font-mono dark:text-slate-500">
                                   {vid.durationFormatted}
                                 </span>
                               </button>
@@ -1292,25 +1292,25 @@ export default function CourseLearningHubPage({
                           key={vid.id}
                           type="button"
                           onClick={() => handleSelectVideo(vid, sec.id)}
-                          className={`flex w-full items-center justify-between gap-2 rounded-xl p-2.5 text-left text-xs transition-all ${
+                          className={`flex w-full items-center justify-between gap-2 rounded-xl p-2.5 text-left text-xs transition-all cursor-pointer ${
                             isSelected
-                              ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200"
-                              : "text-slate-700 hover:bg-slate-50 border border-transparent"
+                              ? "bg-[#EFF6FF] text-[#2563EB] font-bold shadow-xs border border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/60"
+                              : "text-slate-700 hover:bg-slate-50 border border-transparent dark:text-slate-300 dark:hover:bg-[#151D2E]"
                           }`}
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             {isDone ? (
-                              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                              <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                             ) : (
                               <PlayCircle
                                 className={`h-4 w-4 shrink-0 ${
-                                  isSelected ? "text-[#2563EB]" : "text-slate-400"
+                                  isSelected ? "text-[#2563EB] dark:text-blue-400" : "text-slate-400 dark:text-slate-500"
                                 }`}
                               />
                             )}
                             <span className="truncate">{vid.title}</span>
                           </div>
-                          <span className="text-[10px] text-slate-400 shrink-0 font-mono">
+                          <span className="text-[10px] text-slate-400 shrink-0 font-mono dark:text-slate-500">
                             {vid.durationFormatted}
                           </span>
                         </button>
@@ -1320,8 +1320,8 @@ export default function CourseLearningHubPage({
                 )}
 
                 {/* Section Assignment Footer in Rail */}
-                <div className="border-t border-slate-100 p-2.5 bg-slate-50/50 flex items-center justify-between text-[11px]">
-                  <span className="font-semibold text-emerald-800 flex items-center gap-1">
+                <div className="border-t border-slate-100 p-2.5 bg-slate-50/50 flex items-center justify-between text-[11px] dark:border-slate-800 dark:bg-[#151D2E]/50">
+                  <span className="font-semibold text-emerald-800 flex items-center gap-1 dark:text-emerald-400">
                     <ClipboardCheck className="h-3.5 w-3.5" />
                     {completedAssignmentIds.includes(sec.assignment.id)
                       ? "Assignment Passed ✓"
@@ -1330,7 +1330,7 @@ export default function CourseLearningHubPage({
                   <button
                     type="button"
                     onClick={() => setActiveAssignmentSection(sec)}
-                    className="font-bold text-[#2563EB] hover:underline"
+                    className="font-bold text-[#2563EB] hover:underline cursor-pointer dark:text-blue-400"
                   >
                     {completedAssignmentIds.includes(sec.assignment.id) ? "View" : "Open"}
                   </button>
@@ -1343,8 +1343,8 @@ export default function CourseLearningHubPage({
           <div
             className={`rounded-2xl border p-5 transition-all duration-300 ${
               isCourseComplete
-                ? "border-amber-300 bg-gradient-to-br from-amber-50 via-white to-blue-50 shadow-md"
-                : "border-slate-200 bg-slate-50/70"
+                ? "border-amber-300 bg-gradient-to-br from-amber-50 via-white to-blue-50 shadow-md dark:border-amber-500/40 dark:from-amber-950/20 dark:via-[#111827] dark:to-blue-950/20"
+                : "border-slate-200 bg-slate-50/70 dark:border-slate-800 dark:bg-[#151D2E]"
             }`}
           >
             <div className="flex items-start gap-3">
@@ -1352,16 +1352,16 @@ export default function CourseLearningHubPage({
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                   isCourseComplete
                     ? "bg-amber-400 text-slate-950 shadow-xs"
-                    : "bg-slate-200 text-slate-500"
+                    : "bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
                 }`}
               >
                 <Award className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide dark:text-white">
                   Accredited Certificate
                 </h4>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                   {isCourseComplete
                     ? "Congratulations! All section videos and assignments are 100% completed."
                     : "Complete all section video lectures and submit all assignments to unlock your verified credential."}
@@ -1379,7 +1379,7 @@ export default function CourseLearningHubPage({
                   <Award className="h-4 w-4" /> Download Verified Certificate
                 </button>
               ) : (
-                <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
+                <div className="flex items-center justify-between text-xs text-slate-400 font-medium dark:text-slate-500">
                   <span>Progress: {overallPercent}%</span>
                   <span>{completedCount}/{totalItems} Done</span>
                 </div>
@@ -1392,29 +1392,29 @@ export default function CourseLearningHubPage({
       {/* SCHEDULE LEARNING TIME MODAL */}
       {showSchedulerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
+          <div className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4 dark:border-slate-800/80 dark:bg-[#111827]">
             <button
               type="button"
               onClick={() => setShowSchedulerModal(false)}
-              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer"
+              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
             >
               <X className="h-4 w-4" />
             </button>
 
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-400">
                 <Calendar className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Schedule Learning Time</h3>
-                <p className="text-xs text-slate-500">Build a daily routine and get automated reminders</p>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Schedule Learning Time</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Build a daily routine and get automated reminders</p>
               </div>
             </div>
 
             <div className="space-y-3 pt-2">
               <div>
-                <label className="text-xs font-bold text-slate-700">Frequency</label>
-                <select className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-800 outline-none">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Frequency</label>
+                <select className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-800 outline-none dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white">
                   <option>Every Day (30 mins)</option>
                   <option>Weekdays (Mon-Fri 45 mins)</option>
                   <option>Weekends (Sat-Sun 2 hours)</option>
@@ -1422,20 +1422,20 @@ export default function CourseLearningHubPage({
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700">Preferred Time</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Preferred Time</label>
                 <input
                   type="time"
                   defaultValue="19:00"
-                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-800 outline-none"
+                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-800 outline-none dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setShowSchedulerModal(false)}
-                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100"
+                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 cursor-pointer dark:text-slate-400 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>
@@ -1445,7 +1445,7 @@ export default function CourseLearningHubPage({
                   setShowSchedulerModal(false);
                   setShowSchedulerBanner(false);
                 }}
-                className="rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700"
+                className="rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
               >
                 Save Schedule
               </button>
@@ -1457,52 +1457,52 @@ export default function CourseLearningHubPage({
       {/* ASK NEW QUESTION MODAL (Q&A) */}
       {showAskModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4 dark:border-slate-800/80 dark:bg-[#111827]">
             <button
               type="button"
               onClick={() => setShowAskModal(false)}
-              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer"
+              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
             >
               <X className="h-4 w-4" />
             </button>
 
-            <h3 className="text-base font-bold text-slate-900">Ask a Question</h3>
-            <p className="text-xs text-slate-500">Ask the mentor or community about this lecture</p>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Ask a Question</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Ask the mentor or community about this lecture</p>
 
             <form onSubmit={handlePostQuestion} className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-700">Question Title / Summary</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Question Title / Summary</label>
                 <input
                   value={newQuestionTitle}
                   onChange={(e) => setNewQuestionTitle(e.target.value)}
                   placeholder="e.g. Why does my Spring Boot application fail on port 8080?"
-                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs text-slate-900 outline-none focus:border-[#2563EB]"
+                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700">Details &amp; Code Snippets</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Details &amp; Code Snippets</label>
                 <textarea
                   rows={4}
                   value={newQuestionBody}
                   onChange={(e) => setNewQuestionBody(e.target.value)}
                   placeholder="Provide context, error stack traces or what you've tried..."
-                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs font-mono text-slate-900 outline-none focus:border-[#2563EB]"
+                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs font-mono text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowAskModal(false)}
-                  className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100"
+                  className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 cursor-pointer dark:text-slate-400 dark:hover:bg-slate-800"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700"
+                  className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
                 >
                   <Send className="h-3.5 w-3.5" /> Post Question
                 </button>
@@ -1515,30 +1515,30 @@ export default function CourseLearningHubPage({
       {/* SECTION ASSIGNMENT MODAL */}
       {activeAssignmentSection && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4 dark:border-slate-800/80 dark:bg-[#111827]">
             <button
               type="button"
               onClick={() => setActiveAssignmentSection(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
             >
               <X className="h-4 w-4" />
             </button>
 
-            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-              <ClipboardCheck className="h-5 w-5 text-[#2563EB]" />
+            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3 dark:border-slate-800">
+              <ClipboardCheck className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
               <div>
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   {activeAssignmentSection.assignment.title}
                 </h3>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">
                   Type: {activeAssignmentSection.assignment.type} · Minimum Pass:{" "}
                   {activeAssignmentSection.assignment.minPassingScore}%
                 </div>
               </div>
             </div>
 
-            <div className="space-y-3 text-xs text-slate-700">
-              <p className="font-semibold text-slate-900">
+            <div className="space-y-3 text-xs text-slate-700 dark:text-slate-300">
+              <p className="font-semibold text-slate-900 dark:text-white">
                 {activeAssignmentSection.assignment.description}
               </p>
 
@@ -1546,13 +1546,13 @@ export default function CourseLearningHubPage({
               activeAssignmentSection.assignment.questions.length > 0 ? (
                 <div className="space-y-3">
                   {activeAssignmentSection.assignment.questions.map((q, qIdx) => (
-                    <div key={qIdx} className="space-y-2 rounded-xl bg-slate-50 p-3">
-                      <div className="font-bold text-slate-800">Question {qIdx + 1}: {q.prompt}</div>
+                    <div key={qIdx} className="space-y-2 rounded-xl bg-slate-50 p-3 dark:bg-[#151D2E]">
+                      <div className="font-bold text-slate-800 dark:text-slate-200">Question {qIdx + 1}: {q.prompt}</div>
                       <div className="space-y-1.5">
                         {q.choices?.map((choice, cIdx) => (
                           <label
                             key={cIdx}
-                            className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-white p-2.5 hover:bg-slate-50 cursor-pointer text-xs"
+                            className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-white p-2.5 hover:bg-slate-50 cursor-pointer text-xs dark:border-slate-700 dark:bg-[#111827] dark:hover:bg-slate-800"
                           >
                             <input
                               type="radio"
@@ -1569,23 +1569,23 @@ export default function CourseLearningHubPage({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <label className="block text-[11px] font-bold text-slate-700">
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
                     Paste Project Git Repository URL or Solution Notes:
                   </label>
                   <textarea
                     rows={3}
                     defaultValue="https://github.com/student-workspace/jks-milestone-solution"
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs font-mono text-slate-800 outline-none"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs font-mono text-slate-800 outline-none dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
                   />
                 </div>
               )}
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-slate-100 pt-3">
+            <div className="flex justify-end gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setActiveAssignmentSection(null)}
-                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100"
+                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 cursor-pointer dark:text-slate-400 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>
@@ -1604,11 +1604,11 @@ export default function CourseLearningHubPage({
       {/* VERIFIED CERTIFICATE MODAL */}
       {showCertModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl space-y-5">
+          <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl space-y-5 dark:border-slate-800/80 dark:bg-[#111827]">
             <button
               type="button"
               onClick={() => setShowCertModal(false)}
-              className="absolute top-5 right-5 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
+              className="absolute top-5 right-5 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
             >
               <X className="h-4 w-4" />
             </button>
@@ -1648,14 +1648,14 @@ export default function CourseLearningHubPage({
               <button
                 type="button"
                 onClick={() => setShowCertModal(false)}
-                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100"
+                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer dark:text-slate-400 dark:hover:bg-slate-800"
               >
                 Close
               </button>
               <button
                 type="button"
                 onClick={() => setShowCertModal(false)}
-                className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700"
+                className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
               >
                 <Download className="h-4 w-4" /> Download PDF Certificate
               </button>

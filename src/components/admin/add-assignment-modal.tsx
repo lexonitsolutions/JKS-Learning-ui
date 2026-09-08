@@ -47,22 +47,22 @@ export function AddAssignmentModal({ isOpen, onClose, onCreate }: AddAssignmentM
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/75 p-4 backdrop-blur-xs">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96 }}
-        className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-[24px] border border-white/70 bg-white/90 shadow-2xl backdrop-blur-xl"
+        className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-[24px] border border-white/70 bg-white/90 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-[#111827] dark:shadow-none"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-7 py-5">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-7 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EFF6FF] text-[#2563EB]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EFF6FF] text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-400">
               <ClipboardCheck className="h-5 w-5 stroke-[2.2]" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">New Assessment / Assignment</h3>
-              <p className="text-xs text-slate-500 font-medium">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">New Assessment / Assignment</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 Add a standalone MCQ test, assignment, or coding challenge to any course.
               </p>
             </div>
@@ -70,17 +70,17 @@ export function AddAssignmentModal({ isOpen, onClose, onCreate }: AddAssignmentM
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-7 text-slate-800">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-7 text-slate-800 dark:text-slate-200">
           <div className="space-y-5">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                 Assignment Title
               </label>
               <input
@@ -89,19 +89,19 @@ export function AddAssignmentModal({ isOpen, onClose, onCreate }: AddAssignmentM
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Data Structures — Module Test"
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15 dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
               />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                   Associated Course
                 </label>
                 <select
                   value={course}
                   onChange={(e) => setCourse(e.target.value)}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
                 >
                   {ADMIN_COURSES.map((c) => (
                     <option key={c.title} value={c.title}>
@@ -112,13 +112,13 @@ export function AddAssignmentModal({ isOpen, onClose, onCreate }: AddAssignmentM
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                   Assessment Type
                 </label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value as AdminAssessmentRow["type"])}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
                 >
                   {ASSIGNMENT_TYPES.map((t) => (
                     <option key={t} value={t}>
@@ -129,10 +129,10 @@ export function AddAssignmentModal({ isOpen, onClose, onCreate }: AddAssignmentM
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-xl bg-slate-50 p-4">
+            <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-[#151D2E] p-4">
               <div className="flex items-center gap-2">
-                <ListChecks className="h-4 w-4 text-emerald-600" />
-                <span className="text-xs font-semibold text-slate-700">
+                <ListChecks className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Minimum Passing Threshold
                 </span>
               </div>
@@ -143,31 +143,31 @@ export function AddAssignmentModal({ isOpen, onClose, onCreate }: AddAssignmentM
                   max="100"
                   value={minPassingScore}
                   onChange={(e) => setMinPassingScore(e.target.value)}
-                  className="w-16 rounded-md border border-slate-200 bg-white px-2 py-1 text-center text-xs font-bold text-slate-900"
+                  className="w-16 rounded-md border border-slate-200 bg-white px-2 py-1 text-center text-xs font-bold text-slate-900 dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
                 />
-                <span className="text-xs font-bold text-slate-500">%</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">%</span>
               </div>
             </div>
 
-            <div className="rounded-xl border border-blue-100 bg-[#EFF6FF]/70 p-4 text-xs text-slate-600 leading-relaxed">
+            <div className="rounded-xl border border-blue-100 bg-[#EFF6FF]/70 dark:border-blue-900/40 dark:bg-blue-950/30 p-4 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               This assignment will appear immediately in the Assessments table with 0 submissions,
               ready for students to attempt from their dashboard.
             </div>
           </div>
 
           {/* Footer */}
-          <div className="mt-7 flex items-center justify-end gap-2.5 border-t border-slate-100 pt-5">
+          <div className="mt-7 flex items-center justify-end gap-2.5 border-t border-slate-100 dark:border-slate-800 pt-5">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors"
+              className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!canSubmit}
-              className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-all hover:bg-blue-700 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+              className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-all hover:bg-blue-700 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 cursor-pointer"
             >
               {isSaved ? (
                 <>

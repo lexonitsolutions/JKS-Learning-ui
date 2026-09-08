@@ -35,8 +35,8 @@ export default function GlobalError({
 
   return (
     <html lang="en" className="h-full">
-      <body className="min-h-full flex flex-col items-center justify-center bg-slate-950 text-slate-100 p-6 font-sans antialiased">
-        <div className="max-w-md w-full text-center space-y-6 bg-slate-900/80 border border-slate-800 p-8 rounded-2xl shadow-2xl backdrop-blur-xl">
+      <body className="min-h-full flex flex-col items-center justify-center bg-[#0B1020] text-slate-100 p-6 font-sans antialiased">
+        <div className="max-w-md w-full text-center space-y-6 bg-[#111827]/90 border border-slate-800 p-8 rounded-2xl shadow-2xl backdrop-blur-xl">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
             <svg
               className="w-8 h-8"

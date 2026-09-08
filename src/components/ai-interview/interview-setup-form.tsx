@@ -66,27 +66,27 @@ export function InterviewSetupForm() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 rounded-[24px] border border-white/70 bg-white/85 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl sm:p-8">
+    <div className="mx-auto max-w-3xl space-y-8 rounded-[24px] border border-white/70 bg-white/85 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl sm:p-8 dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/80 pb-5">
+      <div className="flex items-center justify-between border-b border-border/80 pb-5 dark:border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-blue/10 text-primary-blue">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-blue/10 text-primary-blue dark:bg-primary-blue/20 dark:text-blue-400">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-h3 font-bold text-text-heading">AI Interview Configuration</h2>
-            <p className="text-xs text-text-body">Tailors question difficulty and scoring parameters</p>
+            <h2 className="text-h3 font-bold text-text-heading dark:text-white">AI Interview Configuration</h2>
+            <p className="text-xs text-text-body dark:text-slate-400">Tailors question difficulty and scoring parameters</p>
           </div>
         </div>
-        <span className="inline-flex items-center gap-1 rounded-full bg-primary-blue/10 px-2.5 py-1 text-xs font-semibold text-primary-blue">
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary-blue/10 px-2.5 py-1 text-xs font-semibold text-primary-blue dark:bg-primary-blue/20 dark:text-blue-400">
           <Zap className="h-3 w-3" /> Adaptive L5
         </span>
       </div>
 
       {/* 1. Track Selection */}
       <div>
-        <label className="text-label text-text-heading flex items-center gap-1.5">
-          <Layers className="h-4 w-4 text-primary-blue" />
+        <label className="text-label text-text-heading flex items-center gap-1.5 dark:text-slate-200">
+          <Layers className="h-4 w-4 text-primary-blue dark:text-blue-400" />
           1. Select Technology Track
         </label>
         <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -99,20 +99,20 @@ export function InterviewSetupForm() {
                 onClick={() => setTechnology(c.slug)}
                 className={`relative flex items-center justify-between rounded-xl border p-3.5 text-left transition-all cursor-pointer ${
                   isSelected
-                    ? "border-primary-blue bg-primary-blue/5 shadow-xs"
-                    : "border-border bg-bg-light/50 hover:bg-bg-light"
+                    ? "border-primary-blue bg-primary-blue/5 shadow-xs dark:border-blue-500 dark:bg-primary-blue/15"
+                    : "border-border bg-bg-light/50 hover:bg-bg-light dark:border-slate-800 dark:bg-[#151D2E]/60 dark:hover:bg-[#151D2E]"
                 }`}
               >
                 <div>
-                  <div className={`text-sm font-semibold ${isSelected ? "text-primary-blue" : "text-text-heading"}`}>
+                  <div className={`text-sm font-semibold ${isSelected ? "text-primary-blue dark:text-blue-400" : "text-text-heading dark:text-white"}`}>
                     {c.title}
                   </div>
-                  <div className="text-[11px] text-text-body mt-0.5">{c.level} • {c.durationWeeks} weeks</div>
+                  <div className="text-[11px] text-text-body mt-0.5 dark:text-slate-400">{c.level} • {c.durationWeeks} weeks</div>
                 </div>
                 {isSelected && (
                   <motion.div
                     layoutId="track-pill"
-                    className="h-2 w-2 rounded-full bg-primary-blue"
+                    className="h-2 w-2 rounded-full bg-primary-blue dark:bg-blue-400"
                   />
                 )}
               </button>
@@ -123,8 +123,8 @@ export function InterviewSetupForm() {
 
       {/* 2. Experience Level */}
       <div>
-        <label className="text-label text-text-heading flex items-center gap-1.5">
-          <ShieldCheck className="h-4 w-4 text-primary-blue" />
+        <label className="text-label text-text-heading flex items-center gap-1.5 dark:text-slate-200">
+          <ShieldCheck className="h-4 w-4 text-primary-blue dark:text-blue-400" />
           2. Target Experience Level
         </label>
         <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
@@ -137,12 +137,12 @@ export function InterviewSetupForm() {
                 onClick={() => setExperience(level.id)}
                 className={`rounded-xl border p-3 text-center transition-all cursor-pointer ${
                   isSelected
-                    ? "border-primary-blue bg-primary-blue text-white shadow-md shadow-primary-blue/20"
-                    : "border-border bg-bg-light/60 hover:bg-white text-text-heading"
+                    ? "border-primary-blue bg-primary-blue text-white shadow-md shadow-primary-blue/20 dark:border-blue-500 dark:bg-blue-600"
+                    : "border-border bg-bg-light/60 hover:bg-white text-text-heading dark:border-slate-800 dark:bg-[#151D2E]/60 dark:hover:bg-[#151D2E] dark:text-slate-200"
                 }`}
               >
                 <div className="text-xs font-bold leading-none">{level.label}</div>
-                <div className={`mt-1 text-[10px] ${isSelected ? "text-white/80" : "text-text-body"}`}>
+                <div className={`mt-1 text-[10px] ${isSelected ? "text-white/80" : "text-text-body dark:text-slate-400"}`}>
                   {level.sub}
                 </div>
               </button>
@@ -153,8 +153,8 @@ export function InterviewSetupForm() {
 
       {/* 3. Interview Format */}
       <div>
-        <label className="text-label text-text-heading flex items-center gap-1.5">
-          <Code2 className="h-4 w-4 text-primary-blue" />
+        <label className="text-label text-text-heading flex items-center gap-1.5 dark:text-slate-200">
+          <Code2 className="h-4 w-4 text-primary-blue dark:text-blue-400" />
           3. Interview Format
         </label>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -168,22 +168,22 @@ export function InterviewSetupForm() {
                 onClick={() => setType(t.id)}
                 className={`group flex items-start gap-3 rounded-xl border p-4 text-left transition-all cursor-pointer ${
                   isSelected
-                    ? "border-primary-blue bg-primary-blue/[0.04] shadow-xs"
-                    : "border-border bg-white hover:border-primary-blue/30"
+                    ? "border-primary-blue bg-primary-blue/[0.04] shadow-xs dark:border-blue-500 dark:bg-primary-blue/15"
+                    : "border-border bg-white hover:border-primary-blue/30 dark:border-slate-800 dark:bg-[#151D2E]/60 dark:hover:border-blue-500/40 dark:hover:bg-[#151D2E]"
                 }`}
               >
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                    isSelected ? "bg-primary-blue text-white" : "bg-primary-blue/10 text-primary-blue"
+                    isSelected ? "bg-primary-blue text-white dark:bg-blue-600" : "bg-primary-blue/10 text-primary-blue dark:bg-primary-blue/20 dark:text-blue-400"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className={`text-xs font-bold ${isSelected ? "text-primary-blue" : "text-text-heading"}`}>
+                  <div className={`text-xs font-bold ${isSelected ? "text-primary-blue dark:text-blue-400" : "text-text-heading dark:text-white"}`}>
                     {t.label}
                   </div>
-                  <div className="mt-1 text-[11px] text-text-body leading-relaxed">{t.body}</div>
+                  <div className="mt-1 text-[11px] text-text-body leading-relaxed dark:text-slate-400">{t.body}</div>
                 </div>
               </button>
             );

@@ -352,10 +352,10 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
         isCollapsed ? "w-[78px]" : "w-[260px]"
       }`}
     >
-      <div className="relative flex h-full flex-col rounded-[24px] border border-white/80 bg-white/90 shadow-[0_12px_36px_-6px_rgba(20,50,100,0.08),0_2px_10px_rgba(0,0,0,0.02)] backdrop-blur-2xl transition-all duration-300 overflow-hidden">
+      <div className="relative flex h-full flex-col rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#0E1526] shadow-[0_12px_36px_-6px_rgba(20,50,100,0.08),0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_12px_36px_-6px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all duration-300 overflow-hidden">
         {/* Header: Logo & Toggle */}
         <div
-          className={`flex h-[72px] shrink-0 items-center border-b border-slate-100/70 transition-all duration-300 ${
+          className={`flex h-[72px] shrink-0 items-center border-b border-slate-100/70 dark:border-slate-800/80 transition-all duration-300 ${
             isCollapsed ? "flex-col justify-center gap-1 px-2" : "items-center px-4"
           }`}
         >
@@ -368,7 +368,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                   onClick={toggleSidebar}
                   aria-label="Collapse sidebar"
                   title="Collapse sidebar"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors shrink-0"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white transition-colors shrink-0 cursor-pointer"
                 >
                   <PanelLeftClose className="h-4 w-4 stroke-[2]" />
                 </button>
@@ -378,23 +378,21 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
               </div>
 
               {/* Compact Role Badge on the right */}
-              <span className="text-[9.5px] font-bold text-slate-500 uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200/70 shrink-0">
+              <span className="text-[9.5px] font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0">
                 {isAdmin ? "Admin" : isInstructor ? "Faculty" : "Student"}
               </span>
             </div>
           ) : (
-
-
             <div className="relative group flex items-center justify-center">
               <button
                 type="button"
                 onClick={toggleSidebar}
                 aria-label="Expand sidebar"
                 title="Expand sidebar"
-                className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[#2563EB] to-[#60A5FA] text-white shadow-md shadow-blue-500/25 ring-1 ring-white/40 hover:scale-105 active:scale-95 transition-all"
+                className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[#2563EB] to-[#60A5FA] text-white shadow-md shadow-blue-500/25 ring-1 ring-white/40 hover:scale-105 active:scale-95 transition-all cursor-pointer"
               >
                 <span className="font-extrabold text-xs tracking-tight">JKS</span>
-                <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 text-white ring-2 ring-white">
+                <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 text-white ring-2 ring-white dark:ring-slate-900">
                   <PanelLeftOpen className="h-2.5 w-2.5 stroke-[2.5]" />
                 </span>
               </button>
@@ -422,7 +420,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
           {/* Section Divider */}
           <div className={`my-2.5 flex items-center justify-center ${isCollapsed ? "px-1" : "px-2"}`}>
-            <div className="h-px w-full bg-slate-100" />
+            <div className="h-px w-full bg-slate-100 dark:bg-slate-800" />
           </div>
 
           {/* Secondary Section */}
@@ -433,18 +431,18 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
         {/* Footer: User Profile & Quick Actions */}
         <div
-          className={`shrink-0 border-t border-slate-100/70 p-2.5 transition-all duration-300 ${
+          className={`shrink-0 border-t border-slate-100/70 dark:border-slate-800/80 p-2.5 transition-all duration-300 ${
             isCollapsed ? "flex flex-col items-center gap-2" : ""
           }`}
         >
           {!isCollapsed ? (
-            <div className="rounded-2xl border border-slate-100/90 bg-gradient-to-b from-slate-50/80 to-white/90 p-3 shadow-xs">
+            <div className="rounded-2xl border border-slate-100/90 dark:border-slate-800 bg-gradient-to-b from-slate-50/80 to-white/90 dark:from-slate-900/80 dark:to-slate-900/40 p-3 shadow-xs">
               <div className="flex items-center gap-2.5">
                 {userAvatarUrl ? (
                   <img
                     src={userAvatarUrl}
                     alt={userName}
-                    className="h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-slate-200"
+                    className="h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -452,12 +450,12 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                   />
                 ) : null}
                 {!userAvatarUrl && (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-xs font-bold text-white shadow-xs ring-1 ring-white">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 dark:from-blue-600 dark:to-indigo-600 text-xs font-bold text-white shadow-xs ring-1 ring-white dark:ring-slate-800">
                     {userInitials}
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] font-bold text-slate-900 leading-tight">
+                  <div className="truncate text-[13px] font-bold text-slate-900 dark:text-white leading-tight">
                     {userName}
                   </div>
                   <div className="truncate text-[11px] text-slate-400">
@@ -468,7 +466,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
               <button
                 type="button"
                 onClick={handleLogout}
-                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100/80 hover:bg-rose-50 hover:text-rose-600 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition-all active:scale-95"
+                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100/80 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 px-2.5 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95 cursor-pointer"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 <span>Log out</span>
@@ -478,7 +476,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
             <div className="flex flex-col items-center gap-2">
               {/* Minimized User Avatar */}
               <div className="relative group">
-                <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-xs font-bold text-white shadow-sm ring-2 ring-white/90 hover:ring-blue-400 cursor-pointer transition-all overflow-hidden">
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 dark:from-blue-600 dark:to-indigo-600 text-xs font-bold text-white shadow-sm ring-2 ring-white/90 dark:ring-slate-800 hover:ring-blue-400 cursor-pointer transition-all overflow-hidden">
                   {userAvatarUrl ? (
                     <img
                       src={userAvatarUrl}
@@ -510,7 +508,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                   type="button"
                   onClick={handleLogout}
                   aria-label="Log out"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all active:scale-90"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition-all active:scale-90 cursor-pointer"
                 >
                   <LogOut className="h-4 w-4 stroke-[2]" />
                 </button>

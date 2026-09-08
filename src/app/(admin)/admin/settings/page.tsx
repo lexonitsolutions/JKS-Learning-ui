@@ -229,16 +229,16 @@ export default function AdminSettingsPage() {
         {/* VIEW 1: MAIN SETTINGS CATEGORIES OVERVIEW GRID */}
         {!selectedCategory ? (
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 dark:border-slate-800 pb-3">
               <div>
-                <h2 className="text-sm sm:text-base font-bold text-slate-900">Settings & Governance Categories</h2>
-                <p className="text-xs text-slate-500 font-medium hidden sm:block">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Settings & Governance Categories</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
                   Select any section below to configure rules, security policies, and parameters.
                 </p>
               </div>
 
               {isSaved && (
-                <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200 self-start sm:self-auto">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-900/60 self-start sm:self-auto">
                   <CheckCircle2 className="h-3.5 w-3.5" /> All settings active
                 </span>
               )}
@@ -252,33 +252,33 @@ export default function AdminSettingsPage() {
                   <TiltCard key={cat.id} className="h-full">
                     <div
                       onClick={() => setSelectedCategory(cat.id)}
-                      className="flex h-full flex-col justify-between rounded-2xl border border-white/80 bg-white/90 p-4 sm:p-6 shadow-[0_4px_20px_rgb(20,50,100,0.05)] backdrop-blur-xl transition-all duration-300 hover:shadow-lg hover:border-[#2563EB]/40 hover:-translate-y-0.5 cursor-pointer group"
+                      className="flex h-full flex-col justify-between rounded-2xl border border-white/80 bg-white/90 p-4 sm:p-6 shadow-[0_4px_20px_rgb(20,50,100,0.05)] backdrop-blur-xl transition-all duration-300 hover:shadow-lg hover:border-[#2563EB]/40 hover:-translate-y-0.5 cursor-pointer group dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none dark:hover:border-blue-500/40"
                     >
                       <div>
                         <div className="flex items-center justify-between">
-                          <div className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl ${cat.iconBg} ${cat.iconColor} shadow-2xs group-hover:scale-105 transition-transform`}>
+                          <div className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl ${cat.iconBg} ${cat.iconColor} shadow-2xs group-hover:scale-105 transition-transform dark:bg-opacity-20`}>
                             <CatIcon className="h-5 w-5 stroke-[2.2]" />
                           </div>
-                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-50 text-slate-400 group-hover:bg-[#2563EB] group-hover:text-white transition-colors">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-50 text-slate-400 group-hover:bg-[#2563EB] group-hover:text-white dark:bg-slate-800 dark:text-slate-400 transition-colors">
                             <ChevronRight className="h-4 w-4" />
                           </span>
                         </div>
 
-                        <h3 className="mt-3 sm:mt-4 text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#2563EB] transition-colors">
+                        <h3 className="mt-3 sm:mt-4 text-sm sm:text-base font-bold text-slate-900 dark:text-white group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors">
                           {cat.title}
                         </h3>
-                        <p className="mt-1 text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                           {cat.description}
                         </p>
                       </div>
 
                       {/* Quick Meta Footer */}
-                      <div className="mt-4 border-t border-slate-100 pt-2.5 flex items-center justify-between text-[11px] font-semibold text-slate-600">
-                        <span className="text-[#2563EB] group-hover:underline">
+                      <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-2.5 flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                        <span className="text-[#2563EB] dark:text-blue-400 group-hover:underline">
                           <span className="hidden sm:inline">Configure </span>
                           <span className="sm:hidden">Open</span>
                         </span>
-                        <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-[#2563EB] group-hover:translate-x-0.5 transition-all" />
+                        <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 group-hover:text-[#2563EB] dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all" />
                       </div>
                     </div>
                   </TiltCard>
@@ -294,23 +294,23 @@ export default function AdminSettingsPage() {
               <button
                 type="button"
                 onClick={() => setSelectedCategory(null)}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs hover:bg-slate-50 dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 aria-label="Back to all settings"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 truncate">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
                 {currentCategoryMeta?.title}
               </h2>
             </div>
 
             {/* Category Form Container */}
             <form onSubmit={handleSave} className="space-y-4">
-              <div className="rounded-2xl border border-white/70 bg-white/85 p-4 sm:p-7 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5">
+              <div className="rounded-2xl border border-white/70 bg-white/85 p-4 sm:p-7 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5 dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
                 {/* Header with Icon & Description */}
-                <div className="flex items-start gap-3 border-b border-slate-100 pb-4">
+                <div className="flex items-start gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
                   {currentCategoryMeta && (
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl ${currentCategoryMeta.iconBg} ${currentCategoryMeta.iconColor} shadow-2xs`}>
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl ${currentCategoryMeta.iconBg} ${currentCategoryMeta.iconColor} shadow-2xs dark:bg-opacity-20`}>
                       {(() => {
                         const CategoryIcon = currentCategoryMeta.icon;
                         return <CategoryIcon className="h-5 w-5 stroke-[2.2]" />;
@@ -318,8 +318,8 @@ export default function AdminSettingsPage() {
                     </div>
                   )}
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-bold text-slate-900">{currentCategoryMeta?.title}</h3>
-                    <p className="text-[11px] sm:text-xs text-slate-500 font-medium line-clamp-2">{currentCategoryMeta?.description}</p>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">{currentCategoryMeta?.title}</h3>
+                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-2">{currentCategoryMeta?.description}</p>
                   </div>
                 </div>
 
@@ -328,49 +328,49 @@ export default function AdminSettingsPage() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Platform Name</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Platform Name</label>
                         <input
                           type="text"
                           value={settings.platformName}
                           onChange={(e) => setSettings({ ...settings, platformName: e.target.value })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Institution Name</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Institution Name</label>
                         <input
                           type="text"
                           value={settings.institutionName}
                           onChange={(e) => setSettings({ ...settings, institutionName: e.target.value })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         />
                       </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Admin Email</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Admin Email</label>
                         <input
                           type="email"
                           value={settings.adminEmail}
                           onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Support Phone</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Support Phone</label>
                         <input
                           type="text"
                           value={settings.supportPhone}
                           onChange={(e) => setSettings({ ...settings, supportPhone: e.target.value })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Currency</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Currency</label>
                         <select
                           value={settings.currency}
                           onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         >
                           <option value="INR (₹)">INR (₹)</option>
                           <option value="USD ($)">USD ($)</option>
@@ -385,10 +385,10 @@ export default function AdminSettingsPage() {
                 {/* 2. VIDEO SECURITY & ANTI-SKIP */}
                 {selectedCategory === "video" && (
                   <div className="space-y-3">
-                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                       <div>
-                        <div className="text-xs font-bold text-slate-900">Global Anti-Skip Enforcement</div>
-                        <div className="text-[11px] text-slate-500">Must watch 100% before assignments unlock.</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">Global Anti-Skip Enforcement</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Must watch 100% before assignments unlock.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -397,10 +397,10 @@ export default function AdminSettingsPage() {
                         className="h-5 w-5 accent-[#2563EB] cursor-pointer mt-0.5 shrink-0"
                       />
                     </label>
-                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                       <div>
-                        <div className="text-xs font-bold text-slate-900">Student Identity Watermark</div>
-                        <div className="text-[11px] text-slate-500">Email overlay on video to deter screen captures.</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">Student Identity Watermark</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Email overlay on video to deter screen captures.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -409,10 +409,10 @@ export default function AdminSettingsPage() {
                         className="h-5 w-5 accent-[#2563EB] cursor-pointer mt-0.5 shrink-0"
                       />
                     </label>
-                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                       <div>
-                        <div className="text-xs font-bold text-slate-900">In-App Only Playback</div>
-                        <div className="text-[11px] text-slate-500">Blocks redirecting to external video sites.</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">In-App Only Playback</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Blocks redirecting to external video sites.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -421,15 +421,15 @@ export default function AdminSettingsPage() {
                         className="h-5 w-5 accent-[#2563EB] cursor-pointer mt-0.5 shrink-0"
                       />
                     </label>
-                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 dark:border-slate-800 dark:bg-[#151D2E]">
                       <div>
-                        <div className="text-xs font-bold text-slate-900">Max Playback Speed</div>
-                        <div className="text-[11px] text-slate-500">Limits acceleration rate</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">Max Playback Speed</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Limits acceleration rate</div>
                       </div>
                       <select
                         value={settings.maxPlaybackSpeed}
                         onChange={(e) => setSettings({ ...settings, maxPlaybackSpeed: e.target.value })}
-                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 outline-none w-full sm:w-auto"
+                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 outline-none w-full sm:w-auto dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
                       >
                         <option value="1.0x">1.0x (Normal)</option>
                         <option value="1.25x">1.25x</option>
@@ -445,22 +445,22 @@ export default function AdminSettingsPage() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Passing Threshold (%)</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Passing Threshold (%)</label>
                         <input
                           type="number"
                           min="50"
                           max="100"
                           value={settings.minPassPercentage}
                           onChange={(e) => setSettings({ ...settings, minPassPercentage: Number(e.target.value) })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Max Retries</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Max Retries</label>
                         <select
                           value={settings.maxAssignmentRetries}
                           onChange={(e) => setSettings({ ...settings, maxAssignmentRetries: e.target.value })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         >
                           <option value="1 attempt">1 attempt (Strict)</option>
                           <option value="3 attempts">3 attempts (Recommended)</option>
@@ -470,10 +470,10 @@ export default function AdminSettingsPage() {
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                      <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                         <div>
-                          <div className="text-xs font-bold text-slate-900">Auto MCQ Scoring</div>
-                          <div className="text-[11px] text-slate-500">Instant evaluation on submission.</div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-white">Auto MCQ Scoring</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">Instant evaluation on submission.</div>
                         </div>
                         <input
                           type="checkbox"
@@ -482,10 +482,10 @@ export default function AdminSettingsPage() {
                           className="h-5 w-5 accent-[#2563EB] cursor-pointer mt-0.5 shrink-0"
                         />
                       </label>
-                      <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                      <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                         <div>
-                          <div className="text-xs font-bold text-slate-900">AI Plagiarism Detection</div>
-                          <div className="text-[11px] text-slate-500">Scans code against public repositories.</div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-white">AI Plagiarism Detection</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">Scans code against public repositories.</div>
                         </div>
                         <input
                           type="checkbox"
@@ -503,11 +503,11 @@ export default function AdminSettingsPage() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">AI Scoring Model</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">AI Scoring Model</label>
                         <select
                           value={settings.aiScoringStrictness}
                           onChange={(e) => setSettings({ ...settings, aiScoringStrictness: e.target.value })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         >
                           <option value="Balanced Enterprise Standard">Balanced Enterprise</option>
                           <option value="Rigorous FAANG-Grade">Rigorous FAANG-Grade</option>
@@ -515,11 +515,11 @@ export default function AdminSettingsPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Max Sessions / Student</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Max Sessions / Student</label>
                         <select
                           value={settings.maxAiInterviewsPerStudent}
                           onChange={(e) => setSettings({ ...settings, maxAiInterviewsPerStudent: e.target.value })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         >
                           <option value="3 sessions per month">3 / month</option>
                           <option value="5 sessions per month">5 / month (Recommended)</option>
@@ -529,10 +529,10 @@ export default function AdminSettingsPage() {
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                      <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                         <div>
-                          <div className="text-xs font-bold text-slate-900">Auto PDF Reports</div>
-                          <div className="text-[11px] text-slate-500">Generates readiness verdict upon completion.</div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-white">Auto PDF Reports</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">Generates readiness verdict upon completion.</div>
                         </div>
                         <input
                           type="checkbox"
@@ -541,10 +541,10 @@ export default function AdminSettingsPage() {
                           className="h-5 w-5 accent-[#2563EB] cursor-pointer mt-0.5 shrink-0"
                         />
                       </label>
-                      <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                      <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                         <div>
-                          <div className="text-xs font-bold text-slate-900">Voice Audio Interviews</div>
-                          <div className="text-[11px] text-slate-500">Students speak answers with AI voice feedback.</div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-white">Voice Audio Interviews</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">Students speak answers with AI voice feedback.</div>
                         </div>
                         <input
                           type="checkbox"
@@ -562,30 +562,30 @@ export default function AdminSettingsPage() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Gateway Mode</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Gateway Mode</label>
                         <select
                           value={settings.paymentGatewayMode}
                           onChange={(e) => setSettings({ ...settings, paymentGatewayMode: e.target.value as "Live" | "Test/Sandbox" })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         >
                           <option value="Live">Live Production</option>
                           <option value="Test/Sandbox">Test / Sandbox</option>
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">GST / Tax (%)</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">GST / Tax (%)</label>
                         <input
                           type="number"
                           value={settings.gstPercentage}
                           onChange={(e) => setSettings({ ...settings, gstPercentage: Number(e.target.value) })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         />
                       </div>
                     </div>
-                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                       <div>
-                        <div className="text-xs font-bold text-slate-900">Auto Invoice Dispatch</div>
-                        <div className="text-[11px] text-slate-500">PDF tax invoice sent to student email on purchase.</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">Auto Invoice Dispatch</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">PDF tax invoice sent to student email on purchase.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -602,28 +602,28 @@ export default function AdminSettingsPage() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Authority Name</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Authority Name</label>
                         <input
                           type="text"
                           value={settings.certAuthorityName}
                           onChange={(e) => setSettings({ ...settings, certAuthorityName: e.target.value })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Authorized Signatory</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Authorized Signatory</label>
                         <input
                           type="text"
                           value={settings.certSignatory}
                           onChange={(e) => setSettings({ ...settings, certSignatory: e.target.value })}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB]"
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:focus:border-blue-500"
                         />
                       </div>
                     </div>
-                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                       <div>
-                        <div className="text-xs font-bold text-slate-900">Public QR Verification</div>
-                        <div className="text-[11px] text-slate-500">Employers can verify credentials via ID lookup.</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">Public QR Verification</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Employers can verify credentials via ID lookup.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -638,10 +638,10 @@ export default function AdminSettingsPage() {
                 {/* 7. NOTIFICATIONS */}
                 {selectedCategory === "notifications" && (
                   <div className="space-y-3">
-                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                       <div>
-                        <div className="text-xs font-bold text-slate-900">Notify on Purchases</div>
-                        <div className="text-[11px] text-slate-500">Alert when a student enrolls in a paid track.</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">Notify on Purchases</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Alert when a student enrolls in a paid track.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -650,10 +650,10 @@ export default function AdminSettingsPage() {
                         className="h-5 w-5 accent-[#2563EB] cursor-pointer mt-0.5 shrink-0"
                       />
                     </label>
-                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                       <div>
-                        <div className="text-xs font-bold text-slate-900">Notify on Submissions</div>
-                        <div className="text-[11px] text-slate-500">Alerts instructors when a capstone needs grading.</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">Notify on Submissions</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Alerts instructors when a capstone needs grading.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -662,10 +662,10 @@ export default function AdminSettingsPage() {
                         className="h-5 w-5 accent-[#2563EB] cursor-pointer mt-0.5 shrink-0"
                       />
                     </label>
-                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                    <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-blue-500/50 transition-colors">
                       <div>
-                        <div className="text-xs font-bold text-slate-900">Weekly Inactivity Reminders</div>
-                        <div className="text-[11px] text-slate-500">Emails students inactive for 7+ days.</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">Weekly Inactivity Reminders</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Emails students inactive for 7+ days.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -683,7 +683,7 @@ export default function AdminSettingsPage() {
                 <button
                   type="button"
                   onClick={handleResetDefaults}
-                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-600 shadow-xs hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer active:scale-98"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-600 shadow-xs hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white transition-colors cursor-pointer active:scale-98"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   <span>Reset Defaults</span>

@@ -22,9 +22,9 @@ const INITIAL_ASSESSMENTS: AssessmentRow[] = [
 ];
 
 const STATUS_STYLE: Record<AssessmentRow["status"], string> = {
-  Passed: "bg-emerald-50 text-emerald-700",
-  Failed: "bg-rose-50 text-rose-700",
-  Pending: "bg-amber-50 text-amber-700",
+  Passed: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border dark:border-emerald-800/40",
+  Failed: "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 dark:border dark:border-rose-800/40",
+  Pending: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 dark:border dark:border-amber-800/40",
 };
 
 export default function AssessmentsPage() {
@@ -68,51 +68,51 @@ export default function AssessmentsPage() {
         {/* Metric Cards */}
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <TiltCard>
-            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500">Passed</span>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Passed</span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
                   <CheckCircle2 className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-extrabold text-slate-900">{passedCount}</div>
-              <div className="mt-1 text-xs text-emerald-600 font-semibold">of {assessments.length} total assessments</div>
+              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">{passedCount}</div>
+              <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">of {assessments.length} total assessments</div>
             </div>
           </TiltCard>
 
           <TiltCard>
-            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500">Average Score</span>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-[#2563EB]">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Average Score</span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-[#2563EB] dark:bg-blue-950/40 dark:text-blue-400">
                   <ClipboardCheck className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-extrabold text-slate-900">{avgScore}/100</div>
-              <div className="mt-1 text-xs text-[#2563EB] font-semibold">Across completed attempts</div>
+              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">{avgScore}/100</div>
+              <div className="mt-1 text-xs text-[#2563EB] dark:text-blue-400 font-semibold">Across completed attempts</div>
             </div>
           </TiltCard>
 
           <TiltCard>
-            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500">Awaiting You</span>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Awaiting You</span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
                   <Clock className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-extrabold text-slate-900">{pendingCount}</div>
-              <div className="mt-1 text-xs text-amber-600 font-semibold">Ready to attempt now</div>
+              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">{pendingCount}</div>
+              <div className="mt-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">Ready to attempt now</div>
             </div>
           </TiltCard>
         </Reveal>
 
         {/* Table */}
-        <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+        <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs min-w-[550px]">
               <thead>
-                <tr className="border-b border-slate-100 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
                   <th className="pb-3 pr-4 pl-0">Assessment</th>
                   <th className="px-4 pb-3">Course</th>
                   <th className="px-4 pb-3">Score</th>
@@ -121,12 +121,12 @@ export default function AssessmentsPage() {
                   <th className="pr-0 pb-3 pl-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                 {assessments.map((a, idx) => (
-                  <tr key={a.title} className="transition-colors hover:bg-slate-50/60">
-                    <td className="py-4 pr-4 pl-0 font-bold text-slate-900 whitespace-nowrap">{a.title}</td>
-                    <td className="px-4 py-4 font-medium text-slate-600 whitespace-nowrap">{a.course}</td>
-                    <td className="px-4 py-4 font-semibold text-slate-700 whitespace-nowrap">
+                  <tr key={a.title} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-[#151D2E]/60">
+                    <td className="py-4 pr-4 pl-0 font-bold text-slate-900 dark:text-white whitespace-nowrap">{a.title}</td>
+                    <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">{a.course}</td>
+                    <td className="px-4 py-4 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
                       {a.status === "Pending" ? "—" : `${a.score}/100`}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
@@ -134,12 +134,12 @@ export default function AssessmentsPage() {
                         {a.status}
                       </span>
                     </td>
-                    <td className="px-4 py-4 font-medium text-slate-500 whitespace-nowrap">{a.date}</td>
+                    <td className="px-4 py-4 font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">{a.date}</td>
                     <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => setActiveIndex(idx)}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-[#2563EB] shadow-xs hover:bg-[#EFF6FF] transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-[#2563EB] shadow-xs hover:bg-[#EFF6FF] dark:border-slate-700 dark:bg-[#151D2E] dark:text-blue-400 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
                       >
                         <PlayCircle className="h-3.5 w-3.5" />
                         {a.status === "Pending" ? "Take Assessment" : "Retake"}

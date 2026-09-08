@@ -80,17 +80,17 @@ export default function AdminCoursesPage() {
           {/* Search and Filters */}
           <div className="flex flex-1 flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
             <div className="relative w-full sm:w-auto sm:min-w-[260px]">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Search courses…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-slate-800 outline-none shadow-xs transition-colors focus:border-[#2563EB]"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-500 outline-none shadow-xs transition-colors focus:border-[#2563EB] dark:focus:border-blue-500"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-1 shadow-xs overflow-x-auto">
+            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-1 shadow-xs overflow-x-auto">
               {["All", "Full Stack", "Frontend", "SAP"].map((trk) => (
                 <button
                   key={trk}
@@ -99,7 +99,7 @@ export default function AdminCoursesPage() {
                   className={`rounded-lg px-3 py-1 text-xs font-bold transition-colors whitespace-nowrap cursor-pointer ${
                     selectedTrack === trk
                       ? "bg-[#2563EB] text-white shadow-xs"
-                      : "text-slate-500 hover:text-slate-900"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   {trk}
@@ -113,7 +113,7 @@ export default function AdminCoursesPage() {
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 sm:py-2.5 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors cursor-pointer"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] px-3 py-2 sm:py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               title="Quick Workflow Modal"
             >
               Quick Wizard
@@ -132,63 +132,63 @@ export default function AdminCoursesPage() {
         {/* 3 Metric Cards */}
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <TiltCard>
-            <div className="rounded-2xl border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+            <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500">Active Courses</span>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-[#2563EB]">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Active Courses</span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400">
                   <BookOpen className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-extrabold text-slate-900">{courses.length}</div>
-              <div className="mt-1 text-xs text-emerald-600 font-semibold">Live in active catalog</div>
+              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">{courses.length}</div>
+              <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Live in active catalog</div>
             </div>
           </TiltCard>
 
           <TiltCard>
-            <div className="rounded-2xl border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+            <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500">Total Enrolled Students</span>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Enrolled Students</span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
                   <TrendingUp className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-extrabold text-slate-900">
+              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">
                 {totalEnrolled.toLocaleString()}
               </div>
-              <div className="mt-1 text-xs text-emerald-600 font-semibold">+14% month-on-month</div>
+              <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">+14% month-on-month</div>
             </div>
           </TiltCard>
 
           <TiltCard>
-            <div className="rounded-2xl border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+            <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500">Protected Video Player</span>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 text-purple-600">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Protected Video Player</span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
                   <Award className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-extrabold text-slate-900">100% In-App</div>
-              <div className="mt-1 text-xs text-slate-500 font-medium">No external redirect & Anti-Skip enabled</div>
+              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">100% In-App</div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">No external redirect &amp; Anti-Skip enabled</div>
             </div>
           </TiltCard>
         </Reveal>
 
         {/* Main Courses Table */}
-        <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+        <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827]/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs min-w-[680px]">
               <thead>
-                <tr className="border-b border-slate-100 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
-                  <th className="pb-3 pr-4 pl-0">Course Name & Structure</th>
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+                  <th className="pb-3 pr-4 pl-0">Course Name &amp; Structure</th>
                   <th className="px-4 pb-3">Track</th>
                   <th className="px-4 pb-3">Price</th>
-                  <th className="px-4 pb-3">Sections & Videos</th>
+                  <th className="px-4 pb-3">Sections &amp; Videos</th>
                   <th className="px-4 pb-3 text-center">Rating</th>
                   <th className="px-4 pb-3 text-center">Status</th>
                   <th className="pr-0 pb-3 pl-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
                 {filteredCourses.map((c) => {
                   const sectionCount = c.sections?.length || 0;
                   const totalVids = (c.sections || []).reduce((acc, s) => {
@@ -198,32 +198,32 @@ export default function AdminCoursesPage() {
                   }, 0);
 
                   return (
-                    <tr key={c.id || c.slug} className="transition-colors hover:bg-slate-50/60">
+                    <tr key={c.id || c.slug} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                       <td className="py-4 pr-4 pl-0 whitespace-nowrap">
-                        <div className="font-bold text-slate-900">{c.title}</div>
-                        <div className="text-[11px] text-slate-400 font-mono">/{c.slug}</div>
+                        <div className="font-bold text-slate-900 dark:text-white">{c.title}</div>
+                        <div className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">/{c.slug}</div>
                       </td>
-                      <td className="px-4 py-4 font-medium text-slate-600 whitespace-nowrap">
-                        <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                      <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                        <span className="inline-flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                           {c.track}
                         </span>
                       </td>
-                      <td className="px-4 py-4 font-semibold text-slate-900 whitespace-nowrap">
+                      <td className="px-4 py-4 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                         ₹{c.price.toLocaleString("en-IN")}
                       </td>
-                      <td className="px-4 py-4 font-medium text-slate-600 whitespace-nowrap">
+                      <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1 rounded bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-[#2563EB]">
+                          <span className="inline-flex items-center gap-1 rounded bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 text-[11px] font-semibold text-[#2563EB] dark:text-blue-400 border border-transparent dark:border-blue-800/40">
                             <Layers className="h-3 w-3" /> {sectionCount} Sections
                           </span>
-                          <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                          <span className="inline-flex items-center gap-1 rounded bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                             <Video className="h-3 w-3" /> {totalVids} Videos
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-center font-medium text-slate-700 whitespace-nowrap">
+                      <td className="px-4 py-4 text-center font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         {c.rating > 0 ? (
-                          <span className="inline-flex items-center gap-1 font-bold text-amber-600">
+                          <span className="inline-flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
                             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                             {c.rating}
                           </span>
@@ -235,8 +235,8 @@ export default function AdminCoursesPage() {
                         <span
                           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
                             c.status === "Published"
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-amber-50 text-amber-700"
+                              ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-transparent dark:border-emerald-800/40"
+                              : "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-transparent dark:border-amber-800/40"
                           }`}
                         >
                           {c.status}
@@ -245,7 +245,7 @@ export default function AdminCoursesPage() {
                       <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
                         <Link
                           href={`/dashboard/my-courses/${c.slug}`}
-                          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-[#2563EB] shadow-xs hover:bg-[#EFF6FF] transition-colors inline-block"
+                          className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] px-3 py-1.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-xs hover:bg-[#EFF6FF] dark:hover:bg-slate-800 transition-colors inline-block"
                         >
                           View Learning UI
                         </Link>

@@ -34,7 +34,7 @@ export function getStudentProgressRating(progress: number) {
       stars: 5,
       score: "5.0",
       tier: "Top Performer",
-      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      badgeColor: "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/40",
       barColor: "bg-gradient-to-r from-emerald-500 to-teal-500",
     };
   }
@@ -43,7 +43,7 @@ export function getStudentProgressRating(progress: number) {
       stars: 5,
       score: "4.8",
       tier: "Star Learner",
-      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      badgeColor: "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/40",
       barColor: "bg-gradient-to-r from-emerald-500 to-cyan-500",
     };
   }
@@ -52,7 +52,7 @@ export function getStudentProgressRating(progress: number) {
       stars: 4,
       score: "4.0",
       tier: "Advanced",
-      badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
+      badgeColor: "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/40",
       barColor: "bg-gradient-to-r from-[#2563EB] to-cyan-500",
     };
   }
@@ -61,7 +61,7 @@ export function getStudentProgressRating(progress: number) {
       stars: 3,
       score: "3.5",
       tier: "Active Learner",
-      badgeColor: "bg-amber-50 text-amber-700 border-amber-200",
+      badgeColor: "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/40",
       barColor: "bg-gradient-to-r from-amber-500 to-orange-500",
     };
   }
@@ -70,16 +70,16 @@ export function getStudentProgressRating(progress: number) {
       stars: 2,
       score: "2.5",
       tier: "Beginner",
-      badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
-      barColor: "bg-slate-400",
+      badgeColor: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+      barColor: "bg-slate-400 dark:bg-slate-600",
     };
   }
   return {
     stars: 1,
     score: "1.0",
     tier: "Not Started",
-    badgeColor: "bg-slate-100 text-slate-500 border-slate-200",
-    barColor: "bg-slate-200",
+    badgeColor: "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700",
+    barColor: "bg-slate-200 dark:bg-slate-700",
   };
 }
 
@@ -252,8 +252,8 @@ export default function AdminStudentsPage() {
       <div className="flex-1 space-y-5 p-3 sm:p-6 lg:p-8 lg:pt-4">
         {/* Toast Alert */}
         {toastMessage && (
-          <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-blue-200 bg-white/95 px-5 py-3.5 text-xs font-bold text-[#2563EB] shadow-2xl backdrop-blur-md animate-in fade-in">
-            <CheckCircle2 className="h-4 w-4 text-[#2563EB] shrink-0" />
+          <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-blue-200 dark:border-blue-800 bg-white/95 dark:bg-[#1B2538]/95 px-5 py-3.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-2xl backdrop-blur-md animate-in fade-in">
+            <CheckCircle2 className="h-4 w-4 text-[#2563EB] dark:text-blue-400 shrink-0" />
             <span>{toastMessage}</span>
           </div>
         )}
@@ -264,44 +264,44 @@ export default function AdminStudentsPage() {
             {[1, 2, 3].map((n) => (
               <div
                 key={n}
-                className="rounded-[20px] border border-slate-200/80 bg-white/80 p-5 shadow-sm animate-pulse space-y-3"
+                className="rounded-[20px] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-[#111827] p-5 shadow-sm animate-pulse space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <div className="h-3.5 w-28 rounded bg-slate-200" />
-                  <div className="h-8 w-8 rounded-full bg-slate-200" />
+                  <div className="h-3.5 w-28 rounded bg-slate-200 dark:bg-slate-800" />
+                  <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800" />
                 </div>
-                <div className="h-8 w-16 rounded bg-slate-300" />
-                <div className="h-3 w-36 rounded bg-slate-200" />
+                <div className="h-8 w-16 rounded bg-slate-300 dark:bg-slate-700" />
+                <div className="h-3 w-36 rounded bg-slate-200 dark:bg-slate-800" />
               </div>
             ))}
           </div>
         ) : (
           <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <TiltCard>
-              <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+              <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-500">Total Registered</span>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-[#2563EB]">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Registered</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400">
                     <Users className="h-4 w-4" />
                   </div>
                 </div>
-                <div className="mt-2 text-2xl font-black text-slate-900">{totalRegistered}</div>
-                <div className="mt-1 text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{totalRegistered}</div>
+                <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                   <Sparkles className="h-3 w-3" /> Live from API database
                 </div>
               </div>
             </TiltCard>
 
             <TiltCard>
-              <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+              <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-500">Enrolled Learners</span>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Enrolled Learners</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
                     <UserCheck className="h-4 w-4" />
                   </div>
                 </div>
-                <div className="mt-2 text-2xl font-black text-emerald-600">{enrolledCount}</div>
-                <div className="mt-1 text-xs text-slate-500 font-medium">
+                <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">{enrolledCount}</div>
+                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
                   {totalRegistered > 0
                     ? `${Math.round((enrolledCount / totalRegistered) * 100)}% conversion rate`
                     : "0%"}
@@ -310,15 +310,15 @@ export default function AdminStudentsPage() {
             </TiltCard>
 
             <TiltCard>
-              <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+              <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-500">No Courses Yet</span>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">No Courses Yet</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">
                     <UserX className="h-4 w-4" />
                   </div>
                 </div>
-                <div className="mt-2 text-2xl font-black text-amber-600">{noCoursesCount}</div>
-                <div className="mt-1 text-xs text-slate-500 font-medium">New registered accounts</div>
+                <div className="mt-2 text-2xl font-black text-amber-600 dark:text-amber-400">{noCoursesCount}</div>
+                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">New registered accounts</div>
               </div>
             </TiltCard>
           </Reveal>
@@ -328,18 +328,18 @@ export default function AdminStudentsPage() {
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div className="flex flex-1 flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
             <div className="relative w-full sm:w-auto sm:min-w-[280px]">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Search by name, email, phone, or course…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-slate-800 outline-none shadow-xs transition-colors focus:border-[#2563EB]"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-500 outline-none shadow-xs transition-colors focus:border-[#2563EB] dark:focus:border-blue-500"
               />
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-1 shadow-xs overflow-x-auto">
+            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-1 shadow-xs overflow-x-auto">
               {[
                 { id: "All", label: `All (${totalRegistered})` },
                 { id: "Enrolled", label: `Enrolled (${enrolledCount})` },
@@ -352,7 +352,7 @@ export default function AdminStudentsPage() {
                   className={`rounded-lg px-3 py-1 text-xs font-bold transition-colors whitespace-nowrap cursor-pointer ${
                     filterTab === tab.id
                       ? "bg-[#2563EB] text-white shadow-xs"
-                      : "text-slate-500 hover:text-slate-900"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   {tab.label}
@@ -366,11 +366,11 @@ export default function AdminStudentsPage() {
               type="button"
               onClick={() => loadStudents(true)}
               disabled={isRefreshing}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer disabled:opacity-50"
               title="Refresh student roster from database"
             >
               <RefreshCw
-                className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-[#2563EB]" : ""}`}
+                className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-[#2563EB] dark:text-blue-400" : ""}`}
               />
               <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
             </button>
@@ -378,20 +378,20 @@ export default function AdminStudentsPage() {
             <button
               type="button"
               onClick={handleExportCSV}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors cursor-pointer"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
-              <Download className="h-3.5 w-3.5 text-[#2563EB]" />
+              <Download className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" />
               <span>Export CSV</span>
             </button>
           </div>
         </div>
 
         {/* Students Table with Skeleton (Skull UI) Loading Animation */}
-        <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+        <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827]/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs min-w-[760px]">
               <thead>
-                <tr className="border-b border-slate-100 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
                   <th className="pb-3 pr-4 pl-0">Student Profile</th>
                   <th className="px-4 pb-3">Student Rating</th>
                   <th className="px-4 pb-3">Contact Details</th>
@@ -399,44 +399,44 @@ export default function AdminStudentsPage() {
                   <th className="pr-0 pb-3 pl-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 {/* SKELETON UI (SKULL LOADING ANIMATION) */}
                 {isLoading ? (
                   [1, 2, 3, 4, 5].map((i) => (
                     <tr key={i} className="animate-pulse">
                       <td className="py-4 pr-4 pl-0">
                         <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-full bg-slate-200 shrink-0" />
+                          <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-800 shrink-0" />
                           <div className="space-y-1.5">
-                            <div className="h-3.5 w-28 rounded bg-slate-300" />
-                            <div className="h-2.5 w-40 rounded bg-slate-200" />
+                            <div className="h-3.5 w-28 rounded bg-slate-300 dark:bg-slate-700" />
+                            <div className="h-2.5 w-40 rounded bg-slate-200 dark:bg-slate-800" />
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="h-10 w-48 rounded-xl bg-slate-200" />
+                        <div className="h-10 w-48 rounded-xl bg-slate-200 dark:bg-slate-800" />
                       </td>
                       <td className="px-4 py-4">
-                        <div className="h-3.5 w-24 rounded bg-slate-200" />
+                        <div className="h-3.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
                       </td>
                       <td className="px-4 py-4">
                         <div className="space-y-1">
-                          <div className="h-3.5 w-20 rounded bg-slate-200" />
-                          <div className="h-2.5 w-14 rounded bg-slate-100" />
+                          <div className="h-3.5 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+                          <div className="h-2.5 w-14 rounded bg-slate-100 dark:bg-slate-850" />
                         </div>
                       </td>
                       <td className="pr-0 py-4 pl-4 text-right">
-                        <div className="inline-block h-8 w-24 rounded-xl bg-slate-200" />
+                        <div className="inline-block h-8 w-24 rounded-xl bg-slate-200 dark:bg-slate-800" />
                       </td>
                     </tr>
                   ))
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-slate-400 font-medium">
+                    <td colSpan={5} className="py-12 text-center text-slate-400 dark:text-slate-500 font-medium">
                       <div className="flex flex-col items-center justify-center gap-2">
-                        <Users className="h-8 w-8 text-slate-300" />
-                        <span className="font-bold text-slate-700">No students found</span>
-                        <span className="text-xs text-slate-400">
+                        <Users className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                        <span className="font-bold text-slate-700 dark:text-slate-200">No students found</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500">
                           {searchQuery
                             ? "No registered students match your search criteria."
                             : "No registered student records exist in the database."}
@@ -459,25 +459,25 @@ export default function AdminStudentsPage() {
                       <tr
                         key={s.id}
                         onClick={() => router.push(`/admin/students/${s.id}`)}
-                        className="group transition-colors hover:bg-blue-50/50 cursor-pointer"
+                        className="group transition-colors hover:bg-blue-50/50 dark:hover:bg-slate-800/40 cursor-pointer"
                         title="Click to view full student profile & academic dossier"
                       >
                         {/* Student Name & Email */}
                         <td className="py-4 pr-4 pl-0 whitespace-nowrap">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-[#2563EB] group-hover:bg-[#2563EB] group-hover:text-white transition-colors shadow-xs">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/60 text-xs font-bold text-[#2563EB] dark:text-blue-400 group-hover:bg-[#2563EB] dark:group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-xs">
                               {initials}
                             </div>
                             <div>
-                              <div className="font-bold text-slate-900 group-hover:text-[#2563EB] transition-colors flex items-center gap-1.5">
+                              <div className="font-bold text-slate-900 dark:text-white group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
                                 <span>{s.name}</span>
                                 {s.totalEnrolled > 0 && (
-                                  <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 text-[10px] font-bold">
+                                  <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40 px-1.5 py-0.2 text-[10px] font-bold">
                                     Enrolled
                                   </span>
                                 )}
                               </div>
-                              <div className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
+                              <div className="text-[11px] font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1">
                                 <span>{s.email}</span>
                               </div>
                             </div>
@@ -499,9 +499,9 @@ export default function AdminStudentsPage() {
                                   {/* Single Star Icon + Score (e.g. 4.8/5) */}
                                   <div className="flex items-center gap-1 shrink-0">
                                     <Star className="h-4 w-4 text-amber-500 fill-amber-500 shrink-0" />
-                                    <span className="text-[13px] font-black text-slate-900">
+                                    <span className="text-[13px] font-black text-slate-900 dark:text-white">
                                       {rating.score}
-                                      <span className="text-[11px] font-bold text-slate-400">/5</span>
+                                      <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">/5</span>
                                     </span>
                                   </div>
 
@@ -513,26 +513,26 @@ export default function AdminStudentsPage() {
                                   </span>
 
                                   {/* Enrolled Courses Count */}
-                                  <span className="text-[11px] font-medium text-slate-400">
+                                  <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
                                     ({s.enrollments.length} {s.enrollments.length === 1 ? "Course" : "Courses"})
                                   </span>
                                 </div>
                               );
                             })()
                           ) : (
-                            <div className="flex items-center gap-1.5 text-slate-400">
-                              <Star className="h-4 w-4 text-slate-300 shrink-0" />
-                              <span className="text-xs font-medium text-slate-400">
-                                —/5 <span className="text-slate-300">•</span> Unrated
+                            <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
+                              <Star className="h-4 w-4 text-slate-300 dark:text-slate-600 shrink-0" />
+                              <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                                —/5 <span className="text-slate-300 dark:text-slate-600">•</span> Unrated
                               </span>
                             </div>
                           )}
                         </td>
 
                         {/* Phone & Contact */}
-                        <td className="px-4 py-4 whitespace-nowrap text-slate-600 font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300 font-medium">
                           <div className="flex items-center gap-1.5">
-                            <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                            <Phone className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                             <span>
                               {s.phone && s.phone !== "N/A" ? s.phone : "No phone provided"}
                             </span>
@@ -540,9 +540,9 @@ export default function AdminStudentsPage() {
                         </td>
 
                         {/* Registration Date */}
-                        <td className="px-4 py-4 font-medium text-slate-600 whitespace-nowrap">
+                        <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                            <Calendar className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                             <span>
                               {new Date(s.registeredAt).toLocaleDateString("en-IN", {
                                 day: "numeric",
@@ -551,7 +551,7 @@ export default function AdminStudentsPage() {
                               })}
                             </span>
                           </div>
-                          <div className="text-[10px] text-slate-400 pl-5">
+                          <div className="text-[10px] text-slate-400 dark:text-slate-500 pl-5">
                             {new Date(s.registeredAt).toLocaleTimeString("en-IN", {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -567,7 +567,7 @@ export default function AdminStudentsPage() {
                           >
                             <Link
                               href={`/admin/students/${s.id}`}
-                              className="inline-flex items-center gap-1 rounded-xl bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#2563EB] hover:bg-[#2563EB] hover:text-white transition-all shadow-xs"
+                              className="inline-flex items-center gap-1 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 hover:bg-[#2563EB] hover:text-white border border-transparent dark:border-blue-800/40 px-3 py-1.5 text-xs font-bold transition-all shadow-xs"
                             >
                               <span>View Profile</span>
                               <ChevronRight className="h-3.5 w-3.5" />
@@ -578,7 +578,7 @@ export default function AdminStudentsPage() {
                               onClick={() =>
                                 showToast(`Direct messaging initiated with ${s.email}...`)
                               }
-                              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
                               title="Message Student"
                             >
                               <Mail className="h-3.5 w-3.5" />

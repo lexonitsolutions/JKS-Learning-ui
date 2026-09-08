@@ -11,7 +11,7 @@ interface JksLogoProps {
   imgClassName?: string;
   showSubtitle?: string;
   priority?: boolean;
-  variant?: "light" | "dark";
+  variant?: "light" | "dark" | "auto";
 }
 
 const SIZE_MAP = {
@@ -28,29 +28,57 @@ export function JksLogo({
   imgClassName = "",
   showSubtitle,
   priority = true,
-  variant = "light",
+  variant = "auto",
 }: JksLogoProps) {
   const dim = SIZE_MAP[size] || SIZE_MAP.md;
-  const logoSrc = variant === "dark" ? "/images/jks-logo-white.png" : "/images/jks-logo.png";
 
   const content = (
     <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
-      <Image
-        src={logoSrc}
-        alt="JKS Learning"
-        width={dim.width}
-        height={dim.height}
-        priority={priority}
-        className={`object-contain transition-transform duration-200 hover:opacity-95 ${dim.class} ${imgClassName}`}
-      />
+      {variant === "dark" ? (
+        <Image
+          src="/images/jks-logo-white.png"
+          alt="JKS Learning"
+          width={dim.width}
+          height={dim.height}
+          priority={priority}
+          className={`object-contain transition-transform duration-200 hover:opacity-95 ${dim.class} ${imgClassName}`}
+        />
+      ) : variant === "light" ? (
+        <Image
+          src="/images/jks-logo.png"
+          alt="JKS Learning"
+          width={dim.width}
+          height={dim.height}
+          priority={priority}
+          className={`object-contain transition-transform duration-200 hover:opacity-95 ${dim.class} ${imgClassName}`}
+        />
+      ) : (
+        <>
+          <Image
+            src="/images/jks-logo.png"
+            alt="JKS Learning"
+            width={dim.width}
+            height={dim.height}
+            priority={priority}
+            className={`object-contain transition-transform duration-200 hover:opacity-95 dark:hidden ${dim.class} ${imgClassName}`}
+          />
+          <Image
+            src="/images/jks-logo-white.png"
+            alt="JKS Learning"
+            width={dim.width}
+            height={dim.height}
+            priority={priority}
+            className={`object-contain transition-transform duration-200 hover:opacity-95 hidden dark:inline-block ${dim.class} ${imgClassName}`}
+          />
+        </>
+      )}
       {showSubtitle && (
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-1 border-l border-slate-200 hidden sm:inline-block">
+        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider pl-1 border-l border-slate-200 dark:border-slate-700 hidden sm:inline-block">
           {showSubtitle}
         </span>
       )}
     </div>
   );
-
 
   if (href) {
     return (

@@ -172,14 +172,14 @@ export default function InstructorAssessmentsPage() {
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">
         {/* Action & Filter Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1 shadow-xs">
+          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-1 shadow-xs">
             <button
               type="button"
               onClick={() => setActiveTab("Pending")}
               className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "Pending"
                   ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
-                  : "text-slate-600 hover:bg-slate-50"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               }`}
             >
               Pending Evaluation ({pendingList.length})
@@ -190,7 +190,7 @@ export default function InstructorAssessmentsPage() {
               className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "Graded"
                   ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
-                  : "text-slate-600 hover:bg-slate-50"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               }`}
             >
               Graded Submissions ({gradedList.length})
@@ -198,22 +198,22 @@ export default function InstructorAssessmentsPage() {
           </div>
 
           <div className="relative max-w-md w-full">
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               placeholder="Search by student, assignment, or course…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-slate-800 outline-none shadow-xs transition-colors focus:border-[#2563EB]"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white outline-none shadow-xs transition-colors focus:border-[#2563EB] dark:placeholder-slate-500"
             />
           </div>
         </div>
 
         {/* Submissions Table */}
-        <div className="rounded-[24px] border border-white/80 bg-white/90 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl overflow-hidden">
+        <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-700">
-              <thead className="border-b border-slate-100 bg-slate-50/70 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+              <thead className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <tr>
                   <th className="px-5 py-3.5">Student</th>
                   <th className="px-5 py-3.5">Assignment & Topic</th>
@@ -223,38 +223,38 @@ export default function InstructorAssessmentsPage() {
                   <th className="px-5 py-3.5 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100/80">
+              <tbody className="divide-y divide-slate-100/80 dark:divide-slate-800/80">
                 {displayedList.map((sub) => (
-                  <tr key={sub.id} className="hover:bg-slate-50/70 transition-colors">
+                  <tr key={sub.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-xs font-bold text-[#2563EB]">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-xs font-bold text-[#2563EB] dark:text-blue-400">
                           {sub.studentInitials}
                         </div>
-                        <div className="font-bold text-slate-900">{sub.studentName}</div>
+                        <div className="font-bold text-slate-900 dark:text-white">{sub.studentName}</div>
                       </div>
                     </td>
 
                     <td className="px-5 py-4">
-                      <div className="font-bold text-slate-900">{sub.assignmentTitle}</div>
-                      <div className="text-[11px] text-slate-400 font-medium">{sub.type}</div>
+                      <div className="font-bold text-slate-900 dark:text-white">{sub.assignmentTitle}</div>
+                      <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">{sub.type}</div>
                     </td>
 
-                    <td className="px-5 py-4 text-slate-600 font-medium">
+                    <td className="px-5 py-4 text-slate-600 dark:text-slate-300 font-medium">
                       {sub.courseTitle}
                     </td>
 
-                    <td className="px-5 py-4 text-slate-500">
+                    <td className="px-5 py-4 text-slate-500 dark:text-slate-400">
                       {sub.submittedDate}
                     </td>
 
                     <td className="px-5 py-4">
                       {sub.status === "Graded" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
                           <CheckCircle2 className="h-3 w-3" /> Score: {sub.score}/100
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-bold text-amber-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/50 px-2.5 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-400">
                           <Clock className="h-3 w-3" /> Needs Evaluation
                         </span>
                       )}
@@ -267,7 +267,7 @@ export default function InstructorAssessmentsPage() {
                         className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                           sub.status === "Pending Review"
                             ? "bg-[#2563EB] text-white shadow-xs hover:bg-blue-700"
-                            : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                            : "border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#151D2E] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                         }`}
                       >
                         <FileCode className="h-3.5 w-3.5" />
@@ -285,23 +285,23 @@ export default function InstructorAssessmentsPage() {
       {/* Interactive Grading Modal */}
       <AnimatePresence>
         {selectedSubmission && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 dark:bg-slate-950/80 p-4 backdrop-blur-xs">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative flex w-full max-w-2xl flex-col rounded-[24px] border border-slate-100 bg-white shadow-2xl overflow-hidden max-h-[90vh]"
+              className="relative flex w-full max-w-2xl flex-col rounded-[24px] border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-2xl overflow-hidden max-h-[90vh]"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 shrink-0">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-5 shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400">
                     <ClipboardCheck className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                       Evaluating: {selectedSubmission.assignmentTitle}
                     </h3>
-                    <p className="text-xs text-slate-500 font-medium">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                       Student: {selectedSubmission.studentName} • {selectedSubmission.courseTitle}
                     </p>
                   </div>
@@ -309,7 +309,7 @@ export default function InstructorAssessmentsPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedSubmission(null)}
-                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100"
+                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -319,7 +319,7 @@ export default function InstructorAssessmentsPage() {
                 {/* Submitted Code View */}
                 {selectedSubmission.studentCodeSnippet && (
                   <div>
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                       Submitted Code Solution
                     </label>
                     <div className="rounded-xl border border-slate-800 bg-[#0F172A] p-4 text-emerald-300 font-mono text-[11px] overflow-x-auto whitespace-pre leading-relaxed shadow-inner">
@@ -330,7 +330,7 @@ export default function InstructorAssessmentsPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                       Assigned Score (0 - 100) *
                     </label>
                     <input
@@ -340,21 +340,21 @@ export default function InstructorAssessmentsPage() {
                       required
                       value={scoreInput}
                       onChange={(e) => setScoreInput(Number(e.target.value))}
-                      className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-sm font-bold text-slate-900 outline-none focus:border-[#2563EB]"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-2.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                       Passing Verdict
                     </label>
                     <div className="mt-2 text-xs font-bold">
                       {scoreInput >= 75 ? (
-                        <span className="text-emerald-600 flex items-center gap-1">
+                        <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                           <CheckCircle2 className="h-4 w-4" /> Passed Minimum Threshold (75%+)
                         </span>
                       ) : (
-                        <span className="text-rose-600 flex items-center gap-1">
+                        <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1">
                           <AlertCircle className="h-4 w-4" /> Below Pass Mark (Needs Resubmission)
                         </span>
                       )}
@@ -363,7 +363,7 @@ export default function InstructorAssessmentsPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                     Faculty Review & Feedback Notes
                   </label>
                   <textarea
@@ -372,15 +372,15 @@ export default function InstructorAssessmentsPage() {
                     value={feedbackInput}
                     onChange={(e) => setFeedbackInput(e.target.value)}
                     placeholder="Provide constructive feedback on architecture, scalability, or code cleanliness..."
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-slate-800 outline-none focus:border-[#2563EB]"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-[#121A2A] p-3 text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB] dark:placeholder-slate-500"
                   />
                 </div>
 
-                <div className="flex justify-end gap-2 border-t border-slate-100 pt-4 shrink-0">
+                <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-4 shrink-0">
                   <button
                     type="button"
                     onClick={() => setSelectedSubmission(null)}
-                    className="rounded-xl px-4 py-2 font-bold text-slate-500 hover:bg-slate-100"
+                    className="rounded-xl px-4 py-2 font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
                     Cancel
                   </button>

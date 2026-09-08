@@ -61,7 +61,7 @@ export default function AdminInstructorsPage() {
                 placeholder="Search instructors by name or track…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-slate-800 outline-none shadow-xs transition-colors focus:border-[#2563EB]"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-slate-800 outline-none shadow-xs transition-colors focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
               />
             </div>
           </div>
@@ -83,47 +83,47 @@ export default function AdminInstructorsPage() {
         <Reveal variant="stagger" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {filteredInstructors.map((inst) => (
             <TiltCard key={`${inst.name}-${inst.initials}`}>
-              <div className="flex h-full flex-col justify-between rounded-[20px] border border-white/70 bg-white/85 p-3.5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+              <div className="flex h-full flex-col justify-between rounded-[20px] border border-white/70 bg-white/85 p-3.5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
                 <div>
                   <div className="flex items-start justify-between">
-                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-[#EFF6FF] text-sm sm:text-base font-bold text-[#2563EB] shadow-xs">
+                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-[#EFF6FF] text-sm sm:text-base font-bold text-[#2563EB] shadow-xs dark:bg-blue-950/50 dark:text-blue-400">
                       {inst.initials}
                     </div>
-                    <span className="hidden sm:inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                    <span className="hidden sm:inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
                       {inst.status}
                     </span>
                   </div>
 
                   <div className="mt-3 sm:mt-4">
-                    <h3 className="text-sm sm:text-base font-bold text-slate-900 truncate">
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
                       {inst.name}
                     </h3>
-                    <p className="mt-0.5 text-[11px] sm:text-xs font-medium text-[#2563EB] truncate">
+                    <p className="mt-0.5 text-[11px] sm:text-xs font-medium text-[#2563EB] dark:text-blue-400 truncate">
                       {inst.role}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3 border-t border-slate-100 pt-3 sm:pt-4 text-[11px] sm:text-xs text-slate-600">
+                <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3 border-t border-slate-100 dark:border-slate-800 pt-3 sm:pt-4 text-[11px] sm:text-xs text-slate-600 dark:text-slate-300">
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-slate-400">
+                    <span className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
                       <BookOpen className="h-3.5 w-3.5" /> Courses
                     </span>
-                    <span className="font-bold text-slate-800">{inst.assignedCourses}</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">{inst.assignedCourses}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-slate-400">
+                    <span className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
                       <Users className="h-3.5 w-3.5" /> Students
                     </span>
-                    <span className="font-bold text-slate-800">
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
                       {inst.students.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-slate-400">
+                    <span className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
                       <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" /> Rating
                     </span>
-                    <span className="font-bold text-amber-600">4.9 / 5.0</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">4.9 / 5.0</span>
                   </div>
                 </div>
               </div>

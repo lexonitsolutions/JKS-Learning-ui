@@ -21,6 +21,7 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { JksLogo } from "@/components/common/jks-logo";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 
 const BASE_NAV_LINKS = [
   { href: "/courses", label: "Courses" },
@@ -120,8 +121,10 @@ export function SiteHeader() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b bg-white/85 text-text-heading backdrop-blur-xl transition-shadow duration-300 ${
-        scrolled ? "border-border shadow-[0_4px_20px_rgba(11,31,58,0.06)]" : "border-transparent"
+      className={`sticky top-0 z-50 border-b bg-white/85 dark:bg-[#0B1020]/90 text-text-heading dark:text-slate-100 backdrop-blur-xl transition-all duration-300 ${
+        scrolled
+          ? "border-border dark:border-slate-800/80 shadow-[0_4px_20px_rgba(11,31,58,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
+          : "border-transparent"
       }`}
     >
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-6 lg:px-16">
@@ -137,14 +140,14 @@ export function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`group relative text-sm font-semibold transition-colors hover:text-text-heading flex items-center gap-1.5 ${
+                className={`group relative text-sm font-semibold transition-colors flex items-center gap-1.5 ${
                   active
-                    ? "text-primary-blue"
+                    ? "text-primary-blue dark:text-blue-400"
                     : isEnroll
-                    ? "text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200 hover:bg-blue-100"
+                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40"
                     : isDashboard
-                    ? "text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200 hover:bg-indigo-100"
-                    : "text-text-heading/70"
+                    ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/40"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                 }`}
               >
                 {isEnroll && <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />}
@@ -163,17 +166,20 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {/* Theme Toggle Button */}
+          <ThemeToggle />
+
           {!isUserAuthenticated ? (
             <>
               <Link
                 href="/login"
-                className="hidden text-sm font-semibold text-text-heading/80 transition-colors hover:text-text-heading sm:block px-3 py-1.5 rounded-lg hover:bg-slate-100"
+                className="hidden text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-white sm:block px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 Log in
               </Link>
               <Link
                 href="/register"
-                className="hidden text-sm font-semibold text-primary-blue bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-lg transition-colors hover:bg-blue-100 sm:block"
+                className="hidden text-sm font-semibold text-primary-blue bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 px-3.5 py-1.5 rounded-lg transition-colors hover:bg-blue-100 dark:hover:bg-blue-900/50 sm:block"
               >
                 Register
               </Link>
@@ -227,7 +233,7 @@ export function SiteHeader() {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-text-heading transition-colors hover:bg-bg-light md:hidden cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border dark:border-slate-800 text-text-heading dark:text-slate-200 transition-colors hover:bg-bg-light dark:hover:bg-slate-800 md:hidden cursor-pointer"
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -242,7 +248,7 @@ export function SiteHeader() {
             animate={reducedMotion ? { opacity: 1 } : { opacity: 1, height: "auto" }}
             exit={reducedMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-            className="overflow-hidden border-t border-border bg-white/95 backdrop-blur-xl md:hidden"
+            className="overflow-hidden border-t border-border dark:border-slate-800 bg-white/95 dark:bg-[#0B1020]/95 backdrop-blur-xl md:hidden"
           >
             <div className="flex flex-col gap-1 px-6 py-4">
               {navLinks.map((link, i) => {
@@ -258,8 +264,8 @@ export function SiteHeader() {
                       href={link.href}
                       className={`block rounded-lg px-3 py-3 text-base font-medium transition-colors ${
                         active
-                          ? "bg-primary-blue/8 text-primary-blue font-bold"
-                          : "text-text-heading/80 hover:bg-bg-light hover:text-text-heading"
+                          ? "bg-primary-blue/10 dark:bg-blue-950/60 text-primary-blue dark:text-blue-400 font-bold"
+                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white"
                       }`}
                     >
                       {link.label}
@@ -273,11 +279,11 @@ export function SiteHeader() {
                   initial={reducedMotion ? undefined : { opacity: 0, x: -12 }}
                   animate={reducedMotion ? undefined : { opacity: 1, x: 0 }}
                   transition={{ duration: 0.25, delay: 0.05 + navLinks.length * 0.05 }}
-                  className="mt-2 border-t border-border pt-3 flex flex-col gap-2"
+                  className="mt-2 border-t border-slate-200 dark:border-slate-800 pt-3 flex flex-col gap-2"
                 >
                   <Link
                     href="/login"
-                    className="block rounded-lg px-3 py-2.5 text-base font-medium text-text-heading/80 hover:bg-bg-light hover:text-text-heading"
+                    className="block rounded-lg px-3 py-2.5 text-base font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white"
                   >
                     Log in
                   </Link>
@@ -293,11 +299,11 @@ export function SiteHeader() {
                   initial={reducedMotion ? undefined : { opacity: 0, x: -12 }}
                   animate={reducedMotion ? undefined : { opacity: 1, x: 0 }}
                   transition={{ duration: 0.25, delay: 0.05 + navLinks.length * 0.05 }}
-                  className="mt-2 border-t border-border pt-3 flex flex-col gap-1.5"
+                  className="mt-2 border-t border-border dark:border-slate-800 pt-3 flex flex-col gap-1.5"
                 >
-                  <div className="px-3 py-2 bg-slate-50 rounded-xl mb-1">
-                    <p className="text-xs font-bold text-slate-900 truncate">{userName}</p>
-                    <p className="text-[11px] text-slate-500 truncate">{userEmail}</p>
+                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl mb-1">
+                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{userName}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{userEmail}</p>
                   </div>
                   <Link
                     href={dashboardHref}
@@ -308,7 +314,7 @@ export function SiteHeader() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-rose-600 text-left"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-rose-600 dark:text-rose-400 text-left cursor-pointer"
                   >
                     <LogOut className="h-4 w-4" /> Sign out
                   </button>

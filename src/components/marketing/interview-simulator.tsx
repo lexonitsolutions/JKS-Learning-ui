@@ -151,15 +151,15 @@ export function InterviewSimulator() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
         {/* Left Column: Interactive Track Selector & Live AI Controller */}
         <div className="lg:col-span-5 flex flex-col gap-4">
-          <div className="rounded-2xl border border-border/80 bg-white/80 p-6 backdrop-blur-md shadow-sm">
-            <div className="flex items-center justify-between pb-4 border-b border-border/60">
+          <div className="rounded-2xl border border-border/80 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827]/80 p-6 backdrop-blur-md shadow-sm">
+            <div className="flex items-center justify-between pb-4 border-b border-border/60 dark:border-slate-800/80">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-blue/10 text-primary-blue">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-blue/10 dark:bg-primary-blue/20 text-primary-blue dark:text-blue-400">
                   <BrainCircuit className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-text-heading">AI Question Generator</h3>
-                  <p className="text-xs text-text-body">Select a track to simulate live prompt</p>
+                  <h3 className="text-sm font-bold text-text-heading dark:text-white">AI Question Generator</h3>
+                  <p className="text-xs text-text-body dark:text-slate-400">Select a track to simulate live prompt</p>
                 </div>
               </div>
               <Badge variant="primary" className="text-xs">
@@ -181,13 +181,13 @@ export function InterviewSimulator() {
                     className={`group flex items-center justify-between rounded-xl p-3.5 text-left transition-all duration-200 cursor-pointer ${
                       isSelected
                         ? "bg-primary-blue text-white shadow-md shadow-primary-blue/20 scale-[1.01]"
-                        : "bg-bg-light hover:bg-primary-blue/5 text-text-heading border border-border/40"
+                        : "bg-bg-light dark:bg-[#151D2E] hover:bg-primary-blue/5 dark:hover:bg-primary-blue/15 text-text-heading dark:text-white border border-border/40 dark:border-slate-700/60"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                          isSelected ? "bg-white/20 text-white" : "bg-white text-primary-blue shadow-xs"
+                          isSelected ? "bg-white/20 text-white" : "bg-white dark:bg-[#111827] text-primary-blue dark:text-blue-400 shadow-xs"
                         }`}
                       >
                         <Icon className="h-4 w-4" />
@@ -196,7 +196,7 @@ export function InterviewSimulator() {
                         <div className="text-xs font-bold leading-none">{scenario.track}</div>
                         <div
                           className={`mt-1 text-[11px] ${
-                            isSelected ? "text-white/80" : "text-text-body"
+                            isSelected ? "text-white/80" : "text-text-body dark:text-slate-400"
                           }`}
                         >
                           {scenario.category} • {scenario.level}
@@ -205,7 +205,7 @@ export function InterviewSimulator() {
                     </div>
                     <ChevronRight
                       className={`h-4 w-4 transition-transform ${
-                        isSelected ? "text-white translate-x-0.5" : "text-text-body/40 group-hover:translate-x-0.5"
+                        isSelected ? "text-white translate-x-0.5" : "text-text-body/40 dark:text-slate-500 group-hover:translate-x-0.5"
                       }`}
                     />
                   </button>
@@ -214,16 +214,16 @@ export function InterviewSimulator() {
             </div>
 
             {/* AI Live Audio Simulation Bar */}
-            <div className="mt-5 rounded-xl border border-primary-blue/15 bg-primary-blue/[0.03] p-3.5">
-              <div className="flex items-center justify-between text-xs font-semibold text-text-heading mb-2">
-                <span className="flex items-center gap-1.5 text-primary-blue">
+            <div className="mt-5 rounded-xl border border-primary-blue/15 dark:border-primary-blue/30 bg-primary-blue/[0.03] dark:bg-primary-blue/[0.08] p-3.5">
+              <div className="flex items-center justify-between text-xs font-semibold text-text-heading dark:text-white mb-2">
+                <span className="flex items-center gap-1.5 text-primary-blue dark:text-blue-400">
                   <Volume2 className={`h-4 w-4 ${isSpeaking ? "animate-pulse" : ""}`} />
                   {isSpeaking ? "AI Synthesizing Question..." : "AI Ready to Evaluate"}
                 </span>
-                <span className="text-[11px] font-mono text-text-body">48kHz Voice Engine</span>
+                <span className="text-[11px] font-mono text-text-body dark:text-slate-400">48kHz Voice Engine</span>
               </div>
               {/* Animated Waveform Equalizer */}
-              <div className="flex h-7 items-center justify-center gap-1 overflow-hidden rounded-lg bg-primary-dark/95 px-4">
+              <div className="flex h-7 items-center justify-center gap-1 overflow-hidden rounded-lg bg-primary-dark/95 dark:bg-[#070B14] px-4">
                 {Array.from({ length: 24 }).map((_, i) => (
                   <motion.div
                     key={i}
@@ -247,17 +247,17 @@ export function InterviewSimulator() {
 
           {/* Quick Metrics Bar */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-xl border border-border bg-white p-3 text-center shadow-xs">
-              <div className="text-lg font-bold text-primary-blue">120ms</div>
-              <div className="text-[11px] text-text-body">Evaluation Latency</div>
+            <div className="rounded-xl border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-3 text-center shadow-xs">
+              <div className="text-lg font-bold text-primary-blue dark:text-blue-400">120ms</div>
+              <div className="text-[11px] text-text-body dark:text-slate-400">Evaluation Latency</div>
             </div>
-            <div className="rounded-xl border border-border bg-white p-3 text-center shadow-xs">
-              <div className="text-lg font-bold text-emerald-600">5-Axis</div>
-              <div className="text-[11px] text-text-body">Scoring Vector</div>
+            <div className="rounded-xl border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-3 text-center shadow-xs">
+              <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">5-Axis</div>
+              <div className="text-[11px] text-text-body dark:text-slate-400">Scoring Vector</div>
             </div>
-            <div className="rounded-xl border border-border bg-white p-3 text-center shadow-xs">
-              <div className="text-lg font-bold text-violet-600">100%</div>
-              <div className="text-[11px] text-text-body">Adaptive Flow</div>
+            <div className="rounded-xl border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-3 text-center shadow-xs">
+              <div className="text-lg font-bold text-violet-600 dark:text-violet-400">100%</div>
+              <div className="text-[11px] text-text-body dark:text-slate-400">Adaptive Flow</div>
             </div>
           </div>
         </div>

@@ -425,16 +425,16 @@ export default function AdminNewCoursePage() {
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto">
         {/* Top Header & Breadcrumbs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 dark:border-slate-800 pb-4">
           <div className="flex items-center gap-3">
             <Link
               href="/admin/courses"
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               <ArrowLeft className="h-4 w-4" /> Back to Courses
             </Link>
-            <span className="text-xs text-slate-400 font-medium">/</span>
-            <span className="text-xs font-semibold text-slate-900">Stage Workflow Course Builder</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">/</span>
+            <span className="text-xs font-semibold text-slate-900 dark:text-white">Stage Workflow Course Builder</span>
           </div>
 
           <div className="flex items-center gap-2.5">
@@ -442,7 +442,7 @@ export default function AdminNewCoursePage() {
               type="button"
               onClick={() => handlePublishCourse("Draft")}
               disabled={isPublishing}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors cursor-pointer"
+              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               Save Draft
             </button>
@@ -466,7 +466,7 @@ export default function AdminNewCoursePage() {
         </div>
 
         {/* STEP PROGRESS BAR INDICATOR */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 rounded-[20px] border border-white/80 bg-white/80 p-2 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 rounded-[20px] border border-white/80 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827] p-2 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
           {STEPS.map((s) => {
             const isActive = currentStep === s.step;
             const isDone = currentStep > s.step;
@@ -480,8 +480,8 @@ export default function AdminNewCoursePage() {
                   isActive
                     ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
                     : isDone
-                    ? "bg-emerald-50 text-emerald-800 hover:bg-emerald-100/70"
-                    : "text-slate-500 hover:bg-slate-100/70 hover:text-slate-800"
+                    ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/40"
+                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 hover:text-slate-800 dark:hover:text-slate-200"
                 }`}
               >
                 <div
@@ -490,7 +490,7 @@ export default function AdminNewCoursePage() {
                       ? "bg-white/20 text-white"
                       : isDone
                       ? "bg-emerald-600 text-white"
-                      : "bg-slate-200 text-slate-600"
+                      : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                   }`}
                 >
                   {isDone ? <Check className="h-3.5 w-3.5 stroke-[3]" /> : s.step}
@@ -513,20 +513,20 @@ export default function AdminNewCoursePage() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="rounded-[22px] border border-white/70 bg-white/85 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5"
+                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5"
                 >
-                  <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-[#2563EB]">
+                  <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400">
                       <Layers className="h-4 w-4" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900">Step 1: Course Profile & Metadata</h2>
-                      <p className="text-xs text-slate-500 font-medium">Primary details shown across catalog, payments, and certificates</p>
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 1: Course Profile & Metadata</h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Primary details shown across catalog, payments, and certificates</p>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                       Course Title
                     </label>
                     <input
@@ -534,31 +534,31 @@ export default function AdminNewCoursePage() {
                       value={title}
                       onChange={(e) => handleTitleChange(e.target.value)}
                       placeholder="e.g. Enterprise Distributed Systems & Cloud Architecture"
-                      className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100"
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white dark:placeholder-slate-500 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/40"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         URL Slug
                       </label>
                       <input
                         type="text"
                         value={slug}
                         onChange={(e) => setSlug(e.target.value)}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-2 text-xs font-mono text-slate-800 outline-none focus:border-[#2563EB]"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-[#151D2E] px-3.5 py-2 text-xs font-mono text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         Academic Track
                       </label>
                       <select
                         value={track}
                         onChange={(e) => setTrack(e.target.value as Track)}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB]"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
                       >
                         <option value="Full Stack">Full Stack</option>
                         <option value="Frontend">Frontend</option>
@@ -569,13 +569,13 @@ export default function AdminNewCoursePage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         Experience Level
                       </label>
                       <select
                         value={level}
                         onChange={(e) => setLevel(e.target.value as "Beginner" | "Intermediate" | "Advanced")}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB]"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
                       >
                         <option value="Beginner">Beginner</option>
                         <option value="Intermediate">Intermediate</option>
@@ -584,7 +584,7 @@ export default function AdminNewCoursePage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         Duration (Weeks)
                       </label>
                       <input
@@ -593,12 +593,12 @@ export default function AdminNewCoursePage() {
                         max="52"
                         value={durationWeeks}
                         onChange={(e) => setDurationWeeks(Number(e.target.value))}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB]"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         Course Fee (₹)
                       </label>
                       <input
@@ -607,13 +607,13 @@ export default function AdminNewCoursePage() {
                         step="500"
                         value={price}
                         onChange={(e) => setPrice(Number(e.target.value))}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB]"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                       Course Summary & Objectives
                     </label>
                     <textarea
@@ -621,23 +621,23 @@ export default function AdminNewCoursePage() {
                       value={summary}
                       onChange={(e) => setSummary(e.target.value)}
                       placeholder="Overview of the course..."
-                      className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white p-3 text-xs font-medium text-slate-800 outline-none focus:border-[#2563EB]"
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] p-3 text-xs font-medium text-slate-800 dark:text-slate-200 dark:placeholder-slate-500 outline-none focus:border-[#2563EB]"
                     />
                   </div>
 
                   {/* Thumbnail / Media Upload Box */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                       Course Media Banner & Thumbnail
                     </label>
-                    <div className="mt-1.5 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/70 p-6 text-center transition-colors hover:bg-slate-50">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EFF6FF] text-[#2563EB]">
+                    <div className="mt-1.5 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-[#151D2E] p-6 text-center transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EFF6FF] dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400">
                         <Upload className="h-5 w-5" />
                       </div>
-                      <div className="mt-2 text-xs font-bold text-slate-800">
+                      <div className="mt-2 text-xs font-bold text-slate-800 dark:text-slate-200">
                         Upload 16:9 Thumbnail Image
                       </div>
-                      <p className="mt-0.5 text-[11px] text-slate-400">
+                      <p className="mt-0.5 text-[11px] text-slate-400 dark:text-slate-500">
                         PNG, JPG, WebP up to 5MB
                       </p>
                     </div>
@@ -656,8 +656,8 @@ export default function AdminNewCoursePage() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-base font-bold text-slate-900">Step 2: Sections, Subsections & Video Lessons</h2>
-                      <p className="text-xs text-slate-500 font-medium">
+                      <h2 className="text-base font-bold text-slate-900 dark:text-white">Step 2: Sections, Subsections & Video Lessons</h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Upload video files or paste private URLs for every section & subsection.
                       </p>
                     </div>
@@ -675,12 +675,12 @@ export default function AdminNewCoursePage() {
                   {sections.map((section, secIdx) => (
                     <div
                       key={section.id}
-                      className="rounded-[22px] border border-slate-200 bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] space-y-5 transition-all hover:border-[#2563EB]/40"
+                      className="rounded-[22px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] space-y-5 transition-all hover:border-[#2563EB]/40 dark:hover:border-blue-500/40"
                     >
                       {/* Section Top Header */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
                         <div className="flex items-center gap-3 flex-1">
-                          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white shrink-0">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-xs font-bold text-white shrink-0">
                             {secIdx + 1}
                           </span>
                           <input
@@ -692,7 +692,7 @@ export default function AdminNewCoursePage() {
                               setSections(updated);
                             }}
                             placeholder={`Section ${secIdx + 1} Title`}
-                            className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-bold text-slate-900 outline-none focus:border-[#2563EB]"
+                            className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3 py-1.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                           />
                         </div>
 
@@ -701,7 +701,7 @@ export default function AdminNewCoursePage() {
                             type="button"
                             onClick={() => moveSection(secIdx, "up")}
                             disabled={secIdx === 0}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-30"
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30"
                             title="Move Up"
                           >
                             <ChevronUp className="h-4 w-4" />
@@ -710,7 +710,7 @@ export default function AdminNewCoursePage() {
                             type="button"
                             onClick={() => moveSection(secIdx, "down")}
                             disabled={secIdx === sections.length - 1}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-30"
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30"
                             title="Move Down"
                           >
                             <ChevronDown className="h-4 w-4" />
@@ -719,7 +719,7 @@ export default function AdminNewCoursePage() {
                             <button
                               type="button"
                               onClick={() => removeSection(section.id)}
-                              className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
                               title="Delete Section"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -730,7 +730,7 @@ export default function AdminNewCoursePage() {
 
                       {/* Section Description */}
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                           Section Description
                         </label>
                         <input
@@ -742,37 +742,37 @@ export default function AdminNewCoursePage() {
                             setSections(updated);
                           }}
                           placeholder="Brief overview of concepts covered in this section..."
-                          className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-700 outline-none focus:border-[#2563EB]"
+                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 dark:placeholder-slate-500 outline-none focus:border-[#2563EB]"
                         />
                       </div>
 
                       {/* SUBSECTIONS AREA (OPTIONAL) */}
-                      <div className="space-y-3 rounded-xl bg-slate-50/70 p-4 border border-slate-100">
+                      <div className="space-y-3 rounded-xl bg-slate-50/70 dark:bg-[#151D2E] p-4 border border-slate-100 dark:border-slate-800">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                            <FolderTree className="h-4 w-4 text-[#2563EB]" />
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-white">
+                            <FolderTree className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                             <span>Subsections ({section.subsections?.length || 0})</span>
-                            <span className="text-[11px] font-normal text-slate-400">Optional nested lesson groupings</span>
+                            <span className="text-[11px] font-normal text-slate-400 dark:text-slate-500">Optional nested lesson groupings</span>
                           </div>
                           <button
                             type="button"
                             onClick={() => addSubsectionToSection(secIdx)}
-                            className="flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-2.5 py-1 text-[11px] font-bold text-[#2563EB] shadow-xs hover:bg-blue-50 transition-colors cursor-pointer"
+                            className="flex items-center gap-1 rounded-lg border border-blue-200 dark:border-blue-800/80 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 shadow-xs hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
                           >
                             <Plus className="h-3 w-3" /> Add Subsection
                           </button>
                         </div>
 
                         {section.subsections && section.subsections.length > 0 ? (
-                          <div className="space-y-3 pl-2 sm:pl-3 border-l-2 border-blue-200">
+                          <div className="space-y-3 pl-2 sm:pl-3 border-l-2 border-blue-200 dark:border-blue-900/60">
                             {section.subsections.map((sub, subIdx) => (
                               <div
                                 key={sub.id}
-                                className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs space-y-3"
+                                className="rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#111827] p-3.5 shadow-xs space-y-3"
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2 flex-1">
-                                    <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-[#2563EB]">
+                                    <span className="rounded bg-blue-100 dark:bg-blue-950/50 px-1.5 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-400">
                                       {secIdx + 1}.{subIdx + 1}
                                     </span>
                                     <input
@@ -786,13 +786,13 @@ export default function AdminNewCoursePage() {
                                         }
                                       }}
                                       placeholder="Subsection Title"
-                                      className="flex-1 rounded-md border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB]"
+                                      className="flex-1 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                                     />
                                   </div>
                                   <button
                                     type="button"
                                     onClick={() => removeSubsection(secIdx, sub.id)}
-                                    className="text-slate-400 hover:text-rose-600 transition-colors"
+                                    className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
                                   </button>
@@ -803,11 +803,11 @@ export default function AdminNewCoursePage() {
                                   {sub.videos.map((vid, vidIdx) => (
                                     <div
                                       key={vid.id}
-                                      className="rounded-xl border border-slate-200/90 bg-slate-50/70 p-3 space-y-2.5 text-xs shadow-2xs"
+                                      className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] p-3 space-y-2.5 text-xs shadow-2xs"
                                     >
                                       <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                                          <Video className="h-3.5 w-3.5 text-[#2563EB] shrink-0" />
+                                          <Video className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400 shrink-0" />
                                           <input
                                             type="text"
                                             value={vid.title}
@@ -817,14 +817,14 @@ export default function AdminNewCoursePage() {
                                               setSections(updated);
                                             }}
                                             placeholder="Subsection Video Title"
-                                            className="flex-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB]"
+                                            className="flex-1 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white dark:placeholder-slate-500 outline-none focus:border-[#2563EB]"
                                           />
                                         </div>
 
                                         <button
                                           type="button"
                                           onClick={() => removeVideoFromSubsection(secIdx, subIdx, vid.id)}
-                                          className="text-slate-400 hover:text-rose-500 transition-colors"
+                                          className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
                                           title="Remove Video"
                                         >
                                           <Trash2 className="h-3.5 w-3.5" />
@@ -841,7 +841,7 @@ export default function AdminNewCoursePage() {
                                               updated[secIdx].subsections![subIdx].videos[vidIdx].videoType = e.target.value as VideoSourceType;
                                               setSections(updated);
                                             }}
-                                            className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-800 outline-none"
+                                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2 py-1.5 text-[11px] font-medium text-slate-800 dark:text-white outline-none"
                                           >
                                             <option value="url">Paste Private URL</option>
                                             <option value="upload">Upload Video File</option>
@@ -859,11 +859,11 @@ export default function AdminNewCoursePage() {
                                                 setSections(updated);
                                               }}
                                               placeholder="https://www.youtube.com/watch?v=... or Vimeo / MP4 link"
-                                              className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-mono text-slate-700 outline-none"
+                                              className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2.5 py-1.5 text-[11px] font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-500 outline-none"
                                             />
                                           ) : (
                                             <div className="flex items-center gap-2">
-                                              <label className="flex items-center gap-1.5 cursor-pointer rounded-md border border-dashed border-blue-300 bg-blue-50/50 px-3 py-1 text-[11px] font-bold text-[#2563EB] hover:bg-blue-100 transition-colors">
+                                              <label className="flex items-center gap-1.5 cursor-pointer rounded-md border border-dashed border-blue-300 dark:border-blue-700/60 bg-blue-50/50 dark:bg-blue-950/40 px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
                                                 <Upload className="h-3 w-3" /> Select Local MP4
                                                 <input
                                                   type="file"
@@ -878,7 +878,7 @@ export default function AdminNewCoursePage() {
                                                   }
                                                 />
                                               </label>
-                                              <span className="truncate text-[10px] text-slate-500 max-w-[140px]">
+                                              <span className="truncate text-[10px] text-slate-500 dark:text-slate-400 max-w-[140px]">
                                                 {vid.videoUrl ? "File loaded" : "No file chosen"}
                                               </span>
                                             </div>
@@ -896,7 +896,7 @@ export default function AdminNewCoursePage() {
                                                 durationFormatted: vid.durationFormatted,
                                               })
                                             }
-                                            className="flex w-full items-center justify-center gap-1 rounded-md bg-blue-100/70 px-2 py-1.5 text-[11px] font-bold text-[#2563EB] hover:bg-blue-200 transition-colors cursor-pointer"
+                                            className="flex w-full items-center justify-center gap-1 rounded-md bg-blue-100/70 dark:bg-blue-950/60 px-2 py-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors cursor-pointer"
                                             title="Test In-App Player"
                                           >
                                             <PlayCircle className="h-3.5 w-3.5" /> Preview
@@ -909,7 +909,7 @@ export default function AdminNewCoursePage() {
                                   <button
                                     type="button"
                                     onClick={() => addVideoToSubsection(secIdx, subIdx)}
-                                    className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] hover:text-blue-800 transition-colors cursor-pointer"
+                                    className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors cursor-pointer"
                                   >
                                     <Plus className="h-3 w-3" /> Add video to subsection
                                   </button>
@@ -918,21 +918,21 @@ export default function AdminNewCoursePage() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-[11px] text-slate-400 italic">No subsections added yet. You can add direct videos below.</p>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">No subsections added yet. You can add direct videos below.</p>
                         )}
                       </div>
 
                       {/* DIRECT SECTION VIDEOS */}
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                            <Video className="h-4 w-4 text-[#2563EB]" />
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-white">
+                            <Video className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                             <span>Direct Section Videos ({section.directVideos?.length || 0})</span>
                           </div>
                           <button
                             type="button"
                             onClick={() => addDirectVideo(secIdx)}
-                            className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                            className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                           >
                             <Plus className="h-3 w-3" /> Add Video
                           </button>
@@ -941,7 +941,7 @@ export default function AdminNewCoursePage() {
                         {section.directVideos?.map((vid, vidIdx) => (
                           <div
                             key={vid.id}
-                            className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-3.5 space-y-2.5"
+                            className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151D2E] p-3.5 space-y-2.5"
                           >
                             <div className="flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2 flex-1">
@@ -957,14 +957,14 @@ export default function AdminNewCoursePage() {
                                     setSections(updated);
                                   }}
                                   placeholder="Video Lecture Title"
-                                  className="flex-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-900 outline-none focus:border-[#2563EB]"
+                                  className="flex-1 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white dark:placeholder-slate-500 outline-none focus:border-[#2563EB]"
                                 />
                               </div>
 
                               <button
                                 type="button"
                                 onClick={() => removeDirectVideo(secIdx, vid.id)}
-                                className="text-slate-400 hover:text-rose-600 transition-colors"
+                                className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </button>
@@ -980,7 +980,7 @@ export default function AdminNewCoursePage() {
                                     updated[secIdx].directVideos![vidIdx].videoType = e.target.value as VideoSourceType;
                                     setSections(updated);
                                   }}
-                                  className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-800 outline-none"
+                                  className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2 py-1.5 text-[11px] font-medium text-slate-800 dark:text-white outline-none"
                                 >
                                   <option value="url">Paste Private URL</option>
                                   <option value="upload">Upload Video File</option>
@@ -998,11 +998,11 @@ export default function AdminNewCoursePage() {
                                       setSections(updated);
                                     }}
                                     placeholder="https://www.youtube.com/watch?v=... or Vimeo / MP4 link"
-                                    className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-mono text-slate-700 outline-none"
+                                    className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2.5 py-1.5 text-[11px] font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-500 outline-none"
                                   />
                                 ) : (
                                   <div className="flex items-center gap-2">
-                                    <label className="flex items-center gap-1.5 cursor-pointer rounded-md border border-dashed border-blue-300 bg-blue-50/50 px-3 py-1 text-[11px] font-bold text-[#2563EB] hover:bg-blue-100 transition-colors">
+                                    <label className="flex items-center gap-1.5 cursor-pointer rounded-md border border-dashed border-blue-300 dark:border-blue-700/60 bg-blue-50/50 dark:bg-blue-950/40 px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
                                       <Upload className="h-3 w-3" /> Select Local MP4
                                       <input
                                         type="file"
@@ -1017,7 +1017,7 @@ export default function AdminNewCoursePage() {
                                         }
                                       />
                                     </label>
-                                    <span className="truncate text-[10px] text-slate-500 max-w-[140px]">
+                                    <span className="truncate text-[10px] text-slate-500 dark:text-slate-400 max-w-[140px]">
                                       {vid.videoUrl ? "File loaded" : "No file chosen"}
                                     </span>
                                   </div>
@@ -1035,7 +1035,7 @@ export default function AdminNewCoursePage() {
                                       durationFormatted: vid.durationFormatted,
                                     })
                                   }
-                                  className="flex w-full items-center justify-center gap-1 rounded-md bg-blue-100/70 px-2 py-1.5 text-[11px] font-bold text-[#2563EB] hover:bg-blue-200 transition-colors cursor-pointer"
+                                  className="flex w-full items-center justify-center gap-1 rounded-md bg-blue-100/70 dark:bg-blue-950/60 px-2 py-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors cursor-pointer"
                                   title="Test In-App Player"
                                 >
                                   <PlayCircle className="h-3.5 w-3.5" /> Preview
@@ -1057,39 +1057,39 @@ export default function AdminNewCoursePage() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="rounded-[22px] border border-white/70 bg-white/85 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-6"
+                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-6"
                 >
-                  <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-[#2563EB]">
+                  <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400">
                       <Lock className="h-4 w-4" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900">Step 3: Anti-Skip Options & Integrity Rules</h2>
-                      <p className="text-xs text-slate-500 font-medium">
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 3: Anti-Skip Options & Integrity Rules</h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Prevent video scrubbing and enforce sequential milestones before unlocking assignments
                       </p>
                     </div>
                   </div>
 
                   {/* Banner Alert */}
-                  <div className="rounded-2xl border border-blue-100 bg-[#EFF6FF]/70 p-4 text-xs text-slate-700">
-                    <div className="flex items-center gap-2 font-bold text-[#2563EB]">
+                  <div className="rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-[#EFF6FF]/70 dark:bg-blue-950/30 p-4 text-xs text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center gap-2 font-bold text-[#2563EB] dark:text-blue-400">
                       <Sparkles className="h-4 w-4" />
                       Anti-Skip Video Protection Enforcement
                     </div>
-                    <p className="mt-1 leading-relaxed text-slate-600">
+                    <p className="mt-1 leading-relaxed text-slate-600 dark:text-slate-400">
                       When enabled, students cannot skip or fast-forward unwatched video segments. They must complete 100% of the lecture to unlock the section assignment.
                     </p>
                   </div>
 
                   {/* Anti-Skip Toggles */}
                   <div className="space-y-3">
-                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-4 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600/50 transition-colors">
                       <div className="space-y-0.5">
-                        <div className="text-xs font-bold text-slate-900">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">
                           Enforce 100% Video Watch (No Fast-Forwarding)
                         </div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
                           Disables seek forward bar for unwatched portions of the video.
                         </div>
                       </div>
@@ -1101,12 +1101,12 @@ export default function AdminNewCoursePage() {
                       />
                     </label>
 
-                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-4 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600/50 transition-colors">
                       <div className="space-y-0.5">
-                        <div className="text-xs font-bold text-slate-900">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">
                           Lock Section Assignment Until Video Is Finished
                         </div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
                           Students cannot submit or take the assignment without watching all section videos.
                         </div>
                       </div>
@@ -1118,12 +1118,12 @@ export default function AdminNewCoursePage() {
                       />
                     </label>
 
-                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-4 cursor-pointer hover:border-blue-300 transition-colors">
+                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-4 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600/50 transition-colors">
                       <div className="space-y-0.5">
-                        <div className="text-xs font-bold text-slate-900">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">
                           Enforce Sequential Stage Progression
                         </div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
                           Section N+1 remains locked until Section N video and assignment are both completed.
                         </div>
                       </div>
@@ -1137,15 +1137,15 @@ export default function AdminNewCoursePage() {
                   </div>
 
                   {/* Playback Speed Cap */}
-                  <div className="rounded-2xl border border-slate-200/90 bg-slate-50/70 p-4 flex items-center justify-between">
+                  <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] p-4 flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-bold text-slate-900">Maximum Allowed Playback Speed</div>
-                      <div className="text-[11px] text-slate-500">Limits acceleration to ensure material retention</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">Maximum Allowed Playback Speed</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">Limits acceleration to ensure material retention</div>
                     </div>
                     <select
                       value={playbackSpeedCap}
                       onChange={(e) => setPlaybackSpeedCap(e.target.value)}
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-800 outline-none"
+                      className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3 py-1 text-xs font-bold text-slate-800 dark:text-white outline-none"
                     >
                       <option value="1.0x">1.0x (Normal speed only)</option>
                       <option value="1.25x">1.25x</option>
@@ -1165,12 +1165,12 @@ export default function AdminNewCoursePage() {
                   exit={{ opacity: 0, y: -8 }}
                   className="space-y-5"
                 >
-                  <div className="rounded-2xl border border-emerald-100 bg-[#ECFDF5]/70 p-4 text-xs text-slate-700">
-                    <div className="flex items-center gap-2 font-bold text-emerald-700">
+                  <div className="rounded-2xl border border-emerald-100 dark:border-emerald-900/50 bg-[#ECFDF5]/70 dark:bg-emerald-950/30 p-4 text-xs text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400">
                       <ClipboardCheck className="h-4 w-4" />
                       Section Milestones & Minimum Passing Thresholds
                     </div>
-                    <p className="mt-1 leading-relaxed text-slate-600">
+                    <p className="mt-1 leading-relaxed text-slate-600 dark:text-slate-400">
                       Specify the evaluation criteria and pass out marks for each section. Students must achieve this score to unlock subsequent sections.
                     </p>
                   </div>
@@ -1178,25 +1178,25 @@ export default function AdminNewCoursePage() {
                   {sections.map((section, secIdx) => (
                     <div
                       key={section.id}
-                      className="rounded-[22px] border border-slate-200 bg-white p-5 sm:p-6 shadow-xs space-y-4"
+                      className="rounded-[22px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-5 sm:p-6 shadow-xs space-y-4"
                     >
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                         <div className="flex items-center gap-2.5">
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 dark:bg-slate-800 text-xs font-bold text-white">
                             {secIdx + 1}
                           </span>
-                          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                          <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide">
                             Assignment for: {section.title}
                           </h3>
                         </div>
-                        <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800">
+                        <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-300">
                           Section {secIdx + 1} Requirement
                         </span>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="sm:col-span-2">
-                          <label className="block text-[11px] font-bold text-slate-700 uppercase">
+                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase">
                             Assignment Title
                           </label>
                           <input
@@ -1208,12 +1208,12 @@ export default function AdminNewCoursePage() {
                               setSections(updated);
                             }}
                             placeholder="e.g. Stage 1 MCQ Assessment or Coding Test"
-                            className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                            className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-medium text-slate-900 dark:text-white dark:placeholder-slate-500 outline-none focus:border-[#2563EB]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-bold text-slate-700 uppercase">
+                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase">
                             Assessment Type
                           </label>
                           <select
@@ -1223,7 +1223,7 @@ export default function AdminNewCoursePage() {
                               updated[secIdx].assignment.type = e.target.value as "MCQ" | "Coding Challenge" | "Project Submission" | "Architectural Design";
                               setSections(updated);
                             }}
-                            className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                            className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                           >
                             <option value="MCQ">MCQ Test</option>
                             <option value="Coding Challenge">Coding Challenge</option>
@@ -1234,7 +1234,7 @@ export default function AdminNewCoursePage() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 uppercase">
+                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase">
                           Instructions & Problem Statement
                         </label>
                         <textarea
@@ -1245,19 +1245,19 @@ export default function AdminNewCoursePage() {
                             updated[secIdx].assignment.description = e.target.value;
                             setSections(updated);
                           }}
-                          className="mt-1 w-full rounded-lg border border-slate-200 p-2.5 text-xs text-slate-800 outline-none focus:border-[#2563EB]"
+                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] p-2.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-500 outline-none focus:border-[#2563EB]"
                         />
                       </div>
 
                       {/* PASSING OUT MARK THRESHOLD */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-slate-50 p-3.5 border border-slate-100">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-slate-50 dark:bg-[#151D2E] p-3.5 border border-slate-100 dark:border-slate-800">
                         <div className="flex items-center gap-2">
-                          <Sliders className="h-4 w-4 text-[#2563EB]" />
+                          <Sliders className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                           <div>
-                            <div className="text-xs font-bold text-slate-900">
+                            <div className="text-xs font-bold text-slate-900 dark:text-white">
                               Minimum Passing Mark to Unlock Next Stage
                             </div>
-                            <div className="text-[11px] text-slate-500">
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
                               Score required for the student to pass this milestone
                             </div>
                           </div>
@@ -1274,9 +1274,9 @@ export default function AdminNewCoursePage() {
                               updated[secIdx].assignment.minPassingScore = Number(e.target.value);
                               setSections(updated);
                             }}
-                            className="w-18 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-center text-xs font-bold text-slate-900"
+                            className="w-18 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-center text-xs font-bold text-slate-900 dark:text-white"
                           />
-                          <span className="text-xs font-bold text-slate-500">%</span>
+                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">%</span>
                         </div>
                       </div>
                     </div>
@@ -1291,22 +1291,22 @@ export default function AdminNewCoursePage() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="rounded-[22px] border border-white/70 bg-white/85 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-6"
+                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-6"
                 >
-                  <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-[#2563EB]">
+                  <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400">
                       <Award className="h-4 w-4" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900">Step 5: Accredited Certificate & Unlock Criteria</h2>
-                      <p className="text-xs text-slate-500 font-medium">
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 5: Accredited Certificate & Unlock Criteria</h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Configure verified credential issued upon completing all course stages
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                       Accredited Certificate Title
                     </label>
                     <input
@@ -1314,13 +1314,13 @@ export default function AdminNewCoursePage() {
                       value={certificateTitle}
                       onChange={(e) => setCertificateTitle(e.target.value)}
                       placeholder="e.g. Certified Enterprise Cloud Architect"
-                      className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none focus:border-[#2563EB]"
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white dark:placeholder-slate-500 outline-none focus:border-[#2563EB]"
                     />
                   </div>
 
                   {/* Certificate Unlock Rules */}
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-3">
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-[#151D2E] p-5 space-y-3">
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                       Automated Certificate Unlock Rules
                     </h4>
 
@@ -1331,7 +1331,7 @@ export default function AdminNewCoursePage() {
                         onChange={(e) => setRequireAllVideosComplete(e.target.checked)}
                         className="h-4 w-4 accent-[#2563EB]"
                       />
-                      <span className="text-xs font-semibold text-slate-700">
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                         100% of all section video lectures completed with Anti-Skip verification
                       </span>
                     </label>
@@ -1343,7 +1343,7 @@ export default function AdminNewCoursePage() {
                         onChange={(e) => setRequireAllAssignmentsPassed(e.target.checked)}
                         className="h-4 w-4 accent-[#2563EB]"
                       />
-                      <span className="text-xs font-semibold text-slate-700">
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                         All section milestone assignments submitted and scored above passing threshold
                       </span>
                     </label>
@@ -1351,7 +1351,7 @@ export default function AdminNewCoursePage() {
 
                   {/* Certificate Live Preview */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                       Live Certificate Preview
                     </label>
                     <div className="rounded-2xl border-4 border-double border-amber-300/80 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-6 text-white shadow-xl space-y-4">
@@ -1385,12 +1385,12 @@ export default function AdminNewCoursePage() {
             </AnimatePresence>
 
             {/* Bottom Multi-Step Navigation Buttons */}
-            <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
+            <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#111827] p-4 shadow-xs">
               {currentStep > 1 ? (
                 <button
                   type="button"
                   onClick={() => setCurrentStep((currentStep - 1) as StepNumber)}
-                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" /> Previous Step
                 </button>
@@ -1431,44 +1431,44 @@ export default function AdminNewCoursePage() {
 
           {/* RIGHT 1 COL: Live Course Publishing Summary Sidebar */}
           <div className="space-y-6">
-            <div className="sticky top-20 rounded-[22px] border border-white/70 bg-white/85 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5">
-              <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">
+            <div className="sticky top-20 rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
                 Course Workflow Summary
               </h3>
 
               {/* Quick Stat Cards */}
               <div className="grid grid-cols-2 gap-2 text-center text-xs">
-                <div className="rounded-xl bg-blue-50 p-3">
-                  <div className="text-lg font-extrabold text-[#2563EB]">{sections.length}</div>
-                  <div className="text-[11px] font-semibold text-slate-600">Sections</div>
+                <div className="rounded-xl bg-blue-50 dark:bg-blue-950/40 p-3">
+                  <div className="text-lg font-extrabold text-[#2563EB] dark:text-blue-400">{sections.length}</div>
+                  <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Sections</div>
                 </div>
-                <div className="rounded-xl bg-purple-50 p-3">
-                  <div className="text-lg font-extrabold text-purple-700">{totalSubsections}</div>
-                  <div className="text-[11px] font-semibold text-slate-600">Subsections</div>
+                <div className="rounded-xl bg-purple-50 dark:bg-purple-950/40 p-3">
+                  <div className="text-lg font-extrabold text-purple-700 dark:text-purple-300">{totalSubsections}</div>
+                  <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Subsections</div>
                 </div>
-                <div className="rounded-xl bg-emerald-50 p-3">
-                  <div className="text-lg font-extrabold text-emerald-700">{totalVideos}</div>
-                  <div className="text-[11px] font-semibold text-slate-600">Total Videos</div>
+                <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 p-3">
+                  <div className="text-lg font-extrabold text-emerald-700 dark:text-emerald-400">{totalVideos}</div>
+                  <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Total Videos</div>
                 </div>
-                <div className="rounded-xl bg-amber-50 p-3">
-                  <div className="text-lg font-extrabold text-amber-700">{sections.length}</div>
-                  <div className="text-[11px] font-semibold text-slate-600">Assignments</div>
+                <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3">
+                  <div className="text-lg font-extrabold text-amber-700 dark:text-amber-400">{sections.length}</div>
+                  <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Assignments</div>
                 </div>
               </div>
 
               {/* Anti-Skip & Certification Meta */}
-              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 space-y-2 text-xs">
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] p-4 space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-500 font-medium">Track:</span>
-                  <span className="font-bold text-slate-900">{track}</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Track:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{track}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 font-medium">Anti-Skip:</span>
-                  <span className="font-bold text-emerald-700">100% Enforced</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Anti-Skip:</span>
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">100% Enforced</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 font-medium">Avg Pass Mark:</span>
-                  <span className="font-bold text-slate-900">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Avg Pass Mark:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
                     {Math.round(
                       sections.reduce((acc, s) => acc + s.assignment.minPassingScore, 0) /
                         (sections.length || 1)
@@ -1476,9 +1476,9 @@ export default function AdminNewCoursePage() {
                     %
                   </span>
                 </div>
-                <div className="flex justify-between border-t border-slate-200/80 pt-2 text-sm font-extrabold">
-                  <span className="text-slate-700">Course Price:</span>
-                  <span className="text-[#2563EB]">₹{price.toLocaleString("en-IN")}</span>
+                <div className="flex justify-between border-t border-slate-200/80 dark:border-slate-800 pt-2 text-sm font-extrabold">
+                  <span className="text-slate-700 dark:text-slate-300">Course Price:</span>
+                  <span className="text-[#2563EB] dark:text-blue-400">₹{price.toLocaleString("en-IN")}</span>
                 </div>
               </div>
 

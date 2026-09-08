@@ -31,7 +31,7 @@ export default function RootError({
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center p-6">
-      <div className="max-w-md w-full text-center space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl shadow-xl">
+      <div className="max-w-md w-full text-center space-y-6 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-8 rounded-2xl shadow-xl">
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400">
           <AlertCircle className="w-7 h-7" />
         </div>

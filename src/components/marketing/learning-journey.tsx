@@ -45,7 +45,7 @@ export function LearningJourney() {
   }, [reducedMotion]);
 
   return (
-    <section ref={sectionRef} className="bg-white py-24">
+    <section ref={sectionRef} className="bg-white dark:bg-[#0B1020] py-24">
       <div className="mx-auto max-w-[1280px] px-6 lg:px-16">
         <Reveal className="mb-16 max-w-xl">
           <span className="text-label text-primary-blue">The Learning Journey</span>
@@ -56,7 +56,7 @@ export function LearningJourney() {
 
         <div className="relative">
           <div
-            className="absolute top-6 right-0 left-0 hidden h-px bg-border md:block"
+            className="absolute top-6 right-0 left-0 hidden h-px bg-border dark:bg-slate-800 md:block"
             aria-hidden
           >
             <div
@@ -70,7 +70,7 @@ export function LearningJourney() {
             {STEPS.map((step, i) => (
               <Reveal key={step.title} variant="fade-up" delay={reducedMotion ? 0 : i * 0.08}>
                 <div className="relative flex flex-col items-center text-center md:items-start md:text-left">
-                  <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary-blue bg-white">
+                  <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary-blue bg-white dark:bg-[#111827]">
                     <step.icon className="h-5 w-5 text-primary-blue" />
                   </div>
                   <h3 className="text-h3 mt-4 text-text-heading">{step.title}</h3>

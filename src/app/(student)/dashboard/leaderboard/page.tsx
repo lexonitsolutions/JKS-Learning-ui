@@ -65,7 +65,7 @@ export default function LeaderboardPage() {
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
         {/* Top Header Banner with Podium */}
         <Reveal variant="fade-up">
-          <div className="relative overflow-hidden rounded-[24px] border border-white/70 bg-gradient-to-r from-amber-50/60 via-white to-blue-50/40 p-6 sm:p-8 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+          <div className="relative overflow-hidden rounded-[24px] border border-white/70 bg-gradient-to-r from-amber-50/60 via-white to-blue-50/40 p-6 sm:p-8 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-gradient-to-r dark:from-[#151D2E] dark:via-[#111827] dark:to-[#0B1020] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               {/* Left Title */}
               <div>
@@ -74,10 +74,10 @@ export default function LeaderboardPage() {
                     <Trophy className="h-6 w-6" />
                   </div>
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                       Leaderboard
                     </h2>
-                    <p className="text-xs sm:text-sm font-medium text-amber-600 flex items-center gap-1.5 mt-0.5">
+                    <p className="text-xs sm:text-sm font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1.5 mt-0.5">
                       <Sparkles className="h-3.5 w-3.5" />
                       <span>See who&apos;s leading the way on JKS Learning today</span>
                     </p>
@@ -89,11 +89,11 @@ export default function LeaderboardPage() {
               <div className="flex items-end justify-center gap-3 sm:gap-4 self-center lg:self-auto">
                 {/* 2nd Place */}
                 <div className="flex flex-col items-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 border-2 border-slate-300 font-bold text-xs text-slate-700 shadow-sm">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 border-2 border-slate-300 font-bold text-xs text-slate-700 shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200">
                     PR
                   </div>
-                  <span className="text-[11px] font-bold text-slate-800 mt-1">Peeyush</span>
-                  <div className="mt-1 flex h-14 w-16 items-center justify-center rounded-t-xl bg-slate-200/90 text-sm font-black text-slate-600">
+                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">Peeyush</span>
+                  <div className="mt-1 flex h-14 w-16 items-center justify-center rounded-t-xl bg-slate-200/90 text-sm font-black text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     2
                   </div>
                 </div>
@@ -101,10 +101,10 @@ export default function LeaderboardPage() {
                 {/* 1st Place (Winner) */}
                 <div className="flex flex-col items-center -translate-y-2">
                   <Crown className="h-5 w-5 text-amber-500 fill-amber-400 mb-0.5" />
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 border-2 border-amber-400 font-bold text-sm text-amber-800 shadow-md">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 border-2 border-amber-400 font-bold text-sm text-amber-800 shadow-md dark:bg-amber-950/60 dark:border-amber-500 dark:text-amber-200">
                     SJ
                   </div>
-                  <span className="text-xs font-black text-amber-600 mt-1">Satish</span>
+                  <span className="text-xs font-black text-amber-600 dark:text-amber-400 mt-1">Satish</span>
                   <div className="mt-1 flex h-20 w-20 items-center justify-center rounded-t-xl bg-gradient-to-t from-amber-400 to-amber-300 text-lg font-black text-white shadow-sm">
                     1
                   </div>
@@ -112,11 +112,11 @@ export default function LeaderboardPage() {
 
                 {/* 3rd Place */}
                 <div className="flex flex-col items-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 border-2 border-amber-600/40 font-bold text-xs text-amber-800 shadow-sm">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 border-2 border-amber-600/40 font-bold text-xs text-amber-800 shadow-sm dark:bg-amber-950/40 dark:border-amber-600/40 dark:text-amber-300">
                     AD
                   </div>
-                  <span className="text-[11px] font-bold text-slate-800 mt-1">Akkal</span>
-                  <div className="mt-1 flex h-11 w-16 items-center justify-center rounded-t-xl bg-amber-100 text-sm font-black text-amber-700">
+                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">Akkal</span>
+                  <div className="mt-1 flex h-11 w-16 items-center justify-center rounded-t-xl bg-amber-100 text-sm font-black text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
                     3
                   </div>
                 </div>
@@ -130,14 +130,14 @@ export default function LeaderboardPage() {
           {/* LEFT: Top Streak Maintainers (12 ranked cards) */}
           <div className="lg:col-span-7">
             <Reveal variant="fade-up">
-              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div>
-                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                       <Flame className="h-4 w-4 text-orange-500 fill-orange-500" />
                       <span>Top Streak Maintainers</span>
                     </h3>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                       Consistency is the key to mastery
                     </p>
                   </div>
@@ -155,12 +155,12 @@ export default function LeaderboardPage() {
                         key={m.name}
                         className={`relative flex flex-col items-center justify-between rounded-2xl border p-3.5 text-center transition-all duration-200 hover:-translate-y-1 hover:shadow-md ${
                           isTop1
-                            ? "border-amber-400 bg-amber-50/40 shadow-xs"
+                            ? "border-amber-400 bg-amber-50/40 shadow-xs dark:border-amber-500/60 dark:bg-amber-950/30"
                             : isTop2
-                              ? "border-orange-300 bg-orange-50/30 shadow-xs"
+                              ? "border-orange-300 bg-orange-50/30 shadow-xs dark:border-orange-500/50 dark:bg-orange-950/30"
                               : isTop3
-                                ? "border-amber-200 bg-amber-50/20 shadow-xs"
-                                : "border-slate-200/70 bg-slate-50/40 hover:bg-white"
+                                ? "border-amber-200 bg-amber-50/20 shadow-xs dark:border-amber-600/40 dark:bg-amber-950/20"
+                                : "border-slate-200/70 bg-slate-50/40 hover:bg-white dark:border-slate-800 dark:bg-[#151D2E]/60 dark:hover:bg-[#151D2E]"
                         }`}
                       >
                         {/* Rank Badge */}
@@ -172,7 +172,7 @@ export default function LeaderboardPage() {
                                 ? "bg-orange-400 text-white"
                                 : isTop3
                                   ? "bg-amber-600 text-white"
-                                  : "bg-slate-200 text-slate-600"
+                                  : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                           }`}
                         >
                           {m.rank}
@@ -191,13 +191,13 @@ export default function LeaderboardPage() {
                         </div>
 
                         {/* Name */}
-                        <div className="mt-2.5 text-xs font-bold text-slate-900 line-clamp-1">
+                        <div className="mt-2.5 text-xs font-bold text-slate-900 dark:text-white line-clamp-1">
                           {m.name}
                         </div>
 
                         {/* Streak Badge */}
                         <div className="mt-2 flex flex-col items-center">
-                          <span className="flex items-center gap-1 text-xs font-black text-slate-800">
+                          <span className="flex items-center gap-1 text-xs font-black text-slate-800 dark:text-slate-200">
                             <Flame className="h-3 w-3 text-orange-500 fill-orange-500" />
                             {m.streakDays}
                           </span>
@@ -216,14 +216,14 @@ export default function LeaderboardPage() {
           {/* RIGHT: Today's Top Solvers */}
           <div className="lg:col-span-5">
             <Reveal variant="fade-up">
-              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div>
-                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                      <Code2 className="h-4 w-4 text-[#2563EB]" />
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <Code2 className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                       <span>Today&apos;s Top Solvers</span>
                     </h3>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                       Questions solved on JKS Learning
                     </p>
                   </div>
@@ -232,7 +232,7 @@ export default function LeaderboardPage() {
                   <select
                     value={period}
                     onChange={(e) => setPeriod(e.target.value)}
-                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 outline-none cursor-pointer"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-white outline-none cursor-pointer"
                   >
                     <option value="Today">Today</option>
                     <option value="This Week">This Week</option>
@@ -245,31 +245,31 @@ export default function LeaderboardPage() {
                   {TOP_SOLVERS.map((s) => (
                     <div
                       key={s.name}
-                      className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-white hover:bg-slate-50 transition-colors"
+                      className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#151D2E] hover:bg-slate-50 dark:hover:bg-[#1B2538] transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <div
                           className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
                             s.rank === 1
-                              ? "bg-amber-100 text-amber-700 font-black"
+                              ? "bg-amber-100 text-amber-700 font-black dark:bg-amber-950/60 dark:text-amber-300"
                               : s.rank === 2
-                                ? "bg-slate-200 text-slate-700"
+                                ? "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                                 : s.rank === 3
-                                  ? "bg-amber-50 text-amber-800"
+                                  ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
                                   : "text-slate-400"
                           }`}
                         >
                           {s.rank}
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-slate-900">{s.name}</div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-white">{s.name}</div>
                           <div className="text-[10px] text-slate-400">{s.track}</div>
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <div className="text-xs font-black text-[#2563EB]">{s.solved} Solved</div>
-                        <div className="text-[10px] font-semibold text-emerald-600">{s.points} pts</div>
+                        <div className="text-xs font-black text-[#2563EB] dark:text-blue-400">{s.solved} Solved</div>
+                        <div className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">{s.points} pts</div>
                       </div>
                     </div>
                   ))}

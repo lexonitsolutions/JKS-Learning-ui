@@ -84,20 +84,20 @@ export function AboutJourneyHorizontal() {
   const reducedMotion = useReducedMotion();
 
   return (
-    <section className="relative bg-bg-light text-text-heading py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-16 border-t border-border overflow-hidden">
+    <section className="relative bg-bg-light dark:bg-[#0B1020] text-text-heading dark:text-white py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-16 border-t border-border dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
       <div className="mx-auto max-w-[1280px] space-y-8 sm:space-y-12">
         {/* Clean Section Header (Numbers and play/pause buttons removed) */}
-        <div className="space-y-2.5 max-w-2xl border-b border-border pb-6 sm:pb-8">
-          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 border border-blue-200 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-blue">
-            <Sparkles className="h-3.5 w-3.5 text-primary-blue" />
+        <div className="space-y-2.5 max-w-2xl border-b border-border dark:border-slate-800/80 pb-6 sm:pb-8">
+          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-blue dark:text-blue-400">
+            <Sparkles className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" />
             <span>Continuous Learning Journey</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-text-heading leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-text-heading dark:text-white leading-tight">
             FROM CURIOUS
             <br />
             TO CAPABLE.
           </h2>
-          <p className="text-xs sm:text-sm text-text-body leading-relaxed">
+          <p className="text-xs sm:text-sm text-text-body dark:text-slate-300 leading-relaxed">
             A continuous 5-stage transformation that turns curiosity into verified competence and career readiness.
           </p>
         </div>
@@ -128,11 +128,11 @@ export function AboutJourneyHorizontal() {
               return (
                 <div
                   key={`${stage.step}-${idx}`}
-                  className="w-[300px] sm:w-[360px] lg:w-[390px] shrink-0 rounded-[32px] border border-border bg-white p-6 sm:p-8 transition-all duration-300 hover:border-primary-blue hover:shadow-[0_20px_50px_rgba(37,99,235,0.12)] hover:-translate-y-1 space-y-5 flex flex-col justify-between shadow-xs cursor-default"
+                  className="w-[300px] sm:w-[360px] lg:w-[390px] shrink-0 rounded-[32px] border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 sm:p-8 transition-all duration-300 hover:border-primary-blue dark:hover:border-blue-500/80 hover:shadow-[0_20px_50px_rgba(37,99,235,0.12)] dark:hover:shadow-black/60 hover:-translate-y-1 space-y-5 flex flex-col justify-between shadow-xs cursor-default"
                 >
                   {/* Card Top Pill */}
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-2xl font-black text-primary-blue">
+                    <span className="font-mono text-2xl font-black text-primary-blue dark:text-blue-400">
                       {stage.step}
                     </span>
                     <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr ${stage.color} text-white shadow-md`}>
@@ -142,27 +142,27 @@ export function AboutJourneyHorizontal() {
 
                   {/* Card Heading & Subtitle */}
                   <div className="space-y-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 font-mono">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 font-mono">
                       {stage.pill}
                     </span>
-                    <h3 className="text-2xl font-extrabold text-text-heading tracking-tight">
+                    <h3 className="text-2xl font-extrabold text-text-heading dark:text-white tracking-tight">
                       {stage.title}
                     </h3>
-                    <p className="text-xs sm:text-sm font-semibold text-primary-blue leading-snug">
+                    <p className="text-xs sm:text-sm font-semibold text-primary-blue dark:text-blue-400 leading-snug">
                       {stage.subtitle}
                     </p>
                   </div>
 
                   {/* Narrative Description */}
-                  <p className="text-xs sm:text-sm text-text-body leading-relaxed">
+                  <p className="text-xs sm:text-sm text-text-body dark:text-slate-300 leading-relaxed">
                     {stage.description}
                   </p>
 
                   {/* Highlights List */}
-                  <div className="border-t border-slate-100 pt-4 space-y-2">
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-2">
                     {stage.highlights.map((h, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs text-slate-700 font-medium">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                      <div key={i} className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                         <span>{h}</span>
                       </div>
                     ))}

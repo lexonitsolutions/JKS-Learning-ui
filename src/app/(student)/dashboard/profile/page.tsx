@@ -361,7 +361,7 @@ export default function StudentProfilePage() {
             {/* Profile Identity Card */}
             <Reveal variant="fade-up">
               <TiltCard>
-                <div className="relative overflow-hidden rounded-[24px] border border-white/70 bg-white/85 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+                <div className="relative overflow-hidden rounded-[24px] border border-white/70 bg-white/85 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
                   {/* Top Cover Banner (LinkedIn Style with Camera Button) */}
                   <div
                     className={`relative h-28 sm:h-32 w-full transition-all duration-500 overflow-hidden ${
@@ -400,7 +400,7 @@ export default function StudentProfilePage() {
                   {/* Profile Avatar & Info */}
                   <div className="relative px-5 pb-6 text-center">
                     {/* Overlapping Avatar */}
-                    <div className="relative mx-auto -mt-12 mb-3 flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-slate-900 shadow-md overflow-hidden group">
+                    <div className="relative mx-auto -mt-12 mb-3 flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-slate-900 shadow-md overflow-hidden group dark:border-slate-800">
                       <Image
                         src={avatar}
                         alt={name}
@@ -423,26 +423,26 @@ export default function StudentProfilePage() {
 
                     {/* Name & Edit Button */}
                     <div className="flex items-center justify-center gap-2">
-                      <h2 className="text-lg font-extrabold text-slate-900">{name}</h2>
+                      <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">{name}</h2>
                       <button
                         type="button"
                         onClick={() => setIsEditModalOpen(true)}
-                        className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors cursor-pointer"
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors cursor-pointer dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
                         title="Edit Profile"
                       >
                         <Pencil className="h-3 w-3" />
                       </button>
                     </div>
 
-                    <p className="mt-0.5 text-xs font-semibold text-[#2563EB]">{role}</p>
-                    <p className="mt-2 text-xs text-slate-500 leading-relaxed font-normal">{bio}</p>
+                    <p className="mt-0.5 text-xs font-semibold text-[#2563EB] dark:text-blue-400">{role}</p>
+                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-normal">{bio}</p>
 
                     {/* Details Pill Strip */}
-                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2 border-t border-slate-100 pt-4 text-[11px] font-medium text-slate-600">
-                      <span className="flex items-center gap-1 rounded-full bg-slate-50 px-2.5 py-1">
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2 border-t border-slate-100 dark:border-slate-800 pt-4 text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                      <span className="flex items-center gap-1 rounded-full bg-slate-50 dark:bg-[#151D2E] dark:text-slate-300 px-2.5 py-1">
                         <Globe className="h-3 w-3 text-slate-400" /> {location}
                       </span>
-                      <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-[#2563EB]">
+                      <span className="flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 font-semibold text-[#2563EB] dark:text-blue-400">
                         <BookOpen className="h-3 w-3" /> {enrolledTrack}
                       </span>
                     </div>
@@ -454,10 +454,10 @@ export default function StudentProfilePage() {
             {/* Your Streak Card */}
             <Reveal variant="fade-up">
               <TiltCard>
-                <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+                <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
                   {/* Streak Card Header with Public Toggle */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                    <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
                       <span>Your Streak</span>
                       <span className="text-base">🚀</span>
                     </div>
@@ -468,7 +468,7 @@ export default function StudentProfilePage() {
                         type="button"
                         onClick={() => setIsStreakPublic(!isStreakPublic)}
                         className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
-                          isStreakPublic ? "bg-emerald-500" : "bg-slate-300"
+                          isStreakPublic ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
                         }`}
                       >
                         <span
@@ -484,17 +484,17 @@ export default function StudentProfilePage() {
                   {/* 2 Streak Metric Boxes */}
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     {/* Current Streak */}
-                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 text-center">
-                      <div className="text-[11px] font-semibold text-slate-600">Current Streak</div>
-                      <div className="mt-1 text-xl sm:text-2xl font-extrabold text-emerald-600">
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 text-center dark:border-emerald-800/40 dark:bg-emerald-950/20">
+                      <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">Current Streak</div>
+                      <div className="mt-1 text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
                         12 days
                       </div>
                     </div>
 
                     {/* Longest Streak */}
-                    <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 text-center">
-                      <div className="text-[11px] font-semibold text-slate-600">Longest Streak</div>
-                      <div className="mt-1 text-xl sm:text-2xl font-extrabold text-amber-500">
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 text-center dark:border-amber-800/40 dark:bg-amber-950/20">
+                      <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">Longest Streak</div>
+                      <div className="mt-1 text-xl sm:text-2xl font-extrabold text-amber-500 dark:text-amber-400">
                         28 days
                       </div>
                     </div>
@@ -506,18 +506,18 @@ export default function StudentProfilePage() {
             {/* Badges & Verifications Card */}
             <Reveal variant="fade-up">
               <TiltCard>
-                <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                    <Award className="h-4 w-4 text-[#2563EB]" /> Verified Badges
+                <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <Award className="h-4 w-4 text-[#2563EB] dark:text-blue-400" /> Verified Badges
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">
+                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-300">
                       <CheckCircle2 className="h-3.5 w-3.5" /> Anti-Skip Certified
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#2563EB]">
+                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#2563EB] dark:border-blue-800/40 dark:bg-blue-950/30 dark:text-blue-300">
                       <BrainCircuit className="h-3.5 w-3.5" /> AI Mock Tier-1
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-700">
+                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-700 dark:border-purple-800/40 dark:bg-purple-950/30 dark:text-purple-300">
                       <Sparkles className="h-3.5 w-3.5" /> Stage 4 Master
                     </span>
                   </div>
@@ -530,14 +530,14 @@ export default function StudentProfilePage() {
           <div className="space-y-6 lg:col-span-8">
             {/* Section 1: Contributions */}
             <Reveal variant="fade-up">
-              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
                 {/* Section Header with Hamburger Icon and Public Toggle */}
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <div className="flex items-center gap-2 text-base font-bold text-slate-900">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <div className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                     <div className="flex flex-col gap-0.5">
-                      <span className="h-0.5 w-4 bg-slate-800 rounded-full" />
-                      <span className="h-0.5 w-4 bg-slate-800 rounded-full" />
-                      <span className="h-0.5 w-4 bg-slate-800 rounded-full" />
+                      <span className="h-0.5 w-4 bg-slate-800 dark:bg-slate-200 rounded-full" />
+                      <span className="h-0.5 w-4 bg-slate-800 dark:bg-slate-200 rounded-full" />
+                      <span className="h-0.5 w-4 bg-slate-800 dark:bg-slate-200 rounded-full" />
                     </div>
                     <span>Contributions</span>
                   </div>
@@ -547,7 +547,7 @@ export default function StudentProfilePage() {
                       type="button"
                       onClick={() => setIsContributionsPublic(!isContributionsPublic)}
                       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
-                        isContributionsPublic ? "bg-emerald-500" : "bg-slate-300"
+                        isContributionsPublic ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
                       }`}
                     >
                       <span
@@ -564,7 +564,7 @@ export default function StudentProfilePage() {
                 <div className="mt-4">
                   <div
                     onClick={() => setIsPlatformModalOpen(!isPlatformModalOpen)}
-                    className="flex cursor-pointer items-center justify-between rounded-xl bg-slate-50/80 px-4 py-3 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100"
+                    className="flex cursor-pointer items-center justify-between rounded-xl bg-slate-50/80 dark:bg-[#151D2E] px-4 py-3 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
                     <span>Connect with Platforms</span>
                     <Plus className="h-4 w-4 text-slate-400" />
@@ -572,23 +572,23 @@ export default function StudentProfilePage() {
 
                   {/* Connected Platforms Strip */}
                   {isPlatformModalOpen && (
-                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-2 rounded-xl border border-slate-100 bg-slate-50/50">
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151D2E]/50">
                       {connectedPlatforms.map((p) => {
                         const Icon = p.icon;
                         return (
                           <div
                             key={p.name}
-                            className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-slate-200/70 text-xs"
+                            className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#121A2A] border border-slate-200/70 dark:border-slate-800 text-xs"
                           >
                             <div className="flex items-center gap-2">
-                              <Icon className="h-4 w-4 text-slate-700" />
-                              <span className="font-semibold text-slate-800">{p.name}</span>
+                              <Icon className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">{p.name}</span>
                             </div>
                             <span
                               className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
                                 p.connected
-                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                  : "bg-slate-100 text-slate-500 cursor-pointer hover:bg-blue-50 hover:text-[#2563EB]"
+                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40"
+                                  : "bg-slate-100 text-slate-500 cursor-pointer hover:bg-blue-50 hover:text-[#2563EB] dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-blue-950/40 dark:hover:text-blue-400"
                               }`}
                             >
                               {p.connected ? "Linked" : "+ Link"}
@@ -601,16 +601,16 @@ export default function StudentProfilePage() {
                 </div>
 
                 {/* Contribution Heatmap Container */}
-                <div className="mt-4 rounded-2xl border border-slate-100 bg-white p-4 sm:p-5">
+                <div className="mt-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-4 sm:p-5">
                   {/* Heatmap Meta Bar */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-slate-600">
-                    <div className="font-bold text-slate-900 text-sm">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-400">
+                    <div className="font-bold text-slate-900 dark:text-white text-sm">
                       {totalContributions} contributions in - last year
                     </div>
                     <div className="flex items-center gap-2.5">
                       <button
                         type="button"
-                        className="text-slate-400 hover:text-slate-600"
+                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                         title="Contributions include watched lectures, completed stage assessments, and AI mock sessions."
                       >
                         <Info className="h-4 w-4" />
@@ -619,7 +619,7 @@ export default function StudentProfilePage() {
                         <select
                           value={selectedYear}
                           onChange={(e) => setSelectedYear(e.target.value)}
-                          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 outline-none cursor-pointer"
+                          className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-white outline-none cursor-pointer"
                         >
                           <option value="2026">2026</option>
                           <option value="2025">2025</option>
@@ -652,11 +652,11 @@ export default function StudentProfilePage() {
                         <div className="grid grid-flow-col grid-rows-7 gap-[3px] flex-1">
                           {heatmapWeeks.weeks.map((week, wIdx) =>
                             week.map((day, dIdx) => {
-                              let bg = "bg-slate-100";
-                              if (day.level === 1) bg = "bg-emerald-200";
-                              if (day.level === 2) bg = "bg-emerald-400";
-                              if (day.level === 3) bg = "bg-emerald-500";
-                              if (day.level === 4) bg = "bg-emerald-600";
+                              let bg = "bg-slate-100 dark:bg-slate-800";
+                              if (day.level === 1) bg = "bg-emerald-200 dark:bg-emerald-800/60";
+                              if (day.level === 2) bg = "bg-emerald-400 dark:bg-emerald-600/70";
+                              if (day.level === 3) bg = "bg-emerald-500 dark:bg-emerald-500";
+                              if (day.level === 4) bg = "bg-emerald-600 dark:bg-emerald-400";
 
                               return (
                                 <div
@@ -680,10 +680,10 @@ export default function StudentProfilePage() {
                         </span>
                         <div className="flex items-center gap-1">
                           <span className="text-[10px]">Less</span>
-                          <span className="h-2.5 w-2.5 rounded-[2px] bg-slate-100" />
-                          <span className="h-2.5 w-2.5 rounded-[2px] bg-emerald-200" />
-                          <span className="h-2.5 w-2.5 rounded-[2px] bg-emerald-400" />
-                          <span className="h-2.5 w-2.5 rounded-[2px] bg-emerald-600" />
+                          <span className="h-2.5 w-2.5 rounded-[2px] bg-slate-100 dark:bg-slate-800" />
+                          <span className="h-2.5 w-2.5 rounded-[2px] bg-emerald-200 dark:bg-emerald-800/60" />
+                          <span className="h-2.5 w-2.5 rounded-[2px] bg-emerald-400 dark:bg-emerald-600/70" />
+                          <span className="h-2.5 w-2.5 rounded-[2px] bg-emerald-600 dark:bg-emerald-400" />
                           <span className="text-[10px]">More</span>
                         </div>
                       </div>
@@ -695,14 +695,14 @@ export default function StudentProfilePage() {
 
             {/* Section 2: Stats (Questions & Assessments Solved) */}
             <Reveal variant="fade-up">
-              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
                 {/* Header with Hamburger icon and Public Toggle */}
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <div className="flex items-center gap-2 text-base font-bold text-slate-900">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <div className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                     <div className="flex flex-col gap-0.5">
-                      <span className="h-0.5 w-4 bg-slate-800 rounded-full" />
-                      <span className="h-0.5 w-4 bg-slate-800 rounded-full" />
-                      <span className="h-0.5 w-4 bg-slate-800 rounded-full" />
+                      <span className="h-0.5 w-4 bg-slate-800 dark:bg-slate-200 rounded-full" />
+                      <span className="h-0.5 w-4 bg-slate-800 dark:bg-slate-200 rounded-full" />
+                      <span className="h-0.5 w-4 bg-slate-800 dark:bg-slate-200 rounded-full" />
                     </div>
                     <span>Stats</span>
                   </div>
@@ -712,7 +712,7 @@ export default function StudentProfilePage() {
                       type="button"
                       onClick={() => setIsStatsPublic(!isStatsPublic)}
                       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
-                        isStatsPublic ? "bg-emerald-500" : "bg-slate-300"
+                        isStatsPublic ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
                       }`}
                     >
                       <span
@@ -726,9 +726,9 @@ export default function StudentProfilePage() {
                 </div>
 
                 {/* Sub Card: Interview Practice & Stage Assessments */}
-                <div className="mt-4 rounded-2xl border border-slate-100 bg-white p-5">
+                <div className="mt-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-5">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-orange-600 sm:text-slate-800">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-orange-600 sm:text-slate-800 dark:text-orange-400 sm:dark:text-slate-200">
                       <span>Interview Practice &amp; Stage Assessments</span>
                       <ExternalLink className="h-3 w-3 text-slate-400" />
                     </div>
@@ -757,7 +757,8 @@ export default function StudentProfilePage() {
                                 cx="30"
                                 cy="30"
                                 r={radius}
-                                stroke="#F1F5F9"
+                                stroke="currentColor"
+                                className="text-slate-100 dark:text-slate-800"
                                 strokeWidth="4.5"
                                 fill="transparent"
                               />
@@ -774,14 +775,14 @@ export default function StudentProfilePage() {
                                 className="transition-all duration-700"
                               />
                             </svg>
-                            <span className="absolute text-xs font-extrabold text-slate-800">
+                            <span className="absolute text-xs font-extrabold text-slate-800 dark:text-white">
                               {s.percent}%
                             </span>
                           </div>
 
                           {/* Labels */}
                           <div>
-                            <div className="text-xs font-bold text-slate-900 leading-tight">
+                            <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
                               {s.label}
                             </div>
                             <div className="mt-0.5 text-[11px] font-medium text-slate-400">
@@ -802,22 +803,22 @@ export default function StudentProfilePage() {
       {/* LINKEDIN-STYLE BANNER CUSTOMIZER MODAL */}
       {isBannerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-6 shadow-2xl space-y-4">
             <button
               type="button"
               onClick={() => setIsBannerModalOpen(false)}
-              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer"
+              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
 
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400">
                 <Camera className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Custom Profile Banner</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Custom Profile Banner</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Upload your LinkedIn-style banner or pick a developer theme
                 </p>
               </div>
@@ -825,9 +826,9 @@ export default function StudentProfilePage() {
 
             {/* Live Banner Preview Box */}
             <div className="mt-4">
-              <label className="text-xs font-bold text-slate-700">Preview</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Preview</label>
               <div
-                className={`mt-1.5 h-28 w-full rounded-2xl border border-slate-200 overflow-hidden shadow-inner flex items-center justify-center text-white text-xs font-bold ${
+                className={`mt-1.5 h-28 w-full rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-inner flex items-center justify-center text-white text-xs font-bold ${
                   bannerType === "preset" ? bannerVal : ""
                 }`}
                 style={
@@ -846,7 +847,7 @@ export default function StudentProfilePage() {
 
             {/* Option 1: Upload Custom File */}
             <div className="pt-2">
-              <label className="text-xs font-bold text-slate-700">Upload Custom Image</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Upload Custom Image</label>
               <input
                 type="file"
                 ref={bannerFileRef}
@@ -857,7 +858,7 @@ export default function StudentProfilePage() {
               <button
                 type="button"
                 onClick={() => bannerFileRef.current?.click()}
-                className="mt-1.5 w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-[#2563EB] bg-blue-50/50 py-3 text-xs font-bold text-[#2563EB] hover:bg-blue-50 transition-colors cursor-pointer"
+                className="mt-1.5 w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-[#2563EB] bg-blue-50/50 dark:bg-blue-950/20 py-3 text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
               >
                 <Upload className="h-4 w-4" />
                 <span>Upload from Device (PNG, JPG, WebP)</span>
@@ -866,17 +867,17 @@ export default function StudentProfilePage() {
 
             {/* Option 2: Choose Presets */}
             <div className="pt-2">
-              <label className="text-xs font-bold text-slate-700">Or Select Designer Themes</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Or Select Designer Themes</label>
               <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {BANNER_PRESETS.map((preset) => (
                   <button
                     key={preset.id}
                     type="button"
                     onClick={() => handleSelectPresetBanner(preset.className)}
-                    className="flex flex-col items-center gap-1.5 p-2 rounded-xl border border-slate-200 hover:border-[#2563EB] transition-colors cursor-pointer group"
+                    className="flex flex-col items-center gap-1.5 p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-[#2563EB] dark:hover:border-blue-500 transition-colors cursor-pointer group"
                   >
                     <div className={`h-8 w-full rounded-lg ${preset.className}`} />
-                    <span className="text-[11px] font-semibold text-slate-700 group-hover:text-[#2563EB]">
+                    <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[#2563EB] dark:group-hover:text-blue-400">
                       {preset.label}
                     </span>
                   </button>
@@ -884,11 +885,11 @@ export default function StudentProfilePage() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-3 border-t border-slate-100">
+            <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setIsBannerModalOpen(false)}
-                className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800"
+                className="rounded-xl bg-slate-900 dark:bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 dark:hover:bg-blue-700"
               >
                 Done
               </button>
@@ -900,24 +901,24 @@ export default function StudentProfilePage() {
       {/* PROFILE EDIT MODAL WITH AVATAR UPLOADER */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setIsEditModalOpen(false)}
-              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer"
+              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
 
-            <h3 className="text-base font-bold text-slate-900">Edit Profile</h3>
-            <p className="text-xs text-slate-500">Update your public student credentials and profile photo.</p>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Edit Profile</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Update your public student credentials and profile photo.</p>
 
             <form onSubmit={handleSaveProfile} className="mt-5 space-y-4">
               {/* Profile Avatar Upload Section */}
-              <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3.5">
-                <label className="text-xs font-bold text-slate-700">Profile Picture</label>
+              <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-[#151D2E] p-3.5">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Profile Picture</label>
                 <div className="mt-2 flex items-center gap-4">
-                  <div className="relative h-16 w-16 shrink-0 rounded-full border-2 border-white shadow-md overflow-hidden bg-slate-900">
+                  <div className="relative h-16 w-16 shrink-0 rounded-full border-2 border-white dark:border-slate-800 shadow-md overflow-hidden bg-slate-900">
                     <Image
                       src={avatar}
                       alt="Avatar Preview"
@@ -939,9 +940,9 @@ export default function StudentProfilePage() {
                     <button
                       type="button"
                       onClick={() => avatarFileRef.current?.click()}
-                      className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 cursor-pointer"
+                      className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
                     >
-                      <Upload className="h-3.5 w-3.5 text-[#2563EB]" />
+                      <Upload className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" />
                       <span>Upload Custom Photo</span>
                     </button>
                     <div className="flex items-center gap-2">
@@ -951,7 +952,7 @@ export default function StudentProfilePage() {
                           key={idx}
                           type="button"
                           onClick={() => setAvatar(preset)}
-                          className="h-6 w-6 rounded-full border overflow-hidden hover:border-[#2563EB] cursor-pointer"
+                          className="h-6 w-6 rounded-full border border-slate-300 dark:border-slate-700 overflow-hidden hover:border-[#2563EB] dark:hover:border-blue-400 cursor-pointer"
                         >
                           <Image
                             src={preset}
@@ -969,39 +970,39 @@ export default function StudentProfilePage() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Full Name</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Full Name</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Professional Role / Headline</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Professional Role / Headline</label>
                 <input
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Location</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Location</label>
                 <input
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Bio</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Bio</label>
                 <textarea
                   rows={3}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500"
                 />
               </div>
 
@@ -1009,7 +1010,7 @@ export default function StudentProfilePage() {
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100"
+                  className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   Cancel
                 </button>

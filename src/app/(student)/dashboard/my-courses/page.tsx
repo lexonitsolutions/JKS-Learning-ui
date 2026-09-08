@@ -135,38 +135,38 @@ export default function MyCoursesPage() {
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
         {/* Learning Metric Summary Cards */}
         <Reveal variant="fade-up" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-white/80 bg-white/85 p-4 shadow-[0_4px_20px_rgb(20,50,100,0.04)] backdrop-blur-xl flex items-center justify-between">
+          <div className="rounded-2xl border border-white/80 bg-white/85 p-4 shadow-[0_4px_20px_rgb(20,50,100,0.04)] backdrop-blur-xl flex items-center justify-between dark:border-slate-800/80 dark:bg-[#111827]/90">
             <div>
-              <p className="text-xs font-semibold text-slate-500">Enrolled Tracks</p>
-              <h4 className="text-xl font-black text-slate-900 mt-0.5">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Enrolled Tracks</p>
+              <h4 className="text-xl font-black text-slate-900 mt-0.5 dark:text-white">
                 {isLoading ? "..." : `${totalEnrolled} ${totalEnrolled === 1 ? "Course" : "Courses"}`}
               </h4>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB] dark:bg-blue-950/40 dark:text-blue-400">
               <BookOpen className="h-5 w-5" />
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/80 bg-white/85 p-4 shadow-[0_4px_20px_rgb(20,50,100,0.04)] backdrop-blur-xl flex items-center justify-between">
+          <div className="rounded-2xl border border-white/80 bg-white/85 p-4 shadow-[0_4px_20px_rgb(20,50,100,0.04)] backdrop-blur-xl flex items-center justify-between dark:border-slate-800/80 dark:bg-[#111827]/90">
             <div>
-              <p className="text-xs font-semibold text-slate-500">Average Completion</p>
-              <h4 className="text-xl font-black text-[#2563EB] mt-0.5">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Average Completion</p>
+              <h4 className="text-xl font-black text-[#2563EB] mt-0.5 dark:text-blue-400">
                 {isLoading ? "..." : `${avgProgress}%`}
               </h4>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400">
               <Flame className="h-5 w-5" />
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/80 bg-white/85 p-4 shadow-[0_4px_20px_rgb(20,50,100,0.04)] backdrop-blur-xl flex items-center justify-between">
+          <div className="rounded-2xl border border-white/80 bg-white/85 p-4 shadow-[0_4px_20px_rgb(20,50,100,0.04)] backdrop-blur-xl flex items-center justify-between dark:border-slate-800/80 dark:bg-[#111827]/90">
             <div>
-              <p className="text-xs font-semibold text-slate-500">Completed Tracks</p>
-              <h4 className="text-xl font-black text-emerald-600 mt-0.5">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Completed Tracks</p>
+              <h4 className="text-xl font-black text-emerald-600 mt-0.5 dark:text-emerald-400">
                 {isLoading ? "..." : `${completedCount} Finished`}
               </h4>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
               <Award className="h-5 w-5" />
             </div>
           </div>
@@ -194,7 +194,7 @@ export default function MyCoursesPage() {
                     className={`rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer select-none ${
                       isActive
                         ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20 scale-[1.02]"
-                        : "bg-slate-200/80 text-slate-700 hover:bg-slate-300 hover:text-slate-900"
+                        : "bg-slate-200/80 text-slate-700 hover:bg-slate-300 hover:text-slate-900 dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                     }`}
                   >
                     {tab.label}
@@ -212,15 +212,15 @@ export default function MyCoursesPage() {
                   placeholder="Search enrolled..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white/90 py-2 pl-9 pr-3 text-xs font-medium text-slate-800 placeholder-slate-400 outline-none transition-colors focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white/90 py-2 pl-9 pr-3 text-xs font-medium text-slate-800 placeholder-slate-400 outline-none transition-colors focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
                 />
               </div>
 
               <Link
                 href="/courses"
-                className="flex items-center justify-center gap-1.5 rounded-xl bg-white border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-white border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-200 dark:hover:bg-slate-800"
               >
-                <ShoppingBag className="h-4 w-4 text-[#2563EB]" />
+                <ShoppingBag className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                 <span>Browse Courses</span>
               </Link>
             </div>
@@ -233,13 +233,13 @@ export default function MyCoursesPage() {
             {[1, 2].map((n) => (
               <div
                 key={n}
-                className="h-80 rounded-[22px] border border-slate-200 bg-white/70 p-6 shadow-sm animate-pulse space-y-4"
+                className="h-80 rounded-[22px] border border-slate-200 bg-white/70 p-6 shadow-sm animate-pulse space-y-4 dark:border-slate-800 dark:bg-[#111827]/70"
               >
-                <div className="h-28 rounded-xl bg-slate-200" />
-                <div className="h-5 w-3/4 rounded bg-slate-200" />
-                <div className="h-4 w-1/2 rounded bg-slate-200" />
-                <div className="h-3 w-full rounded bg-slate-200" />
-                <div className="h-10 w-full rounded-xl bg-slate-200 pt-4" />
+                <div className="h-28 rounded-xl bg-slate-200 dark:bg-slate-800" />
+                <div className="h-5 w-3/4 rounded bg-slate-200 dark:bg-slate-800" />
+                <div className="h-4 w-1/2 rounded bg-slate-200 dark:bg-slate-800" />
+                <div className="h-3 w-full rounded bg-slate-200 dark:bg-slate-800" />
+                <div className="h-10 w-full rounded-xl bg-slate-200 dark:bg-slate-800 pt-4" />
               </div>
             ))}
           </div>
@@ -247,12 +247,12 @@ export default function MyCoursesPage() {
 
         {/* ERROR STATE */}
         {!isLoading && errorMessage && (
-          <div className="flex flex-col items-center justify-center rounded-[24px] border border-red-200 bg-red-50/70 p-10 text-center space-y-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+          <div className="flex flex-col items-center justify-center rounded-[24px] border border-red-200 bg-red-50/70 p-10 text-center space-y-3 dark:border-red-900/40 dark:bg-red-950/20">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400">
               <AlertCircle className="h-6 w-6" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">Failed to Load Enrollments</h3>
-            <p className="text-xs text-slate-600 max-w-md">{errorMessage}</p>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Failed to Load Enrollments</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 max-w-md">{errorMessage}</p>
             <button
               type="button"
               onClick={loadEnrollments}
@@ -268,7 +268,7 @@ export default function MyCoursesPage() {
           <Reveal variant="stagger" className="grid grid-cols-1 gap-5 md:grid-cols-2">
             {filteredCourses.map((course) => (
               <TiltCard key={course.id || course.slug} className="h-full">
-                <div className="flex h-full flex-col justify-between overflow-hidden rounded-[22px] border border-white/80 bg-white/90 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:border-blue-200">
+                <div className="flex h-full flex-col justify-between overflow-hidden rounded-[22px] border border-white/80 bg-white/90 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:border-blue-200 dark:border-slate-800/80 dark:bg-[#111827] dark:hover:border-blue-500/40">
                   {/* Card Header Gradient Banner */}
                   <div className="relative flex h-28 items-center justify-between bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 overflow-hidden">
                     <div
@@ -297,59 +297,59 @@ export default function MyCoursesPage() {
                   {/* Card Body */}
                   <div className="flex-1 p-6 space-y-4">
                     <div>
-                      <h3 className="text-base font-bold text-slate-900 leading-snug">
+                      <h3 className="text-base font-bold text-slate-900 leading-snug dark:text-white">
                         {course.title}
                       </h3>
-                      <p className="mt-1.5 text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                      <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                         {course.summary}
                       </p>
                     </div>
 
                     {/* Instructor & Cohort Timing Row */}
-                    <div className="rounded-xl bg-slate-50/90 p-3 border border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-xl bg-slate-50/90 p-3 border border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs dark:bg-[#151D2E] dark:border-slate-800">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600 font-bold shrink-0">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600 font-bold shrink-0 dark:bg-blue-950/60 dark:text-blue-400">
                           <User className="h-3.5 w-3.5" />
                         </div>
                         <div className="truncate">
-                          <div className="text-[10px] uppercase font-bold text-slate-400">Lead Faculty</div>
-                          <div className="font-bold text-slate-800 truncate">{course.instructorName}</div>
+                          <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">Lead Faculty</div>
+                          <div className="font-bold text-slate-800 dark:text-slate-200 truncate">{course.instructorName}</div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 font-bold shrink-0">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 font-bold shrink-0 dark:bg-emerald-950/60 dark:text-emerald-400">
                           <Calendar className="h-3.5 w-3.5" />
                         </div>
                         <div className="truncate">
-                          <div className="text-[10px] uppercase font-bold text-slate-400">Batch Cohort</div>
-                          <div className="font-bold text-slate-800 truncate">{course.batchTiming}</div>
+                          <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">Batch Cohort</div>
+                          <div className="font-bold text-slate-800 dark:text-slate-200 truncate">{course.batchTiming}</div>
                         </div>
                       </div>
                     </div>
 
                     {/* Course Structure Meta Strip */}
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 font-medium border-y border-slate-100 py-2.5">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-400 font-medium border-y border-slate-100 dark:border-slate-800 py-2.5">
                       <span className="flex items-center gap-1">
-                        <Layers className="h-3.5 w-3.5 text-[#2563EB]" /> {course.totalSections} Modules
+                        <Layers className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" /> {course.totalSections} Modules
                       </span>
                       <span>•</span>
                       <span className="flex items-center gap-1">
-                        <Video className="h-3.5 w-3.5 text-purple-600" /> {course.totalLessons} Lessons
+                        <Video className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" /> {course.totalLessons} Lessons
                       </span>
                       <span>•</span>
-                      <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                         <CheckCircle2 className="h-3.5 w-3.5" /> Lifetime Access
                       </span>
                     </div>
 
                     {/* Dynamic Course Progress Bar */}
                     <div>
-                      <div className="mb-1.5 flex justify-between text-xs font-bold text-slate-700">
+                      <div className="mb-1.5 flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                         <span>Course Progress</span>
-                        <span className="text-[#2563EB]">{course.progress}% completed</span>
+                        <span className="text-[#2563EB] dark:text-blue-400">{course.progress}% completed</span>
                       </div>
-                      <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-cyan-500 transition-all duration-500"
                           style={{ width: `${Math.max(0, Math.min(100, course.progress))}%` }}
@@ -358,11 +358,11 @@ export default function MyCoursesPage() {
                     </div>
 
                     {/* Last Accessed Date */}
-                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium pt-1">
-                      <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500 font-medium pt-1">
+                      <Clock className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                       <span>
                         Last accessed:{" "}
-                        <span className="text-slate-700 font-semibold">
+                        <span className="text-slate-700 dark:text-slate-300 font-semibold">
                           {new Date(course.lastAccessedAt).toLocaleDateString("en-IN", {
                             day: "numeric",
                             month: "short",
@@ -374,7 +374,7 @@ export default function MyCoursesPage() {
                   </div>
 
                   {/* Card Footer: Direct Link to Course Learning Player */}
-                  <div className="border-t border-slate-100 p-5 bg-slate-50/50">
+                  <div className="border-t border-slate-100 p-5 bg-slate-50/50 dark:border-slate-800 dark:bg-[#151D2E]/50">
                     <Link
                       href={`/dashboard/my-courses/${course.slug}`}
                       className="flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] py-3 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:scale-[1.01]"
@@ -392,14 +392,14 @@ export default function MyCoursesPage() {
 
         {/* CLEAN EMPTY STATE (WHEN STUDENT HAS ZERO ENROLLED COURSES) */}
         {!isLoading && !errorMessage && totalEnrolled === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-white/80 p-12 text-center shadow-xs space-y-4 my-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-[#2563EB] ring-8 ring-blue-50/50 shadow-sm">
+          <div className="flex flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-white/80 p-12 text-center shadow-xs space-y-4 my-6 dark:border-slate-800 dark:bg-[#111827]">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-[#2563EB] ring-8 ring-blue-50/50 shadow-sm dark:bg-blue-950/40 dark:text-blue-400 dark:ring-blue-900/30">
               <BookOpen className="h-8 w-8" />
             </div>
 
             <div className="space-y-1.5 max-w-md">
-              <h3 className="text-lg font-black text-slate-900">No courses enrolled yet.</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <h3 className="text-lg font-black text-slate-900 dark:text-white">No courses enrolled yet.</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 You are not currently enrolled in any courses. Explore our curated, production-ready tech tracks and kickstart your career journey today!
               </p>
             </div>
@@ -419,12 +419,12 @@ export default function MyCoursesPage() {
 
         {/* EMPTY STATE FOR FILTER / SEARCH RESULTS */}
         {!isLoading && !errorMessage && totalEnrolled > 0 && filteredCourses.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-white/80 p-12 text-center shadow-xs space-y-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+          <div className="flex flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-white/80 p-12 text-center shadow-xs space-y-3 dark:border-slate-800 dark:bg-[#111827]">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
               <Search className="h-6 w-6" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">No Courses Found</h3>
-            <p className="text-xs text-slate-500 max-w-sm">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">No Courses Found</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
               No enrolled courses match your search or filter tab. Try clearing the search query.
             </p>
             <button
@@ -433,7 +433,7 @@ export default function MyCoursesPage() {
                 setSearchQuery("");
                 setFilterTab("all");
               }}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer dark:border-slate-700 dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800"
             >
               Clear Filter
             </button>

@@ -100,7 +100,7 @@ export default function BookmarksPage() {
         {/* Header with Title and Filter Tabs */}
         <Reveal variant="fade-up">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-2 text-lg font-bold text-slate-900">
+            <div className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
               <Bookmark className="h-5 w-5 text-orange-500 fill-orange-500" />
               <span>Saved Bookmarks</span>
             </div>
@@ -117,7 +117,7 @@ export default function BookmarksPage() {
                     className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer shrink-0 ${
                       isSelected
                         ? "bg-[#2563EB] text-white shadow-xs"
-                        : "bg-slate-100 hover:bg-slate-200 text-slate-600"
+                        : "bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
                     }`}
                   >
                     {tab}
@@ -133,30 +133,30 @@ export default function BookmarksPage() {
           <Reveal variant="stagger" className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {filteredBookmarks.map((bm) => (
               <TiltCard key={bm.id}>
-                <div className="flex flex-col justify-between rounded-[20px] border border-white/70 bg-white/85 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                <div className="flex flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-[#111827]/90 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                   <div>
                     <div className="flex items-start justify-between">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-[#2563EB]">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-950/50 px-2.5 py-0.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 border border-transparent dark:border-blue-800/40">
                         {bm.type} · {bm.duration}
                       </span>
                       <button
                         type="button"
                         onClick={() => handleRemoveBookmark(bm.id)}
-                        className="text-slate-400 hover:text-rose-500 transition-colors cursor-pointer"
+                        className="text-slate-400 hover:text-rose-500 dark:text-slate-500 dark:hover:text-rose-400 transition-colors cursor-pointer"
                         title="Remove Bookmark"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
 
-                    <h3 className="mt-3 text-sm sm:text-base font-bold text-slate-900 leading-snug">
+                    <h3 className="mt-3 text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug">
                       {bm.title}
                     </h3>
-                    <p className="mt-1 text-xs text-slate-500 font-medium">{bm.course}</p>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">{bm.course}</p>
                   </div>
 
-                  <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
-                    <span className="text-[11px] text-slate-400 font-medium">Saved on {bm.savedOn}</span>
+                  <div className="mt-5 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3 text-xs">
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Saved on {bm.savedOn}</span>
                     <Link
                       href={bm.url}
                       className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-all hover:scale-[1.02]"
@@ -172,14 +172,14 @@ export default function BookmarksPage() {
         ) : (
           /* Empty State Matching Reference Image 5 */
           <Reveal variant="fade-up">
-            <div className="flex flex-col items-center justify-center rounded-[24px] border border-white/70 bg-white/80 p-12 text-center shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl min-h-[380px]">
+            <div className="flex flex-col items-center justify-center rounded-[24px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827]/90 p-12 text-center shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl min-h-[380px]">
               {/* Circular Bookmark Icon Badge */}
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-50 text-amber-500 shadow-inner">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400 border border-transparent dark:border-amber-800/40 shadow-inner">
                 <Bookmark className="h-9 w-9 fill-amber-400 text-amber-500 stroke-[1.8]" />
               </div>
 
-              <h3 className="mt-5 text-xl font-extrabold text-slate-900">No bookmarks yet</h3>
-              <p className="mt-1.5 max-w-sm text-xs sm:text-sm text-slate-500 leading-relaxed font-medium">
+              <h3 className="mt-5 text-xl font-extrabold text-slate-900 dark:text-white">No bookmarks yet</h3>
+              <p className="mt-1.5 max-w-sm text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                 Start bookmarking resources from your enrolled courses to save them here for quick access.
               </p>
 

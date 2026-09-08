@@ -159,11 +159,11 @@ export default function StudentDashboardPage() {
           <div
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
-            className="relative overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-r from-white via-white to-blue-50/40 p-5 sm:p-7 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl"
+            className="relative overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-r from-white via-white to-blue-50/40 p-5 sm:p-7 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-gradient-to-r dark:from-[#111827] dark:via-[#111827] dark:to-[#151D2E]"
           >
             {/* Ambient Background Radial Glow */}
             <div
-              className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full opacity-60"
+              className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full opacity-60 dark:opacity-30"
               style={{ background: "radial-gradient(circle, rgba(37,99,235,0.15), transparent 70%)" }}
             />
 
@@ -182,33 +182,33 @@ export default function StudentDashboardPage() {
                     <div>
                       {/* Top Badges Row */}
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-amber-600">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 dark:bg-amber-950/40 dark:border-amber-800/40">
                           <Flame className="h-3 w-3 fill-amber-500" /> {activeOffer.tag}
                         </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 px-2.5 py-0.5 text-xs font-bold text-[#2563EB]">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 px-2.5 py-0.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 dark:bg-blue-950/40 dark:border-blue-800/40">
                           <Tag className="h-3 w-3" /> {activeOffer.badge}
                         </span>
                       </div>
 
                       {/* Offer Headline */}
-                      <h2 className="mt-3 text-xl sm:text-2xl lg:text-[26px] font-black tracking-tight text-slate-900 leading-tight">
+                      <h2 className="mt-3 text-xl sm:text-2xl lg:text-[26px] font-black tracking-tight text-slate-900 leading-tight dark:text-white">
                         {activeOffer.title}
                       </h2>
 
                       {/* Offer Subtitle */}
-                      <p className="mt-2 text-xs sm:text-sm text-slate-600 font-medium leading-relaxed max-w-lg">
+                      <p className="mt-2 text-xs sm:text-sm text-slate-600 font-medium leading-relaxed max-w-lg dark:text-slate-300">
                         {activeOffer.subtitle}
                       </p>
 
                       {/* Coupon Code Strip */}
                       <div className="mt-3.5 flex items-center gap-2.5">
-                        <div className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-[#2563EB] bg-blue-50/70 px-3 py-1.5 text-xs font-bold text-[#2563EB]">
+                        <div className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-[#2563EB] bg-blue-50/70 px-3 py-1.5 text-xs font-bold text-[#2563EB] dark:border-blue-500/40 dark:bg-blue-950/40 dark:text-blue-400">
                           <span>Use Coupon:</span>
-                          <span className="font-black text-slate-900 tracking-wider select-all bg-white px-2 py-0.5 rounded shadow-xs">
+                          <span className="font-black text-slate-900 tracking-wider select-all bg-white px-2 py-0.5 rounded shadow-xs dark:bg-[#151D2E] dark:text-white">
                             {activeOffer.discountCode}
                           </span>
                         </div>
-                        <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                        <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
                           <Clock className="h-3 w-3" /> {activeOffer.expiresIn}
                         </span>
                       </div>
@@ -225,7 +225,7 @@ export default function StudentDashboardPage() {
                         </Link>
                         <Link
                           href="/dashboard/courses"
-                          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-50"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-200 dark:hover:bg-slate-800"
                         >
                           <span>Explore All</span>
                           <ArrowRight className="h-3.5 w-3.5" />
@@ -245,7 +245,7 @@ export default function StudentDashboardPage() {
                               className={`h-2 rounded-full transition-all duration-300 ${
                                 currentSlide === idx
                                   ? "w-6 bg-[#2563EB]"
-                                  : "w-2 bg-slate-200 hover:bg-slate-300"
+                                  : "w-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600"
                               }`}
                             />
                           ))}
@@ -258,7 +258,7 @@ export default function StudentDashboardPage() {
                             setCurrentSlide((prev) => (prev === 0 ? OFFERS.length - 1 : prev - 1))
                           }
                           aria-label="Previous Offer"
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </button>
@@ -268,7 +268,7 @@ export default function StudentDashboardPage() {
                             setCurrentSlide((prev) => (prev + 1) % OFFERS.length)
                           }
                           aria-label="Next Offer"
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </button>
@@ -308,9 +308,9 @@ export default function StudentDashboardPage() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="absolute -top-1 right-0 sm:right-2 z-20 rounded-xl border border-white/80 bg-white/90 px-3 py-1.5 shadow-lg shadow-blue-500/10 backdrop-blur-md text-[11px] font-bold text-slate-800"
+                    className="absolute -top-1 right-0 sm:right-2 z-20 rounded-xl border border-white/80 bg-white/90 px-3 py-1.5 shadow-lg shadow-blue-500/10 backdrop-blur-md text-[11px] font-bold text-slate-800 dark:border-slate-700/80 dark:bg-[#111827]/90 dark:text-white"
                   >
-                    <div className="flex items-center gap-1.5 text-[#2563EB]">
+                    <div className="flex items-center gap-1.5 text-[#2563EB] dark:text-blue-400">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       <span>62% Mastered</span>
                     </div>
@@ -321,7 +321,7 @@ export default function StudentDashboardPage() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="absolute bottom-2 left-0 sm:left-2 z-20 rounded-xl border border-white/80 bg-white/90 px-3 py-1.5 shadow-lg shadow-blue-500/10 backdrop-blur-md text-[11px] font-bold text-slate-800"
+                    className="absolute bottom-2 left-0 sm:left-2 z-20 rounded-xl border border-white/80 bg-white/90 px-3 py-1.5 shadow-lg shadow-blue-500/10 backdrop-blur-md text-[11px] font-bold text-slate-800 dark:border-slate-700/80 dark:bg-[#111827]/90 dark:text-white"
                   >
                     <div className="flex items-center gap-1.5 text-amber-500">
                       <Flame className="h-3.5 w-3.5 fill-amber-500" />
@@ -338,12 +338,12 @@ export default function StudentDashboardPage() {
         <div>
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-slate-900">Latest Courses</h3>
-              <p className="text-xs text-slate-500">Explore newly added industry tracks and certifications</p>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Latest Courses</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Explore newly added industry tracks and certifications</p>
             </div>
             <Link
               href="/dashboard/courses"
-              className="flex items-center gap-1 text-xs font-bold text-[#2563EB] hover:underline"
+              className="flex items-center gap-1 text-xs font-bold text-[#2563EB] hover:underline dark:text-blue-400"
             >
               <span>View all</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -353,7 +353,7 @@ export default function StudentDashboardPage() {
           <Reveal variant="stagger" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {latestNonEnrolledCourses.map((course) => (
               <TiltCard key={course.id} className="h-full">
-                <div className="flex h-full flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200/80 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-xl hover:border-blue-200">
+                <div className="flex h-full flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200/80 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-xl hover:border-blue-200 dark:border-slate-800/80 dark:bg-[#111827] dark:hover:border-blue-500/40">
                   {/* Card Thumbnail / Header Banner */}
                   <div
                     className={`relative flex h-44 w-full flex-col items-center justify-center p-4 text-center overflow-hidden ${course.thumbnailBg}`}
@@ -395,36 +395,36 @@ export default function StudentDashboardPage() {
                   <div className="flex flex-1 flex-col justify-between p-4 space-y-3">
                     <div>
                       {/* Title */}
-                      <h3 className="text-[14px] font-extrabold text-slate-900 leading-snug line-clamp-1">
+                      <h3 className="text-[14px] font-extrabold text-slate-900 leading-snug line-clamp-1 dark:text-white">
                         {course.title}
                       </h3>
 
                       {/* Tag Badges Strip */}
                       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-bold">
                         {course.isPremium ? (
-                          <span className="inline-flex items-center gap-1 rounded bg-blue-50 px-2 py-0.5 font-black uppercase text-[#2563EB] border border-blue-200">
-                            <Crown className="h-3 w-3 fill-[#2563EB] text-[#2563EB]" />
+                          <span className="inline-flex items-center gap-1 rounded bg-blue-50 px-2 py-0.5 font-black uppercase text-[#2563EB] border border-blue-200 dark:bg-blue-950/40 dark:border-blue-800/40 dark:text-blue-300">
+                            <Crown className="h-3 w-3 fill-[#2563EB] text-[#2563EB] dark:fill-blue-400 dark:text-blue-400" />
                             PREMIUM
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded bg-cyan-50 px-2 py-0.5 font-black uppercase text-cyan-700 border border-cyan-200">
+                          <span className="inline-flex items-center gap-1 rounded bg-cyan-50 px-2 py-0.5 font-black uppercase text-cyan-700 border border-cyan-200 dark:bg-cyan-950/40 dark:border-cyan-800/40 dark:text-cyan-300">
                             FREE
                           </span>
                         )}
 
-                        <span className="inline-flex items-center gap-1 text-slate-500 font-medium">
-                          <Volume2 className="h-3 w-3 text-slate-400" />
+                        <span className="inline-flex items-center gap-1 text-slate-500 font-medium dark:text-slate-400">
+                          <Volume2 className="h-3 w-3 text-slate-400 dark:text-slate-500" />
                           {course.language}
                         </span>
 
-                        <span className="inline-flex items-center gap-1 text-slate-700 font-bold">
+                        <span className="inline-flex items-center gap-1 text-slate-700 font-bold dark:text-slate-300">
                           <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                           {course.rating}
                         </span>
                       </div>
 
                       {/* Summary Tagline */}
-                      <p className="mt-2 text-xs text-slate-600 line-clamp-2 leading-relaxed font-normal">
+                      <p className="mt-2 text-xs text-slate-600 line-clamp-2 leading-relaxed font-normal dark:text-slate-400">
                         {course.tagline}
                       </p>
                     </div>
@@ -449,7 +449,7 @@ export default function StudentDashboardPage() {
 
         {/* AI Mock Interview CTA Banner with 3D Waveform & Live Readiness Check */}
         <Reveal variant="fade-up">
-          <div className="relative overflow-hidden rounded-[24px] border border-slate-800 bg-[#0B1F3A] p-6 text-white shadow-xl sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div className="relative overflow-hidden rounded-[24px] border border-slate-800 bg-[#0B1F3A] p-6 text-white shadow-xl sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 dark:bg-[#111827] dark:border-slate-800/80">
             <div
               className="pointer-events-none absolute -top-12 right-20 h-48 w-48 rounded-full opacity-40"
               style={{ background: "radial-gradient(circle, rgba(56,189,248,0.3), transparent 70%)" }}

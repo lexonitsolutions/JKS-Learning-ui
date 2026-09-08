@@ -313,7 +313,7 @@ export default function StudentAllCoursesPage() {
                   className={`rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer select-none whitespace-nowrap ${
                     isActive
                       ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20 scale-[1.02]"
-                      : "bg-slate-200/80 text-slate-700 hover:bg-slate-300 hover:text-slate-900"
+                      : "bg-slate-200/80 text-slate-700 hover:bg-slate-300 hover:text-slate-900 dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                   }`}
                 >
                   {tab.label}
@@ -330,13 +330,13 @@ export default function StudentAllCoursesPage() {
               placeholder="Search all courses..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white/90 py-2 pl-9 pr-4 text-xs font-medium text-slate-800 placeholder-slate-400 outline-none transition-colors focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-xl border border-slate-200 bg-white/90 py-2 pl-9 pr-4 text-xs font-medium text-slate-800 placeholder-slate-400 outline-none transition-colors focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs"
               >
                 ✕
               </button>
@@ -351,7 +351,7 @@ export default function StudentAllCoursesPage() {
 
             return (
               <TiltCard key={course.id} className="h-full">
-                <div className="flex h-full flex-col justify-between overflow-hidden rounded-2xl sm:rounded-[20px] border border-slate-200/80 bg-white shadow-[0_2px_12px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-xl hover:border-blue-300">
+                <div className="flex h-full flex-col justify-between overflow-hidden rounded-2xl sm:rounded-[20px] border border-slate-200/80 bg-white shadow-[0_2px_12px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-xl hover:border-blue-300 dark:border-slate-800/80 dark:bg-[#111827] dark:hover:border-blue-500/40">
                   {/* Card Thumbnail / Header Banner */}
                   <div
                     className={`relative flex h-28 sm:h-36 md:h-44 lg:h-48 w-full flex-col items-center justify-center p-2.5 sm:p-4 text-center overflow-hidden ${course.thumbnailBg}`}
@@ -399,37 +399,37 @@ export default function StudentAllCoursesPage() {
                   <div className="flex flex-1 flex-col justify-between p-2.5 sm:p-3.5 md:p-4 space-y-2 sm:space-y-3">
                     <div>
                       {/* Title */}
-                      <h3 className="text-xs sm:text-sm md:text-[15px] font-extrabold text-slate-900 leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
+                      <h3 className="text-xs sm:text-sm md:text-[15px] font-extrabold text-slate-900 leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] dark:text-white">
                         {course.title}
                       </h3>
 
                       {/* Tag Badges Strip */}
                       <div className="mt-1.5 sm:mt-2 flex flex-wrap items-center gap-1 sm:gap-1.5 text-[9px] sm:text-[11px] font-bold">
                         {course.isPremium ? (
-                          <span className="inline-flex items-center gap-0.5 sm:gap-1 rounded bg-blue-50 px-1.5 py-0.5 text-[8px] sm:text-[10px] font-black uppercase text-[#2563EB] border border-blue-200">
-                            <Crown className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-[#2563EB] text-[#2563EB]" />
+                          <span className="inline-flex items-center gap-0.5 sm:gap-1 rounded bg-blue-50 px-1.5 py-0.5 text-[8px] sm:text-[10px] font-black uppercase text-[#2563EB] border border-blue-200 dark:bg-blue-950/40 dark:border-blue-800/40 dark:text-blue-300">
+                            <Crown className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-[#2563EB] text-[#2563EB] dark:fill-blue-400 dark:text-blue-400" />
                             PREMIUM
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-0.5 sm:gap-1 rounded bg-cyan-50 px-1.5 py-0.5 text-[8px] sm:text-[10px] font-black uppercase text-cyan-700 border border-cyan-200">
+                          <span className="inline-flex items-center gap-0.5 sm:gap-1 rounded bg-cyan-50 px-1.5 py-0.5 text-[8px] sm:text-[10px] font-black uppercase text-cyan-700 border border-cyan-200 dark:bg-cyan-950/40 dark:border-cyan-800/40 dark:text-cyan-300">
                             FREE
                           </span>
                         )}
 
-                        <span className="inline-flex items-center gap-0.5 text-slate-500 font-medium text-[9px] sm:text-[11px]">
-                          <Volume2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-slate-400" />
+                        <span className="inline-flex items-center gap-0.5 text-slate-500 font-medium text-[9px] sm:text-[11px] dark:text-slate-400">
+                          <Volume2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-slate-400 dark:text-slate-500" />
                           {course.language}
                         </span>
 
-                        <span className="inline-flex items-center gap-0.5 text-slate-700 font-bold text-[9px] sm:text-[11px]">
+                        <span className="inline-flex items-center gap-0.5 text-slate-700 font-bold text-[9px] sm:text-[11px] dark:text-slate-300">
                           <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-amber-400 text-amber-400" />
                           <span>{course.rating}</span>
-                          <span className="hidden sm:inline font-normal text-slate-500">({course.reviewsCount})</span>
+                          <span className="hidden sm:inline font-normal text-slate-500 dark:text-slate-400">({course.reviewsCount})</span>
                         </span>
                       </div>
 
                       {/* Summary Tagline */}
-                      <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-slate-600 line-clamp-2 leading-relaxed font-normal">
+                      <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-slate-600 line-clamp-2 leading-relaxed font-normal dark:text-slate-400">
                         {course.tagline}
                       </p>
                     </div>
@@ -448,7 +448,7 @@ export default function StudentAllCoursesPage() {
                       ) : isOwned ? (
                         <Link
                           href={`/dashboard/my-courses/${course.slug}`}
-                          className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-slate-900 hover:bg-slate-800 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-xs transition-all duration-200 hover:scale-[1.02]"
+                          className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-slate-900 hover:bg-slate-800 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-xs transition-all duration-200 hover:scale-[1.02] dark:bg-slate-800 dark:hover:bg-slate-700"
                         >
                           <BookOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                           <span className="truncate">Continue</span>
@@ -473,10 +473,10 @@ export default function StudentAllCoursesPage() {
 
         {/* Empty Search Result Fallback */}
         {filteredCourses.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center shadow-xs">
-            <BookOpen className="h-10 w-10 text-slate-300" />
-            <h3 className="mt-3 text-sm font-bold text-slate-900">No courses match your query</h3>
-            <p className="mt-1 text-xs text-slate-500">
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center shadow-xs dark:border-slate-800 dark:bg-[#111827]">
+            <BookOpen className="h-10 w-10 text-slate-300 dark:text-slate-600" />
+            <h3 className="mt-3 text-sm font-bold text-slate-900 dark:text-white">No courses match your query</h3>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Try searching with another keyword or resetting the filter pill.
             </p>
             <button
@@ -485,7 +485,7 @@ export default function StudentAllCoursesPage() {
                 setActiveTab("all");
                 setSearchQuery("");
               }}
-              className="mt-4 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700"
+              className="mt-4 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
             >
               Reset Filters
             </button>
@@ -507,17 +507,17 @@ export default function StudentAllCoursesPage() {
       {/* CUSTOM BUNDLE BUILDER MODAL */}
       {isBundleModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col dark:border-slate-800/80 dark:bg-[#111827]">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB]">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-400">
                   <ShoppingBag className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     Create Your Own Custom Bundle
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Select 2 or more tracks to unlock progressive bundle discounts
                   </p>
                 </div>
@@ -525,7 +525,7 @@ export default function StudentAllCoursesPage() {
               <button
                 type="button"
                 onClick={() => setIsBundleModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -545,8 +545,8 @@ export default function StudentAllCoursesPage() {
                     }}
                     className={`flex cursor-pointer items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all ${
                       isSelected
-                        ? "border-[#2563EB] bg-blue-50/50 shadow-xs"
-                        : "border-slate-200 bg-white hover:border-slate-300"
+                        ? "border-[#2563EB] bg-blue-50/50 shadow-xs dark:border-blue-500 dark:bg-blue-950/30"
+                        : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-[#151D2E] dark:hover:border-slate-700"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -554,20 +554,20 @@ export default function StudentAllCoursesPage() {
                         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-white transition-colors ${
                           isSelected
                             ? "border-[#2563EB] bg-[#2563EB]"
-                            : "border-slate-300 bg-white"
+                            : "border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800"
                         }`}
                       >
                         {isSelected && <CheckCircle2 className="h-4 w-4" />}
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900">{c.title}</div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">{c.title}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
                           ₹{c.price.toLocaleString("en-IN")} · {c.rating} ⭐ ({c.reviewsCount})
                         </div>
                       </div>
                     </div>
 
-                    <span className="text-xs font-bold text-slate-800">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                       ₹{c.price.toLocaleString("en-IN")}
                     </span>
                   </div>
@@ -576,10 +576,10 @@ export default function StudentAllCoursesPage() {
             </div>
 
             {/* Bundle Pricing Summary */}
-            <div className="border-t border-slate-100 pt-3 space-y-2">
-              <div className="flex items-center justify-between text-xs text-slate-600">
+            <div className="border-t border-slate-100 pt-3 space-y-2 dark:border-slate-800">
+              <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
                 <span>Selected Courses: {selectedBundleCourses.length}</span>
-                <span className="font-bold text-emerald-600">
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
                   {selectedBundleCourses.length >= 3
                     ? "35% Bundle Discount Applied"
                     : selectedBundleCourses.length === 2
@@ -590,8 +590,8 @@ export default function StudentAllCoursesPage() {
 
               <div className="flex items-center justify-between pt-1">
                 <div>
-                  <div className="text-xs text-slate-400">Total Bundle Price</div>
-                  <div className="text-lg font-black text-slate-900">
+                  <div className="text-xs text-slate-400 dark:text-slate-500">Total Bundle Price</div>
+                  <div className="text-lg font-black text-slate-900 dark:text-white">
                     {selectedBundleCourses.length >= 2 ? "₹7,999" : "₹4,999"}
                   </div>
                 </div>
@@ -600,7 +600,7 @@ export default function StudentAllCoursesPage() {
                   <button
                     type="button"
                     onClick={() => setIsBundleModalOpen(false)}
-                    className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100"
+                    className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer dark:text-slate-400 dark:hover:bg-slate-800"
                   >
                     Cancel
                   </button>
@@ -612,7 +612,7 @@ export default function StudentAllCoursesPage() {
                       setEnrolledNotification("Custom Bundle Enrolled Successfully!");
                       setTimeout(() => setEnrolledNotification(null), 3500);
                     }}
-                    className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700"
+                    className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 cursor-pointer"
                   >
                     <Zap className="h-4 w-4" /> Enroll Custom Bundle
                   </button>

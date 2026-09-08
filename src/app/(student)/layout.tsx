@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-screen text-slate-800">
+    <div className="relative flex min-h-screen text-slate-800 dark:text-slate-100 dark:bg-[#0B1020] transition-colors duration-200">
       <AmbientPageBackground />
       <DashboardSidebar />
       <div className="relative flex flex-1 flex-col min-w-0 overflow-x-hidden">{children}</div>

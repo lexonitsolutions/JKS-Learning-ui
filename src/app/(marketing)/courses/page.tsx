@@ -28,7 +28,7 @@ export default async function CoursesPage({
           className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
             !track
               ? "border-primary-blue bg-primary-blue text-white"
-              : "border-border bg-white text-text-body hover:border-primary-blue/50"
+              : "border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] text-text-body dark:text-slate-300 hover:border-primary-blue/50 dark:hover:border-blue-500/50"
           }`}
         >
           All
@@ -40,7 +40,7 @@ export default async function CoursesPage({
             className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               track === t
                 ? "border-primary-blue bg-primary-blue text-white"
-                : "border-border bg-white text-text-body hover:border-primary-blue/50"
+                : "border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] text-text-body dark:text-slate-300 hover:border-primary-blue/50 dark:hover:border-blue-500/50"
             }`}
           >
             {t}

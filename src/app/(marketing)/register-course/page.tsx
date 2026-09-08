@@ -231,17 +231,17 @@ function CourseRegistrationContent() {
 
 
   return (
-    <div className="min-h-screen bg-bg-light text-text-heading py-12 px-4 sm:px-6 lg:px-16 font-sans">
+    <div className="min-h-screen bg-bg-light dark:bg-[#0B1020] text-text-heading dark:text-white py-12 px-4 sm:px-6 lg:px-16 font-sans transition-colors duration-300">
       <div className="mx-auto max-w-5xl space-y-8">
         {/* Page Hero Header */}
         <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-blue">
-            <Sparkles className="h-3.5 w-3.5 text-primary-blue" /> Fast-Track Online Admissions &amp; GST Invoicing
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-blue dark:text-blue-400">
+            <Sparkles className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" /> Fast-Track Online Admissions &amp; GST Invoicing
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-text-heading tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-text-heading dark:text-white tracking-tight">
             Enroll in Career Accelerator
           </h1>
-          <p className="text-sm text-text-body max-w-xl mx-auto leading-relaxed">
+          <p className="text-sm text-text-body dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
             Select your specialized track, choose live cohort timings, apply instant scholarship discount &amp; generate official 18% GST tax invoice.
           </p>
         </div>
@@ -257,10 +257,10 @@ function CourseRegistrationContent() {
               key={s.num}
               className={`relative rounded-2xl border p-4 transition-all ${
                 step === s.num
-                  ? "border-primary-blue bg-white text-primary-blue shadow-lg shadow-primary-blue/10 ring-2 ring-primary-blue/20 font-bold"
+                  ? "border-primary-blue bg-white dark:bg-[#111827] text-primary-blue dark:text-blue-400 shadow-lg shadow-primary-blue/10 ring-2 ring-primary-blue/20 font-bold"
                   : step > s.num
-                  ? "border-emerald-500/40 bg-emerald-50 text-emerald-800"
-                  : "border-border bg-white/70 text-text-body/60"
+                  ? "border-emerald-500/40 dark:border-emerald-800/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300"
+                  : "border-border dark:border-slate-800 bg-white/70 dark:bg-[#111827]/70 text-text-body/60 dark:text-slate-400"
               }`}
             >
               <div className="flex items-center justify-center gap-2">
@@ -270,14 +270,14 @@ function CourseRegistrationContent() {
                       ? "bg-emerald-600 text-white"
                       : step === s.num
                       ? "bg-primary-blue text-white"
-                      : "bg-slate-100 text-slate-500"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}
                 >
                   {step > s.num ? <Check className="h-3.5 w-3.5" /> : `0${s.num}`}
                 </span>
                 <span className="font-bold hidden sm:inline">{s.title}</span>
               </div>
-              <div className="text-[11px] text-text-body/70 mt-1 hidden sm:block">{s.subtitle}</div>
+              <div className="text-[11px] text-text-body/70 dark:text-slate-400 mt-1 hidden sm:block">{s.subtitle}</div>
             </div>
           ))}
         </div>
@@ -286,13 +286,13 @@ function CourseRegistrationContent() {
         {/* STEP 1: SELECT CAREER TRACK & LIVE BATCH                  */}
         {/* ======================================================== */}
         {step === 1 && (
-          <div className="space-y-6 rounded-[28px] border border-border bg-white p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4">
+          <div className="space-y-6 rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border dark:border-slate-800/80 pb-4">
               <div>
-                <h2 className="text-xl font-bold text-text-heading">1. Select Your Engineering Track</h2>
-                <p className="text-xs text-text-body">All programs include live faculty mentorship, enterprise capstones &amp; AI interview preparation.</p>
+                <h2 className="text-xl font-bold text-text-heading dark:text-white">1. Select Your Engineering Track</h2>
+                <p className="text-xs text-text-body dark:text-slate-300">All programs include live faculty mentorship, enterprise capstones &amp; AI interview preparation.</p>
               </div>
-              <span className="text-xs text-primary-blue font-bold">Step 1 of 3</span>
+              <span className="text-xs text-primary-blue dark:text-blue-400 font-bold">Step 1 of 3</span>
             </div>
 
             {/* Course Grid */}
@@ -309,8 +309,8 @@ function CourseRegistrationContent() {
                     }}
                     className={`group relative rounded-2xl border p-5 transition-all cursor-pointer space-y-3.5 ${
                       isSelected
-                        ? "border-primary-blue bg-blue-50/50 shadow-md ring-2 ring-primary-blue/20"
-                        : "border-border bg-white hover:border-primary-blue/40 hover:shadow-sm"
+                        ? "border-primary-blue dark:border-blue-500/80 bg-blue-50/50 dark:bg-blue-950/20 shadow-md ring-2 ring-primary-blue/20 dark:ring-blue-500/30"
+                        : "border-border dark:border-slate-800 bg-white dark:bg-[#151D2E] hover:border-primary-blue/40 dark:hover:border-blue-500/50 hover:shadow-sm"
                     }`}
                   >
                     {course.popular && (
@@ -320,10 +320,10 @@ function CourseRegistrationContent() {
                     )}
 
                     <div className="pr-16">
-                      <h3 className="font-bold text-base text-text-heading group-hover:text-primary-blue transition-colors">
+                      <h3 className="font-bold text-base text-text-heading dark:text-white group-hover:text-primary-blue dark:group-hover:text-blue-400 transition-colors">
                         {course.title}
                       </h3>
-                      <p className="mt-1 text-xs text-text-body leading-relaxed line-clamp-2">
+                      <p className="mt-1 text-xs text-text-body dark:text-slate-300 leading-relaxed line-clamp-2">
                         {course.subtitle}
                       </p>
                     </div>
@@ -333,7 +333,7 @@ function CourseRegistrationContent() {
                       {course.curriculum.map((c, i) => (
                         <span
                           key={i}
-                          className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] text-slate-700 font-medium"
+                          className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] text-slate-700 dark:text-slate-300 font-medium"
                         >
                           {c}
                         </span>
@@ -341,16 +341,16 @@ function CourseRegistrationContent() {
                     </div>
 
                     {/* Footer Row */}
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
+                    <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
                       <div>
-                        <span className="text-text-body font-medium">{course.duration}</span>
-                        <div className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
+                        <span className="text-text-body dark:text-slate-300 font-medium">{course.duration}</span>
+                        <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
                           <Clock className="h-3 w-3" /> {course.nextBatch}
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <div className="font-mono font-extrabold text-lg text-primary-blue">
+                        <div className="font-mono font-extrabold text-lg text-primary-blue dark:text-blue-400">
                           ₹{(course.price - course.discount).toLocaleString("en-IN")}
                         </div>
                         <span className="text-[10px] text-slate-400 line-through">
@@ -364,12 +364,12 @@ function CourseRegistrationContent() {
             </div>
 
             {/* Batch Schedule Selector */}
-            <div className="rounded-2xl border border-blue-100 bg-blue-50/30 p-5 space-y-3">
+            <div className="rounded-2xl border border-blue-100 dark:border-slate-800 bg-blue-50/30 dark:bg-[#151D2E]/60 p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-text-heading flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-primary-blue" /> Select Preferred Batch Timing for {selectedCourse.title}:
+                <label className="text-xs font-bold text-text-heading dark:text-white flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-primary-blue dark:text-blue-400" /> Select Preferred Batch Timing for {selectedCourse.title}:
                 </label>
-                <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5">
+                <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 border border-emerald-200 dark:border-emerald-800">
                   🟢 {selectedCourse.seatsLeft} Seats Left in Next Cohort
                 </span>
               </div>
@@ -385,13 +385,13 @@ function CourseRegistrationContent() {
                       onClick={() => setSelectedBatch(batch)}
                       className={`rounded-xl border p-3.5 text-left transition-all cursor-pointer ${
                         isSelected
-                          ? "border-primary-blue bg-white text-primary-blue font-bold shadow-sm ring-1 ring-primary-blue/30"
-                          : "border-slate-200 bg-white text-text-body hover:border-primary-blue/40"
+                          ? "border-primary-blue dark:border-blue-500 bg-white dark:bg-[#111827] text-primary-blue dark:text-blue-400 font-bold shadow-sm ring-1 ring-primary-blue/30"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] text-text-body dark:text-slate-300 hover:border-primary-blue/40"
                       }`}
                     >
-                      <div className="text-xs font-bold text-primary-blue">{batch.label}</div>
-                      <div className="text-xs text-text-heading mt-1 font-mono font-semibold">{batch.time}</div>
-                      <div className="text-[10px] text-slate-500 mt-0.5">{batch.days}</div>
+                      <div className="text-xs font-bold text-primary-blue dark:text-blue-400">{batch.label}</div>
+                      <div className="text-xs text-text-heading dark:text-white mt-1 font-mono font-semibold">{batch.time}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{batch.days}</div>
                     </button>
                   );
                 })}
@@ -400,14 +400,14 @@ function CourseRegistrationContent() {
 
             {/* Unauthenticated User Callout Banner */}
             {!isUserAuthenticated && (
-              <div className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
                     <Lock className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-amber-900">Sign in required to complete enrollment</h4>
-                    <p className="text-[11px] text-amber-700 mt-0.5">
+                    <h4 className="text-xs font-bold text-amber-900 dark:text-amber-200">Sign in required to complete enrollment</h4>
+                    <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
                       You must be signed in with your student account so LMS credentials, course lectures, and tax invoices can be linked to your dashboard.
                     </p>
                   </div>
@@ -415,13 +415,13 @@ function CourseRegistrationContent() {
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <Link
                     href={`/login?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
-                    className="flex-1 sm:flex-none text-center rounded-xl bg-amber-900 px-4 py-2 text-xs font-bold text-white hover:bg-amber-950 transition-colors"
+                    className="flex-1 sm:flex-none text-center rounded-xl bg-amber-900 dark:bg-amber-800 px-4 py-2 text-xs font-bold text-white hover:bg-amber-950 transition-colors"
                   >
                     Log In →
                   </Link>
                   <Link
                     href={`/register?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
-                    className="flex-1 sm:flex-none text-center rounded-xl border border-amber-300 bg-white px-4 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 transition-colors"
+                    className="flex-1 sm:flex-none text-center rounded-xl border border-amber-300 dark:border-amber-800 bg-white dark:bg-[#111827] px-4 py-2 text-xs font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-[#151D2E] transition-colors"
                   >
                     Register
                   </Link>
@@ -439,7 +439,6 @@ function CourseRegistrationContent() {
                 <ArrowRight className="h-4 w-4 shrink-0" />
               </button>
             </div>
-
           </div>
         )}
 
@@ -447,23 +446,23 @@ function CourseRegistrationContent() {
         {/* STEP 2: STUDENT DETAILS FORM                              */}
         {/* ======================================================== */}
         {step === 2 && (
-          <div className="space-y-6 rounded-[28px] border border-border bg-white p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4">
+          <div className="space-y-6 rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border dark:border-slate-800/80 pb-4">
               <div>
-                <h2 className="text-xl font-bold text-text-heading">2. Student Academic &amp; Contact Dossier</h2>
-                <p className="text-xs text-text-body">Required for LMS portal login credentials, verified certification &amp; tax invoice generation.</p>
+                <h2 className="text-xl font-bold text-text-heading dark:text-white">2. Student Academic &amp; Contact Dossier</h2>
+                <p className="text-xs text-text-body dark:text-slate-300">Required for LMS portal login credentials, verified certification &amp; tax invoice generation.</p>
               </div>
-              <span className="text-xs text-primary-blue font-bold">Step 2 of 3</span>
+              <span className="text-xs text-primary-blue dark:text-blue-400 font-bold">Step 2 of 3</span>
             </div>
 
             {!isUserAuthenticated ? (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-6 text-center space-y-4">
-                <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-2xl bg-amber-100 text-amber-800">
+              <div className="rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/30 p-6 text-center space-y-4">
+                <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-2xl bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
                   <Lock className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-amber-900">Sign in to fill your Student Dossier</h3>
-                  <p className="text-xs text-amber-700 mt-1 max-w-md mx-auto">
+                  <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">Sign in to fill your Student Dossier</h3>
+                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-1 max-w-md mx-auto">
                     Please log in or create an account to automatically link your LMS access and certificate records.
                   </p>
                 </div>
@@ -476,7 +475,7 @@ function CourseRegistrationContent() {
                   </Link>
                   <Link
                     href={`/register?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
-                    className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                    className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2538] transition-colors"
                   >
                     Create Account
                   </Link>
@@ -485,42 +484,42 @@ function CourseRegistrationContent() {
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 text-xs">
                 <div>
-                  <label className="font-bold text-slate-700">Full Legal Name (as on Govt ID / Certificate) *</label>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Full Legal Name (as on Govt ID / Certificate) *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Ramesh Varma"
                     value={studentInfo.name}
                     onChange={(e) => setStudentInfo({ ...studentInfo, name: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700">WhatsApp / Mobile Number (for batch alerts) *</label>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">WhatsApp / Mobile Number (for batch alerts) *</label>
                   <input
                     type="tel"
                     required
                     placeholder="+91 98765 43210"
                     value={studentInfo.phone}
                     onChange={(e) => setStudentInfo({ ...studentInfo, phone: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 font-mono"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 font-mono"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="font-bold text-slate-700">Email Address (for LMS credentials) *</label>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Email Address (for LMS credentials) *</label>
                   <input
                     type="email"
                     required
                     placeholder="ramesh.varma@gmail.com"
                     value={studentInfo.email}
                     onChange={(e) => setStudentInfo({ ...studentInfo, email: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
                   />
                   {isUserAuthenticated && (
-                    <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-3 py-1.5 rounded-lg">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 px-3 py-1.5 rounded-lg">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <span>
                         Verified account email ({authenticatedEmail || studentInfo.email}) &mdash; LMS credentials and enrolled courses will be directly linked to your student dashboard.
                       </span>
@@ -529,53 +528,53 @@ function CourseRegistrationContent() {
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700">City / State (for Tax Invoice Address) *</label>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">City / State (for Tax Invoice Address) *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Hyderabad, Telangana"
                     value={studentInfo.city}
                     onChange={(e) => setStudentInfo({ ...studentInfo, city: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700">Highest Academic Qualification</label>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Highest Academic Qualification</label>
                   <select
                     value={studentInfo.qualification}
                     onChange={(e) => setStudentInfo({ ...studentInfo, qualification: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue"
                   >
-                    <option>B.Tech / B.E (CSE / IT / ECE)</option>
-                    <option>MCA / M.Tech</option>
-                    <option>BCA / B.Sc Computer Science</option>
-                    <option>Non-IT Graduate / Diploma</option>
+                    <option className="dark:bg-[#111827]">B.Tech / B.E (CSE / IT / ECE)</option>
+                    <option className="dark:bg-[#111827]">MCA / M.Tech</option>
+                    <option className="dark:bg-[#111827]">BCA / B.Sc Computer Science</option>
+                    <option className="dark:bg-[#111827]">Non-IT Graduate / Diploma</option>
                   </select>
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="font-bold text-slate-700">Current Experience Level</label>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Current Experience Level</label>
                   <select
                     value={studentInfo.experience}
                     onChange={(e) => setStudentInfo({ ...studentInfo, experience: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-text-heading outline-none focus:bg-white focus:border-primary-blue"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue"
                   >
-                    <option>Fresher (2025/2026 Batch Graduate)</option>
-                    <option>0-2 Years IT Experience</option>
-                    <option>2-5 Years IT Experience (Career Upgrade)</option>
-                    <option>Non-IT Working Professional (Career Switch)</option>
+                    <option className="dark:bg-[#111827]">Fresher (2025/2026 Batch Graduate)</option>
+                    <option className="dark:bg-[#111827]">0-2 Years IT Experience</option>
+                    <option className="dark:bg-[#111827]">2-5 Years IT Experience (Career Upgrade)</option>
+                    <option className="dark:bg-[#111827]">Non-IT Working Professional (Career Switch)</option>
                   </select>
                 </div>
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setStep(1)}
                 aria-label="Go back to courses"
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 sm:px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-3.5 sm:px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2538] transition-all cursor-pointer"
               >
                 <ArrowLeft className="h-4 w-4 shrink-0" />
                 <span className="hidden sm:inline">Back</span>
@@ -601,36 +600,36 @@ function CourseRegistrationContent() {
         {step === 3 && (
           <form
             onSubmit={handleSubmitEnrollment}
-            className="space-y-6 rounded-[28px] border border-border bg-white p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)]"
+            className="space-y-6 rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40"
           >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border dark:border-slate-800/80 pb-4">
               <div>
-                <h2 className="text-xl font-bold text-text-heading">3. GST Tax Invoice &amp; Payment Summary</h2>
-                <p className="text-xs text-text-body">Includes 18% GST (CGST 9% + SGST 9%) with instant downloadable digital tax invoice receipt.</p>
+                <h2 className="text-xl font-bold text-text-heading dark:text-white">3. GST Tax Invoice &amp; Payment Summary</h2>
+                <p className="text-xs text-text-body dark:text-slate-300">Includes 18% GST (CGST 9% + SGST 9%) with instant downloadable digital tax invoice receipt.</p>
               </div>
-              <span className="text-xs text-primary-blue font-bold">Step 3 of 3</span>
+              <span className="text-xs text-primary-blue dark:text-blue-400 font-bold">Step 3 of 3</span>
             </div>
 
             {/* Selected Summary Badge Card */}
-            <div className="rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 p-5 space-y-2 text-xs">
+            <div className="rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-950/40 dark:to-indigo-950/40 p-5 space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-extrabold text-sm text-text-heading">{selectedCourse.title}</span>
-                <span className="font-mono font-extrabold text-base text-primary-blue">
+                <span className="font-extrabold text-sm text-text-heading dark:text-white">{selectedCourse.title}</span>
+                <span className="font-mono font-extrabold text-base text-primary-blue dark:text-blue-400">
                   ₹{netPayable.toLocaleString("en-IN")}
                 </span>
               </div>
-              <div className="text-slate-600">
-                Live Cohort: <span className="text-primary-blue font-semibold">{selectedBatch.label} ({selectedBatch.time})</span>
+              <div className="text-slate-600 dark:text-slate-300">
+                Live Cohort: <span className="text-primary-blue dark:text-blue-400 font-semibold">{selectedBatch.label} ({selectedBatch.time})</span>
               </div>
-              <div className="text-slate-500">
-                Enrolling Student: <span className="text-text-heading font-semibold">{studentInfo.name}</span> ({studentInfo.phone} • {studentInfo.email})
+              <div className="text-slate-500 dark:text-slate-400">
+                Enrolling Student: <span className="text-text-heading dark:text-white font-semibold">{studentInfo.name}</span> ({studentInfo.phone} • {studentInfo.email})
               </div>
             </div>
 
             {/* Coupon Code Input */}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-2">
-              <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                <Tag className="h-3.5 w-3.5 text-primary-blue" /> Apply Scholarship / Admission Coupon:
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E]/80 p-4 space-y-2">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Tag className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" /> Apply Scholarship / Admission Coupon:
               </label>
               <div className="flex gap-2">
                 <input
@@ -638,7 +637,7 @@ function CourseRegistrationContent() {
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
                   placeholder="Enter coupon (e.g. ADMISSION10)"
-                  className="flex-1 rounded-xl border border-slate-200 bg-white p-2.5 text-xs text-text-heading uppercase font-mono outline-none focus:border-primary-blue"
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] p-2.5 text-xs text-text-heading dark:text-white uppercase font-mono outline-none focus:border-primary-blue"
                 />
                 <button
                   type="button"
@@ -649,18 +648,17 @@ function CourseRegistrationContent() {
                 </button>
               </div>
               {couponApplied && (
-                <div className="text-[11px] text-emerald-600 font-semibold flex flex-wrap items-center gap-1.5 pt-0.5">
+                <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex flex-wrap items-center gap-1.5 pt-0.5">
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                   <span>Coupon <span className="font-mono uppercase font-bold">{couponCode}</span> applied!</span>
-                  <span className="text-emerald-700 font-medium">(₹{finalDiscount.toLocaleString("en-IN")} Scholarship Discount)</span>
+                  <span className="text-emerald-700 dark:text-emerald-300 font-medium">(₹{finalDiscount.toLocaleString("en-IN")} Scholarship Discount)</span>
                 </div>
               )}
-
             </div>
 
             {/* Payment Method Selector */}
             <div className="space-y-3">
-              <label className="text-xs font-bold text-slate-700">Select Payment Method:</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Select Payment Method:</label>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs">
                 {(["UPI", "Credit/Debit Card", "Net Banking", "No-Cost EMI"] as const).map((mode) => (
                   <button
@@ -669,11 +667,11 @@ function CourseRegistrationContent() {
                     onClick={() => setPaymentMode(mode)}
                     className={`rounded-xl border p-3.5 text-center transition-all cursor-pointer ${
                       paymentMode === mode
-                        ? "border-primary-blue bg-blue-50 text-primary-blue font-bold shadow-xs ring-1 ring-primary-blue/30"
-                        : "border-slate-200 bg-white text-text-body hover:border-slate-300"
+                        ? "border-primary-blue dark:border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-primary-blue dark:text-blue-400 font-bold shadow-xs ring-1 ring-primary-blue/30"
+                        : "border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] text-text-body dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600"
                     }`}
                   >
-                    <CreditCard className="h-4 w-4 mx-auto mb-1 text-primary-blue" />
+                    <CreditCard className="h-4 w-4 mx-auto mb-1 text-primary-blue dark:text-blue-400" />
                     <div>{mode}</div>
                   </button>
                 ))}
@@ -681,44 +679,44 @@ function CourseRegistrationContent() {
             </div>
 
             {/* Full 18% GST Invoice Computation Breakdown */}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/90 p-5 space-y-2.5 text-xs">
-              <div className="font-bold text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200 pb-2">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-[#151D2E] p-5 space-y-2.5 text-xs">
+              <div className="font-bold text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-800 pb-2">
                 Official Tax Invoice Itemization
               </div>
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-slate-600 dark:text-slate-300">
                 <span>Course Standard Tuition Fee:</span>
                 <span className="font-mono font-medium">₹{selectedCourse.price.toLocaleString("en-IN")}</span>
               </div>
               {finalDiscount > 0 && (
-                <div className="flex justify-between text-emerald-600 font-semibold">
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
                   <span>Scholarship Deduction ({couponCode || "PROMO"}):</span>
                   <span className="font-mono">- ₹{finalDiscount.toLocaleString("en-IN")}</span>
                 </div>
               )}
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-slate-600 dark:text-slate-300">
                 <span>Taxable Value (Excluding Tax):</span>
                 <span className="font-mono">₹{taxableAmount.toLocaleString("en-IN")}</span>
               </div>
-              <div className="flex justify-between text-slate-500 text-[11px]">
+              <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px]">
                 <span>Central GST (CGST 9%):</span>
                 <span className="font-mono">₹{cgst.toLocaleString("en-IN")}</span>
               </div>
-              <div className="flex justify-between text-slate-500 text-[11px]">
+              <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px]">
                 <span>State GST (SGST 9%):</span>
                 <span className="font-mono">₹{sgst.toLocaleString("en-IN")}</span>
               </div>
-              <div className="flex justify-between border-t-2 border-slate-900 pt-2.5 font-extrabold text-sm text-text-heading">
+              <div className="flex justify-between border-t-2 border-slate-900 dark:border-slate-700 pt-2.5 font-extrabold text-sm text-text-heading dark:text-white">
                 <span>Total Net Investment (Incl. 18% GST):</span>
-                <span className="font-mono text-primary-blue text-base">₹{netPayable.toLocaleString("en-IN")}</span>
+                <span className="font-mono text-primary-blue dark:text-blue-400 text-base">₹{netPayable.toLocaleString("en-IN")}</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setStep(2)}
                 aria-label="Go back to previous step"
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 sm:px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-3.5 sm:px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2538] transition-all cursor-pointer"
               >
                 <ArrowLeft className="h-4 w-4 shrink-0" />
                 <span className="hidden sm:inline">Back</span>
@@ -741,18 +739,18 @@ function CourseRegistrationContent() {
         {/* STEP 4: ENROLLMENT CONFIRMATION & INVOICE RECEIPT         */}
         {/* ======================================================== */}
         {step === 4 && generatedInvoice && (
-          <div className="space-y-6 rounded-[28px] border border-emerald-200 bg-white p-8 sm:p-12 text-center shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-            <div className="flex h-20 w-20 mx-auto items-center justify-center rounded-3xl bg-emerald-50 text-emerald-600 shadow-md ring-2 ring-emerald-200">
+          <div className="space-y-6 rounded-[28px] border border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-[#111827] p-8 sm:p-12 text-center shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
+            <div className="flex h-20 w-20 mx-auto items-center justify-center rounded-3xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shadow-md ring-2 ring-emerald-200 dark:ring-emerald-800">
               <CheckCircle2 className="h-10 w-10" />
             </div>
 
             <div className="space-y-2 max-w-lg mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-text-heading">Admission &amp; Tax Invoice Generated! 🎉</h2>
-              <p className="text-xs sm:text-sm text-text-body">
-                Welcome to JKS Learning, <span className="font-bold text-emerald-600">{studentInfo.name}</span>! Your enrollment in <span className="text-text-heading font-bold">{selectedCourse.title}</span> has been confirmed.
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-text-heading dark:text-white">Admission &amp; Tax Invoice Generated! 🎉</h2>
+              <p className="text-xs sm:text-sm text-text-body dark:text-slate-300">
+                Welcome to JKS Learning, <span className="font-bold text-emerald-600 dark:text-emerald-400">{studentInfo.name}</span>! Your enrollment in <span className="text-text-heading dark:text-white font-bold">{selectedCourse.title}</span> has been confirmed.
               </p>
-              <div className="text-[11px] text-slate-500 font-mono">
-                Tax Invoice ID: <span className="text-primary-blue font-bold">{generatedInvoice.invoiceNumber}</span>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                Tax Invoice ID: <span className="text-primary-blue dark:text-blue-400 font-bold">{generatedInvoice.invoiceNumber}</span>
               </div>
             </div>
 
@@ -767,7 +765,7 @@ function CourseRegistrationContent() {
 
               <Link
                 href="/dashboard/my-courses"
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-6 py-3.5 text-xs font-bold text-slate-800 hover:bg-slate-100 transition-all"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#151D2E] px-6 py-3.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1B2538] transition-all"
               >
                 Launch Student Dashboard <ArrowRight className="h-4 w-4" />
               </Link>
@@ -778,38 +776,38 @@ function CourseRegistrationContent() {
         {/* Auth Gate Modal for Unauthenticated Users */}
         {showAuthGateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="relative w-full max-w-md rounded-3xl border border-slate-100 bg-white p-6 sm:p-8 text-center shadow-2xl space-y-5">
+            <div className="relative w-full max-w-md rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#111827] p-6 sm:p-8 text-center shadow-2xl space-y-5">
               <button
                 type="button"
                 onClick={() => setShowAuthGateModal(false)}
-                className="absolute top-4 right-4 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                className="absolute top-4 right-4 rounded-full p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </button>
 
-              <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-blue-50 text-primary-blue shadow-inner ring-4 ring-blue-50">
-                <Lock className="h-8 w-8 text-primary-blue" />
+              <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-primary-blue dark:text-blue-400 shadow-inner ring-4 ring-blue-50 dark:ring-blue-950/40">
+                <Lock className="h-8 w-8 text-primary-blue dark:text-blue-400" />
               </div>
 
               <div className="space-y-1.5">
-                <h3 className="text-xl font-bold text-slate-900">Sign in to Enroll</h3>
-                <p className="text-xs text-slate-600 leading-relaxed max-w-xs mx-auto">
-                  To enroll in <strong className="text-slate-900">{selectedCourse.title}</strong> and receive live cohort LMS access, please sign in to your student account.
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Sign in to Enroll</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-xs mx-auto">
+                  To enroll in <strong className="text-slate-900 dark:text-white">{selectedCourse.title}</strong> and receive live cohort LMS access, please sign in to your student account.
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-50 border border-slate-100 p-3 text-left space-y-1.5 text-xs text-slate-600">
+              <div className="rounded-xl bg-slate-50 dark:bg-[#151D2E] border border-slate-100 dark:border-slate-800 p-3 text-left space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Automatic LMS portal access provisioning</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Official GST Tax Invoice mapped to your profile</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Direct live faculty mentorship link</span>
                 </div>
               </div>
@@ -824,7 +822,7 @@ function CourseRegistrationContent() {
                 </Link>
                 <Link
                   href={`/register?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-3 px-4 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] py-3 px-4 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2538] transition-colors"
                 >
                   Create Free Student Account
                 </Link>

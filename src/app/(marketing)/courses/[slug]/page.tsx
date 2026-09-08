@@ -49,7 +49,7 @@ export default async function CourseDetailPage({
           <Reveal
             variant="fade-up"
             delay={0.1}
-            className="mt-8 flex items-center gap-4 rounded-lg border border-border bg-white p-4"
+            className="mt-8 flex items-center gap-4 rounded-lg border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-4"
           >
             <PlayCircle className="h-10 w-10 shrink-0 text-primary-blue" />
             <div>
@@ -73,13 +73,13 @@ export default async function CourseDetailPage({
             <Reveal
               variant="stagger"
               staggerDelay={0.06}
-              className="mt-6 divide-y divide-border rounded-lg border border-border bg-white"
+              className="mt-6 divide-y divide-border dark:divide-slate-800/80 rounded-lg border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827]"
             >
               {course.modules.map((module, i) => (
                 <details key={module.title} className="group" open={i === 0}>
                   <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4">
                     <span className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-blue/10 text-body-sm font-semibold text-primary-blue">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-blue/10 dark:bg-blue-950/60 text-body-sm font-semibold text-primary-blue">
                         {i + 1}
                       </span>
                       <span className="font-semibold text-text-heading">{module.title}</span>
@@ -133,7 +133,7 @@ export default async function CourseDetailPage({
 
         {/* Sticky purchase card */}
         <aside className="lg:sticky lg:top-24 lg:h-fit">
-          <Reveal variant="scale-in" className="rounded-lg border border-border bg-white p-6 shadow-md">
+          <Reveal variant="scale-in" className="rounded-lg border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 shadow-md dark:shadow-slate-950/50">
             <div className="text-h1 text-text-heading">
               &#8377;{course.price.toLocaleString("en-IN")}
             </div>
@@ -149,7 +149,7 @@ export default async function CourseDetailPage({
             <button className={buttonVariants({ variant: "secondary", size: "md" }) + " mt-3 w-full"}>
               <Download className="h-4 w-4" /> Download Brochure
             </button>
-            <ul className="mt-6 space-y-2 border-t border-border pt-6 text-sm text-text-body">
+            <ul className="mt-6 space-y-2 border-t border-border dark:border-slate-800 pt-6 text-sm text-text-body">
               <li>{course.durationWeeks} weeks &middot; self-paced</li>
               <li>{course.modules.length} modules, {totalTopics} topics</li>
               <li>Certificate on completion</li>

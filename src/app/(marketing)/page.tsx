@@ -56,7 +56,7 @@ export default function HomePage() {
       <InteractiveHero />
 
       {/* Trust stats */}
-      <section className="border-b border-border bg-white">
+      <section className="border-b border-border dark:border-slate-800/80 bg-white dark:bg-[#111827]">
         <Reveal
           variant="stagger"
           className="mx-auto grid max-w-[1280px] grid-cols-2 gap-8 px-6 py-12 lg:grid-cols-4 lg:px-16"
@@ -101,7 +101,7 @@ export default function HomePage() {
       </section>
 
       {/* Why JKS */}
-      <section className="bg-white py-24">
+      <section className="bg-white dark:bg-[#0E1526] py-24">
         <div className="mx-auto max-w-[1280px] px-6 lg:px-16">
           <Reveal className="mb-12 max-w-xl">
             <span className="text-label text-primary-blue">Why JKS Learning</span>
@@ -115,7 +115,7 @@ export default function HomePage() {
           >
             {WHY_JKS.map((item) => (
               <div key={item.title}>
-                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary-blue/10">
+                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary-blue/10 dark:bg-blue-950/60">
                   <item.icon className="h-6 w-6 text-primary-blue" />
                 </div>
                 <h3 className="text-h3 mt-4 text-text-heading">{item.title}</h3>
@@ -129,7 +129,7 @@ export default function HomePage() {
       <LearningJourney />
 
       {/* AI Mock Interview feature */}
-      <section className="relative overflow-hidden bg-primary-dark py-24 text-white">
+      <section className="relative overflow-hidden bg-[#0B1F3A] dark:bg-[#070C18] py-24 text-white">
         <div
           className="pointer-events-none absolute inset-0 opacity-30"
           style={{
@@ -140,38 +140,41 @@ export default function HomePage() {
         <NetworkBackground variant="compact" />
         <div className="relative mx-auto grid max-w-[1280px] grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:px-16">
           <Reveal variant="fade-up">
-            <span className="text-label text-primary-blue">The JKS Differentiator</span>
-            <h2 className="text-h2 mt-2 text-white">AI Mock Interview & Readiness Report</h2>
-            <p className="mt-4 text-white/70">
+            <span className="text-label text-blue-400 font-bold tracking-wider">The JKS Differentiator</span>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mt-2 text-white tracking-tight">AI Mock Interview & Readiness Report</h2>
+            <p className="mt-4 text-slate-300 leading-relaxed font-normal">
               Select your technology, experience level, and interview type. Our AI
               generates adaptive questions, evaluates your answers across five
               categories, and returns a full readiness report with an improvement plan.
             </p>
-            <ul className="mt-6 space-y-3 text-sm text-white/80">
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary-blue" /> Technical,
+            <ul className="mt-6 space-y-3 text-sm text-slate-200">
+              <li className="flex items-center gap-2.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0" /> Technical,
                 scenario-based, HR, and experience-based modes
               </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary-blue" /> Scored on
+              <li className="flex items-center gap-2.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0" /> Scored on
                 Technical Knowledge, Problem Solving, Communication, Answer Quality,
                 Confidence
               </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary-blue" /> Saved to
+              <li className="flex items-center gap-2.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0" /> Saved to
                 your profile, retake with adjusted focus areas
               </li>
             </ul>
             <MagneticButton className="mt-8 inline-block">
-              <Link href="/ai-mock-interview" className={buttonVariants({ size: "lg" })}>
+              <Link
+                href="/ai-mock-interview"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer"
+              >
                 Try a Mock Interview <ArrowRight className="h-4 w-4" />
               </Link>
             </MagneticButton>
           </Reveal>
-          <Reveal variant="scale-in" className="rounded-xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+          <Reveal variant="scale-in" className="rounded-2xl border border-slate-700/60 bg-slate-900/60 p-8 backdrop-blur-md shadow-xl">
             <div className="flex items-center justify-between">
-              <span className="text-label text-white/50">Sample Report</span>
-              <span className="text-label text-success">Interview Ready</span>
+              <span className="text-label text-slate-400 font-semibold">Sample Report</span>
+              <span className="text-label text-emerald-400 font-bold">Interview Ready</span>
             </div>
             <div className="mt-6 grid grid-cols-2 gap-4">
               {SAMPLE_SCORES.map(([label, score]) => (
@@ -202,20 +205,17 @@ export default function HomePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-primary-blue">
+      <section className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-600 dark:to-indigo-700">
         <Reveal variant="scale-in" className="mx-auto max-w-[1280px] px-6 py-16 text-center lg:px-16">
-          <h2 className="text-h2 text-white">Ready to build a career-ready skillset?</h2>
-          <p className="mx-auto mt-3 max-w-xl text-white/80">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">Ready to build a career-ready skillset?</h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm sm:text-base text-blue-100 font-medium leading-relaxed">
             Join thousands of learners upskilling with structured courses and AI-driven
             interview practice.
           </p>
           <MagneticButton className="mt-8 inline-block">
             <Link
               href="/courses"
-              className={
-                buttonVariants({ variant: "secondary", size: "lg" }) +
-                " border-white bg-white text-primary-blue hover:bg-white/90 hover:text-primary-blue"
-              }
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-bold text-blue-600 shadow-xl hover:bg-slate-50 hover:text-blue-700 hover:scale-105 transition-all cursor-pointer"
             >
               Explore Courses <ArrowRight className="h-4 w-4" />
             </Link>

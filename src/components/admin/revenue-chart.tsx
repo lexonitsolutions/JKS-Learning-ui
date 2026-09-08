@@ -134,7 +134,7 @@ export function RevenueChart({
                 x={paddingLeft - 10}
                 y={y + 4}
                 textAnchor="end"
-                className="fill-slate-400 text-[11px] font-medium"
+                className="fill-slate-400 dark:fill-slate-500 text-[11px] font-medium"
               >
                 {tick.label}
               </text>
@@ -143,7 +143,8 @@ export function RevenueChart({
                 y1={y}
                 x2={paddingLeft + chartW}
                 y2={y}
-                stroke="#E2E8F0"
+                stroke="currentColor"
+                className="text-slate-200 dark:text-slate-800"
                 strokeWidth="1"
                 strokeDasharray={tick.value === 0 ? "none" : "2 3"}
                 opacity={tick.value === 0 ? 0.8 : 0.6}
@@ -163,7 +164,7 @@ export function RevenueChart({
               x={x}
               y={height - 6}
               textAnchor="middle"
-              className="fill-slate-400 text-[11px] font-medium"
+              className="fill-slate-400 dark:fill-slate-500 text-[11px] font-medium"
             >
               {day}
             </text>
@@ -217,9 +218,9 @@ export function RevenueChart({
                 cy={p.y}
                 r={isHovered ? "5.5" : "3.5"}
                 fill="#2563EB"
-                stroke="#FFFFFF"
+                stroke="currentColor"
                 strokeWidth={isHovered ? "2.5" : "1.8"}
-                className="transition-all duration-150"
+                className="text-white dark:text-slate-900 transition-all duration-150"
               />
             </g>
           );
@@ -262,13 +263,13 @@ export function RevenueChart({
       {/* Floating HTML tooltip */}
       {hoveredIndex !== null && points[hoveredIndex] && (
         <div
-          className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full rounded-lg bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white shadow-lg transition-all"
+          className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full rounded-lg bg-slate-900 dark:bg-[#1B2538] border border-transparent dark:border-slate-700/80 px-2.5 py-1 text-xs font-semibold text-white shadow-lg transition-all"
           style={{
             left: `${(points[hoveredIndex].x / width) * 100}%`,
             top: `${(points[hoveredIndex].y / height) * 100 - 8}%`,
           }}
         >
-          <div className="text-[10px] font-normal text-slate-300">Day {points[hoveredIndex].data.day}</div>
+          <div className="text-[10px] font-normal text-slate-300 dark:text-slate-400">Day {points[hoveredIndex].data.day}</div>
           <div>₹{points[hoveredIndex].data.revenue.toFixed(1)}L</div>
         </div>
       )}

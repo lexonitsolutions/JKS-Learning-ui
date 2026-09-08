@@ -30,23 +30,23 @@ const COLUMNS = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-white/10 bg-primary-dark text-white/70">
+    <footer className="border-t border-slate-800 dark:border-slate-800/80 bg-[#0B1020] dark:bg-[#070C18] text-slate-300">
       <div className="mx-auto max-w-[1280px] px-6 py-16 lg:px-16">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
           <div className="col-span-2">
             <JksLogo size="md" variant="dark" />
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/60">
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-400">
               Career-focused IT upskilling with structured courses and AI-powered
               interview readiness for Full Stack, Frontend, and SAP professionals.
             </p>
           </div>
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <h4 className="text-label text-white/50">{col.title}</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 dark:text-white">{col.title}</h4>
               <ul className="mt-4 space-y-3">
                 {col.links.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="text-sm transition-colors hover:text-white">
+                    <Link href={link.href} className="text-sm text-slate-400 transition-colors hover:text-white">
                       {link.label}
                     </Link>
                   </li>
@@ -55,13 +55,13 @@ export function SiteFooter() {
             </div>
           ))}
         </div>
-        <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 text-sm sm:flex-row">
-          <p className="text-white/60">&copy; {new Date().getFullYear()} JKS Learning. All rights reserved.</p>
+        <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-slate-800/80 pt-8 text-sm sm:flex-row">
+          <p className="text-slate-400">&copy; {new Date().getFullYear()} JKS Learning. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <Link href="/privacy-policy" className="transition-colors hover:text-white">
+            <Link href="/privacy-policy" className="text-slate-400 transition-colors hover:text-white">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="transition-colors hover:text-white">
+            <Link href="/terms" className="text-slate-400 transition-colors hover:text-white">
               Terms of Service
             </Link>
           </div>

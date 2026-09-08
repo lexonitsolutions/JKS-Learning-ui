@@ -44,25 +44,25 @@ export function InterviewFaq() {
             key={idx}
             className={`rounded-xl border transition-all duration-200 overflow-hidden ${
               isOpen
-                ? "border-primary-blue/40 bg-white shadow-sm"
-                : "border-border bg-bg-light/60 hover:bg-white"
+                ? "border-primary-blue/40 dark:border-primary-blue/50 bg-white dark:bg-[#111827] shadow-sm dark:shadow-black/40"
+                : "border-border dark:border-slate-800/80 bg-bg-light/60 dark:bg-[#111827]/60 hover:bg-white dark:hover:bg-[#111827]"
             }`}
           >
             <button
               onClick={() => setOpenIndex(isOpen ? null : idx)}
-              className="flex w-full items-center justify-between p-5 text-left font-semibold text-text-heading cursor-pointer text-sm sm:text-base"
+              className="flex w-full items-center justify-between p-5 text-left font-semibold text-text-heading dark:text-white cursor-pointer text-sm sm:text-base"
             >
               <span className="flex items-center gap-3">
                 <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-mono ${
-                  isOpen ? "bg-primary-blue text-white" : "bg-primary-blue/10 text-primary-blue"
+                  isOpen ? "bg-primary-blue text-white" : "bg-primary-blue/10 dark:bg-primary-blue/20 text-primary-blue dark:text-blue-400"
                 }`}>
                   {idx + 1}
                 </span>
                 {faq.q}
               </span>
               <ChevronDown
-                className={`h-4 w-4 text-text-body transition-transform duration-200 ${
-                  isOpen ? "rotate-180 text-primary-blue" : ""
+                className={`h-4 w-4 text-text-body dark:text-slate-400 transition-transform duration-200 ${
+                  isOpen ? "rotate-180 text-primary-blue dark:text-blue-400" : ""
                 }`}
               />
             </button>
@@ -74,7 +74,7 @@ export function InterviewFaq() {
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.25, ease: "easeInOut" }}
                 >
-                  <div className="px-5 pb-5 pt-1 text-sm leading-relaxed text-text-body border-t border-border/40">
+                  <div className="px-5 pb-5 pt-1 text-sm leading-relaxed text-text-body dark:text-slate-300 border-t border-border/40 dark:border-slate-800/60">
                     {faq.a}
                   </div>
                 </motion.div>

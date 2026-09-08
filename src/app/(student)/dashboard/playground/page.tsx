@@ -590,9 +590,9 @@ export default function PlaygroundPage() {
           </div>
 
           {/* ================= RIGHT: Live Browser & Console Output ================= */}
-          <div className="w-full lg:w-[420px] shrink-0 flex flex-col bg-white overflow-hidden">
+          <div className="w-full lg:w-[420px] shrink-0 flex flex-col bg-white dark:bg-[#111827] overflow-hidden">
             {/* Output Header with Run Button */}
-            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#151D2E] px-3 py-2">
               <div className="flex items-center gap-1">
                 {currentLang === "html-css-js" && (
                   <button
@@ -600,8 +600,8 @@ export default function PlaygroundPage() {
                     onClick={() => setViewMode("browser")}
                     className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-bold transition-colors cursor-pointer ${
                       viewMode === "browser"
-                        ? "bg-white text-slate-900 shadow-xs"
-                        : "text-slate-500 hover:text-slate-900"
+                        ? "bg-white text-slate-900 shadow-xs dark:bg-[#111827] dark:text-white"
+                        : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                     }`}
                   >
                     <Monitor className="h-3.5 w-3.5" />
@@ -613,8 +613,8 @@ export default function PlaygroundPage() {
                   onClick={() => setViewMode("console")}
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-bold transition-colors cursor-pointer ${
                     viewMode === "console"
-                      ? "bg-white text-slate-900 shadow-xs"
-                      : "text-slate-500 hover:text-slate-900"
+                      ? "bg-white text-slate-900 shadow-xs dark:bg-[#111827] dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                   }`}
                 >
                   <Terminal className="h-3.5 w-3.5" />
@@ -635,13 +635,13 @@ export default function PlaygroundPage() {
             </div>
 
             {/* Output Canvas */}
-            <div className="flex-1 relative bg-white overflow-hidden">
+            <div className="flex-1 relative bg-white dark:bg-[#111827] overflow-hidden">
               {viewMode === "browser" && currentLang === "html-css-js" ? (
                 <iframe
                   ref={iframeRef}
                   title="Live Sandbox Output"
                   sandbox="allow-scripts allow-modals"
-                  className="w-full h-full border-none bg-white"
+                  className="w-full h-full border-none bg-white dark:bg-[#111827]"
                 />
               ) : (
                 /* Terminal Console Output */

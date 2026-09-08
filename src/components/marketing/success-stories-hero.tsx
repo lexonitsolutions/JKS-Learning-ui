@@ -118,7 +118,7 @@ export function SuccessStoriesHero() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#eef4ff] to-[#dce9fc] pt-12 pb-16 lg:pt-20 lg:pb-20">
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#eef4ff] to-[#dce9fc] dark:from-[#0B1020] dark:via-[#0E1526] dark:to-[#0B1020] pt-12 pb-16 lg:pt-20 lg:pb-20 transition-colors duration-300">
       {/* Soft ambient glows */}
       <div
         className="pointer-events-none absolute inset-0"
@@ -139,7 +139,7 @@ export function SuccessStoriesHero() {
           animate={reducedMotion ? undefined : { y: [0, -8, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
         >
-          <Staircase className="w-full h-auto opacity-80" />
+          <Staircase className="w-full h-auto opacity-80 dark:opacity-20" />
         </motion.div>
       </motion.div>
 
@@ -153,10 +153,10 @@ export function SuccessStoriesHero() {
               initial="hidden"
               animate="visible"
               custom={0}
-              className="inline-flex items-center gap-2 rounded-full bg-primary-blue/10 px-4 py-2"
+              className="inline-flex items-center gap-2 rounded-full bg-primary-blue/10 dark:bg-primary-blue/20 px-4 py-2"
             >
-              <BadgeCheck className="h-4 w-4 text-primary-blue" />
-              <span className="text-[11px] font-bold tracking-[0.12em] text-primary-blue uppercase">
+              <BadgeCheck className="h-4 w-4 text-primary-blue dark:text-blue-400" />
+              <span className="text-[11px] font-bold tracking-[0.12em] text-primary-blue dark:text-blue-400 uppercase">
                 Verified Career Outcomes
               </span>
             </motion.div>
@@ -164,9 +164,9 @@ export function SuccessStoriesHero() {
             {/* Headline */}
             <h1 className="mt-6 text-[40px] sm:text-[52px] lg:text-[60px] font-extrabold tracking-tight leading-[1.08]">
               {[
-                { text: "Real Engineers.", className: "text-slate-900" },
-                { text: "Proven Placements.", className: "text-primary-blue" },
-                { text: "Unstoppable Growth.", className: "text-slate-900" },
+                { text: "Real Engineers.", className: "text-slate-900 dark:text-white" },
+                { text: "Proven Placements.", className: "text-primary-blue dark:text-blue-400" },
+                { text: "Unstoppable Growth.", className: "text-slate-900 dark:text-white" },
               ].map((line, i) => (
                 <motion.span
                   key={line.text}
@@ -187,7 +187,7 @@ export function SuccessStoriesHero() {
               initial="hidden"
               animate="visible"
               custom={0.5}
-              className="mt-6 max-w-xl text-base sm:text-lg text-slate-600 leading-relaxed"
+              className="mt-6 max-w-xl text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed"
             >
               From non-tech backgrounds and support desks to Tier-1 product firms and global SAP
               consultancies. Explore how our curriculum and AI Mock Interview simulator paved the
@@ -219,7 +219,7 @@ export function SuccessStoriesHero() {
                   href="/dashboard/ai-interview"
                   className={
                     buttonVariants({ variant: "secondary", size: "lg" }) +
-                    " rounded-xl border-transparent bg-white text-slate-900 font-semibold shadow-md shadow-slate-900/5 hover:bg-white hover:text-primary-blue hover:shadow-lg transition-shadow"
+                    " rounded-xl border border-transparent dark:border-slate-700/80 bg-white dark:bg-[#111827] text-slate-900 dark:text-slate-200 font-semibold shadow-md shadow-slate-900/5 hover:bg-white dark:hover:bg-[#151D2E] hover:text-primary-blue dark:hover:text-blue-400 hover:shadow-lg transition-all"
                   }
                 >
                   Test Your Interview Readiness
@@ -248,7 +248,7 @@ export function SuccessStoriesHero() {
                     rotateY: reducedMotion ? 0 : rotateY,
                     transformStyle: "preserve-3d",
                   }}
-                  className="relative flex flex-col gap-4 rounded-[28px] border border-white/70 bg-white/55 p-5 shadow-[0_24px_60px_-16px_rgba(11,31,58,0.18)] backdrop-blur-xl"
+                  className="relative flex flex-col gap-4 rounded-[28px] border border-white/70 dark:border-slate-700/60 bg-white/55 dark:bg-[#111827]/70 p-5 shadow-[0_24px_60px_-16px_rgba(11,31,58,0.18)] dark:shadow-black/60 backdrop-blur-xl"
                 >
                   {/* Card 1 — Placement profile */}
                   <motion.div
@@ -256,7 +256,7 @@ export function SuccessStoriesHero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.55 }}
                     style={{ transform: "translateZ(36px)" }}
-                    className="flex items-center justify-between rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/[0.04] transition-shadow hover:shadow-md"
+                    className="flex items-center justify-between rounded-2xl bg-white dark:bg-[#151D2E] p-4 shadow-sm ring-1 ring-slate-900/[0.04] dark:ring-slate-700/40 transition-shadow hover:shadow-md"
                   >
                     <div className="flex items-center gap-3.5">
                       <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-blue to-cyan-500 text-white font-bold text-sm shadow-md">
@@ -264,19 +264,19 @@ export function SuccessStoriesHero() {
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[15px] font-bold text-slate-900">Priya Nair</span>
-                          <BadgeCheck className="h-4 w-4 text-primary-blue fill-primary-blue/15" />
+                          <span className="text-[15px] font-bold text-slate-900 dark:text-white">Priya Nair</span>
+                          <BadgeCheck className="h-4 w-4 text-primary-blue dark:text-blue-400 fill-primary-blue/15" />
                         </div>
-                        <p className="text-[13px] text-slate-500 font-medium">
+                        <p className="text-[13px] text-slate-500 dark:text-slate-400 font-medium">
                           SAP MM Consultant @ Deloitte
                         </p>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <span className="rounded-lg bg-primary-blue/10 px-2.5 py-1 text-[13px] font-bold text-primary-blue">
+                      <span className="rounded-lg bg-primary-blue/10 dark:bg-primary-blue/20 px-2.5 py-1 text-[13px] font-bold text-primary-blue dark:text-blue-400">
                         ₹16.5 LPA
                       </span>
-                      <div className="text-[11px] font-medium text-slate-500 mt-1.5">+75% Hike</div>
+                      <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1.5">+75% Hike</div>
                     </div>
                   </motion.div>
 
@@ -286,10 +286,10 @@ export function SuccessStoriesHero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.7 }}
                     style={{ transform: "translateZ(24px)" }}
-                    className="rounded-2xl bg-white p-5 pb-6 shadow-sm ring-1 ring-slate-900/[0.04] transition-shadow hover:shadow-md"
+                    className="rounded-2xl bg-white dark:bg-[#151D2E] p-5 pb-6 shadow-sm ring-1 ring-slate-900/[0.04] dark:ring-slate-700/40 transition-shadow hover:shadow-md"
                   >
                     <div className="flex items-center justify-center gap-2">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-blue">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-blue dark:bg-primary-blue/80">
                         <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" aria-hidden>
                           <path
                             d="M2.5 6.5L5 9L9.5 3.5"
@@ -300,7 +300,7 @@ export function SuccessStoriesHero() {
                           />
                         </svg>
                       </span>
-                      <span className="text-sm font-bold text-slate-900">
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">
                         AI Diagnostic Growth Rate
                       </span>
                     </div>
@@ -308,14 +308,14 @@ export function SuccessStoriesHero() {
                     <div className="mt-5 flex items-end justify-between gap-4">
                       {/* Baseline */}
                       <div className="text-center shrink-0 pb-1">
-                        <div className="text-3xl sm:text-4xl font-extrabold text-slate-800">
+                        <div className="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-slate-100">
                           <CountUpStat target={58} duration={1.4} />
                         </div>
-                        <div className="text-xs font-medium text-slate-500 mt-1">Baseline</div>
+                        <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Baseline</div>
                       </div>
 
                       {/* Ascending bars */}
-                      <div className="flex h-[120px] sm:h-[140px] flex-1 items-end justify-center gap-2 sm:gap-2.5 border-b border-slate-200 pb-0">
+                      <div className="flex h-[120px] sm:h-[140px] flex-1 items-end justify-center gap-2 sm:gap-2.5 border-b border-slate-200 dark:border-slate-700 pb-0">
                         {GROWTH_BARS.map((h, i) => (
                           <motion.div
                             key={i}
@@ -342,10 +342,10 @@ export function SuccessStoriesHero() {
 
                       {/* Interview Ready */}
                       <div className="text-center shrink-0 pb-1">
-                        <div className="text-3xl sm:text-4xl font-extrabold text-emerald-500">
+                        <div className="text-3xl sm:text-4xl font-extrabold text-emerald-500 dark:text-emerald-400">
                           <CountUpStat target={91} duration={1.8} />
                         </div>
-                        <div className="text-xs font-medium text-slate-500 mt-1 leading-tight">
+                        <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 leading-tight">
                           Interview
                           <br />
                           Ready
@@ -360,22 +360,22 @@ export function SuccessStoriesHero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.85 }}
                     style={{ transform: "translateZ(42px)" }}
-                    className="flex items-center justify-between rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/[0.04] transition-shadow hover:shadow-md"
+                    className="flex items-center justify-between rounded-2xl bg-white dark:bg-[#151D2E] p-4 shadow-sm ring-1 ring-slate-900/[0.04] dark:ring-slate-700/40 transition-shadow hover:shadow-md"
                   >
                     <div className="flex items-center gap-3.5">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-blue/10 text-primary-blue">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-blue/10 dark:bg-primary-blue/20 text-primary-blue dark:text-blue-400">
                         <UserRound className="h-5 w-5" />
                       </div>
                       <div>
-                        <span className="text-sm font-bold text-slate-900 block">
+                        <span className="text-sm font-bold text-slate-900 dark:text-white block">
                           Capstone Defense
                         </span>
-                        <p className="text-[13px] text-slate-500 font-medium">
+                        <p className="text-[13px] text-slate-500 dark:text-slate-400 font-medium">
                           Distributed Payment Gateway
                         </p>
                       </div>
                     </div>
-                    <span className="rounded-lg bg-primary-blue/10 px-3 py-1.5 text-[13px] font-bold text-primary-blue shrink-0">
+                    <span className="rounded-lg bg-primary-blue/10 dark:bg-primary-blue/20 px-3 py-1.5 text-[13px] font-bold text-primary-blue dark:text-blue-400 shrink-0">
                       Verified
                     </span>
                   </motion.div>
@@ -390,22 +390,22 @@ export function SuccessStoriesHero() {
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-16 lg:mt-20 grid grid-cols-2 lg:grid-cols-4 gap-y-8 rounded-2xl bg-white/90 px-6 py-8 shadow-[0_12px_40px_-12px_rgba(11,31,58,0.12)] backdrop-blur-md lg:max-w-[920px]"
+          className="relative mt-16 lg:mt-20 grid grid-cols-2 lg:grid-cols-4 gap-y-8 rounded-2xl border border-transparent dark:border-slate-800/80 bg-white/90 dark:bg-[#111827]/90 px-6 py-8 shadow-[0_12px_40px_-12px_rgba(11,31,58,0.12)] dark:shadow-black/40 backdrop-blur-md lg:max-w-[920px]"
         >
           {TRUST_METRICS.map((metric, i) => (
             <div
               key={metric.sub}
               className={`flex flex-col items-center text-center ${
-                i > 0 ? "lg:border-l lg:border-slate-200" : ""
+                i > 0 ? "lg:border-l lg:border-slate-200 dark:lg:border-slate-800" : ""
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <metric.icon className="h-6 w-6 text-primary-blue shrink-0" />
-                <span className="text-2xl sm:text-[28px] font-extrabold text-slate-900">
+                <metric.icon className="h-6 w-6 text-primary-blue dark:text-blue-400 shrink-0" />
+                <span className="text-2xl sm:text-[28px] font-extrabold text-slate-900 dark:text-white">
                   <CountUpStat target={metric.target} prefix={metric.prefix} suffix={metric.suffix} />
                 </span>
               </div>
-              <span className="mt-1.5 text-[13px] font-medium text-slate-500">{metric.sub}</span>
+              <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">{metric.sub}</span>
             </div>
           ))}
         </motion.div>

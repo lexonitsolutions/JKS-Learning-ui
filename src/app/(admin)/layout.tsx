@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-screen text-slate-800 antialiased selection:bg-[#2563EB]/15 selection:text-[#2563EB]">
+    <div className="relative flex min-h-screen text-slate-800 dark:text-slate-100 antialiased selection:bg-[#2563EB]/15 selection:text-[#2563EB]">
       <AmbientPageBackground />
       <DashboardSidebar role="admin" />
       <main className="relative flex flex-1 flex-col min-w-0">{children}</main>

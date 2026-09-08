@@ -17,6 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
+import { AboutHeroVisual } from "./about-hero-visual";
 
 const INFINITE_CARDS_ROW1 = [
   { icon: Code2, label: "Live Microservices Sandboxes", tag: "Spring Boot 3 + Kafka", color: "text-blue-600 bg-blue-50 border-blue-200" },
@@ -38,57 +39,62 @@ export function AboutHeroSection() {
   const reducedMotion = useReducedMotion();
 
   return (
-    <section className="relative min-h-[90vh] flex flex-col justify-between overflow-hidden bg-bg-light text-text-heading pt-16 pb-12 px-6 lg:px-16 border-b border-border">
+    <section className="relative flex min-h-[90vh] flex-col justify-between overflow-hidden border-b border-border dark:border-slate-800/80 bg-bg-light dark:bg-[#0B1020] px-5 pb-12 pt-16 text-text-heading dark:text-white sm:px-6 lg:px-16 transition-colors duration-300">
       {/* Subtle Ambient Radial Lights */}
       <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-[420px] w-[800px] rounded-full bg-gradient-to-b from-blue-500/8 via-cyan-400/5 to-transparent blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 right-10 h-72 w-72 rounded-full bg-indigo-500/5 blur-2xl" />
 
       {/* Top Meta Indicator */}
       <div className="relative z-10 mx-auto max-w-[1280px] w-full flex items-center justify-between">
-        <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50/80 px-3.5 py-1.5 backdrop-blur-md shadow-xs">
+        <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 dark:border-blue-800/80 bg-blue-50/80 dark:bg-blue-950/60 px-3.5 py-1.5 backdrop-blur-md shadow-xs">
           <span className="h-2 w-2 rounded-full bg-primary-blue animate-ping" />
-          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary-blue">
+          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary-blue dark:text-blue-400">
             About JKS Learning
           </span>
         </div>
 
-        <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-text-body">
-          <Compass className="h-3.5 w-3.5 text-primary-blue" />
+        <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-text-body dark:text-slate-400">
+          <Compass className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" />
           <span>EST. 2026 • HYDERABAD &amp; BENGALURU</span>
         </div>
       </div>
 
-      {/* Main Editorial Headline & Narrative */}
-      <div className="relative z-10 mx-auto max-w-[1280px] w-full my-auto py-10 lg:py-16">
+      {/* Main Editorial Headline & Narrative + 3D Scene */}
+      <div className="relative z-10 mx-auto grid w-full max-w-[1280px] grid-cols-1 items-center gap-10 py-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-8 lg:py-14">
         <div className="max-w-4xl space-y-6">
           <div className="space-y-1">
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[80px] font-black tracking-tight leading-[1.04] text-text-heading">
+            <h1 className="text-[1.9rem] font-black leading-[1.06] tracking-tight text-text-heading dark:text-white sm:text-5xl md:text-6xl lg:text-[52px] xl:text-[62px]">
               LEARN TODAY.
               <br />
-              <span className="text-primary-blue">
+              <span className="text-primary-blue dark:text-blue-400">
                 BUILD TOMORROW.
               </span>
             </h1>
           </div>
 
-          <p className="max-w-2xl text-base sm:text-lg lg:text-xl text-text-body font-normal leading-relaxed">
+          <p className="max-w-2xl text-[0.95rem] font-normal leading-relaxed text-text-body dark:text-slate-300 sm:text-lg lg:text-[1.05rem] xl:text-xl">
             JKS Learning is built to help students develop practical knowledge, real-world skills, and the confidence to create their future.
           </p>
 
           {/* Quick Metrics Strip */}
-          <div className="flex flex-wrap items-center gap-6 pt-4 text-xs font-mono text-text-body border-t border-slate-200">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-slate-200 dark:border-slate-800 pt-4 font-mono text-xs text-text-body dark:text-slate-400">
             <div>
-              <span className="text-text-heading font-bold text-sm">8,000+</span> Students Empowered
+              <span className="text-text-heading dark:text-white font-bold text-sm">8,000+</span> Students Empowered
             </div>
-            <div className="h-3 w-px bg-slate-300" />
+            <div className="hidden h-3 w-px bg-slate-300 dark:bg-slate-700 sm:block" />
             <div>
-              <span className="text-text-heading font-bold text-sm">100%</span> Practical Project Sandboxes
+              <span className="text-text-heading dark:text-white font-bold text-sm">100%</span> Practical Project Sandboxes
             </div>
-            <div className="h-3 w-px bg-slate-300" />
+            <div className="hidden h-3 w-px bg-slate-300 dark:bg-slate-700 sm:block" />
             <div>
-              <span className="text-primary-blue font-bold text-sm">AI Readiness</span> Evaluation
+              <span className="text-primary-blue dark:text-blue-400 font-bold text-sm">AI Readiness</span> Evaluation
             </div>
           </div>
+        </div>
+
+        {/* 3D scene — order-last on mobile so the headline still owns the fold */}
+        <div className="order-last w-full lg:order-none">
+          <AboutHeroVisual />
         </div>
       </div>
 
@@ -110,14 +116,14 @@ export function AboutHeroSection() {
               return (
                 <div
                   key={i}
-                  className="flex items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3 shadow-[0_4px_16px_rgba(15,23,42,0.04)] shrink-0"
+                  className="flex items-center gap-3 rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] px-4 py-3 shadow-[0_4px_16px_rgba(15,23,42,0.04)] shrink-0"
                 >
                   <div className={`flex h-9 w-9 items-center justify-center rounded-xl border ${card.color}`}>
                     <Icon className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-text-heading whitespace-nowrap">{card.label}</div>
-                    <div className="text-[10px] font-mono text-slate-500 whitespace-nowrap">{card.tag}</div>
+                    <div className="text-xs font-bold text-text-heading dark:text-white whitespace-nowrap">{card.label}</div>
+                    <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">{card.tag}</div>
                   </div>
                 </div>
               );
@@ -141,14 +147,14 @@ export function AboutHeroSection() {
               return (
                 <div
                   key={i}
-                  className="flex items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3 shadow-[0_4px_16px_rgba(15,23,42,0.04)] shrink-0"
+                  className="flex items-center gap-3 rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] px-4 py-3 shadow-[0_4px_16px_rgba(15,23,42,0.04)] shrink-0"
                 >
                   <div className={`flex h-9 w-9 items-center justify-center rounded-xl border ${card.color}`}>
                     <Icon className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-text-heading whitespace-nowrap">{card.label}</div>
-                    <div className="text-[10px] font-mono text-slate-500 whitespace-nowrap">{card.tag}</div>
+                    <div className="text-xs font-bold text-text-heading dark:text-white whitespace-nowrap">{card.label}</div>
+                    <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">{card.tag}</div>
                   </div>
                 </div>
               );
@@ -158,16 +164,16 @@ export function AboutHeroSection() {
       </div>
 
       {/* Bottom Scroll Cue */}
-      <div className="relative z-10 mx-auto max-w-[1280px] w-full flex items-end justify-between border-t border-border pt-4">
-        <div className="flex items-center gap-2.5 text-xs font-bold tracking-wider text-text-body uppercase">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-300 bg-white text-primary-blue shadow-xs animate-bounce">
+      <div className="relative z-10 mx-auto max-w-[1280px] w-full flex items-end justify-between border-t border-border dark:border-slate-800/80 pt-4">
+        <div className="flex items-center gap-2.5 text-xs font-bold tracking-wider text-text-body dark:text-slate-400 uppercase">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#111827] text-primary-blue dark:text-blue-400 shadow-xs animate-bounce">
             <ArrowDown className="h-3.5 w-3.5" />
           </div>
-          <span className="text-text-heading">Scroll to Explore</span>
+          <span className="text-text-heading dark:text-white">Scroll to Explore</span>
         </div>
 
-        <div className="text-right font-mono text-xs text-text-body">
-          <span className="text-primary-blue font-bold">01</span> / 06 • <span className="uppercase text-slate-400">Philosophy</span>
+        <div className="text-right font-mono text-xs text-text-body dark:text-slate-400">
+          <span className="text-primary-blue dark:text-blue-400 font-bold">01</span> / 06 • <span className="uppercase text-slate-400 dark:text-slate-500">Philosophy</span>
         </div>
       </div>
     </section>

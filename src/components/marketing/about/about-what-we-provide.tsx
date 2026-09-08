@@ -141,7 +141,7 @@ export function AboutWhatWeProvide() {
           {CAPABILITIES.map((panel, idx) => (
             <div
               key={panel.num}
-              className="rounded-[36px] border border-border bg-slate-50/50 p-8 sm:p-12 lg:p-16 shadow-[0_12px_40px_rgba(15,23,42,0.04)] transition-all duration-300 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-14 items-center"
+              className="rounded-[36px] border border-border dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#111827] p-8 sm:p-12 lg:p-16 shadow-[0_12px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-300 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-14 items-center"
             >
               {/* Left Column: Narrative Content */}
               <div className="space-y-6">
@@ -149,8 +149,8 @@ export function AboutWhatWeProvide() {
                   <span className="font-mono text-2xl sm:text-3xl font-black text-primary-blue">
                     {panel.num}
                   </span>
-                  <div className="h-4 w-px bg-slate-300" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-slate-500 font-mono">
+                  <div className="h-4 w-px bg-slate-300 dark:bg-slate-700" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 font-mono">
                     {panel.tag}
                   </span>
                 </div>
@@ -171,8 +171,8 @@ export function AboutWhatWeProvide() {
                 {/* Feature Bullets */}
                 <ul className="space-y-2.5 pt-2">
                   {panel.features.map((feat, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+                    <li key={i} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-200">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
                       <span>{feat}</span>
                     </li>
                   ))}
@@ -190,7 +190,7 @@ export function AboutWhatWeProvide() {
               </div>
 
               {/* Right Column: Visual Artifact */}
-              <div className="rounded-3xl border border-slate-200 bg-slate-900 text-white p-6 sm:p-8 shadow-xl space-y-4">
+              <div className="rounded-3xl border border-slate-200 dark:border-slate-800/80 bg-slate-900 text-white p-6 sm:p-8 shadow-xl space-y-4">
                 {panel.visual.type === "curriculum" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-xs border-b border-white/10 pb-3">

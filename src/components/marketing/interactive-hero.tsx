@@ -100,7 +100,7 @@ export function InteractiveHero() {
   return (
     <section
       ref={containerRef}
-      className="relative min-h-[92vh] sm:min-h-screen w-full overflow-hidden bg-gradient-to-b from-[#FAFBFD] via-[#F4F7FC] to-[#EDF2FA] text-slate-900 flex flex-col justify-between pt-8 sm:pt-14 pb-0"
+      className="relative min-h-[92vh] sm:min-h-screen w-full overflow-hidden bg-gradient-to-b from-[#FAFBFD] via-[#F4F7FC] to-[#EDF2FA] dark:from-[#0B1020] dark:via-[#0E1526] dark:to-[#111827] text-slate-900 dark:text-slate-100 flex flex-col justify-between pt-8 sm:pt-14 pb-0"
     >
       {/* Ambient Brand Blue & Cyan Glow Orbs */}
       <div
@@ -126,9 +126,9 @@ export function InteractiveHero() {
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="inline-flex items-center gap-2 rounded-full border border-blue-200/90 bg-white/90 px-4 py-1.5 text-xs font-semibold text-[#1E5EFF] shadow-[0_2px_12px_rgba(30,94,255,0.08)] backdrop-blur-md"
+          className="inline-flex items-center gap-2 rounded-full border border-blue-200/90 dark:border-blue-800/60 bg-white/90 dark:bg-[#111827]/90 px-4 py-1.5 text-xs font-semibold text-[#1E5EFF] dark:text-blue-400 shadow-[0_2px_12px_rgba(30,94,255,0.08)] backdrop-blur-md"
         >
-          <Sparkles className="h-3.5 w-3.5 fill-[#1E5EFF] text-[#1E5EFF]" />
+          <Sparkles className="h-3.5 w-3.5 fill-[#1E5EFF] dark:fill-blue-400 text-[#1E5EFF] dark:text-blue-400" />
           <span>Anti-Skip Enforced · AI Interview Ready · Verified Credentials</span>
         </motion.div>
 
@@ -137,10 +137,10 @@ export function InteractiveHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-          className="mt-5 text-3xl sm:text-5xl lg:text-[62px] font-extrabold tracking-tight text-slate-900 leading-[1.12]"
+          className="mt-5 text-3xl sm:text-5xl lg:text-[62px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]"
         >
           Career-Ready IT Mastery{" "}
-          <span className="font-serif italic font-normal bg-gradient-to-r from-[#1E5EFF] via-[#2563EB] to-cyan-500 bg-clip-text text-transparent">
+          <span className="font-serif italic font-normal bg-gradient-to-r from-[#1E5EFF] via-[#2563EB] to-cyan-500 dark:from-blue-400 dark:via-blue-500 dark:to-cyan-400 bg-clip-text text-transparent">
             Trained On Real Projects
           </span>{" "}
           & AI Mocks
@@ -151,7 +151,7 @@ export function InteractiveHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
-          className="mx-auto mt-4 sm:mt-5 max-w-2xl text-xs sm:text-base font-normal text-slate-600 leading-relaxed"
+          className="mx-auto mt-4 sm:mt-5 max-w-2xl text-xs sm:text-base font-normal text-slate-600 dark:text-slate-300 leading-relaxed"
         >
           Step-by-step Full Stack (Java, .NET, Frontend), Cloud &amp; SAP engineering. Anti-skip video protection ensures authentic completion, verified project milestones, and adaptive AI mock interviews that lead to tier-1 job offers.
         </motion.p>
@@ -165,7 +165,7 @@ export function InteractiveHero() {
         >
           <Link
             href="/courses"
-            className="group relative inline-flex items-center gap-2 rounded-xl bg-[#1E5EFF] px-6 py-3.5 text-xs sm:text-sm font-bold text-white shadow-[0_4px_20px_rgba(30,94,255,0.35)] transition-all hover:bg-blue-700 hover:scale-[1.02] hover:shadow-[0_6px_24px_rgba(30,94,255,0.45)]"
+            className="group relative inline-flex items-center gap-2 rounded-xl bg-[#1E5EFF] dark:bg-blue-600 px-6 py-3.5 text-xs sm:text-sm font-bold text-white shadow-[0_4px_20px_rgba(30,94,255,0.35)] transition-all hover:bg-blue-700 hover:scale-[1.02] hover:shadow-[0_6px_24px_rgba(30,94,255,0.45)]"
           >
             <span>Get Started</span>
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -173,9 +173,9 @@ export function InteractiveHero() {
 
           <Link
             href="/ai-mock-interview"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white/90 px-5 py-3.5 text-xs sm:text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-md transition-all hover:bg-slate-50 hover:text-slate-900"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white/90 dark:bg-[#151D2E] px-5 py-3.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm backdrop-blur-md transition-all hover:bg-slate-50 dark:hover:bg-[#1B2538] hover:text-slate-900 dark:hover:text-white"
           >
-            <BrainCircuit className="h-4 w-4 text-[#1E5EFF]" />
+            <BrainCircuit className="h-4 w-4 text-[#1E5EFF] dark:text-blue-400" />
             <span>Practice AI Mock</span>
           </Link>
         </motion.div>
@@ -232,16 +232,16 @@ export function InteractiveHero() {
           {/* Floating Badge 1: Top-Left */}
           <div
             ref={badgeLeftRef}
-            className="absolute top-12 sm:top-20 -left-2 sm:left-4 z-30 max-w-[190px] sm:max-w-[220px] rounded-2xl border border-white/90 bg-white/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] backdrop-blur-xl transition-transform hover:scale-105"
+            className="absolute top-12 sm:top-20 -left-2 sm:left-4 z-30 max-w-[190px] sm:max-w-[220px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827]/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-800">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-800 dark:text-slate-100">
               <span className="flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5 text-[#1E5EFF]" /> 8,140+ Students
+                <Users className="h-3.5 w-3.5 text-[#1E5EFF] dark:text-blue-400" /> 8,140+ Students
               </span>
             </div>
-            <p className="mt-0.5 text-[10px] font-medium text-slate-500">Active enrollments this month</p>
+            <p className="mt-0.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">Active enrollments this month</p>
             {/* Mini Progress Bar */}
-            <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+            <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <div className="h-full w-[88%] rounded-full bg-gradient-to-r from-[#1E5EFF] to-cyan-500" />
             </div>
           </div>
@@ -249,20 +249,20 @@ export function InteractiveHero() {
           {/* Floating Badge 2: Right */}
           <div
             ref={badgeRightRef}
-            className="absolute top-28 sm:top-36 -right-2 sm:right-2 z-30 max-w-[210px] sm:max-w-[250px] rounded-2xl border border-white/90 bg-white/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] backdrop-blur-xl transition-transform hover:scale-105"
+            className="absolute top-28 sm:top-36 -right-2 sm:right-2 z-30 max-w-[210px] sm:max-w-[250px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827]/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 font-bold text-[10px] text-[#1E5EFF]">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/60 font-bold text-[10px] text-[#1E5EFF] dark:text-blue-400">
                 DR
               </div>
               <div className="text-left">
-                <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800">
-                  <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Daniel (TCS)
+                <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800 dark:text-slate-100">
+                  <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> Daniel (TCS)
                 </div>
-                <div className="text-[9px] font-semibold text-[#1E5EFF]">Tier-1 Frontend Placement</div>
+                <div className="text-[9px] font-semibold text-[#1E5EFF] dark:text-blue-400">Tier-1 Frontend Placement</div>
               </div>
             </div>
-            <p className="mt-1.5 text-[10px] text-slate-600 leading-snug">
+            <p className="mt-1.5 text-[10px] text-slate-600 dark:text-slate-300 leading-snug">
               &quot;Cleared Google Tier-1 Mock Interview with 94% score! 🚀&quot;
             </p>
           </div>
@@ -270,18 +270,18 @@ export function InteractiveHero() {
           {/* Floating Badge 3: Bottom-Left */}
           <div
             ref={badgeBottomRef}
-            className="absolute bottom-16 sm:bottom-24 -left-4 sm:left-0 z-30 rounded-2xl border border-white/90 bg-white/95 px-3.5 py-2.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] backdrop-blur-xl transition-transform hover:scale-105 hidden sm:block"
+            className="absolute bottom-16 sm:bottom-24 -left-4 sm:left-0 z-30 rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827]/95 px-3.5 py-2.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105 hidden sm:block"
           >
-            <div className="text-[10px] font-medium text-slate-500 flex items-center gap-1">
+            <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1E5EFF]"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1E5EFF] dark:bg-blue-400"></span>
               </span>
               AI Interviews Completed
             </div>
-            <div className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-1 mt-0.5">
+            <div className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1 mt-0.5">
               <span>22,000+ Sessions</span>
-              <Award className="h-3.5 w-3.5 text-[#1E5EFF]" />
+              <Award className="h-3.5 w-3.5 text-[#1E5EFF] dark:text-blue-400" />
             </div>
           </div>
         </div>

@@ -93,7 +93,7 @@ export function AboutStory() {
   }, [reducedMotion]);
 
   return (
-    <section ref={sectionRef} className="relative bg-white">
+    <section ref={sectionRef} className="relative bg-white dark:bg-[#0B1020]">
       <div className="mx-auto max-w-[1280px] px-6 py-20 lg:px-16 lg:py-28">
         <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
@@ -115,7 +115,7 @@ export function AboutStory() {
             {/* Rail: a static track with a gold fill drawn on scroll. */}
             <span
               aria-hidden
-              className="absolute top-2 bottom-2 left-[11px] w-px bg-border sm:left-[15px]"
+              className="absolute top-2 bottom-2 left-[11px] w-px bg-border dark:bg-slate-800 sm:left-[15px]"
             />
             <span
               ref={railRef}
@@ -132,7 +132,7 @@ export function AboutStory() {
                 <span
                   data-milestone-dot
                   aria-hidden
-                  className="absolute top-1.5 -left-10 flex h-[23px] w-[23px] items-center justify-center rounded-full border border-border bg-white shadow-sm sm:-left-12 sm:h-[31px] sm:w-[31px]"
+                  className="absolute top-1.5 -left-10 flex h-[23px] w-[23px] items-center justify-center rounded-full border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] shadow-sm sm:-left-12 sm:h-[31px] sm:w-[31px]"
                 >
                   <span className="h-1.5 w-1.5 rounded-full bg-primary-blue sm:h-2 sm:w-2" />
                 </span>

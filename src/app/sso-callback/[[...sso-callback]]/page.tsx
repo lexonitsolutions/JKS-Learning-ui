@@ -57,12 +57,12 @@ export default function SSOCallbackPage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#F8FAFC] p-4 sm:p-6 md:p-10">
-      <div className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-2xl">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#F8FAFC] dark:bg-[#0B1020] p-4 sm:p-6 md:p-10">
+      <div className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-2xl">
         {/* Brand header */}
-        <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/60 px-7 py-5">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/60 dark:from-slate-900/80 dark:via-blue-950/40 dark:to-slate-900/80 px-7 py-5">
           <JksLogo size="md" href="" />
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-100 bg-white/80 px-3 py-1 text-[11px] font-bold text-[#2563EB]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-100 dark:border-blue-900/50 bg-white/80 dark:bg-blue-950/60 px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
             <ShieldCheck className="h-3.5 w-3.5" />
             Secure
           </span>
@@ -82,17 +82,17 @@ export default function SSOCallbackPage() {
               </span>
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg font-black tracking-tight text-slate-900">
+              <h1 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
                 Completing sign-in
               </h1>
-              <p className="mt-0.5 text-xs font-medium text-slate-500">
+              <p className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
                 Hang tight — this usually takes a second.
               </p>
             </div>
           </div>
 
           {/* Progress bar */}
-          <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
             <div
               className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-indigo-600 transition-[width] duration-700 ease-out"
               style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
@@ -112,8 +112,8 @@ export default function SSOCallbackPage() {
                       done
                         ? "border-transparent bg-[#16a34a] text-white"
                         : active
-                          ? "border-[#2563EB] bg-blue-50 text-[#2563EB]"
-                          : "border-slate-200 bg-white text-slate-300",
+                          ? "border-[#2563EB] bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] text-slate-300 dark:text-slate-600",
                     ].join(" ")}
                   >
                     {done ? (
@@ -122,7 +122,7 @@ export default function SSOCallbackPage() {
                       <span
                         className={[
                           "h-1.5 w-1.5 rounded-full",
-                          active ? "bg-[#2563EB]" : "bg-slate-300",
+                          active ? "bg-[#2563EB]" : "bg-slate-300 dark:bg-slate-600",
                           active && !reducedMotion ? "animate-pulse" : "",
                         ].join(" ")}
                       />
@@ -132,12 +132,12 @@ export default function SSOCallbackPage() {
                     <span
                       className={[
                         "block text-sm font-bold transition-colors duration-500",
-                        done || active ? "text-slate-900" : "text-slate-400",
+                        done || active ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500",
                       ].join(" ")}
                     >
                       {s.label}
                     </span>
-                    <span className="block text-[11px] font-medium text-slate-400">
+                    <span className="block text-[11px] font-medium text-slate-400 dark:text-slate-500">
                       {s.detail}
                     </span>
                   </span>
@@ -155,11 +155,11 @@ export default function SSOCallbackPage() {
 
           {/* Escape hatch — a link, never an automatic redirect. */}
           {isSlow && (
-            <div className="mt-6 rounded-2xl border border-amber-200 bg-[#fffbeb] px-4 py-3">
-              <p className="text-xs font-semibold text-amber-900">
+            <div className="mt-6 rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-[#fffbeb] dark:bg-amber-950/40 px-4 py-3">
+              <p className="text-xs font-semibold text-amber-900 dark:text-amber-300">
                 This is taking longer than usual.
               </p>
-              <p className="mt-1 text-[11px] font-medium leading-relaxed text-amber-800/80">
+              <p className="mt-1 text-[11px] font-medium leading-relaxed text-amber-800/80 dark:text-amber-400/80">
                 If a security check appeared above, complete it to continue. Otherwise you
                 can{" "}
                 <Link href="/dashboard" className="font-bold underline underline-offset-2">
@@ -175,8 +175,8 @@ export default function SSOCallbackPage() {
           )}
         </div>
 
-        <div className="border-t border-slate-100 bg-slate-50/60 px-7 py-3.5">
-          <p className="text-center text-[11px] font-medium text-slate-400">
+        <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] px-7 py-3.5">
+          <p className="text-center text-[11px] font-medium text-slate-400 dark:text-slate-500">
             Secured by Clerk · JKS Learning
           </p>
         </div>

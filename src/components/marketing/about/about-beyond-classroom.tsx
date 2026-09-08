@@ -62,20 +62,20 @@ export function AboutBeyondClassroom() {
   const [activePillar, setActivePillar] = useState(REAL_WORLD_PILLARS[0]);
 
   return (
-    <section className="relative bg-white text-text-heading py-20 lg:py-32 px-6 lg:px-16 border-t border-border overflow-hidden">
+    <section className="relative bg-white dark:bg-[#0E1526] text-text-heading dark:text-white py-20 lg:py-32 px-6 lg:px-16 border-t border-border dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
       <div className="mx-auto max-w-[1280px] space-y-16">
         {/* Section Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 border border-blue-200 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-blue">
-            <Sparkles className="h-3.5 w-3.5 text-primary-blue" />
+          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-blue dark:text-blue-400">
+            <Sparkles className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" />
             <span>Applied Education</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-text-heading leading-tight">
+          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-text-heading dark:text-white leading-tight">
             DON&apos;T JUST LEARN IT.
             <br />
-            <span className="text-primary-blue">USE IT.</span>
+            <span className="text-primary-blue dark:text-blue-400">USE IT.</span>
           </h2>
-          <p className="text-sm sm:text-base text-text-body max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-text-body dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
             JKS Learning encourages students to take what they learn beyond textbooks and classrooms — into projects, experiments, technology, creativity, and real-world problem solving.
           </p>
         </div>
@@ -92,30 +92,30 @@ export function AboutBeyondClassroom() {
                 onMouseEnter={() => setActivePillar(pillar)}
                 className={`rounded-[28px] border p-8 transition-all duration-300 cursor-pointer space-y-4 flex flex-col justify-between ${
                   isSelected
-                    ? "border-primary-blue bg-blue-50/40 shadow-lg shadow-primary-blue/5 ring-1 ring-primary-blue/20"
-                    : "border-border bg-slate-50/50 hover:bg-white hover:border-slate-300 shadow-xs"
+                    ? "border-primary-blue dark:border-blue-500/80 bg-blue-50/40 dark:bg-blue-950/20 shadow-lg shadow-primary-blue/5 dark:shadow-black/40 ring-1 ring-primary-blue/20 dark:ring-blue-500/30"
+                    : "border-border dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#111827] hover:bg-white dark:hover:bg-[#151D2E] hover:border-slate-300 dark:hover:border-slate-700 shadow-xs"
                 }`}
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-slate-200 text-primary-blue shadow-xs">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-[#151D2E] border border-slate-200 dark:border-slate-700 text-primary-blue dark:text-blue-400 shadow-xs">
                       <Icon className="h-6 w-6" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-0.5 rounded-full">
                       Applied
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-bold text-text-heading">
+                  <h3 className="text-xl font-bold text-text-heading dark:text-white">
                     {pillar.title}
                   </h3>
 
-                  <p className="text-xs sm:text-sm text-text-body leading-relaxed">
+                  <p className="text-xs sm:text-sm text-text-body dark:text-slate-300 leading-relaxed">
                     {pillar.description}
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-200/60 font-mono text-[11px] font-bold text-primary-blue">
+                <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800 font-mono text-[11px] font-bold text-primary-blue dark:text-blue-400">
                   {pillar.metric}
                 </div>
               </div>

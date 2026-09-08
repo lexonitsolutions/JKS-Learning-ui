@@ -133,11 +133,11 @@ function VelocityPerformanceChart() {
         </defs>
 
         {/* Horizontal Dashed Grid Lines */}
-        <line x1="35" y1="25" x2="580" y2="25" stroke="#F1F5F9" strokeWidth="1.5" strokeDasharray="3 3" />
-        <line x1="35" y1="70" x2="580" y2="70" stroke="#F1F5F9" strokeWidth="1.5" strokeDasharray="3 3" />
-        <line x1="35" y1="115" x2="580" y2="115" stroke="#F1F5F9" strokeWidth="1.5" strokeDasharray="3 3" />
-        <line x1="35" y1="160" x2="580" y2="160" stroke="#F1F5F9" strokeWidth="1.5" strokeDasharray="3 3" />
-        <line x1="35" y1="205" x2="580" y2="205" stroke="#F1F5F9" strokeWidth="1.5" />
+        <line x1="35" y1="25" x2="580" y2="25" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1.5" strokeDasharray="3 3" />
+        <line x1="35" y1="70" x2="580" y2="70" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1.5" strokeDasharray="3 3" />
+        <line x1="35" y1="115" x2="580" y2="115" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1.5" strokeDasharray="3 3" />
+        <line x1="35" y1="160" x2="580" y2="160" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1.5" strokeDasharray="3 3" />
+        <line x1="35" y1="205" x2="580" y2="205" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1.5" />
 
         {/* Y-Axis Labels */}
         <text x="0" y="28" fill="#94A3B8" fontSize="11" fontWeight="500">100%</text>
@@ -194,7 +194,7 @@ function VelocityPerformanceChart() {
       {/* Floating Hover Tooltip */}
       {hoveredPoint && (
         <div
-          className="absolute z-20 pointer-events-none -translate-x-1/2 -translate-y-full rounded-xl bg-slate-900 px-3 py-1.5 text-xs text-white shadow-xl backdrop-blur-md border border-slate-800 animate-in fade-in zoom-in-95 duration-150"
+          className="absolute z-20 pointer-events-none -translate-x-1/2 -translate-y-full rounded-xl bg-slate-900 dark:bg-[#1B2538] px-3 py-1.5 text-xs text-white shadow-xl backdrop-blur-md border border-slate-800 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150"
           style={{
             left: `${(hoveredPoint.x / 600) * 100}%`,
             top: `${(hoveredPoint.y / 220) * 100 - 10}%`,
@@ -268,16 +268,16 @@ export default function InstructorDashboardPage() {
         <Reveal variant="stagger" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {/* Card 1: Enrolled Students */}
           <TiltCard>
-            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 bg-white/95 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
-              <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#2F54EB]">
+            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+              <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#2F54EB] dark:text-blue-400">
                 <Users className="h-6 w-6" />
               </div>
               <div className="space-y-0.5 min-w-0">
-                <div className="text-2xl sm:text-[28px] font-black text-slate-900 leading-tight">
+                <div className="text-2xl sm:text-[28px] font-black text-slate-900 dark:text-white leading-tight">
                   3,520
                 </div>
-                <div className="text-xs font-semibold text-slate-600">Enrolled Students</div>
-                <div className="text-xs font-bold text-emerald-600 flex items-center gap-0.5 pt-0.5">
+                <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Enrolled Students</div>
+                <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 pt-0.5">
                   <span>↗ +18.4% this semester</span>
                 </div>
               </div>
@@ -286,16 +286,16 @@ export default function InstructorDashboardPage() {
 
           {/* Card 2: Active Courses */}
           <TiltCard>
-            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 bg-white/95 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
-              <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#2F54EB]">
+            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+              <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#2F54EB] dark:text-blue-400">
                 <BookOpen className="h-6 w-6" />
               </div>
               <div className="space-y-0.5 min-w-0">
-                <div className="text-2xl sm:text-[28px] font-black text-slate-900 leading-tight">
+                <div className="text-2xl sm:text-[28px] font-black text-slate-900 dark:text-white leading-tight">
                   3
                 </div>
-                <div className="text-xs font-semibold text-slate-600">Active Courses</div>
-                <div className="text-xs font-medium text-slate-400 pt-0.5 truncate">
+                <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Active Courses</div>
+                <div className="text-xs font-medium text-slate-400 dark:text-slate-500 pt-0.5 truncate">
                   2 Published • 1 In Studio
                 </div>
               </div>
@@ -304,16 +304,16 @@ export default function InstructorDashboardPage() {
 
           {/* Card 3: Pending Reviews */}
           <TiltCard>
-            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 bg-white/95 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
-              <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+              <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
                 <ClipboardList className="h-6 w-6" />
               </div>
               <div className="space-y-0.5 min-w-0">
-                <div className="text-2xl sm:text-[28px] font-black text-slate-900 leading-tight">
+                <div className="text-2xl sm:text-[28px] font-black text-slate-900 dark:text-white leading-tight">
                   14
                 </div>
-                <div className="text-xs font-semibold text-slate-600">Pending Reviews</div>
-                <div className="text-xs font-bold text-amber-600 flex items-center gap-1 pt-0.5">
+                <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Pending Reviews</div>
+                <div className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 pt-0.5">
                   <Clock className="h-3.5 w-3.5 shrink-0" />
                   <span>4 Urgent Coding Tests</span>
                 </div>
@@ -323,16 +323,16 @@ export default function InstructorDashboardPage() {
 
           {/* Card 4: Faculty Rating */}
           <TiltCard>
-            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 bg-white/95 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
-              <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-500">
+            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+              <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400">
                 <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
               </div>
               <div className="space-y-0.5 min-w-0">
-                <div className="text-2xl sm:text-[28px] font-black text-slate-900 leading-tight">
+                <div className="text-2xl sm:text-[28px] font-black text-slate-900 dark:text-white leading-tight">
                   4.9 / 5.0
                 </div>
-                <div className="text-xs font-semibold text-slate-600">Faculty Rating</div>
-                <div className="text-xs font-medium text-slate-400 pt-0.5 truncate">
+                <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Faculty Rating</div>
+                <div className="text-xs font-medium text-slate-400 dark:text-slate-500 pt-0.5 truncate">
                   98.6% Student Satisfaction
                 </div>
               </div>
@@ -345,19 +345,19 @@ export default function InstructorDashboardPage() {
         {/* ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           {/* Left: Curriculum Velocity & Performance Card (60%) */}
-          <div className="lg:col-span-7 flex flex-col justify-between rounded-[26px] border border-white/80 bg-white/95 p-5 sm:p-6 shadow-[0_10px_35px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+          <div className="lg:col-span-7 flex flex-col justify-between rounded-[26px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 sm:p-6 shadow-[0_10px_35px_rgb(20,50,100,0.04)] backdrop-blur-xl">
             <div className="flex items-center justify-between pb-2">
-              <h3 className="text-sm sm:text-base font-extrabold text-slate-900">
+              <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
                 Curriculum Velocity & Performance
               </h3>
 
               <div className="relative">
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <span>{selectedSemester}</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                 </button>
               </div>
             </div>
@@ -366,12 +366,12 @@ export default function InstructorDashboardPage() {
           </div>
 
           {/* Right: Live Doubt Clearing Card (40%) */}
-          <div className="lg:col-span-5 flex flex-col justify-between rounded-[26px] border border-white/80 bg-white/95 p-5 sm:p-6 shadow-[0_10px_35px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm sm:text-base font-extrabold text-slate-900">Live Doubt Clearing</h3>
+          <div className="lg:col-span-5 flex flex-col justify-between rounded-[26px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 sm:p-6 shadow-[0_10px_35px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">Live Doubt Clearing</h3>
               <Link
                 href="/instructor/profile"
-                className="text-xs font-bold text-[#2563EB] hover:underline"
+                className="text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:underline"
               >
                 View All
               </Link>
@@ -379,28 +379,28 @@ export default function InstructorDashboardPage() {
 
             <div className="space-y-2.5 flex-1 flex flex-col justify-center">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400">Next Session</span>
-                <span className="rounded-md bg-blue-50 px-2.5 py-0.5 text-[10px] font-black text-[#2563EB] tracking-wider uppercase">
+                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">Next Session</span>
+                <span className="rounded-md bg-blue-50 dark:bg-blue-950/50 px-2.5 py-0.5 text-[10px] font-black text-[#2563EB] dark:text-blue-400 tracking-wider uppercase">
                   SCHEDULED
                 </span>
               </div>
 
-              <div className="text-xl sm:text-2xl font-black text-[#2563EB]">
+              <div className="text-xl sm:text-2xl font-black text-[#2563EB] dark:text-blue-400">
                 6:00 PM – 7:30 PM IST
               </div>
 
-              <div className="text-sm font-extrabold text-slate-900 leading-snug">
+              <div className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">
                 Microservices Saga Orchestration & Kafka Stream Debugging
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
-              <span className="flex items-center gap-1.5 text-slate-500 font-medium">
-                <Users className="h-3.5 w-3.5 text-slate-400" />
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
+                <Users className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                 <span>42 Students RSVP&apos;d</span>
               </span>
 
-              <span className="font-bold text-emerald-600 flex items-center gap-1">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Room Ready</span>
               </span>

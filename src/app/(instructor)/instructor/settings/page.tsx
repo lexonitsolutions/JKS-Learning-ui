@@ -78,14 +78,14 @@ export default function InstructorSettingsPage() {
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-4xl mx-auto w-full">
         <form onSubmit={handleSave} className="space-y-6">
           {/* SECTION 1: TEACHING & EVALUATION AUTOMATION */}
-          <div className="rounded-[24px] border border-white/80 bg-white/90 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-5">
-            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-              <Sliders className="h-5 w-5 text-[#2563EB]" />
+          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-5">
+            <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
+              <Sliders className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
               <div>
-                <h3 className="text-sm font-extrabold text-slate-900">
+                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
                   Curriculum Evaluation & Grading Rules
                 </h3>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   Automated grading algorithms and assessment passing criteria
                 </p>
               </div>
@@ -93,13 +93,13 @@ export default function InstructorSettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
                   Minimum Section Passing Threshold (%)
                 </label>
                 <select
                   value={passingThreshold}
                   onChange={(e) => setPassingThreshold(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 font-medium text-slate-800 outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="70">70% (Standard Pass)</option>
                   <option value="75">75% (Recommended)</option>
@@ -109,13 +109,13 @@ export default function InstructorSettingsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
                   Late Assignment Submission Penalty
                 </label>
                 <select
                   value={lateSubmissionPenalty}
                   onChange={(e) => setLateSubmissionPenalty(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 font-medium text-slate-800 outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="0">0% (Grace Period / No Penalty)</option>
                   <option value="5">5% deduction per 24 hours</option>
@@ -125,13 +125,13 @@ export default function InstructorSettingsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
                   AI Plagiarism & Authenticity Sensitivity
                 </label>
                 <select
                   value={aiPlagiarismSensitivity}
                   onChange={(e) => setAiPlagiarismSensitivity(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 font-medium text-slate-800 outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="Strict">Strict (Flag &gt; 10% AI code generation)</option>
                   <option value="Standard">Standard (Flag &gt; 25% AI code generation)</option>
@@ -140,11 +140,11 @@ export default function InstructorSettingsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">
+                <label className="font-bold text-slate-700 dark:text-slate-300">
                   AI Auto-Grading Recommendation Engine
                 </label>
                 <div className="flex items-center gap-3 pt-1">
-                  <label className="flex items-center gap-2 cursor-pointer font-semibold text-slate-700">
+                  <label className="flex items-center gap-2 cursor-pointer font-semibold text-slate-700 dark:text-slate-300">
                     <input
                       type="checkbox"
                       checked={aiAssistedGrading}
@@ -157,8 +157,8 @@ export default function InstructorSettingsPage() {
               </div>
             </div>
 
-            <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 cursor-pointer hover:bg-slate-50">
+            <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
                 <input
                   type="checkbox"
                   checked={autoApprovePassingQuizzes}
@@ -166,10 +166,10 @@ export default function InstructorSettingsPage() {
                   className="mt-0.5 h-4 w-4 rounded text-blue-600"
                 />
                 <div>
-                  <div className="font-bold text-slate-900">
+                  <div className="font-bold text-slate-900 dark:text-white">
                     Auto-Approve Objective MCQ Tests ({passingThreshold}%+)
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Automatically mark multiple-choice section tests as graded if score meets the
                     threshold, eliminating manual review overhead.
                   </div>
@@ -179,14 +179,14 @@ export default function InstructorSettingsPage() {
           </div>
 
           {/* SECTION 2: LIVE OFFICE HOURS & DOUBT CLEARING */}
-          <div className="rounded-[24px] border border-white/80 bg-white/90 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-5">
-            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-              <Calendar className="h-5 w-5 text-[#2563EB]" />
+          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-5">
+            <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
+              <Calendar className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
               <div>
-                <h3 className="text-sm font-extrabold text-slate-900">
+                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
                   Office Hours & Live Mentorship Scheduling
                 </h3>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   Configure student 1-on-1 and cohort doubt booking windows
                 </p>
               </div>
@@ -194,11 +194,11 @@ export default function InstructorSettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">Faculty Time Zone</label>
+                <label className="font-bold text-slate-700 dark:text-slate-300">Faculty Time Zone</label>
                 <select
                   value={timeZone}
                   onChange={(e) => setTimeZone(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 font-medium text-slate-800 outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="Asia/Kolkata (IST)">Asia/Kolkata (IST)</option>
                   <option value="UTC">UTC (Universal Coordinated)</option>
@@ -209,11 +209,11 @@ export default function InstructorSettingsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">Default Slot Duration</label>
+                <label className="font-bold text-slate-700 dark:text-slate-300">Default Slot Duration</label>
                 <select
                   value={defaultSlotDuration}
                   onChange={(e) => setDefaultSlotDuration(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 font-medium text-slate-800 outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="15">15 Minutes (Quick Query)</option>
                   <option value="30">30 Minutes (Standard)</option>
@@ -223,11 +223,11 @@ export default function InstructorSettingsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">Max Students Per Live Room</label>
+                <label className="font-bold text-slate-700 dark:text-slate-300">Max Students Per Live Room</label>
                 <select
                   value={maxDoubtStudents}
                   onChange={(e) => setMaxDoubtStudents(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 font-medium text-slate-800 outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="1">1-on-1 Private Consultation</option>
                   <option value="5">Small Pod (Up to 5)</option>
@@ -238,7 +238,7 @@ export default function InstructorSettingsPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3 cursor-pointer hover:bg-slate-50">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
                 <input
                   type="checkbox"
                   checked={autoAcceptBookings}
@@ -246,19 +246,19 @@ export default function InstructorSettingsPage() {
                   className="mt-0.5 h-4 w-4 rounded text-blue-600"
                 />
                 <div>
-                  <div className="font-bold text-slate-900">Auto-Confirm Booking Requests</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="font-bold text-slate-900 dark:text-white">Auto-Confirm Booking Requests</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Automatically book appointments if student selects an open calendar slot.
                   </div>
                 </div>
               </label>
 
-              <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 space-y-1">
-                <label className="font-bold text-slate-900">Buffer Time Between Calls</label>
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3 space-y-1">
+                <label className="font-bold text-slate-900 dark:text-white">Buffer Time Between Calls</label>
                 <select
                   value={bufferTime}
                   onChange={(e) => setBufferTime(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white p-1.5 text-xs font-semibold text-slate-700 outline-none"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none"
                 >
                   <option value="5">5 Minutes Buffer</option>
                   <option value="10">10 Minutes Buffer (Recommended)</option>
@@ -269,21 +269,21 @@ export default function InstructorSettingsPage() {
           </div>
 
           {/* SECTION 3: VIDEO SECURITY & ANTI-PIRACY PROTECTION */}
-          <div className="rounded-[24px] border border-white/80 bg-white/90 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
-            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-              <ShieldCheck className="h-5 w-5 text-[#2563EB]" />
+          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
+            <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
+              <ShieldCheck className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
               <div>
-                <h3 className="text-sm font-extrabold text-slate-900">
+                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
                   Video Delivery Security & Piracy Prevention
                 </h3>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   Enforce DRM watermarking, playback speed caps, and anti-skip engagement
                 </p>
               </div>
             </div>
 
             <div className="space-y-3 text-xs">
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 cursor-pointer hover:bg-slate-50">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
                 <input
                   type="checkbox"
                   checked={dynamicWatermark}
@@ -291,17 +291,17 @@ export default function InstructorSettingsPage() {
                   className="mt-0.5 h-4 w-4 rounded text-blue-600"
                 />
                 <div>
-                  <div className="font-bold text-slate-900">
+                  <div className="font-bold text-slate-900 dark:text-white">
                     Dynamic Student ID Overlay Watermark
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Superimposes the viewing student&apos;s verified email and IP address randomly across
                     the video player to prevent screen recording and course leaks.
                   </div>
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 cursor-pointer hover:bg-slate-50">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
                 <input
                   type="checkbox"
                   checked={enforceAntiSkip}
@@ -309,27 +309,27 @@ export default function InstructorSettingsPage() {
                   className="mt-0.5 h-4 w-4 rounded text-blue-600"
                 />
                 <div>
-                  <div className="font-bold text-slate-900">
+                  <div className="font-bold text-slate-900 dark:text-white">
                     Enforce Anti-Skip & Tab Focus on Graded Lectures
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Requires students to watch minimum 85% of lecture before unlocking the next
                     coding assessment. Pauses playback if the learner switches tabs.
                   </div>
                 </div>
               </label>
 
-              <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/60 p-3.5">
+              <div className="flex items-center justify-between rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5">
                 <div>
-                  <div className="font-bold text-slate-900">Maximum Allowed Playback Speed</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="font-bold text-slate-900 dark:text-white">Maximum Allowed Playback Speed</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Cap playback speed on foundational architecture videos to ensure comprehension.
                   </div>
                 </div>
                 <select
                   value={maxPlaybackSpeed}
                   onChange={(e) => setMaxPlaybackSpeed(e.target.value)}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-bold text-slate-800 outline-none"
+                  className="rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-3 py-1.5 font-bold text-slate-800 dark:text-white outline-none"
                 >
                   <option value="1.25x">1.25x (Strict Comprehension)</option>
                   <option value="1.5x">1.5x (Recommended)</option>
@@ -341,21 +341,21 @@ export default function InstructorSettingsPage() {
           </div>
 
           {/* SECTION 4: STUDENT COMMUNICATION & NOTIFICATIONS */}
-          <div className="rounded-[24px] border border-white/80 bg-white/90 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
-            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-              <Bell className="h-5 w-5 text-[#2563EB]" />
+          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
+            <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
+              <Bell className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
               <div>
-                <h3 className="text-sm font-extrabold text-slate-900">
+                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
                   Notification Channels & Communication Boundaries
                 </h3>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   Direct student messaging, forum alert triggers, and quiet hours
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 cursor-pointer hover:bg-slate-50">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
                 <input
                   type="checkbox"
                   checked={notifySubmissions}
@@ -363,14 +363,14 @@ export default function InstructorSettingsPage() {
                   className="mt-0.5 h-4 w-4 rounded text-blue-600"
                 />
                 <div>
-                  <div className="font-bold text-slate-900">New Assignment Submission Alerts</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="font-bold text-slate-900 dark:text-white">New Assignment Submission Alerts</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Real-time email and push notification when a student submits code.
                   </div>
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 cursor-pointer hover:bg-slate-50">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
                 <input
                   type="checkbox"
                   checked={notifyForumDoubt}
@@ -378,14 +378,14 @@ export default function InstructorSettingsPage() {
                   className="mt-0.5 h-4 w-4 rounded text-blue-600"
                 />
                 <div>
-                  <div className="font-bold text-slate-900">Course Discussion Forum Questions</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="font-bold text-slate-900 dark:text-white">Course Discussion Forum Questions</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Notify when an enrolled student posts a question under a lecture.
                   </div>
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 cursor-pointer hover:bg-slate-50">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
                 <input
                   type="checkbox"
                   checked={allowDirectMessaging}
@@ -393,14 +393,14 @@ export default function InstructorSettingsPage() {
                   className="mt-0.5 h-4 w-4 rounded text-blue-600"
                 />
                 <div>
-                  <div className="font-bold text-slate-900">Allow Direct Student Messaging</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="font-bold text-slate-900 dark:text-white">Allow Direct Student Messaging</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Enables registered students to send direct chat inquiries to faculty.
                   </div>
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 cursor-pointer hover:bg-slate-50">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
                 <input
                   type="checkbox"
                   checked={publicBioVisible}
@@ -408,10 +408,10 @@ export default function InstructorSettingsPage() {
                   className="mt-0.5 h-4 w-4 rounded text-blue-600"
                 />
                 <div>
-                  <div className="font-bold text-slate-900">
+                  <div className="font-bold text-slate-900 dark:text-white">
                     Public Faculty Directory Visibility
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Display your verified credentials and office hours in student directory.
                   </div>
                 </div>
@@ -419,11 +419,11 @@ export default function InstructorSettingsPage() {
             </div>
 
             {/* Quiet Hours Window */}
-            <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4 space-y-3 text-xs">
+            <div className="rounded-xl border border-blue-100 dark:border-blue-950/60 bg-blue-50/60 dark:bg-blue-950/30 p-4 space-y-3 text-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-[#2563EB]" />
-                  <span className="font-bold text-slate-900">
+                  <Clock className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
+                  <span className="font-bold text-slate-900 dark:text-white">
                     Quiet Hours (Do Not Disturb Window)
                   </span>
                 </div>
@@ -436,22 +436,22 @@ export default function InstructorSettingsPage() {
               </div>
 
               {quietHoursEnabled && (
-                <div className="flex flex-wrap items-center gap-3 pt-1 text-slate-700">
+                <div className="flex flex-wrap items-center gap-3 pt-1 text-slate-700 dark:text-slate-300">
                   <span>Mute non-urgent notifications between:</span>
                   <input
                     type="time"
                     value={quietHoursStart}
                     onChange={(e) => setQuietHoursStart(e.target.value)}
-                    className="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-800"
+                    className="rounded-lg border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-white"
                   />
                   <span>and</span>
                   <input
                     type="time"
                     value={quietHoursEnd}
                     onChange={(e) => setQuietHoursEnd(e.target.value)}
-                    className="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-800"
+                    className="rounded-lg border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-white"
                   />
-                  <span className="text-[11px] text-slate-500">(Faculty Local Time)</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">(Faculty Local Time)</span>
                 </div>
               )}
             </div>

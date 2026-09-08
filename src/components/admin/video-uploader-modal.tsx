@@ -122,18 +122,18 @@ export function VideoUploaderModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md animate-in fade-in">
-      <div className="relative w-full max-w-xl overflow-hidden rounded-[24px] border border-white/80 bg-white p-6 shadow-2xl space-y-5 sm:p-7">
+      <div className="relative w-full max-w-xl overflow-hidden rounded-[24px] border border-white/80 bg-white p-6 shadow-2xl space-y-5 sm:p-7 dark:border-slate-800 dark:bg-[#111827] dark:shadow-none">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB] shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB] shadow-xs dark:bg-blue-950/50 dark:text-blue-400">
               <Film className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-black text-slate-900">
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
                 Upload Course Video
               </h3>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 Cloudflare Stream adaptive HLS transcoding • {courseTitle}
               </p>
             </div>
@@ -142,7 +142,7 @@ export function VideoUploaderModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -150,41 +150,41 @@ export function VideoUploaderModal({
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
-            <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+          <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-400">
+            <AlertCircle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {/* SUCCESS STATE */}
         {uploadedUid && (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 text-center space-y-3">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 text-center space-y-3 dark:border-emerald-900/60 dark:bg-emerald-950/40">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
               <CheckCircle2 className="h-6 w-6" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-slate-900">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                 Video Uploaded Successfully to Cloudflare!
               </h4>
-              <p className="text-xs text-slate-600 mt-1">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
                 Cloudflare Stream is now auto-encoding adaptive bitrates (1080p, 720p, 480p).
               </p>
             </div>
-            <div className="rounded-xl bg-white p-2.5 font-mono text-[11px] text-slate-700 border border-emerald-200 select-all">
+            <div className="rounded-xl bg-white p-2.5 font-mono text-[11px] text-slate-700 border border-emerald-200 select-all dark:bg-[#151D2E] dark:text-slate-200 dark:border-emerald-900/60">
               Video UID: {uploadedUid}
             </div>
             <div className="flex justify-center gap-2 pt-2">
               <button
                 type="button"
                 onClick={handleReset}
-                className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
               >
                 Upload Another Video
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700"
+                className="rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
               >
                 Done
               </button>
@@ -200,8 +200,8 @@ export function VideoUploaderModal({
               onClick={() => fileInputRef.current?.click()}
               className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center cursor-pointer transition-all ${
                 selectedFile
-                  ? "border-blue-400 bg-blue-50/40"
-                  : "border-slate-300 hover:border-[#2563EB] bg-slate-50/50 hover:bg-blue-50/20"
+                  ? "border-blue-400 bg-blue-50/40 dark:border-blue-700 dark:bg-blue-950/30"
+                  : "border-slate-300 hover:border-[#2563EB] bg-slate-50/50 hover:bg-blue-50/20 dark:border-slate-700/80 dark:bg-[#151D2E] dark:hover:bg-blue-950/20"
               }`}
             >
               <input
@@ -218,25 +218,25 @@ export function VideoUploaderModal({
                   <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-[#2563EB] text-white shadow-md shadow-blue-500/20">
                     <FileVideo className="h-5 w-5" />
                   </div>
-                  <div className="text-xs font-bold text-slate-900 truncate max-w-xs">
+                  <div className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-xs">
                     {selectedFile.name}
                   </div>
-                  <div className="text-[11px] text-slate-500 font-medium">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     {(selectedFile.size / (1024 * 1024)).toFixed(1)} MB • Click to change file
                   </div>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                     <UploadCloud className="h-5 w-5" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-[#2563EB] hover:underline">
+                    <span className="text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:underline">
                       Click to choose video
                     </span>{" "}
-                    <span className="text-xs text-slate-500">or drag and drop</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">or drag and drop</span>
                   </div>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500">
                     Supports MP4, MOV, WEBM, MKV up to 5GB
                   </p>
                 </div>
@@ -245,7 +245,7 @@ export function VideoUploaderModal({
 
             {/* Video Title Input */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                 Lesson Video Title
               </label>
               <input
@@ -254,23 +254,23 @@ export function VideoUploaderModal({
                 value={videoTitle}
                 onChange={(e) => setVideoTitle(e.target.value)}
                 disabled={isUploading}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none focus:border-[#2563EB] shadow-xs"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none focus:border-[#2563EB] shadow-xs dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
               />
             </div>
 
             {/* Free Demo Toggle */}
-            <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 border border-slate-100">
+            <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 border border-slate-100 dark:bg-[#151D2E] dark:border-slate-800">
               <div className="flex items-center gap-2">
                 {isFreeDemo ? (
-                  <Eye className="h-4 w-4 text-emerald-600" />
+                  <Eye className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <Lock className="h-4 w-4 text-slate-400" />
+                  <Lock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                 )}
                 <div>
-                  <div className="text-xs font-bold text-slate-800">
+                  <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
                     {isFreeDemo ? "Free Public Demo Video" : "Enrollment Protected Video"}
                   </div>
-                  <div className="text-[10px] text-slate-500 font-medium">
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                     {isFreeDemo
                       ? "Available for anyone visiting the course page without login."
                       : "Only accessible to authenticated students with active enrollment."}
@@ -283,7 +283,7 @@ export function VideoUploaderModal({
                 onClick={() => setIsFreeDemo(!isFreeDemo)}
                 disabled={isUploading}
                 className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                  isFreeDemo ? "bg-[#2563EB]" : "bg-slate-300"
+                  isFreeDemo ? "bg-[#2563EB]" : "bg-slate-300 dark:bg-slate-700"
                 }`}
               >
                 <span
@@ -298,13 +298,13 @@ export function VideoUploaderModal({
             {uploadProgress !== null && (
               <div className="space-y-1.5 pt-1">
                 <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-700 flex items-center gap-1.5">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[#2563EB]" />
+                  <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[#2563EB] dark:text-blue-400" />
                     <span>Uploading directly to Cloudflare Stream...</span>
                   </span>
-                  <span className="text-[#2563EB]">{uploadProgress}%</span>
+                  <span className="text-[#2563EB] dark:text-blue-400">{uploadProgress}%</span>
                 </div>
-                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-[#2563EB] to-cyan-500 transition-all duration-300 rounded-full"
                     style={{ width: `${uploadProgress}%` }}
@@ -314,12 +314,12 @@ export function VideoUploaderModal({
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isUploading}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Cancel
               </button>

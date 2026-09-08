@@ -18,12 +18,12 @@ function initials(name: string) {
 
 function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   return (
-    <figure className="w-64 shrink-0 rounded-lg border border-border bg-white p-5 shadow-sm">
+    <figure className="w-64 shrink-0 rounded-lg border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-5 shadow-sm">
       <Quote className="h-4 w-4 text-primary-blue/40" />
       <blockquote className="mt-3 line-clamp-4 text-sm text-text-body">
         &ldquo;{testimonial.quote}&rdquo;
       </blockquote>
-      <figcaption className="mt-4 flex items-center gap-3 border-t border-border pt-4">
+      <figcaption className="mt-4 flex items-center gap-3 border-t border-border dark:border-slate-800 pt-4">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-blue text-body-sm font-semibold text-white">
           {initials(testimonial.name)}
         </div>
@@ -72,14 +72,14 @@ export function TestimonialWall({ testimonials }: { testimonials: Testimonial[] 
 
   if (!isDesktop) {
     return (
-      <div className="relative overflow-hidden rounded-lg border border-border bg-bg-light py-6">
+      <div className="relative overflow-hidden rounded-lg border border-border dark:border-slate-800/80 bg-bg-light dark:bg-[#0E1526] py-6">
         <Marquee pauseOnHover repeat={2} className="[--duration:32s]">
           {testimonials.map((t) => (
             <TestimonialCard key={t.name} testimonial={t} />
           ))}
         </Marquee>
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-bg-light to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-bg-light to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-bg-light dark:from-[#0E1526] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-bg-light dark:from-[#0E1526] to-transparent" />
       </div>
     );
   }
@@ -87,7 +87,7 @@ export function TestimonialWall({ testimonials }: { testimonials: Testimonial[] 
   return (
     <div
       aria-label="Student testimonials"
-      className="relative flex h-[420px] w-full items-center justify-center overflow-hidden rounded-lg border border-border bg-bg-light [perspective:300px]"
+      className="relative flex h-[420px] w-full items-center justify-center overflow-hidden rounded-lg border border-border dark:border-slate-800/80 bg-bg-light dark:bg-[#0E1526] [perspective:300px]"
     >
       <div
         className="flex flex-row items-center gap-4"
@@ -111,10 +111,10 @@ export function TestimonialWall({ testimonials }: { testimonials: Testimonial[] 
           </Marquee>
         ))}
 
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1/4 bg-gradient-to-b from-bg-light" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-bg-light" />
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-bg-light" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-bg-light" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1/4 bg-gradient-to-b from-bg-light dark:from-[#0E1526]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-bg-light dark:from-[#0E1526]" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-bg-light dark:from-[#0E1526]" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-bg-light dark:from-[#0E1526]" />
       </div>
     </div>
   );

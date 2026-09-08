@@ -261,6 +261,8 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   const session = useMockSession();
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [oauthError, setOauthError] = useState<string | null>(null);
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [verifyingEmailAddress, setVerifyingEmailAddress] = useState("");
 
   const isAuthenticated = (isAuthLoaded && isSignedIn) || !!session;
   const userEmail = clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "";
@@ -322,15 +324,15 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
     return (
       <motion.div
         {...cardMotion}
-        className="flex w-full max-w-md flex-col items-center justify-center rounded-3xl bg-white p-8 text-center shadow-2xl border border-slate-100"
+        className="flex w-full max-w-md flex-col items-center justify-center rounded-3xl bg-white dark:bg-[#111827] p-8 text-center shadow-2xl border border-slate-100 dark:border-slate-800/80"
       >
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-[#2563EB] mb-4">
-          <CheckCircle2 className="h-8 w-8 text-[#2563EB]" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 mb-4">
+          <CheckCircle2 className="h-8 w-8 text-[#2563EB] dark:text-blue-400" />
         </div>
-        <h2 className="text-xl font-black text-slate-900">Already Signed In</h2>
-        <p className="mt-1 text-xs text-slate-500 font-medium">
+        <h2 className="text-xl font-black text-slate-900 dark:text-white">Already Signed In</h2>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
           You are currently signed in as{" "}
-          <span className="font-bold text-slate-800">{userEmail || userName}</span>.
+          <span className="font-bold text-slate-800 dark:text-slate-200">{userEmail || userName}</span>.
         </p>
         <div className="mt-6 flex flex-col gap-3 w-full">
           <button
@@ -346,7 +348,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
               logoutMockSession();
               window.location.assign("/login");
             }}
-            className="text-xs font-semibold text-slate-500 hover:text-slate-800 py-2 transition-colors cursor-pointer"
+            className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 py-2 transition-colors cursor-pointer"
           >
             Sign in with a different account
           </button>
@@ -355,17 +357,14 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
     );
   }
 
-  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
-  const [verifyingEmailAddress, setVerifyingEmailAddress] = useState("");
-
   return (
     <motion.div
       {...cardMotion}
-      className="flex w-full max-w-4xl flex-col md:flex-row overflow-hidden rounded-3xl bg-white shadow-2xl border border-slate-100"
+      className="flex w-full max-w-4xl flex-col md:flex-row overflow-hidden rounded-3xl bg-white dark:bg-[#111827] shadow-2xl border border-slate-100 dark:border-slate-800/80"
     >
       {/* Desktop Left side — animated dot map + brand */}
-      <div className="relative hidden h-[620px] w-1/2 overflow-hidden border-r border-slate-100 md:block">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/70">
+      <div className="relative hidden h-[620px] w-1/2 overflow-hidden border-r border-slate-100 dark:border-slate-800/80 md:block">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/70 dark:from-[#0B1020] dark:via-[#111827] dark:to-[#151D2E]">
           {!reducedMotion && <DotMap />}
 
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8 text-center">
@@ -379,12 +378,12 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
               </div>
             </FadeIn>
             <FadeIn reducedMotion={reducedMotion} delay={0.7}>
-              <h2 className="mb-2 bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-3xl font-black text-transparent">
+              <h2 className="mb-2 bg-gradient-to-r from-blue-700 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 bg-clip-text text-3xl font-black text-transparent">
                 {isVerifyingEmail ? "Security Verification" : copy.panelTitle}
               </h2>
             </FadeIn>
             <FadeIn reducedMotion={reducedMotion} delay={0.8}>
-              <p className="max-w-xs text-sm text-slate-600 font-medium leading-relaxed">
+              <p className="max-w-xs text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
                 {isVerifyingEmail
                   ? "Enter the 6-digit confirmation code sent to your inbox to activate your student account."
                   : copy.panelBody}
@@ -395,11 +394,11 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
       </div>
 
       {/* Right side — form */}
-      <div className="flex w-full flex-col justify-center bg-white p-6 sm:p-8 md:w-1/2 md:p-10">
+      <div className="flex w-full flex-col justify-center bg-white dark:bg-[#111827] p-6 sm:p-8 md:w-1/2 md:p-10">
         <FadeIn reducedMotion={reducedMotion} delay={0} y={20}>
           <div className="mb-6 flex items-center justify-between">
             <JksLogo size="md" />
-            <span className="rounded-full bg-blue-50 border border-blue-100 px-3 py-1 text-[11px] font-bold text-[#2563EB]">
+            <span className="rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-800/60 px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
               {isVerifyingEmail
                 ? "Security Check"
                 : mode === "login"
@@ -410,14 +409,14 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
 
           {!isVerifyingEmail && (
             <>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">{copy.heading}</h1>
-              <p className="mt-1 mb-6 text-xs text-slate-500 font-medium">{copy.subheading}</p>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{copy.heading}</h1>
+              <p className="mt-1 mb-6 text-xs text-slate-500 dark:text-slate-400 font-medium">{copy.subheading}</p>
 
               <div className="mb-6 grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
                   disabled={oauthLoading !== null}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:bg-slate-100 hover:border-slate-300 cursor-pointer disabled:opacity-60"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-[#151D2E] p-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs transition-all duration-300 hover:bg-slate-100 dark:hover:bg-[#1B2538] hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer disabled:opacity-60"
                   onClick={() => handleSocialAuth("oauth_google")}
                 >
                   <GoogleIcon />
@@ -429,7 +428,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
                 <button
                   type="button"
                   disabled={oauthLoading !== null}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-xs font-bold text-slate-700 shadow-xs transition-all duration-300 hover:bg-slate-100 hover:border-slate-300 cursor-pointer disabled:opacity-60"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-[#151D2E] p-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs transition-all duration-300 hover:bg-slate-100 dark:hover:bg-[#1B2538] hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer disabled:opacity-60"
                   onClick={() => handleSocialAuth("oauth_github")}
                 >
                   <GithubIcon />
@@ -442,7 +441,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
               {oauthError && (
                 <p
                   role="alert"
-                  className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium leading-relaxed text-red-700"
+                  className="mb-4 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-3 py-2 text-xs font-medium leading-relaxed text-red-700 dark:text-red-300"
                 >
                   {oauthError}
                 </p>
@@ -450,10 +449,10 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200" />
+                  <div className="w-full border-t border-slate-200 dark:border-slate-800" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase font-bold tracking-wider">
-                  <span className="bg-white px-3 text-slate-400">or</span>
+                  <span className="bg-white dark:bg-[#111827] px-3 text-slate-400 dark:text-slate-500">or</span>
                 </div>
               </div>
             </>
@@ -515,14 +514,14 @@ function PasswordInput({
         id={id}
         type={visible ? "text" : "password"}
         className={cn(
-          "w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500",
+          "w-full rounded-md border border-gray-200 dark:border-slate-700/80 bg-gray-50 dark:bg-[#121A2A] px-3 py-2.5 pr-10 text-sm text-gray-800 dark:text-white outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500",
           className
         )}
         {...props}
       />
       <button
         type="button"
-        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200"
         onClick={onToggle}
         tabIndex={-1}
       >
@@ -555,7 +554,7 @@ function SubmitButton({
         disabled={disabled}
         className={cn(
           "relative w-full overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 py-2.5 text-sm font-medium text-white transition-all duration-300 hover:from-blue-600 hover:to-indigo-700 disabled:pointer-events-none disabled:opacity-60",
-          isHovered && !reducedMotion ? "shadow-lg shadow-blue-200" : ""
+          isHovered && !reducedMotion ? "shadow-lg shadow-blue-200 dark:shadow-none" : ""
         )}
       >
         <span className="flex items-center justify-center">
@@ -623,7 +622,7 @@ function LoginFields() {
     <>
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div>
-          <label htmlFor="login-email" className="mb-1 block text-xs font-semibold text-slate-700">
+          <label htmlFor="login-email" className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
             Email address <span className="text-blue-500">*</span>
           </label>
           <input
@@ -631,20 +630,20 @@ function LoginFields() {
             type="email"
             autoComplete="email"
             placeholder="name@example.com"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/15 transition-all"
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 transition-all"
             {...register("email")}
           />
-          {errors.email && <p className="mt-1 text-xs text-rose-600 font-medium">{errors.email.message}</p>}
+          {errors.email && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.email.message}</p>}
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label htmlFor="login-password" className="block text-xs font-semibold text-slate-700">
+            <label htmlFor="login-password" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
               Password <span className="text-blue-500">*</span>
             </label>
             <Link
               href="/forgot-password"
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
               Forgot password?
             </Link>
@@ -658,12 +657,12 @@ function LoginFields() {
             {...register("password")}
           />
           {errors.password && (
-            <p className="mt-1 text-xs text-rose-600 font-medium">{errors.password.message}</p>
+            <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.password.message}</p>
           )}
         </div>
 
         {formError && (
-          <p className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-semibold text-rose-700 leading-relaxed">
+          <p className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-3.5 py-2.5 text-xs font-semibold text-rose-700 dark:text-rose-300 leading-relaxed">
             {formError}
           </p>
         )}
@@ -672,17 +671,17 @@ function LoginFields() {
           {isSubmitting ? "Signing in…" : "Sign in to Dashboard"}
         </SubmitButton>
 
-        <p className="pt-1 text-center text-xs text-slate-500 font-medium">
+        <p className="pt-1 text-center text-xs text-slate-500 dark:text-slate-400 font-medium">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-bold text-blue-600 hover:underline">
+          <Link href="/register" className="font-bold text-blue-600 dark:text-blue-400 hover:underline">
             Create account
           </Link>
         </p>
       </form>
 
       {/* Subtle Demo Credentials Widget */}
-      <div className="mt-6 pt-4 border-t border-slate-100">
-        <p className="mb-2 text-center text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+      <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <p className="mb-2 text-center text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
           Quick Demo Access
         </p>
         <div className="grid grid-cols-3 gap-2">
@@ -690,7 +689,7 @@ function LoginFields() {
             type="button"
             onClick={() => quickLogin("student")}
             disabled={quickLoginRole !== null}
-            className="rounded-lg border border-slate-200 bg-slate-50 py-1.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-100 hover:border-slate-300 disabled:opacity-50 cursor-pointer"
+            className="rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-[#151D2E] py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all hover:bg-slate-100 dark:hover:bg-[#1B2538] hover:border-slate-300 dark:hover:border-slate-600 disabled:opacity-50 cursor-pointer"
           >
             {quickLoginRole === "student" ? "Signing in…" : "Student"}
           </button>
@@ -698,7 +697,7 @@ function LoginFields() {
             type="button"
             onClick={() => quickLogin("instructor")}
             disabled={quickLoginRole !== null}
-            className="rounded-lg border border-purple-200 bg-purple-50/70 py-1.5 text-xs font-semibold text-purple-700 transition-all hover:bg-purple-100 hover:border-purple-300 disabled:opacity-50 cursor-pointer"
+            className="rounded-lg border border-purple-200 dark:border-purple-900/60 bg-purple-50/70 dark:bg-purple-950/40 py-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300 transition-all hover:bg-purple-100 dark:hover:bg-purple-900/50 hover:border-purple-300 dark:hover:border-purple-800 disabled:opacity-50 cursor-pointer"
           >
             {quickLoginRole === "instructor" ? "Signing in…" : "Lecturer"}
           </button>
@@ -706,7 +705,7 @@ function LoginFields() {
             type="button"
             onClick={() => quickLogin("admin")}
             disabled={quickLoginRole !== null}
-            className="rounded-lg border border-blue-200 bg-blue-50/70 py-1.5 text-xs font-semibold text-blue-700 transition-all hover:bg-blue-100 hover:border-blue-300 disabled:opacity-50 cursor-pointer"
+            className="rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/40 py-1.5 text-xs font-semibold text-blue-700 dark:text-blue-300 transition-all hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:border-blue-300 dark:hover:border-blue-800 disabled:opacity-50 cursor-pointer"
           >
             {quickLoginRole === "admin" ? "Signing in…" : "Admin"}
           </button>
@@ -1031,26 +1030,26 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
     return (
       <form onSubmit={handleVerifyOtp} className="space-y-5 animate-in fade-in duration-300">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3.5 py-1 text-xs font-bold text-blue-600 shadow-xs">
-            <ShieldCheck className="h-4 w-4 text-blue-600" />
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 px-3.5 py-1 text-xs font-bold text-blue-600 dark:text-blue-400 shadow-xs">
+            <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             <span>Step 2 of 2: Security Verification</span>
           </div>
 
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
             Check Your Email
           </h2>
 
-          <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto leading-relaxed">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium max-w-xs mx-auto leading-relaxed">
             We sent a 6-digit confirmation code to:
           </p>
 
-          <div className="inline-flex items-center gap-2 rounded-xl bg-slate-100 border border-slate-200 px-3 py-1.5 text-xs font-mono font-bold text-slate-800 shadow-xs">
-            <Mail className="h-3.5 w-3.5 text-blue-600" />
+          <div className="inline-flex items-center gap-2 rounded-xl bg-slate-100 dark:bg-[#151D2E] border border-slate-200 dark:border-slate-700/80 px-3 py-1.5 text-xs font-mono font-bold text-slate-800 dark:text-slate-200 shadow-xs">
+            <Mail className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
             <span className="truncate max-w-[200px]">{registeredEmail}</span>
             <button
               type="button"
               onClick={handleBackToRegistration}
-              className="ml-1 text-[11px] font-sans font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+              className="ml-1 text-[11px] font-sans font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer"
             >
               Change
             </button>
@@ -1059,7 +1058,7 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
 
         {/* 6-Digit Interactive OTP Inputs */}
         <div className="py-2">
-          <label className="block text-center text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">
+          <label className="block text-center text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-3">
             Enter 6-Digit Code
           </label>
           <div className="flex items-center justify-center gap-2 sm:gap-2.5">
@@ -1077,10 +1076,10 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
                 onChange={(e) => handleOtpChange(e.target.value, index)}
                 onKeyDown={(e) => handleOtpKeyDown(e, index)}
                 onPaste={handleOtpPaste}
-                className={`h-12 w-10 sm:h-14 sm:w-12 rounded-xl text-center font-mono text-xl sm:text-2xl font-black text-slate-900 outline-none transition-all duration-200 ${
+                className={`h-12 w-10 sm:h-14 sm:w-12 rounded-xl text-center font-mono text-xl sm:text-2xl font-black text-slate-900 dark:text-white outline-none transition-all duration-200 ${
                   digit
-                    ? "border-2 border-blue-600 bg-blue-50/50 shadow-md shadow-blue-500/10 scale-105"
-                    : "border border-slate-200 bg-slate-50/80 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-500/15 focus:scale-105"
+                    ? "border-2 border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 shadow-md shadow-blue-500/10 scale-105"
+                    : "border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-[#121A2A] focus:border-blue-600 dark:focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 focus:scale-105"
                 }`}
               />
             ))}
@@ -1091,14 +1090,14 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
         {otpError && (
           <p
             role="alert"
-            className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-center text-xs font-semibold leading-relaxed text-rose-700 animate-in fade-in"
+            className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-3.5 py-2.5 text-center text-xs font-semibold leading-relaxed text-rose-700 dark:text-rose-300 animate-in fade-in"
           >
             {otpError}
           </p>
         )}
 
         {otpSuccessMsg && (
-          <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-center text-xs font-semibold leading-relaxed text-emerald-700 animate-in fade-in">
+          <p className="rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-3.5 py-2.5 text-center text-xs font-semibold leading-relaxed text-emerald-700 dark:text-emerald-300 animate-in fade-in">
             {otpSuccessMsg}
           </p>
         )}
@@ -1123,19 +1122,19 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
         </button>
 
         {/* Resend Code & Back actions */}
-        <div className="flex flex-col items-center gap-2 text-center text-xs text-slate-500 pt-1">
+        <div className="flex flex-col items-center gap-2 text-center text-xs text-slate-500 dark:text-slate-400 pt-1">
           <div>
             Didn&apos;t receive the email?{" "}
             {resendCooldown > 0 ? (
-              <span className="font-semibold text-slate-700">
-                Resend in <strong className="font-mono text-blue-600">{resendCooldown}s</strong>
+              <span className="font-semibold text-slate-700 dark:text-slate-300">
+                Resend in <strong className="font-mono text-blue-600 dark:text-blue-400">{resendCooldown}s</strong>
               </span>
             ) : (
               <button
                 type="button"
                 onClick={handleResendCode}
                 disabled={isResending}
-                className="font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer inline-flex items-center gap-1"
+                className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer inline-flex items-center gap-1"
               >
                 {isResending ? (
                   <>
@@ -1151,15 +1150,15 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
           <button
             type="button"
             onClick={handleBackToRegistration}
-            className="flex items-center gap-1 font-semibold text-slate-500 hover:text-slate-800 transition-colors pt-2 cursor-pointer"
+            className="flex items-center gap-1 font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors pt-2 cursor-pointer"
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Back to registration
           </button>
         </div>
 
         {/* Security Seal */}
-        <div className="pt-2 border-t border-slate-100 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-slate-400">
-          <Lock className="h-3 w-3 text-slate-400" />
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+          <Lock className="h-3 w-3 text-slate-400 dark:text-slate-500" />
           <span>256-Bit Encrypted Security &bull; Official JKS Credentials</span>
         </div>
       </form>
@@ -1172,13 +1171,13 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
       {formError && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-semibold text-rose-700 space-y-1.5 animate-in fade-in">
+        <div className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-3.5 py-2.5 text-xs font-semibold text-rose-700 dark:text-rose-300 space-y-1.5 animate-in fade-in">
           <p>{formError}</p>
           {formError.includes("already exists") && (
             <div className="pt-0.5">
               <Link
                 href={`/login?from=${encodeURIComponent(from)}`}
-                className="inline-flex items-center gap-1 font-bold text-blue-700 hover:text-blue-900 underline underline-offset-2"
+                className="inline-flex items-center gap-1 font-bold text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 underline underline-offset-2"
               >
                 Sign in to your account <ArrowRight className="h-3 w-3 inline" />
               </Link>
@@ -1188,7 +1187,7 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
       )}
 
       <div>
-        <label htmlFor="register-name" className="mb-1 block text-xs font-semibold text-slate-700">
+        <label htmlFor="register-name" className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
           Full name <span className="text-blue-500">*</span>
         </label>
         <input
@@ -1196,14 +1195,14 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
           type="text"
           autoComplete="name"
           placeholder="e.g. Rahul Sharma"
-          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/15 transition-all"
+          className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 transition-all"
           {...register("name")}
         />
-        {errors.name && <p className="mt-1 text-xs text-rose-600 font-medium">{errors.name.message}</p>}
+        {errors.name && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.name.message}</p>}
       </div>
 
       <div>
-        <label htmlFor="register-email" className="mb-1 block text-xs font-semibold text-slate-700">
+        <label htmlFor="register-email" className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
           Email address <span className="text-blue-500">*</span>
         </label>
         <input
@@ -1211,18 +1210,18 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
           type="email"
           autoComplete="email"
           placeholder="name@example.com"
-          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/15 transition-all"
+          className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 transition-all"
           {...register("email")}
         />
-        {errors.email && <p className="mt-1 text-xs text-rose-600 font-medium">{errors.email.message}</p>}
+        {errors.email && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.email.message}</p>}
       </div>
 
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label htmlFor="register-password" className="block text-xs font-semibold text-slate-700">
+          <label htmlFor="register-password" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
             Password <span className="text-blue-500">*</span>
           </label>
-          <span className="text-[11px] font-medium text-slate-400">Min. 10 characters</span>
+          <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">Min. 10 characters</span>
         </div>
         <PasswordInput
           id="register-password"
@@ -1232,11 +1231,11 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
           onToggle={() => setPasswordVisible((v) => !v)}
           {...register("password")}
         />
-        {errors.password && <p className="mt-1 text-xs text-rose-600 font-medium">{errors.password.message}</p>}
+        {errors.password && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.password.message}</p>}
       </div>
 
       <div>
-        <label htmlFor="register-confirm" className="mb-1 block text-xs font-semibold text-slate-700">
+        <label htmlFor="register-confirm" className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
           Confirm password <span className="text-blue-500">*</span>
         </label>
         <PasswordInput
@@ -1248,7 +1247,7 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
           {...register("confirmPassword")}
         />
         {errors.confirmPassword && (
-          <p className="mt-1 text-xs text-rose-600 font-medium">{errors.confirmPassword.message}</p>
+          <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.confirmPassword.message}</p>
         )}
       </div>
 
@@ -1256,9 +1255,9 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
         {isSubmitting ? "Creating account…" : "Create Student Account"}
       </SubmitButton>
 
-      <p className="pt-1 text-center text-xs text-slate-500 font-medium">
+      <p className="pt-1 text-center text-xs text-slate-500 dark:text-slate-400 font-medium">
         Already have an account?{" "}
-        <Link href="/login" className="font-bold text-blue-600 hover:underline">
+        <Link href="/login" className="font-bold text-blue-600 dark:text-blue-400 hover:underline">
           Sign in
         </Link>
       </p>
