@@ -118,20 +118,20 @@ export function AboutWhatWeProvide() {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <section className="relative bg-white text-text-heading py-20 lg:py-32 px-6 lg:px-16 border-t border-border overflow-hidden">
+    <section className="relative bg-bg-light dark:bg-[#0B1020] text-text-heading dark:text-white py-20 lg:py-32 px-6 lg:px-16 border-t border-border dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
       <div className="mx-auto max-w-[1280px] space-y-16">
         {/* Section Header */}
         <div className="space-y-4 max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 border border-blue-200 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-blue">
-            <Sparkles className="h-3.5 w-3.5 text-primary-blue" />
+          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-blue dark:text-blue-400">
+            <Sparkles className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" />
             <span>The JKS Learning Ecosystem</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-text-heading leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
             EVERYTHING YOU NEED
             <br />
             TO KEEP LEARNING.
           </h2>
-          <p className="text-base text-text-body leading-relaxed">
+          <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed">
             A complete, integrated ecosystem engineered to take you from foundational concepts to enterprise mastery and career readiness.
           </p>
         </div>
@@ -141,7 +141,7 @@ export function AboutWhatWeProvide() {
           {CAPABILITIES.map((panel, idx) => (
             <div
               key={panel.num}
-              className="rounded-[36px] border border-border dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#111827] p-8 sm:p-12 lg:p-16 shadow-[0_12px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-300 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-14 items-center"
+              className="rounded-[36px] border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#111827] p-8 sm:p-12 lg:p-16 shadow-[0_12px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-300 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-14 items-center"
             >
               {/* Left Column: Narrative Content */}
               <div className="space-y-6">
@@ -156,15 +156,15 @@ export function AboutWhatWeProvide() {
                 </div>
 
                 <div className="space-y-3">
-                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text-heading tracking-tight">
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                     {panel.title}
                   </h3>
-                  <p className="text-base sm:text-lg font-semibold text-primary-blue leading-snug">
+                  <p className="text-base sm:text-lg font-semibold text-primary-blue dark:text-blue-400 leading-snug">
                     {panel.headline}
                   </p>
                 </div>
 
-                <p className="text-sm sm:text-base text-text-body leading-relaxed">
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
                   {panel.description}
                 </p>
 

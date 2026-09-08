@@ -62,7 +62,7 @@ export function AboutBeyondClassroom() {
   const [activePillar, setActivePillar] = useState(REAL_WORLD_PILLARS[0]);
 
   return (
-    <section className="relative bg-white dark:bg-[#0E1526] text-text-heading dark:text-white py-20 lg:py-32 px-6 lg:px-16 border-t border-border dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
+    <section className="relative bg-bg-light dark:bg-[#0B1020] text-text-heading dark:text-white py-20 lg:py-32 px-6 lg:px-16 border-t border-border dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
       <div className="mx-auto max-w-[1280px] space-y-16">
         {/* Section Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
@@ -70,12 +70,12 @@ export function AboutBeyondClassroom() {
             <Sparkles className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" />
             <span>Applied Education</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-text-heading dark:text-white leading-tight">
+          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
             DON&apos;T JUST LEARN IT.
             <br />
             <span className="text-primary-blue dark:text-blue-400">USE IT.</span>
           </h2>
-          <p className="text-sm sm:text-base text-text-body dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
             JKS Learning encourages students to take what they learn beyond textbooks and classrooms — into projects, experiments, technology, creativity, and real-world problem solving.
           </p>
         </div>
