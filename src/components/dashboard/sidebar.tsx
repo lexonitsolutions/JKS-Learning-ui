@@ -23,7 +23,7 @@ import {
   FileText,
   type LucideIcon,
 } from "lucide-react";
-import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
+import { useMockSession, logoutMockSession, performLogout } from "@/lib/auth/use-mock-auth";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { JksLogo } from "@/components/common/jks-logo";
 
@@ -139,11 +139,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
   };
 
   const handleLogout = async () => {
-    try {
-      await signOut();
-    } catch {}
-    logoutMockSession();
-    window.location.assign("/login");
+    await performLogout(signOut);
   };
 
   const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;

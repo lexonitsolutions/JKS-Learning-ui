@@ -18,7 +18,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
+import { useMockSession, logoutMockSession, performLogout } from "@/lib/auth/use-mock-auth";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { JksLogo } from "@/components/common/jks-logo";
 import { ThemeToggle } from "@/components/common/theme-toggle";
@@ -110,13 +110,7 @@ export function SiteHeader() {
   }, [pathname]);
 
   const handleLogout = async () => {
-    try {
-      if (signOut) {
-        await signOut();
-      }
-    } catch {}
-    logoutMockSession();
-    window.location.assign("/");
+    await performLogout(signOut);
   };
 
   return (

@@ -212,15 +212,58 @@ export async function registerWithApi(name: string, email: string, password: str
 }
 
 export function logoutMockSession() {
-  document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-  document.cookie = `__session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-  document.cookie = `__client_uat=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-  try {
-    localStorage.removeItem("jks_auth_user");
-    localStorage.removeItem("jks_student_avatar_v2");
-  } catch {}
+  cachedRaw = undefined;
+  cachedSnapshot = null;
+
+  const cookieNames = [
+    SESSION_COOKIE_NAME,
+    "__session",
+    "__client_uat",
+    "__clerk_db_jwt",
+    "jks-session",
+  ];
+
+  if (typeof document !== "undefined") {
+    const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+    for (const name of cookieNames) {
+      document.cookie = `${name}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      if (hostname) {
+        document.cookie = `${name}=; path=/; domain=${hostname}; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+        document.cookie = `${name}=; path=/; domain=.${hostname}; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      }
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.removeItem("jks_auth_user");
+      localStorage.removeItem("jks_student_avatar_v2");
+      sessionStorage.removeItem("jks_auth_user");
+    } catch {}
+  }
+
   void apiFetch("/auth/logout", { method: "POST" }).catch(() => {});
-  window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+  }
 }
+
+export async function performLogout(clerkSignOut?: () => Promise<unknown>) {
+  try {
+    if (clerkSignOut) {
+      await clerkSignOut();
+    }
+  } catch (err) {
+    console.warn("[Logout] Clerk signOut caught error:", err);
+  }
+
+  logoutMockSession();
+
+  if (typeof window !== "undefined") {
+    window.location.replace("/login");
+  }
+}
+
 
 

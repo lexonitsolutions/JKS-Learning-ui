@@ -34,7 +34,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
+import { useMockSession, logoutMockSession, performLogout } from "@/lib/auth/use-mock-auth";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 
@@ -216,13 +216,7 @@ export function DashboardTopbar({
 
   const handleLogout = async () => {
     setProfileOpen(false);
-    try {
-      if (signOut) {
-        await signOut();
-      }
-    } catch {}
-    logoutMockSession();
-    window.location.assign("/login");
+    await performLogout(signOut);
   };
 
   return (

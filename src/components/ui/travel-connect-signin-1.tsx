@@ -7,10 +7,10 @@ import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { z } from "zod";
 import { cn } from "@/lib/utils";
-import { loginWithApi, registerWithApi, loginWithMockCredentials } from "@/lib/auth/use-mock-auth";
+
+import { loginWithApi, registerWithApi, loginWithMockCredentials, performLogout } from "@/lib/auth/use-mock-auth";
 import { MOCK_USERS, type MockRole } from "@/lib/auth/mock-users";
 
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
@@ -256,7 +256,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   const reducedMotion = useReducedMotion();
   const copy = COPY[mode];
   const { signIn, isLoaded: isSignInLoaded } = useSignIn();
-  const { isSignedIn, isLoaded: isAuthLoaded } = useAuth();
+  const { isSignedIn, isLoaded: isAuthLoaded, signOut } = useAuth();
   const { user: clerkUser } = useUser();
   const session = useMockSession();
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
@@ -267,16 +267,6 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   const isAuthenticated = (isAuthLoaded && isSignedIn) || !!session;
   const userEmail = clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "";
   const userName = clerkUser?.fullName || clerkUser?.firstName || session?.name || "Student";
-
-  // Auto-redirect if already signed in
-  useEffect(() => {
-    if (isAuthenticated) {
-      const timer = setTimeout(() => {
-        window.location.assign(from);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isAuthenticated, from]);
 
   // Auto-reset loading state if the redirect does not happen within 15s.
   useEffect(() => {
@@ -344,9 +334,8 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
           </button>
           <button
             type="button"
-            onClick={() => {
-              logoutMockSession();
-              window.location.assign("/login");
+            onClick={async () => {
+              await performLogout(signOut);
             }}
             className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 py-2 transition-colors cursor-pointer"
           >
