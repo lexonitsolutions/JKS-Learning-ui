@@ -122,7 +122,7 @@ export function VideoUploaderModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md animate-in fade-in">
-      <div className="relative w-full max-w-xl overflow-hidden rounded-[24px] border border-white/80 bg-white p-6 shadow-2xl space-y-5 sm:p-7 dark:border-slate-800 dark:bg-[#111827] dark:shadow-none">
+      <div className="relative w-full max-w-xl overflow-hidden rounded-[24px] border border-white/80 bg-white p-6 shadow-2xl space-y-5 sm:p-7 dark:border-slate-800 dark:bg-surface-secondary dark:shadow-none">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
           <div className="flex items-center gap-3">
@@ -142,7 +142,7 @@ export function VideoUploaderModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700/80 dark:hover:bg-surface-hover dark:hover:text-slate-200 transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -170,14 +170,14 @@ export function VideoUploaderModal({
                 Cloudflare Stream is now auto-encoding adaptive bitrates (1080p, 720p, 480p).
               </p>
             </div>
-            <div className="rounded-xl bg-white p-2.5 font-mono text-[11px] text-slate-700 border border-emerald-200 select-all dark:bg-[#151D2E] dark:text-slate-200 dark:border-emerald-900/60">
+            <div className="rounded-xl bg-white p-2.5 font-mono text-[11px] text-slate-700 border border-emerald-200 select-all dark:bg-surface-elevated dark:text-slate-200 dark:border-emerald-900/60">
               Video UID: {uploadedUid}
             </div>
             <div className="flex justify-center gap-2 pt-2">
               <button
                 type="button"
                 onClick={handleReset}
-                className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700/80 dark:bg-surface-elevated dark:text-slate-200 dark:hover:bg-surface-hover cursor-pointer"
               >
                 Upload Another Video
               </button>
@@ -201,7 +201,7 @@ export function VideoUploaderModal({
               className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center cursor-pointer transition-all ${
                 selectedFile
                   ? "border-blue-400 bg-blue-50/40 dark:border-blue-700 dark:bg-blue-950/30"
-                  : "border-slate-300 hover:border-[#2563EB] bg-slate-50/50 hover:bg-blue-50/20 dark:border-slate-700/80 dark:bg-[#151D2E] dark:hover:bg-blue-950/20"
+                  : "border-slate-300 hover:border-[#2563EB] bg-slate-50/50 hover:bg-blue-50/20 dark:border-slate-700/80 dark:bg-surface-elevated dark:hover:bg-blue-950/20"
               }`}
             >
               <input
@@ -236,7 +236,7 @@ export function VideoUploaderModal({
                     </span>{" "}
                     <span className="text-xs text-slate-500 dark:text-slate-400">or drag and drop</span>
                   </div>
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                  <p className="text-[10px] text-slate-400 dark:text-slate-400">
                     Supports MP4, MOV, WEBM, MKV up to 5GB
                   </p>
                 </div>
@@ -254,17 +254,17 @@ export function VideoUploaderModal({
                 value={videoTitle}
                 onChange={(e) => setVideoTitle(e.target.value)}
                 disabled={isUploading}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none focus:border-[#2563EB] shadow-xs dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none focus:border-[#2563EB] shadow-xs dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
               />
             </div>
 
             {/* Free Demo Toggle */}
-            <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 border border-slate-100 dark:bg-[#151D2E] dark:border-slate-800">
+            <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 border border-slate-100 dark:bg-surface-elevated dark:border-slate-800">
               <div className="flex items-center gap-2">
                 {isFreeDemo ? (
                   <Eye className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <Lock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                  <Lock className="h-4 w-4 text-slate-400 dark:text-slate-400" />
                 )}
                 <div>
                   <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -319,7 +319,7 @@ export function VideoUploaderModal({
                 type="button"
                 onClick={onClose}
                 disabled={isUploading}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700/80 dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover transition-colors cursor-pointer"
               >
                 Cancel
               </button>

@@ -138,7 +138,7 @@ export function AboutHeroVisual() {
           <motion.div
             animate={still ? undefined : { y: [0, -8, 0] }}
             transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
-            className="flex items-center gap-2 rounded-full border border-blue-200/80 dark:border-blue-800/80 bg-white/85 dark:bg-[#111827]/90 px-3 py-1.5 shadow-[0_8px_28px_-10px_rgba(37,99,235,0.45)] dark:shadow-black/40 backdrop-blur-md"
+            className="flex items-center gap-2 rounded-full border border-blue-200/80 dark:border-blue-800/80 bg-white/85 dark:bg-surface-secondary/90 px-3 py-1.5 shadow-[0_8px_28px_-10px_rgba(37,99,235,0.45)] dark:shadow-black/40 backdrop-blur-md"
           >
             <span className="relative flex h-2 w-2">
               {!still && (
@@ -161,7 +161,7 @@ export function AboutHeroVisual() {
           <motion.div
             animate={still ? undefined : { y: [0, 9, 0] }}
             transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.1 }}
-            className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-[#111827]/90 px-3.5 py-2.5 shadow-[0_10px_30px_-12px_rgba(15,23,42,0.35)] dark:shadow-black/40 backdrop-blur-md"
+            className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary/90 px-3.5 py-2.5 shadow-[0_10px_30px_-12px_rgba(15,23,42,0.35)] dark:shadow-black/40 backdrop-blur-md"
           >
             <div className="flex items-center gap-1.5">
               <Activity className="h-3 w-3 text-primary-blue dark:text-blue-400" />
@@ -179,7 +179,7 @@ export function AboutHeroVisual() {
                 as decoration rather than data. */}
             <div className="mt-1.5 h-1 w-20 overflow-hidden rounded-full bg-slate-200/90 dark:bg-slate-800">
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-primary-blue to-cyan-400"
+                className="h-full rounded-full bg-gradient-to-r from-primary-fill to-cyan-400"
                 initial={still ? { width: "92%" } : { width: 0 }}
                 animate={{ width: "92%" }}
                 transition={{ duration: 1.4, delay: 0.6, ease: "easeOut" }}
@@ -197,7 +197,7 @@ export function AboutHeroVisual() {
           <motion.div
             animate={still ? undefined : { y: [0, -10, 0], rotate: [0, 8, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-200 dark:border-cyan-800/80 bg-white/85 dark:bg-[#111827]/90 shadow-[0_8px_24px_-10px_rgba(34,211,238,0.6)] dark:shadow-black/40 backdrop-blur-md"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-200 dark:border-cyan-800/80 bg-white/85 dark:bg-surface-secondary/90 shadow-[0_8px_24px_-10px_rgba(34,211,238,0.6)] dark:shadow-black/40 backdrop-blur-md"
           >
             <Sparkles className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
           </motion.div>

@@ -14,17 +14,34 @@ import {
   Globe,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
+import { useMockSession, getApprovedInstructors } from "@/lib/auth/use-mock-auth";
 
 export default function InstructorProfilePage() {
-  const [name, setName] = useState("Dr. Rohit Kapoor");
-  const [email, setEmail] = useState("rohit.kapoor@jkslearning.com");
+  const session = useMockSession();
+  const [name, setName] = useState(session?.name || "Lecturer");
+  const [email, setEmail] = useState(session?.email || "");
   const [title, setTitle] = useState("Lead Trainer & Principal Enterprise Architect");
   const [track, setTrack] = useState("Java & Full Stack Track");
   const [officeHours, setOfficeHours] = useState("Monday & Thursday: 6:00 PM - 8:00 PM IST");
   const [bio, setBio] = useState(
-    "Over 14 years of enterprise software engineering experience across fintech, distributed messaging architectures, and cloud microservices. Passionate about empowering the next generation of full stack software craftsmen."
+    "Enterprise faculty instructor with specialized industry experience across production microservices, distributed architectures, and modern cloud platforms."
   );
   const [saved, setSaved] = useState(false);
+
+  React.useEffect(() => {
+    if (session) {
+      if (session.name) setName(session.name);
+      if (session.email) setEmail(session.email);
+
+      const approved = getApprovedInstructors();
+      const matched = approved.find((i) => i.email.toLowerCase() === session.email?.toLowerCase());
+      if (matched && matched.role) {
+        setTitle(matched.role);
+      }
+    }
+  }, [session]);
+
+  const initials = session?.initials || name.slice(0, 2).toUpperCase() || "LE";
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,15 +54,15 @@ export default function InstructorProfilePage() {
       <DashboardTopbar
         title="Lecturer Profile & Office Hours"
         subtitle="Manage public faculty biography, track specializations, and mentorship consultation slots."
-        userInitials="RK"
+        userInitials={initials}
       />
 
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-4xl mx-auto w-full">
         {/* Profile Card Header */}
-        <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 sm:p-8 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+        <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-6 sm:p-8 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
           <div className="flex flex-col sm:flex-row items-center gap-5 border-b border-slate-100 dark:border-slate-800 pb-6">
             <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-[#2563EB] to-[#38BDF8] text-2xl font-extrabold text-white shadow-lg shadow-blue-500/25 ring-4 ring-white dark:ring-slate-800">
-              RK
+              {initials}
             </div>
             <div className="space-y-1 text-center sm:text-left">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
@@ -69,7 +86,7 @@ export default function InstructorProfilePage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-2.5 font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                 />
               </div>
 
@@ -81,7 +98,7 @@ export default function InstructorProfilePage() {
                   type="email"
                   value={email}
                   disabled
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-[#151D2E] p-2.5 font-medium text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-surface-elevated p-2.5 font-medium text-slate-500 dark:text-slate-400 cursor-not-allowed"
                 />
               </div>
             </div>
@@ -95,7 +112,7 @@ export default function InstructorProfilePage() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-2.5 font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                 />
               </div>
 
@@ -107,7 +124,7 @@ export default function InstructorProfilePage() {
                   type="text"
                   value={track}
                   onChange={(e) => setTrack(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-2.5 font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                 />
               </div>
             </div>
@@ -121,7 +138,7 @@ export default function InstructorProfilePage() {
                 value={officeHours}
                 onChange={(e) => setOfficeHours(e.target.value)}
                 placeholder="e.g. Tue & Thu: 6:00 PM - 7:30 PM IST"
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-2.5 font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB] dark:placeholder-slate-500"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB] dark:placeholder-slate-400"
               />
             </div>
 
@@ -133,7 +150,7 @@ export default function InstructorProfilePage() {
                 rows={3}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-3 font-medium text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-3 font-medium text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
               />
             </div>
 

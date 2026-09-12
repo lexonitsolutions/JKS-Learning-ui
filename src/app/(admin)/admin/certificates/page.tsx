@@ -6,6 +6,7 @@ import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { ADMIN_CERTIFICATES, type AdminCertificateRow } from "@/lib/data/admin";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
+import { CertificateModal } from "@/components/common/certificate-modal";
 
 export default function AdminCertificatesPage() {
   const [selectedCert, setSelectedCert] = useState<AdminCertificateRow | null>(null);
@@ -22,7 +23,7 @@ export default function AdminCertificatesPage() {
         {/* Metric Cards */}
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <TiltCard>
-          <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+          <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Issued Credentials</span>
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-400">
@@ -35,7 +36,7 @@ export default function AdminCertificatesPage() {
           </TiltCard>
 
           <TiltCard>
-          <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+          <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Completion Milestone</span>
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
@@ -48,7 +49,7 @@ export default function AdminCertificatesPage() {
           </TiltCard>
 
           <TiltCard>
-          <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+          <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Verification Ledger</span>
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
@@ -62,11 +63,11 @@ export default function AdminCertificatesPage() {
         </Reveal>
 
         {/* Table */}
-        <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+        <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs min-w-[650px]">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
                   <th className="pb-3 pr-4 pl-0">Student</th>
                   <th className="px-4 pb-3">Course Completed</th>
                   <th className="px-4 pb-3">Verification ID</th>
@@ -77,7 +78,7 @@ export default function AdminCertificatesPage() {
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
                 {ADMIN_CERTIFICATES.map((c) => (
-                  <tr key={c.verificationId} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                  <tr key={c.verificationId} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-hover">
                     <td className="py-4 pr-4 pl-0 font-bold text-slate-900 dark:text-white whitespace-nowrap">
                       {c.student}
                     </td>
@@ -99,7 +100,7 @@ export default function AdminCertificatesPage() {
                       <button
                         type="button"
                         onClick={() => setSelectedCert(c)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-[#2563EB] shadow-xs hover:bg-[#EFF6FF] dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-blue-400 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-[#2563EB] shadow-xs hover:bg-[#EFF6FF] dark:border-slate-700/80 dark:bg-surface-elevated dark:text-blue-400 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
                       >
                         <Eye className="h-3.5 w-3.5" /> Preview
                       </button>
@@ -112,68 +113,21 @@ export default function AdminCertificatesPage() {
         </div>
       </div>
 
-      {/* Certificate Preview Modal */}
-      {selectedCert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs dark:bg-black/75">
-          <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl dark:border-slate-800 dark:bg-[#111827]">
-            <button
-              type="button"
-              onClick={() => setSelectedCert(null)}
-              className="absolute top-5 right-5 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
-
-            <div className="rounded-2xl border-4 border-double border-amber-200/60 bg-gradient-to-b from-slate-900 via-slate-800 to-blue-950 p-8 text-center text-white shadow-xl">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-400/20 text-amber-300">
-                <Award className="h-8 w-8" />
-              </div>
-              <div className="mt-4 text-xs font-bold tracking-widest text-amber-400 uppercase">
-                JKS Learning Institute of Technology
-              </div>
-              <h2 className="mt-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
-                Certificate of Mastery & Completion
-              </h2>
-              <p className="mt-4 text-xs text-slate-300">This is to proudly certify that</p>
-              <div className="mt-1 text-xl font-extrabold text-blue-300 underline decoration-blue-500/50 underline-offset-8">
-                {selectedCert.student}
-              </div>
-              <p className="mt-4 text-xs text-slate-300">
-                has successfully completed all required video stages and passed all practical assignments for
-              </p>
-              <div className="mt-1 font-bold text-white">{selectedCert.course}</div>
-
-              <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-4 text-left text-xs">
-                <div>
-                  <div className="font-mono text-emerald-400">ID: {selectedCert.verificationId}</div>
-                  <div className="text-slate-400">Issued on {selectedCert.issuedDate}</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-semibold text-white">Authorized Signature</div>
-                  <div className="text-slate-400">Academic Director, JKS</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setSelectedCert(null)}
-                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 cursor-pointer"
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedCert(null)}
-                className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
-              >
-                <Download className="h-4 w-4" /> Download PDF
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Certificate Preview & Print Modal */}
+      <CertificateModal
+        certificate={
+          selectedCert
+            ? {
+                id: selectedCert.verificationId,
+                studentName: selectedCert.student,
+                courseTitle: selectedCert.course,
+                issuedDate: selectedCert.issuedDate,
+                grade: "Mastery & Stage Completion (100%)",
+              }
+            : null
+        }
+        onClose={() => setSelectedCert(null)}
+      />
     </>
   );
 }

@@ -18,7 +18,7 @@ export default function AdminAiInterviewsPage() {
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
         {/* Coming Soon Notice Card */}
         <Reveal>
-          <div className="relative overflow-hidden rounded-[24px] border border-amber-200/80 dark:border-amber-900/50 bg-gradient-to-br from-amber-50/90 via-white to-orange-50/50 dark:from-[#151D2E] dark:via-[#111827] dark:to-amber-950/20 p-8 sm:p-10 shadow-[0_8px_30px_rgb(245,158,11,0.08)] dark:shadow-none backdrop-blur-xl">
+          <div className="relative overflow-hidden rounded-[24px] border border-amber-200/80 dark:border-amber-900/50 bg-gradient-to-br from-amber-50/90 via-white to-orange-50/50 dark:from-surface-elevated dark:via-surface-secondary dark:to-amber-950/20 p-8 sm:p-10 shadow-[0_8px_30px_rgb(245,158,11,0.08)] dark:shadow-none backdrop-blur-xl">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div className="space-y-3 max-w-2xl">
                 <div className="inline-flex items-center gap-2 rounded-full bg-amber-100/80 dark:bg-amber-950/60 border border-amber-300/60 dark:border-amber-800/60 px-3 py-1 text-xs font-bold text-amber-800 dark:text-amber-300">
@@ -72,7 +72,7 @@ export default function AdminAiInterviewsPage() {
               </Link>
               <Link
                 href="/admin"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors"
               >
                 Back to Dashboard
               </Link>

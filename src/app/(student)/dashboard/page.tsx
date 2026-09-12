@@ -26,10 +26,12 @@ import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import {
+  useAllCourses,
   useStudentOwnedCourses,
   enrollStudentCourse,
 } from "@/lib/data/courses-store";
-import { EXTENDED_CATALOG, type CatalogCourse } from "@/app/(student)/dashboard/courses/page";
+import { CourseCheckoutModal } from "@/components/dashboard/course-checkout-modal";
+import { mapFullCourseToCatalog, type CatalogCourse } from "@/app/(student)/dashboard/courses/page";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 
@@ -68,15 +70,15 @@ const OFFERS = [
     title: "JKS Frontend System Design & DSA Pro Bundle",
     subtitle: "Crack Tier-1 Tech Interviews with JKS DSA + Enterprise System Design Mastery.",
     discountCode: "B1G1TECH",
-    expiresIn: "Special Weekend Deal",
-    ctaText: "Explore Bundle Deals",
+    expiresIn: "Ends Midnight",
+    ctaText: "Grab 1+1 Offer",
     ctaLink: "/dashboard/courses",
-    bgGradient: "from-amber-600 via-orange-600 to-rose-700",
-    accentColor: "#FDE047",
+    bgGradient: "from-slate-950 via-slate-900 to-indigo-950",
+    accentColor: "#818CF8",
   },
   {
     id: "offer-4",
-    tag: "Student Referral",
+    tag: "Partner Program",
     badge: "₹2,000 CASHBACK",
     title: "Invite Friends & Learn Together",
     subtitle: "Earn ₹2,000 instant wallet credit + 1 Free Pro Certification for every referral.",
@@ -94,17 +96,20 @@ export default function StudentDashboardPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [enrolledToast, setEnrolledToast] = useState<string | null>(null);
 
+  const allCourses = useAllCourses();
   const ownedCourses = useStudentOwnedCourses();
   const ownedSlugs = useMemo(() => ownedCourses.map((c) => c.slug), [ownedCourses]);
 
+  const catalogCourses = useMemo(() => allCourses.map(mapFullCourseToCatalog), [allCourses]);
+
   // Latest non-enrolled courses for discovery
   const latestNonEnrolledCourses = useMemo(() => {
-    const nonEnrolled = EXTENDED_CATALOG.filter(
+    const nonEnrolled = catalogCourses.filter(
       (c) => !c.isBundle && !ownedSlugs.includes(c.slug)
     );
     // Return the latest 4 available non-enrolled courses
     return nonEnrolled.slice(0, 4);
-  }, [ownedSlugs]);
+  }, [catalogCourses, ownedSlugs]);
 
   // Auto-play slideshow every 5 seconds (pauses when user hovers)
   useEffect(() => {
@@ -119,6 +124,31 @@ export default function StudentDashboardPage() {
   const session = useMockSession();
   const { user: clerkUser } = useUser();
 
+  const email = (
+    clerkUser?.primaryEmailAddress?.emailAddress ||
+    clerkUser?.emailAddresses?.[0]?.emailAddress ||
+    session?.email ||
+    ""
+  ).toLowerCase().trim();
+  const isAdmin = email === "lexonitservices@gmail.com" || session?.role === "admin";
+
+  useEffect(() => {
+    if (isAdmin) {
+      window.location.replace("/admin");
+    }
+  }, [isAdmin]);
+
+  if (isAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0B1020]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+          <p className="text-xs font-semibold text-slate-400">Opening Admin Workspace...</p>
+        </div>
+      </div>
+    );
+  }
+
   const studentName =
     clerkUser?.fullName ||
     clerkUser?.firstName ||
@@ -131,10 +161,10 @@ export default function StudentDashboardPage() {
       : session?.initials ||
         (studentName !== "Learner" ? studentName.slice(0, 2).toUpperCase() : "ST");
 
+  const [checkoutCourse, setCheckoutCourse] = useState<CatalogCourse | null>(null);
+
   const handleQuickEnroll = (course: CatalogCourse) => {
-    enrollStudentCourse(course.slug);
-    setEnrolledToast(`Enrolled in ${course.title}!`);
-    setTimeout(() => setEnrolledToast(null), 3000);
+    setCheckoutCourse(course);
   };
 
   return (
@@ -148,7 +178,7 @@ export default function StudentDashboardPage() {
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
         {/* Success Toast */}
         {enrolledToast && (
-          <div className="fixed top-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-3.5 text-xs font-bold text-emerald-800 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="fixed top-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-3.5 text-xs font-bold text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-200 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-300">
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
             <span>{enrolledToast}</span>
           </div>
@@ -159,7 +189,7 @@ export default function StudentDashboardPage() {
           <div
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
-            className="relative overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-r from-white via-white to-blue-50/40 p-5 sm:p-7 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-gradient-to-r dark:from-[#111827] dark:via-[#111827] dark:to-[#151D2E]"
+            className="relative overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-r from-white via-white to-blue-50/40 p-5 sm:p-7 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-gradient-to-r dark:from-surface-secondary dark:via-surface-secondary dark:to-surface-elevated"
           >
             {/* Ambient Background Radial Glow */}
             <div
@@ -204,11 +234,11 @@ export default function StudentDashboardPage() {
                       <div className="mt-3.5 flex items-center gap-2.5">
                         <div className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-[#2563EB] bg-blue-50/70 px-3 py-1.5 text-xs font-bold text-[#2563EB] dark:border-blue-500/40 dark:bg-blue-950/40 dark:text-blue-400">
                           <span>Use Coupon:</span>
-                          <span className="font-black text-slate-900 tracking-wider select-all bg-white px-2 py-0.5 rounded shadow-xs dark:bg-[#151D2E] dark:text-white">
+                          <span className="font-black text-slate-900 tracking-wider select-all bg-white px-2 py-0.5 rounded shadow-xs dark:bg-surface-elevated dark:text-white">
                             {activeOffer.discountCode}
                           </span>
                         </div>
-                        <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                        <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-400">
                           <Clock className="h-3 w-3" /> {activeOffer.expiresIn}
                         </span>
                       </div>
@@ -225,7 +255,7 @@ export default function StudentDashboardPage() {
                         </Link>
                         <Link
                           href="/dashboard/courses"
-                          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-200 dark:hover:bg-slate-800"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700/80 dark:bg-surface-elevated dark:text-slate-200 dark:hover:bg-surface-hover"
                         >
                           <span>Explore All</span>
                           <ArrowRight className="h-3.5 w-3.5" />
@@ -258,7 +288,7 @@ export default function StudentDashboardPage() {
                             setCurrentSlide((prev) => (prev === 0 ? OFFERS.length - 1 : prev - 1))
                           }
                           aria-label="Previous Offer"
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer dark:border-slate-700/80 dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover dark:hover:text-white"
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </button>
@@ -268,7 +298,7 @@ export default function StudentDashboardPage() {
                             setCurrentSlide((prev) => (prev + 1) % OFFERS.length)
                           }
                           aria-label="Next Offer"
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer dark:border-slate-700/80 dark:bg-[#151D2E] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer dark:border-slate-700/80 dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover dark:hover:text-white"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </button>
@@ -308,7 +338,7 @@ export default function StudentDashboardPage() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="absolute -top-1 right-0 sm:right-2 z-20 rounded-xl border border-white/80 bg-white/90 px-3 py-1.5 shadow-lg shadow-blue-500/10 backdrop-blur-md text-[11px] font-bold text-slate-800 dark:border-slate-700/80 dark:bg-[#111827]/90 dark:text-white"
+                    className="absolute -top-1 right-0 sm:right-2 z-20 rounded-xl border border-white/80 bg-white/90 px-3 py-1.5 shadow-lg shadow-blue-500/10 backdrop-blur-md text-[11px] font-bold text-slate-800 dark:border-slate-700/80 dark:bg-surface-secondary/90 dark:text-white"
                   >
                     <div className="flex items-center gap-1.5 text-[#2563EB] dark:text-blue-400">
                       <CheckCircle2 className="h-3.5 w-3.5" />
@@ -321,7 +351,7 @@ export default function StudentDashboardPage() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="absolute bottom-2 left-0 sm:left-2 z-20 rounded-xl border border-white/80 bg-white/90 px-3 py-1.5 shadow-lg shadow-blue-500/10 backdrop-blur-md text-[11px] font-bold text-slate-800 dark:border-slate-700/80 dark:bg-[#111827]/90 dark:text-white"
+                    className="absolute bottom-2 left-0 sm:left-2 z-20 rounded-xl border border-white/80 bg-white/90 px-3 py-1.5 shadow-lg shadow-blue-500/10 backdrop-blur-md text-[11px] font-bold text-slate-800 dark:border-slate-700/80 dark:bg-surface-secondary/90 dark:text-white"
                   >
                     <div className="flex items-center gap-1.5 text-amber-500">
                       <Flame className="h-3.5 w-3.5 fill-amber-500" />
@@ -353,7 +383,7 @@ export default function StudentDashboardPage() {
           <Reveal variant="stagger" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {latestNonEnrolledCourses.map((course) => (
               <TiltCard key={course.id} className="h-full">
-                <div className="flex h-full flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200/80 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-xl hover:border-blue-200 dark:border-slate-800/80 dark:bg-[#111827] dark:hover:border-blue-500/40">
+                <div className="flex h-full flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200/80 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-xl hover:border-blue-200 dark:border-slate-800/80 dark:bg-surface-secondary dark:hover:border-blue-500/40">
                   {/* Card Thumbnail / Header Banner */}
                   <div
                     className={`relative flex h-44 w-full flex-col items-center justify-center p-4 text-center overflow-hidden ${course.thumbnailBg}`}
@@ -413,7 +443,7 @@ export default function StudentDashboardPage() {
                         )}
 
                         <span className="inline-flex items-center gap-1 text-slate-500 font-medium dark:text-slate-400">
-                          <Volume2 className="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                          <Volume2 className="h-3 w-3 text-slate-400 dark:text-slate-400" />
                           {course.language}
                         </span>
 
@@ -449,7 +479,7 @@ export default function StudentDashboardPage() {
 
         {/* AI Mock Interview CTA Banner with 3D Waveform & Live Readiness Check */}
         <Reveal variant="fade-up">
-          <div className="relative overflow-hidden rounded-[24px] border border-slate-800 bg-[#0B1F3A] p-6 text-white shadow-xl sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 dark:bg-[#111827] dark:border-slate-800/80">
+          <div className="relative overflow-hidden rounded-[24px] border border-slate-800 bg-[#0B1F3A] p-6 text-white shadow-xl sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 dark:bg-surface-secondary dark:border-slate-800/80">
             <div
               className="pointer-events-none absolute -top-12 right-20 h-48 w-48 rounded-full opacity-40"
               style={{ background: "radial-gradient(circle, rgba(56,189,248,0.3), transparent 70%)" }}
@@ -475,6 +505,17 @@ export default function StudentDashboardPage() {
           </div>
         </Reveal>
       </div>
+
+      {/* SECURE COURSE CHECKOUT & PAYMENT MODAL */}
+      <CourseCheckoutModal
+        course={checkoutCourse}
+        isOpen={!!checkoutCourse}
+        onClose={() => setCheckoutCourse(null)}
+        onEnrollSuccess={(courseSlug) => {
+          setEnrolledToast(`Successfully enrolled in ${checkoutCourse?.title || "course"}!`);
+          setTimeout(() => setEnrolledToast(null), 4000);
+        }}
+      />
     </>
   );
 }

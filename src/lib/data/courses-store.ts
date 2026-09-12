@@ -1,7 +1,9 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, useEffect } from "react";
+import { apiUrl } from "@/lib/api/base-url";
 import type { Track } from "./courses";
+import { mapBackendTrack } from "./courses-api";
 
 export type VideoSourceType = "upload" | "url";
 
@@ -79,300 +81,11 @@ export interface StudentCourseProgress {
   lastPlayedVideoId?: string;
   overallPercent: number;
 }
-
-// Initial Seed Courses with Sections, Subsections, Videos and Section Assignments
-const INITIAL_COURSES: FullCourse[] = [
-  {
-    id: "crs-java-fullstack",
-    slug: "java-full-stack-mastery",
-    title: "Java Full Stack Developer Mastery",
-    track: "Full Stack",
-    level: "Intermediate",
-    durationWeeks: 16,
-    price: 24999,
-    rating: 4.8,
-    studentsEnrolled: 2140,
-    summary:
-      "Core Java, Spring Boot, REST APIs, React, and production deployment — built around real enterprise project work.",
-    createdAt: "2026-06-01T00:00:00Z",
-    status: "Published",
-    sections: [
-      {
-        id: "sec-1",
-        title: "Section 1: Enterprise Java Foundations & Core Architecture",
-        order: 1,
-        description: "Master modern Java 21 features, memory layout, OOP patterns, and multithreading.",
-        subsections: [
-          {
-            id: "sub-1-1",
-            title: "Subsection 1.1: Language Internals & JVM",
-            order: 1,
-            videos: [
-              {
-                id: "v-1",
-                title: "01. JVM Architecture, Garbage Collection & Memory Model",
-                durationSeconds: 180,
-                durationFormatted: "3:00",
-                videoType: "url",
-                videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                order: 1,
-                isFreeDemo: true,
-                completed: true,
-              },
-              {
-                id: "v-2",
-                title: "02. Modern Java 21 Features: Records, Virtual Threads & Pattern Matching",
-                durationSeconds: 240,
-                durationFormatted: "4:00",
-                videoType: "url",
-                videoUrl: "https://www.youtube.com/watch?v=k1BneeJTDcU",
-                order: 2,
-                completed: true,
-              },
-            ],
-          },
-          {
-            id: "sub-1-2",
-            title: "Subsection 1.2: Concurrency & Asynchronous Streams",
-            order: 2,
-            videos: [
-              {
-                id: "v-3",
-                title: "03. CompletableFuture, Reactive Streams & Thread Safety",
-                durationSeconds: 210,
-                durationFormatted: "3:30",
-                videoType: "url",
-                videoUrl: "https://www.youtube.com/watch?v=28aEWu_yV_c",
-                order: 3,
-                completed: false,
-              },
-            ],
-          },
-        ],
-        assignment: {
-          id: "asg-1",
-          title: "Section 1 Assessment: High-Performance Concurrent Java",
-          description: "Build a lock-free thread-safe cache using concurrent collections and virtual threads.",
-          type: "Coding Challenge",
-          minPassingScore: 75,
-          questions: [
-            {
-              prompt: "Which Java 21 feature allows lightweight thread scheduling on top of carrier OS threads?",
-              choices: [
-                "Virtual Threads (Project Loom)",
-                "ForkJoinPool Executors",
-                "Reactive Mono Publisher",
-                "ThreadLocal Context",
-              ],
-              correctIndex: 0,
-            },
-            {
-              prompt: "What is the primary advantage of Record patterns in modern Java switch statements?",
-              choices: [
-                "Deconstruct record components directly with type safety",
-                "Automatically implement serialization without reflection",
-                "Allocate records on the native stack",
-                "Bypass garbage collection cycles",
-              ],
-              correctIndex: 0,
-            },
-          ],
-          completed: true,
-          score: 95,
-        },
-      },
-      {
-        id: "sec-2",
-        title: "Section 2: Spring Boot 3 & Microservice API Engineering",
-        order: 2,
-        description: "Design and implement production-ready REST services with Spring Data JPA and Security.",
-        directVideos: [
-          {
-            id: "v-4",
-            title: "04. Spring Boot 3 Core: Dependency Injection & Auto-Configuration",
-            durationSeconds: 260,
-            durationFormatted: "4:20",
-            videoType: "url",
-            videoUrl: "https://www.youtube.com/watch?v=9SGDpanrc8U",
-            order: 1,
-            completed: false,
-          },
-          {
-            id: "v-5",
-            title: "05. Designing Resilient Microservices with Resilience4j & OpenFeign",
-            durationSeconds: 300,
-            durationFormatted: "5:00",
-            videoType: "url",
-            videoUrl: "https://www.youtube.com/watch?v=gq4S-ovwvL0",
-            order: 2,
-            completed: false,
-          },
-        ],
-        assignment: {
-          id: "asg-2",
-          title: "Section 2 Assessment: Spring Boot Microservices API",
-          description: "Implement a rate-limited REST API with JWT authentication and circuit breakers.",
-          type: "Project Submission",
-          minPassingScore: 80,
-          submissionCriteria: [
-            "REST endpoint with HTTP 201/400/401/404 standard responses",
-            "Spring Security stateless JWT filter verification",
-            "Resilience4j CircuitBreaker fallback implementation",
-          ],
-          completed: false,
-        },
-      },
-      {
-        id: "sec-3",
-        title: "Section 3: Production Cloud & Kubernetes Capstone",
-        order: 3,
-        description: "Deploy multi-tier containerized architectures to cloud infrastructure with CI/CD.",
-        directVideos: [
-          {
-            id: "v-6",
-            title: "06. Docker Multi-Stage Builds & Kubernetes Pod Orchestration",
-            durationSeconds: 320,
-            durationFormatted: "5:20",
-            videoType: "url",
-            videoUrl: "https://www.youtube.com/watch?v=X48VuDVv0do",
-            order: 1,
-            completed: false,
-          },
-        ],
-        assignment: {
-          id: "asg-3",
-          title: "Section 3 Capstone: Enterprise Production Deployment",
-          description: "Submit GitHub repository and live deployment URL for the microservices cluster.",
-          type: "Project Submission",
-          minPassingScore: 85,
-          completed: false,
-        },
-      },
-    ],
-  },
-  {
-    id: "crs-react-frontend",
-    slug: "modern-frontend-engineering",
-    title: "Modern Frontend Engineering with React",
-    track: "Frontend",
-    level: "Beginner",
-    durationWeeks: 10,
-    price: 15999,
-    rating: 4.9,
-    studentsEnrolled: 3020,
-    summary: "HTML/CSS/JS fundamentals through advanced React, TypeScript, and performance optimization.",
-    createdAt: "2026-07-01T00:00:00Z",
-    status: "Published",
-    sections: [
-      {
-        id: "sec-react-1",
-        title: "Section 1: Modern JavaScript & TypeScript Foundations",
-        order: 1,
-        description: "ESNext syntax, asynchronous promises, and TypeScript generics.",
-        directVideos: [
-          {
-            id: "v-r1",
-            title: "01. TypeScript Deep Dive: Generics, Discriminated Unions & Utility Types",
-            durationSeconds: 200,
-            durationFormatted: "3:20",
-            videoType: "url",
-            videoUrl: "https://www.youtube.com/watch?v=BCg4U1FzODs",
-            order: 1,
-            isFreeDemo: true,
-            completed: true,
-          },
-        ],
-        assignment: {
-          id: "asg-r1",
-          title: "Section 1 Assessment: TypeScript Type Safety Challenge",
-          description: "Solve 5 advanced TypeScript utility type puzzles.",
-          type: "MCQ",
-          minPassingScore: 80,
-          questions: [
-            {
-              prompt: "Which TypeScript utility type constructs a type with all properties of T set to optional?",
-              choices: ["Partial<T>", "Required<T>", "Record<K,T>", "Readonly<T>"],
-              correctIndex: 0,
-            },
-          ],
-          completed: false,
-        },
-      },
-      {
-        id: "sec-react-2",
-        title: "Section 2: React 19 Architecture & State",
-        order: 2,
-        description: "Server Actions, hooks, memoization, and custom hooks.",
-        directVideos: [
-          {
-            id: "v-r2",
-            title: "02. React 19 Compiler, Actions, and optimistic state updates",
-            durationSeconds: 280,
-            durationFormatted: "4:40",
-            videoType: "url",
-            videoUrl: "https://www.youtube.com/watch?v=w7ejDZ8SWv8",
-            order: 1,
-            completed: false,
-          },
-        ],
-        assignment: {
-          id: "asg-r2",
-          title: "Section 2 Assessment: Real-Time Kanban Dashboard",
-          description: "Build an interactive optimistic UI board with drag-and-drop state.",
-          type: "Coding Challenge",
-          minPassingScore: 75,
-          completed: false,
-        },
-      },
-    ],
-  },
-  {
-    id: "crs-sap-abap",
-    slug: "sap-abap-professional",
-    title: "SAP ABAP Professional Track",
-    track: "SAP",
-    level: "Intermediate",
-    durationWeeks: 12,
-    price: 28999,
-    rating: 4.6,
-    studentsEnrolled: 860,
-    summary: "ABAP programming, module pool, RICEFW objects, and S/4HANA extensibility for enterprise consulting roles.",
-    createdAt: "2026-08-01T00:00:00Z",
-    status: "Published",
-    sections: [
-      {
-        id: "sec-sap-1",
-        title: "Section 1: ABAP Core Data Dictionary & Modularization",
-        order: 1,
-        description: "Data elements, domains, structures, transparent tables, and function modules.",
-        directVideos: [
-          {
-            id: "v-s1",
-            title: "01. SAP Architecture & Data Dictionary Mastery",
-            durationSeconds: 220,
-            durationFormatted: "3:40",
-            videoType: "url",
-            videoUrl: "https://www.youtube.com/watch?v=bMknfKXIFA8",
-            order: 1,
-            isFreeDemo: true,
-            completed: false,
-          },
-        ],
-        assignment: {
-          id: "asg-s1",
-          title: "Section 1 Assessment: SAP Data Dictionary Design",
-          description: "Create a complete schema for Purchase Order header and item tables.",
-          type: "MCQ",
-          minPassingScore: 75,
-          completed: false,
-        },
-      },
-    ],
-  },
-];
+// Live DB courses store - empty by default to reflect real backend data only
+const INITIAL_COURSES: FullCourse[] = [];
 
 const STORAGE_KEYS = {
-  COURSES: "jks_courses_catalog_v2",
+  COURSES: "jks_courses_catalog_v4",
   ENROLLMENTS: "jks_student_enrollments_v2",
 };
 
@@ -407,6 +120,9 @@ export function getStoredCourses(): FullCourse[] {
   return safeLocalStorageGet<FullCourse[]>(STORAGE_KEYS.COURSES, INITIAL_COURSES);
 }
 
+/**
+ * Save course locally and asynchronously push to MongoDB Atlas backend.
+ */
 export function saveCourse(newCourse: FullCourse): FullCourse {
   const current = getStoredCourses();
   const index = current.findIndex((c) => c.id === newCourse.id || c.slug === newCourse.slug);
@@ -418,13 +134,117 @@ export function saveCourse(newCourse: FullCourse): FullCourse {
     updated = [newCourse, ...current];
   }
   safeLocalStorageSet(STORAGE_KEYS.COURSES, updated);
+
+  // Background sync to MongoDB Atlas
+  saveCourseToBackend(newCourse).catch((err) => {
+    console.warn("[courses-store] Background save to backend failed:", err);
+  });
+
   return newCourse;
 }
 
-export function deleteCourse(courseId: string) {
+/**
+ * Save course with direct await on MongoDB Atlas API response.
+ */
+export async function saveCourseAsync(newCourse: FullCourse): Promise<FullCourse> {
   const current = getStoredCourses();
-  const updated = current.filter((c) => c.id !== courseId);
+  const index = current.findIndex((c) => c.id === newCourse.id || c.slug === newCourse.slug);
+  let updated: FullCourse[];
+  if (index >= 0) {
+    updated = [...current];
+    updated[index] = newCourse;
+  } else {
+    updated = [newCourse, ...current];
+  }
   safeLocalStorageSet(STORAGE_KEYS.COURSES, updated);
+
+  try {
+    const saved = await saveCourseToBackend(newCourse);
+    if (saved) {
+      const refreshed = getStoredCourses();
+      const rIndex = refreshed.findIndex((c) => c.slug === newCourse.slug || c.id === newCourse.id);
+      if (rIndex >= 0) {
+        refreshed[rIndex] = saved;
+        safeLocalStorageSet(STORAGE_KEYS.COURSES, refreshed);
+      }
+      return saved;
+    }
+  } catch (err) {
+    console.error("[courses-store] saveCourseAsync failed:", err);
+  }
+
+  return newCourse;
+}
+
+async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | null> {
+  const payload = {
+    title: course.title,
+    slug: course.slug,
+    track: course.track,
+    level: course.level,
+    durationWeeks: course.durationWeeks,
+    priceCents: Math.round(course.price * 100),
+    price: course.price,
+    rating: course.rating,
+    studentsEnrolled: course.studentsEnrolled,
+    summary: course.summary,
+    thumbnail: course.thumbnail,
+    status: course.status.toUpperCase(),
+    sections: course.sections,
+    sectionsJson: course.sections,
+  };
+
+  try {
+    const res = await fetch(apiUrl("/courses"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      const dbCourse = await res.json();
+      const track = mapBackendTrack(dbCourse.track);
+      const price = dbCourse.priceCents ? Math.round(dbCourse.priceCents / 100) : course.price;
+      return {
+        id: dbCourse.id || course.id,
+        slug: dbCourse.slug || course.slug,
+        title: dbCourse.title || course.title,
+        track,
+        level: dbCourse.level || course.level,
+        durationWeeks: dbCourse.durationWeeks || course.durationWeeks,
+        price,
+        rating: dbCourse.rating || course.rating,
+        studentsEnrolled: dbCourse.studentsEnrolled || course.studentsEnrolled,
+        summary: dbCourse.summary || course.summary,
+        thumbnail: dbCourse.thumbnail || course.thumbnail,
+        createdAt: dbCourse.createdAt || course.createdAt,
+        status: (dbCourse.status === "PUBLISHED" || dbCourse.status === "Published" ? "Published" : "Draft") as "Published" | "Draft",
+        sections: (Array.isArray(dbCourse.sectionsJson) && dbCourse.sectionsJson.length > 0)
+          ? dbCourse.sectionsJson
+          : course.sections,
+      };
+    }
+  } catch (err) {
+    console.warn("[courses-store] API call to save course failed:", err);
+  }
+  return null;
+}
+
+export function deleteCourse(courseIdOrSlug: string) {
+  const current = getStoredCourses();
+  const target = current.find((c) => c.id === courseIdOrSlug || c.slug === courseIdOrSlug);
+  const updated = current.filter((c) => c.id !== courseIdOrSlug && c.slug !== courseIdOrSlug);
+  safeLocalStorageSet(STORAGE_KEYS.COURSES, updated);
+
+  const deleteId = target?.id || courseIdOrSlug;
+  fetch(apiUrl(`/courses/${encodeURIComponent(deleteId)}`), {
+    method: "DELETE",
+  }).catch((err) => {
+    console.warn("[courses-store] Failed to delete course from DB:", err);
+  });
 }
 
 export function getStudentOwnedSlugs(): string[] {
@@ -484,7 +304,133 @@ function getEnrollmentsSnapshot(): string[] {
   return cachedEnrollmentsSnapshot ?? DEFAULT_ENROLLED_SLUGS;
 }
 
+/**
+ * Synchronize courses store with live backend API (MongoDB Atlas DB).
+ * Reflects course removals, updates, and creations immediately in the UI.
+ */
+export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
+  if (typeof window === "undefined") return getStoredCourses();
+  try {
+    // Attempt /courses/all first so admins and instructors see both Draft & Published
+    let res: Response | null = null;
+    try {
+      res = await fetch(apiUrl("/courses/all"), {
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(3000),
+      });
+    } catch {
+      // ignore
+    }
+
+    if (!res || !res.ok) {
+      try {
+        res = await fetch(apiUrl("/courses"), {
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+          signal: AbortSignal.timeout(3000),
+        });
+      } catch {
+        // ignore
+      }
+    }
+
+    if (res && res.ok) {
+      const dbCourses: any[] = await res.json();
+      if (Array.isArray(dbCourses)) {
+        const current = getStoredCourses();
+
+        // Build course catalog directly from live DB courses.
+        const updated: FullCourse[] = dbCourses.map((dbc) => {
+          const existing = current.find((c) => c.slug === dbc.slug || c.id === dbc.id);
+          const track = mapBackendTrack(dbc.track);
+          const price = dbc.priceCents ? Math.round(dbc.priceCents / 100) : 24999;
+
+          // Preserve rich section materials if matching sectionsJson or build from modules
+          let sections: Section[] = [];
+          if (Array.isArray(dbc.sectionsJson) && dbc.sectionsJson.length > 0) {
+            sections = dbc.sectionsJson;
+          } else if (existing?.sections && existing.sections.length > 0) {
+            sections = existing.sections;
+          } else if (Array.isArray(dbc.modules) && dbc.modules.length > 0) {
+            sections = dbc.modules.map((m: any, idx: number) => {
+              const subsections: SubSection[] = (m.topics || []).map((t: any, tIdx: number) => ({
+                id: `sub-${t.id || tIdx}`,
+                title: t.title || `Topic ${tIdx + 1}`,
+                order: t.order || tIdx + 1,
+                description: t.description || "",
+                videos: (t.videos || []).map((v: any, vIdx: number) => ({
+                  id: `v-${v.id || vIdx}`,
+                  title: v.title || `Video ${vIdx + 1}`,
+                  durationSeconds: v.durationSeconds || 300,
+                  durationFormatted: v.durationFormatted || "5:00",
+                  videoType: (v.videoType as any) || "url",
+                  videoUrl: v.videoUrl || v.providerAssetId || "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                  order: v.order || vIdx + 1,
+                  isFreeDemo: Boolean(v.isFreeDemo),
+                  notes: v.notes || "",
+                })),
+              }));
+
+              return {
+                id: `sec-${m.id || idx}`,
+                title: m.title || `Module ${idx + 1}`,
+                order: m.order || idx + 1,
+                description: m.description || `Curriculum module for ${dbc.title}`,
+                subsections,
+                assignment: {
+                  id: `asg-${m.id || idx}`,
+                  title: `${m.title || "Module"} Practical Assessment`,
+                  description: `Hands-on assessment and evaluation for ${m.title || "Module"}.`,
+                  type: "Project Submission" as const,
+                  minPassingScore: 70,
+                },
+              };
+            });
+          }
+
+          return {
+            id: dbc.id || existing?.id || `crs-${dbc.slug}`,
+            slug: dbc.slug,
+            title: dbc.title,
+            track,
+            level: dbc.level || existing?.level || "Intermediate",
+            durationWeeks: dbc.durationWeeks || existing?.durationWeeks || 12,
+            price,
+            rating: typeof dbc.rating === "number" ? dbc.rating : existing?.rating || 5.0,
+            studentsEnrolled: typeof dbc.studentsEnrolled === "number" ? dbc.studentsEnrolled : existing?.studentsEnrolled || 0,
+            summary: dbc.summary || existing?.summary || "",
+            thumbnail: dbc.thumbnail || existing?.thumbnail || "",
+            createdAt: dbc.createdAt || existing?.createdAt || new Date().toISOString(),
+            status: (dbc.status === "PUBLISHED" || dbc.status === "Published" ? "Published" : "Draft") as "Published" | "Draft",
+            sections,
+          };
+        });
+
+        safeLocalStorageSet(STORAGE_KEYS.COURSES, updated);
+        return updated;
+      }
+    }
+  } catch (err) {
+    console.warn("[courses-store] Live DB sync skipped:", err);
+  }
+  return getStoredCourses();
+}
+
 export function useAllCourses(): FullCourse[] {
+  useEffect(() => {
+    syncCoursesWithBackend().catch(() => {});
+    const handleFocus = () => {
+      syncCoursesWithBackend().catch(() => {});
+    };
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("visibilitychange", handleFocus);
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("visibilitychange", handleFocus);
+    };
+  }, []);
+
   return useSyncExternalStore(subscribe, getCoursesSnapshot, () => INITIAL_COURSES);
 }
 
@@ -502,3 +448,5 @@ export function getFullCourseBySlug(slug: string): FullCourse | undefined {
   const courses = getStoredCourses();
   return courses.find((c) => c.slug === slug);
 }
+
+

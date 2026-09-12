@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { CourseCard } from "@/components/marketing/course-card";
 import { Reveal } from "@/lib/motion/reveal";
-import { COURSES, TRACKS } from "@/lib/data/courses";
+import { fetchDbCourses, TRACKS } from "@/lib/data/courses";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function CoursesPage({
   searchParams,
@@ -9,7 +12,8 @@ export default async function CoursesPage({
   searchParams: Promise<{ track?: string }>;
 }) {
   const { track } = await searchParams;
-  const filtered = track ? COURSES.filter((c) => c.track === track) : COURSES;
+  const courses = await fetchDbCourses();
+  const filtered = track ? courses.filter((c) => c.track === track) : courses;
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 py-16 lg:px-16">
@@ -27,8 +31,8 @@ export default async function CoursesPage({
           href="/courses"
           className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
             !track
-              ? "border-primary-blue bg-primary-blue text-white"
-              : "border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] text-text-body dark:text-slate-300 hover:border-primary-blue/50 dark:hover:border-blue-500/50"
+              ? "border-primary-blue bg-primary-fill text-white"
+              : "border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary text-text-body dark:text-slate-300 hover:border-primary-blue/50 dark:hover:border-blue-500/50"
           }`}
         >
           All
@@ -39,8 +43,8 @@ export default async function CoursesPage({
             href={`/courses?track=${encodeURIComponent(t)}`}
             className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               track === t
-                ? "border-primary-blue bg-primary-blue text-white"
-                : "border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] text-text-body dark:text-slate-300 hover:border-primary-blue/50 dark:hover:border-blue-500/50"
+                ? "border-primary-blue bg-primary-fill text-white"
+                : "border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary text-text-body dark:text-slate-300 hover:border-primary-blue/50 dark:hover:border-blue-500/50"
             }`}
           >
             {t}
@@ -48,19 +52,24 @@ export default async function CoursesPage({
         ))}
       </div>
 
-      <Reveal
-        key={track ?? "all"}
-        variant="stagger"
-        className="mt-10 grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3"
-      >
-        {filtered.map((course) => (
-          // Plain wrapper — keeps GSAP's entrance transform off CourseCard's
-          // own Framer-Motion-controlled tilt element.
-          <div key={course.slug}>
-            <CourseCard course={course} />
-          </div>
-        ))}
-      </Reveal>
+      {filtered.length === 0 ? (
+        <div className="mt-12 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 p-12 text-center">
+          <p className="text-base font-bold text-slate-800 dark:text-white">No courses currently published</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Courses published in the database will appear here in real-time.</p>
+        </div>
+      ) : (
+        <Reveal
+          key={track ?? "all"}
+          variant="stagger"
+          className="mt-10 grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {filtered.map((course) => (
+            <div key={course.slug}>
+              <CourseCard course={course} />
+            </div>
+          ))}
+        </Reveal>
+      )}
     </div>
   );
 }

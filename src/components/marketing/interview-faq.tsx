@@ -44,8 +44,8 @@ export function InterviewFaq() {
             key={idx}
             className={`rounded-xl border transition-all duration-200 overflow-hidden ${
               isOpen
-                ? "border-primary-blue/40 dark:border-primary-blue/50 bg-white dark:bg-[#111827] shadow-sm dark:shadow-black/40"
-                : "border-border dark:border-slate-800/80 bg-bg-light/60 dark:bg-[#111827]/60 hover:bg-white dark:hover:bg-[#111827]"
+                ? "border-primary-blue/40 dark:border-primary-blue/50 bg-white dark:bg-surface-secondary shadow-sm dark:shadow-black/40"
+                : "border-border dark:border-slate-800/80 bg-bg-light/60 dark:bg-surface-secondary/60 hover:bg-white dark:hover:bg-surface-secondary"
             }`}
           >
             <button
@@ -54,7 +54,7 @@ export function InterviewFaq() {
             >
               <span className="flex items-center gap-3">
                 <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-mono ${
-                  isOpen ? "bg-primary-blue text-white" : "bg-primary-blue/10 dark:bg-primary-blue/20 text-primary-blue dark:text-blue-400"
+                  isOpen ? "bg-primary-fill text-white" : "bg-primary-blue/10 dark:bg-primary-blue/20 text-primary-blue dark:text-blue-400"
                 }`}>
                   {idx + 1}
                 </span>

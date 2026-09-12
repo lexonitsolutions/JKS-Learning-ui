@@ -3,12 +3,13 @@ import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { ScoreRing } from "@/components/ui/score-ring";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import { SAMPLE_REPORT } from "@/lib/data/interview-report";
 import Link from "next/link";
 
-const GLASS_CARD = "rounded-[20px] border border-white/70 bg-white/80 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]";
+const GLASS_CARD = "rounded-[20px] border border-white/70 bg-white/80 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]";
 
 export default function AiInterviewReportPage() {
   const r = SAMPLE_REPORT;
@@ -124,7 +125,7 @@ export default function AiInterviewReportPage() {
                   <span className="font-semibold text-slate-900 dark:text-white">Your answer: </span>
                   {q.answerSummary}
                 </p>
-                <p className="mt-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-600 border border-transparent dark:border-slate-800 dark:bg-[#151D2E] dark:text-slate-300">
+                <p className="mt-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-600 border border-transparent dark:border-slate-800 dark:bg-surface-elevated dark:text-slate-300">
                   {q.feedback}
                 </p>
               </div>
@@ -147,7 +148,7 @@ export default function AiInterviewReportPage() {
                 </li>
               ))}
             </ol>
-            <Link href="/dashboard/ai-interview" className={buttonVariants({ size: "md" }) + " relative mt-5"}>
+            <Link href="/dashboard/ai-interview" className={cn(buttonVariants({ size: "md" }), "relative mt-5")}>
               <RefreshCcw className="h-4 w-4" /> Retake with Adjusted Focus
             </Link>
           </div>

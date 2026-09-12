@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Trophy, ArrowRight, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { MagneticButton } from "@/components/interactions/magnetic-button";
 import { Reveal } from "@/lib/motion/reveal";
 import { SuccessStoriesHero } from "@/components/marketing/success-stories-hero";
@@ -53,7 +54,7 @@ export default function SuccessStoriesPage() {
       <SuccessStoriesHero />
 
       {/* 2. TRUSTED HIRING PARTNER NETWORK MARQUEE */}
-      <section className="border-y border-border dark:border-slate-800 bg-white dark:bg-[#0B1020] py-12">
+      <section className="border-y border-border dark:border-slate-800 bg-white dark:bg-background py-12">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-12">
           <div className="text-center mb-8">
             <span className="text-xs font-bold uppercase tracking-wider text-text-body/70 dark:text-slate-400">
@@ -65,7 +66,7 @@ export default function SuccessStoriesPage() {
             {HIRING_PARTNERS.map((partner) => (
               <div
                 key={partner.name}
-                className="flex flex-col items-center justify-center rounded-xl border border-border/80 dark:border-slate-800 bg-bg-light/60 dark:bg-[#111827] p-4 transition-all hover:bg-white dark:hover:bg-[#151D2E] hover:border-primary-blue/30 hover:shadow-sm"
+                className="flex flex-col items-center justify-center rounded-xl border border-border/80 dark:border-slate-800 bg-bg-light/60 dark:bg-surface-secondary p-4 transition-all hover:bg-white dark:hover:bg-surface-elevated hover:border-primary-blue/30 hover:shadow-sm"
               >
                 <span className="text-sm font-bold text-text-heading dark:text-white">{partner.name}</span>
                 <span className="text-[10px] text-text-body/60 dark:text-slate-400 font-medium mt-0.5">
@@ -81,7 +82,7 @@ export default function SuccessStoriesPage() {
       <SuccessStoriesExplorer />
 
       {/* 5. THE JKS TRANSFORMATION DIFFERENCE MATRIX */}
-      <section className="py-20 lg:py-28 bg-white dark:bg-[#0B1020] border-y border-border dark:border-slate-800">
+      <section className="py-20 lg:py-28 bg-white dark:bg-background border-y border-border dark:border-slate-800">
         <div className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-12">
           <Reveal className="mb-10 sm:mb-14 text-center max-w-2xl mx-auto">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-blue/10 dark:bg-blue-950/60 px-3.5 py-1 text-xs font-semibold text-primary-blue dark:text-blue-400">
@@ -101,7 +102,7 @@ export default function SuccessStoriesPage() {
             {COMPARISON_POINTS.map((item, idx) => (
               <div
                 key={idx}
-                className="rounded-2xl border border-border dark:border-slate-800 bg-white dark:bg-[#111827] p-5 shadow-xs space-y-3.5"
+                className="rounded-2xl border border-border dark:border-slate-800 bg-white dark:bg-surface-secondary p-5 shadow-xs space-y-3.5"
               >
                 <div className="font-extrabold text-slate-900 dark:text-white text-sm border-b border-border/60 dark:border-slate-800 pb-2">
                   {item.pillar}
@@ -131,12 +132,12 @@ export default function SuccessStoriesPage() {
           {/* Desktop Table (>= md) */}
           <Reveal
             variant="scale-in"
-            className="hidden md:block overflow-hidden rounded-3xl border border-border dark:border-slate-800 bg-white dark:bg-[#111827] shadow-sm"
+            className="hidden md:block overflow-hidden rounded-3xl border border-border dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-sm"
           >
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-border dark:border-slate-800 bg-bg-light/90 dark:bg-[#151D2E] text-xs font-bold text-text-heading dark:text-white uppercase tracking-wider">
+                  <tr className="border-b border-border dark:border-slate-800 bg-bg-light/90 dark:bg-surface-elevated text-xs font-bold text-text-heading dark:text-white uppercase tracking-wider">
                     <th className="p-5 sm:p-6">Transformation Pillar</th>
                     <th className="p-5 sm:p-6 text-text-body dark:text-slate-400">Traditional Tutorials & Bootcamps</th>
                     <th className="p-5 sm:p-6 text-primary-blue dark:text-blue-400 bg-primary-blue/[0.04] dark:bg-primary-blue/10">
@@ -146,7 +147,7 @@ export default function SuccessStoriesPage() {
                 </thead>
                 <tbody className="divide-y divide-border/60 dark:divide-slate-800">
                   {COMPARISON_POINTS.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-bg-light/40 dark:hover:bg-slate-800/40 transition-colors">
+                    <tr key={idx} className="hover:bg-bg-light/40 dark:hover:bg-surface-hover transition-colors">
                       <td className="p-5 sm:p-6 font-bold text-text-heading dark:text-white text-sm">
                         {item.pillar}
                       </td>
@@ -173,7 +174,7 @@ export default function SuccessStoriesPage() {
 
 
       {/* 6. 3D PERSPECTIVE TESTIMONIAL FEEDBACK WALL */}
-      <section className="py-20 lg:py-28 bg-bg-light dark:bg-[#0B1020]">
+      <section className="py-20 lg:py-28 bg-bg-light dark:bg-background">
         <div className="mx-auto max-w-[1320px] px-6 lg:px-12">
           <Reveal className="mb-12 text-center max-w-xl mx-auto">
             <span className="text-label text-primary-blue">Continuous Feedback</span>
@@ -192,7 +193,7 @@ export default function SuccessStoriesPage() {
       </section>
 
       {/* 7. HIGH-CONVERTING FINAL CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-[#0B1120] via-primary-blue to-[#0B1120] py-20 lg:py-24 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-r from-[#0B1120] via-primary-fill to-[#0B1120] py-20 lg:py-24 text-white">
         <div
           className="pointer-events-none absolute inset-0 opacity-25"
           style={{
@@ -221,8 +222,7 @@ export default function SuccessStoriesPage() {
               <Link
                 href="/courses"
                 className={
-                  buttonVariants({ variant: "secondary", size: "lg" }) +
-                  " border-white bg-white text-primary-blue hover:bg-white/90 hover:text-primary-blue font-bold shadow-xl shadow-black/20"
+                  cn(buttonVariants({ variant: "secondary", size: "lg" }), "border-white bg-white text-[#1E5EFF] hover:bg-blue-50 hover:text-[#1E5EFF] font-bold shadow-xl shadow-black/20")
                 }
               >
                 Explore Courses <ArrowRight className="h-4 w-4 ml-1.5" />
@@ -233,8 +233,7 @@ export default function SuccessStoriesPage() {
               <Link
                 href="/dashboard/ai-interview"
                 className={
-                  buttonVariants({ variant: "secondary", size: "lg" }) +
-                  " border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-md font-semibold"
+                  cn(buttonVariants({ variant: "secondary", size: "lg" }), "border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-md font-semibold")
                 }
               >
                 Try Free AI Mock Interview

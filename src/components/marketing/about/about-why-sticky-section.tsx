@@ -134,7 +134,7 @@ export function AboutWhyStickySection() {
         {/* ========================================================= */}
         <div className="block lg:hidden space-y-6">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 border border-blue-200 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-blue">
+            <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-500/12 border border-blue-200 dark:border-blue-400/25 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-ink">
               <Sparkles className="h-3.5 w-3.5 text-primary-blue" />
               <span>Foundational Philosophy</span>
             </div>
@@ -147,7 +147,7 @@ export function AboutWhyStickySection() {
           </div>
 
           {/* Segmented 3-Column Tab Bar (Fixed, Un-scrollable, fits 100% mobile width cleanly)           {/* Mobile Segmented Step Switcher */}
-          <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-slate-100/90 dark:bg-[#151D2E] border border-slate-200/80 dark:border-slate-800/80 shadow-inner w-full">
+          <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-slate-100/90 dark:bg-surface-elevated border border-slate-200/80 dark:border-slate-800/80 shadow-inner w-full">
             {PILLARS.map((p, idx) => {
               const isSelected = activeStep === idx;
               return (
@@ -157,7 +157,7 @@ export function AboutWhyStickySection() {
                   onClick={() => setActiveStep(idx)}
                   className={`flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 text-center transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-white dark:bg-[#111827] text-primary-blue shadow-xs font-bold ring-1 ring-slate-200/80 dark:ring-slate-700"
+                      ? "bg-white dark:bg-surface-secondary text-primary-blue shadow-xs font-bold ring-1 ring-slate-200/80 dark:ring-slate-700"
                       : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium"
                   }`}
                 >
@@ -177,7 +177,7 @@ export function AboutWhyStickySection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="rounded-[28px] border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 shadow-xl space-y-5"
+              className="rounded-[28px] border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-6 shadow-xl space-y-5"
             >
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <span className="font-mono text-2xl font-black text-primary-blue">
@@ -313,7 +313,7 @@ export function AboutWhyStickySection() {
               })}
             </div>
 
-            <div className="text-xs font-mono text-slate-400 dark:text-slate-500 pt-2">
+            <div className="text-xs font-mono text-slate-400 dark:text-slate-400 pt-2">
               CHAPTER <span className="text-primary-blue font-bold">02 / 06</span> • THE REASON
             </div>
           </div>
@@ -328,7 +328,7 @@ export function AboutWhyStickySection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
-                className="rounded-[32px] border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-10 lg:p-12 shadow-[0_12px_40px_rgba(15,23,42,0.05)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.5)] space-y-6 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)]"
+                className="rounded-[32px] border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-10 lg:p-12 shadow-[0_12px_40px_rgba(15,23,42,0.05)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.5)] space-y-6 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)] dark:hover:border-border-strong"
               >
                 {/* Header with Step Number */}
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">

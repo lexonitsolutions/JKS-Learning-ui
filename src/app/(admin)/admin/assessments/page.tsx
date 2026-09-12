@@ -54,7 +54,7 @@ export default function AdminAssessmentsPage() {
         {/* Metric Cards */}
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <TiltCard>
-            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Submissions</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-400">
@@ -69,7 +69,7 @@ export default function AdminAssessmentsPage() {
           </TiltCard>
 
           <TiltCard>
-            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Avg Passing Rate</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
@@ -82,7 +82,7 @@ export default function AdminAssessmentsPage() {
           </TiltCard>
 
           <TiltCard>
-            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Pending Review</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
@@ -96,11 +96,11 @@ export default function AdminAssessmentsPage() {
         </Reveal>
 
         {/* Table */}
-        <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+        <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs min-w-[650px]">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
                   <th className="pb-3 pr-4 pl-0">Assessment Title</th>
                   <th className="px-4 pb-3">Associated Course</th>
                   <th className="px-4 pb-3">Type</th>
@@ -111,7 +111,7 @@ export default function AdminAssessmentsPage() {
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
                 {assessments.map((a) => (
-                  <tr key={`${a.title}-${a.course}`} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                  <tr key={`${a.title}-${a.course}`} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-hover">
                     <td className="py-4 pr-4 pl-0 font-bold text-slate-900 dark:text-white whitespace-nowrap">
                       {a.title}
                     </td>

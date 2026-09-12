@@ -43,7 +43,7 @@ export function AnimatedScoreBar({
         <span className="font-semibold text-slate-200">{label}</span>
         <div className="flex items-center gap-1.5 font-mono">
           <span className="font-bold text-cyan-300">{score}</span>
-          <span className="text-[10px] text-slate-500">/ 100</span>
+          <span className="text-[10px] text-slate-400">/ 100</span>
         </div>
       </div>
       <div className="relative h-2 w-full rounded-full bg-slate-800/90 overflow-hidden border border-white/5">

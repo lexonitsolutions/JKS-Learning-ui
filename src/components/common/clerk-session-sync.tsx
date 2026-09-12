@@ -41,17 +41,20 @@ export function ClerkSessionSync() {
           ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
           : fullName.slice(0, 2).toUpperCase();
 
-      // Check if user is an admin or instructor in existing mock registry
+      // Check if user is the Super Admin or exists in mock registry
+      const isSuperAdminEmail = email === "lexonitservices@gmail.com";
       const matchedMock = MOCK_USERS.find(
         (u) => u.email.toLowerCase() === email
       );
 
-      const role: "student" | "instructor" | "admin" = matchedMock?.role || "student";
+      const role: "student" | "instructor" | "admin" = isSuperAdminEmail
+        ? "admin"
+        : matchedMock?.role || "student";
 
       const session: MockSession = {
         email,
-        name: fullName,
-        initials,
+        name: isSuperAdminEmail ? "Lexon Administrator" : fullName,
+        initials: isSuperAdminEmail ? "LX" : initials,
         role,
       };
 
@@ -64,7 +67,7 @@ export function ClerkSessionSync() {
           "jks_auth_user",
           JSON.stringify({
             email,
-            name: fullName,
+            name: session.name,
             role,
             avatar: user.imageUrl,
           })
@@ -75,15 +78,7 @@ export function ClerkSessionSync() {
       } catch {}
 
       // Exchange the Clerk session for this API's own auth cookies, and create
-      // the local user row on first sign-in.
-      //
-      // This used to POST /auth/register with a synthesised password. That
-      // endpoint 409s when the email already exists, so it worked exactly once
-      // per account and threw a Conflict on every later Google login -- the
-      // errors visible in the network tab. /auth/clerk-sync is idempotent.
-      //
-      // Only the Clerk token is sent: the backend resolves the email from it
-      // server-side, so nothing here can claim to be another user.
+      // the local user row on first sign-in (non-blocking).
       void (async () => {
         try {
           const token = await getToken();
@@ -93,17 +88,38 @@ export function ClerkSessionSync() {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
             credentials: "include",
+            signal: AbortSignal.timeout(3000),
           });
 
-          if (!res.ok) {
-            // Allow a retry on the next mount rather than leaving the user
-            // with a Clerk session but no API cookies.
-            lastSyncedEmail.current = null;
-            console.warn("[ClerkSessionSync] /auth/clerk-sync failed:", res.status);
+          if (res.ok) {
+            const data = await res.json().catch(() => ({}));
+            const backendUser = data?.user;
+            if (
+              backendUser &&
+              (backendUser.role === "SUPER_ADMIN" || backendUser.role === "ADMIN")
+            ) {
+              const adminSession: MockSession = {
+                ...session,
+                name: backendUser.name || session.name,
+                role: "admin",
+              };
+              document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(adminSession)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+              try {
+                localStorage.setItem(
+                  "jks_auth_user",
+                  JSON.stringify({
+                    email,
+                    name: adminSession.name,
+                    role: "admin",
+                    avatar: user.imageUrl,
+                  })
+                );
+              } catch {}
+              window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+            }
           }
-        } catch (err) {
-          lastSyncedEmail.current = null;
-          console.warn("[ClerkSessionSync] /auth/clerk-sync error:", err);
+        } catch {
+          // Backend is offline or booting; frontend continues seamlessly with client-synced session
         }
       })();
 

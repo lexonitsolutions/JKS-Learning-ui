@@ -10,8 +10,11 @@ import { TestimonialWall } from "@/components/marketing/testimonial-wall";
 import { NetworkBackground } from "@/components/three/network-background";
 import { MagneticButton } from "@/components/interactions/magnetic-button";
 import { Reveal } from "@/lib/motion/reveal";
-import { COURSES } from "@/lib/data/courses";
+import { fetchDbCourses } from "@/lib/data/courses";
 import { HOMEPAGE_TESTIMONIALS } from "@/lib/data/testimonials";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const TRUST_STATS = [
   { label: "Learners trained", target: 8000, suffix: "+" },
@@ -50,13 +53,15 @@ const SAMPLE_SCORES: [string, number][] = [
   ["Confidence", 71],
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const courses = await fetchDbCourses();
+
   return (
     <>
       <InteractiveHero />
 
       {/* Trust stats */}
-      <section className="border-b border-border dark:border-slate-800/80 bg-white dark:bg-[#111827]">
+      <section className="border-b border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary">
         <Reveal
           variant="stagger"
           className="mx-auto grid max-w-[1280px] grid-cols-2 gap-8 px-6 py-12 lg:grid-cols-4 lg:px-16"
@@ -72,36 +77,43 @@ export default function HomePage() {
         </Reveal>
       </section>
 
-      {/* Featured courses */}
+      {/* Featured Courses */}
       <section className="mx-auto max-w-[1280px] px-6 py-24 lg:px-16">
-        <Reveal className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <Reveal className="mb-12 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <span className="text-label text-primary-blue">Featured Courses</span>
-            <h2 className="text-h2 mt-2 text-text-heading">Start with a career track</h2>
+            <span className="text-label text-primary-blue">Featured Tracks</span>
+            <h2 className="text-h2 mt-2 text-text-heading">Explore our core tracks</h2>
           </div>
           <Link
             href="/courses"
-            className="text-sm font-semibold text-primary-blue hover:underline"
+            className="text-body font-semibold text-primary-blue transition-opacity hover:opacity-80"
           >
             View all courses &rarr;
           </Link>
         </Reveal>
-        <Reveal
-          variant="stagger"
-          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {COURSES.slice(0, 3).map((course) => (
-            // Plain wrapper so GSAP's entrance transform (on this div) never
-            // fights CourseCard's own Framer-Motion-controlled transform.
-            <div key={course.slug}>
-              <CourseCard course={course} />
-            </div>
-          ))}
-        </Reveal>
+        {courses.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 p-12 text-center">
+            <p className="text-base font-bold text-slate-800 dark:text-white">New Courses Launching Soon</p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Courses published in the database will appear here in real-time.</p>
+          </div>
+        ) : (
+          <Reveal
+            variant="stagger"
+            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {courses.slice(0, 3).map((course) => (
+              // Plain wrapper so GSAP's entrance transform (on this div) never
+              // fights CourseCard's own Framer-Motion-controlled transform.
+              <div key={course.slug}>
+                <CourseCard course={course} />
+              </div>
+            ))}
+          </Reveal>
+        )}
       </section>
 
       {/* Why JKS */}
-      <section className="bg-white dark:bg-[#0E1526] py-24">
+      <section className="bg-white dark:bg-surface py-24">
         <div className="mx-auto max-w-[1280px] px-6 lg:px-16">
           <Reveal className="mb-12 max-w-xl">
             <span className="text-label text-primary-blue">Why JKS Learning</span>
@@ -129,7 +141,7 @@ export default function HomePage() {
       <LearningJourney />
 
       {/* AI Mock Interview feature */}
-      <section className="relative overflow-hidden bg-[#0B1F3A] dark:bg-[#070C18] py-24 text-white">
+      <section className="relative overflow-hidden bg-[#0B1F3A] dark:bg-background py-24 text-white">
         <div
           className="pointer-events-none absolute inset-0 opacity-30"
           style={{

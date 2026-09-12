@@ -38,13 +38,13 @@ export function SkullLoader({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="fixed inset-0 z-[9999] flex bg-[#F4F7FC]/90 backdrop-blur-md overflow-hidden select-none pointer-events-auto"
+        className="fixed inset-0 z-[9999] flex bg-background/90 backdrop-blur-md overflow-hidden select-none pointer-events-auto"
       >
         {/* Left Sidebar Skeleton (Desktop only) */}
         <aside className="hidden md:flex flex-col w-[260px] p-3.5 shrink-0">
-          <div className="flex h-full flex-col rounded-[24px] border border-white/80 bg-white/85 p-4 shadow-sm backdrop-blur-xl">
+          <div className="flex h-full flex-col rounded-[24px] border border-[var(--nav-border)] bg-[var(--nav-surface)] p-4 shadow-sm backdrop-blur-xl">
             {/* Logo area skeleton */}
-            <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3 pb-4 border-b border-border-subtle">
               <div className="h-9 w-9 rounded-xl skeleton-shimmer shrink-0" />
               <div className="space-y-1.5 flex-1">
                 <div className="h-4 w-24 rounded-md skeleton-shimmer" />
@@ -57,7 +57,7 @@ export function SkullLoader({
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50/60"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-surface-secondary/60"
                 >
                   <div className="h-4 w-4 rounded-md skeleton-shimmer shrink-0" />
                   <div
@@ -69,7 +69,7 @@ export function SkullLoader({
             </div>
 
             {/* User Profile bottom skeleton */}
-            <div className="p-3 rounded-2xl border border-slate-100 bg-slate-50/70 flex items-center gap-3">
+            <div className="p-3 rounded-2xl border border-border-subtle bg-surface-secondary/70 flex items-center gap-3">
               <div className="h-9 w-9 rounded-xl skeleton-shimmer shrink-0" />
               <div className="space-y-1.5 flex-1">
                 <div className="h-3.5 w-20 rounded skeleton-shimmer" />
@@ -96,14 +96,14 @@ export function SkullLoader({
           </div>
 
           {/* Hero Banner Skeleton */}
-          <div className="h-36 sm:h-44 w-full rounded-[24px] skeleton-shimmer border border-white/60 shadow-xs" />
+          <div className="h-36 sm:h-44 w-full rounded-[24px] skeleton-shimmer border border-border-subtle shadow-xs" />
 
           {/* 4 Metric Cards Grid Skeleton */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-28 rounded-[20px] border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur-xl space-y-3 flex flex-col justify-between"
+                className="h-28 rounded-[20px] border border-border-subtle bg-surface/80 p-4 shadow-sm backdrop-blur-xl space-y-3 flex flex-col justify-between"
               >
                 <div className="flex justify-between items-center">
                   <div className="h-3 w-20 rounded skeleton-shimmer" />
@@ -129,7 +129,7 @@ export function SkullLoader({
               {[...Array(3)].map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-[20px] border border-white/70 bg-white/80 p-5 shadow-sm space-y-3"
+                  className="rounded-[20px] border border-border-subtle bg-surface/80 p-5 shadow-sm space-y-3"
                 >
                   <div className="flex justify-between items-center">
                     <div className="h-4 w-20 rounded-full skeleton-shimmer" />
@@ -147,10 +147,10 @@ export function SkullLoader({
 
             {/* Right 1 col */}
             <div className="space-y-6">
-              <div className="rounded-[22px] border border-white/70 bg-white/80 p-5 shadow-sm space-y-4">
+              <div className="rounded-[22px] border border-border-subtle bg-surface/80 p-5 shadow-sm space-y-4">
                 <div className="h-4 w-32 rounded skeleton-shimmer" />
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="p-3 rounded-xl bg-slate-50/70 space-y-2">
+                  <div key={i} className="p-3 rounded-xl bg-surface-secondary/70 space-y-2">
                     <div className="flex justify-between">
                       <div className="h-3.5 w-24 rounded skeleton-shimmer" />
                       <div className="h-3 w-12 rounded skeleton-shimmer" />

@@ -27,6 +27,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import {
   saveCourse,
+  saveCourseAsync,
   type FullCourse,
   type Section,
   type SubSection,
@@ -35,6 +36,7 @@ import {
 } from "@/lib/data/courses-store";
 import type { Track } from "@/lib/data/courses";
 import { InAppVideoPlayer } from "@/components/ui/in-app-video-player";
+import { CourseThumbnailUploader } from "@/components/admin/course-thumbnail-uploader";
 
 type StepNumber = 1 | 2 | 3 | 4 | 5;
 
@@ -259,7 +261,7 @@ export default function InstructorNewCoursePage() {
     setSections(updated);
   };
 
-  const handlePublishCourse = (status: "Published" | "Draft" = "Published") => {
+  const handlePublishCourse = async (status: "Published" | "Draft" = "Published") => {
     setIsPublishing(true);
 
     const newCourse: FullCourse = {
@@ -279,13 +281,13 @@ export default function InstructorNewCoursePage() {
       status,
     };
 
-    saveCourse(newCourse);
+    await saveCourseAsync(newCourse);
     setPublishedSuccess(true);
 
     setTimeout(() => {
       setIsPublishing(false);
       router.push("/instructor/courses");
-    }, 1200);
+    }, 1000);
   };
 
   return (
@@ -302,7 +304,7 @@ export default function InstructorNewCoursePage() {
           <div className="flex items-center gap-3">
             <Link
               href="/instructor/courses"
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors"
             >
               <ArrowLeft className="h-4 w-4" /> Back to My Courses
             </Link>
@@ -315,7 +317,7 @@ export default function InstructorNewCoursePage() {
               type="button"
               onClick={() => handlePublishCourse("Draft")}
               disabled={isPublishing}
-              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
             >
               Save Draft
             </button>
@@ -339,7 +341,7 @@ export default function InstructorNewCoursePage() {
         </div>
 
         {/* STEP PROGRESS BAR */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 rounded-[20px] border border-white/80 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827]/80 p-2 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 rounded-[20px] border border-white/80 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/80 p-2 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
           {STEPS.map((s) => {
             const isActive = currentStep === s.step;
             const isDone = currentStep > s.step;
@@ -354,7 +356,7 @@ export default function InstructorNewCoursePage() {
                     ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
                     : isDone
                     ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 hover:bg-emerald-100/70 dark:hover:bg-emerald-950/60"
-                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/70 hover:text-slate-800 dark:hover:text-slate-200"
+                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-surface-hover hover:text-slate-800 dark:hover:text-slate-200"
                 }`}
               >
                 <div
@@ -385,7 +387,7 @@ export default function InstructorNewCoursePage() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5"
+                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5"
                 >
                   <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400">
@@ -406,7 +408,7 @@ export default function InstructorNewCoursePage() {
                       value={title}
                       onChange={(e) => handleTitleChange(e.target.value)}
                       placeholder="e.g. Enterprise Spring Boot & Microservices Masterclass"
-                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-950/50"
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-950/50"
                     />
                   </div>
 
@@ -419,7 +421,7 @@ export default function InstructorNewCoursePage() {
                         type="text"
                         value={slug}
                         onChange={(e) => setSlug(e.target.value)}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/60 dark:bg-[#151D2E] px-3.5 py-2 text-xs font-mono text-slate-800 dark:text-slate-300 outline-none focus:border-[#2563EB]"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/60 dark:bg-surface-elevated px-3.5 py-2 text-xs font-mono text-slate-800 dark:text-slate-300 outline-none focus:border-[#2563EB]"
                       />
                     </div>
 
@@ -430,7 +432,7 @@ export default function InstructorNewCoursePage() {
                       <select
                         value={track}
                         onChange={(e) => setTrack(e.target.value as Track)}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                       >
                         <option value="Full Stack">Full Stack</option>
                         <option value="Frontend">Frontend</option>
@@ -447,7 +449,7 @@ export default function InstructorNewCoursePage() {
                       <select
                         value={level}
                         onChange={(e) => setLevel(e.target.value as "Beginner" | "Intermediate" | "Advanced")}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                       >
                         <option value="Beginner">Beginner</option>
                         <option value="Intermediate">Intermediate</option>
@@ -465,7 +467,7 @@ export default function InstructorNewCoursePage() {
                         max="52"
                         value={durationWeeks}
                         onChange={(e) => setDurationWeeks(Number(e.target.value))}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                       />
                     </div>
 
@@ -479,7 +481,7 @@ export default function InstructorNewCoursePage() {
                         step="500"
                         value={price}
                         onChange={(e) => setPrice(Number(e.target.value))}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                       />
                     </div>
                   </div>
@@ -493,9 +495,18 @@ export default function InstructorNewCoursePage() {
                       value={summary}
                       onChange={(e) => setSummary(e.target.value)}
                       placeholder="Comprehensive overview of modules taught..."
-                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-3 text-xs font-medium text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-3 text-xs font-medium text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
                     />
                   </div>
+
+                  {/* Thumbnail / Media Upload Box */}
+                  <CourseThumbnailUploader
+                    thumbnailUrl={thumbnailUrl}
+                    onThumbnailChange={setThumbnailUrl}
+                    title={title}
+                    track={track}
+                    level={level}
+                  />
                 </motion.div>
               )}
 
@@ -528,7 +539,7 @@ export default function InstructorNewCoursePage() {
                   {sections.map((section, secIdx) => (
                     <div
                       key={section.id}
-                      className="rounded-[22px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] space-y-5"
+                      className="rounded-[22px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] space-y-5"
                     >
                       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                         <div className="flex items-center gap-3 flex-1">
@@ -544,7 +555,7 @@ export default function InstructorNewCoursePage() {
                               setSections(updated);
                             }}
                             placeholder={`Section ${secIdx + 1} Title`}
-                            className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-3 py-1.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                            className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3 py-1.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                           />
                         </div>
                         {sections.length > 1 && (
@@ -576,7 +587,7 @@ export default function InstructorNewCoursePage() {
                         {section.directVideos?.map((vid, vidIdx) => (
                           <div
                             key={vid.id}
-                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] p-3 text-xs"
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-3 text-xs"
                           >
                             <div className="flex items-center gap-2 flex-1">
                               <PlayCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
@@ -588,7 +599,7 @@ export default function InstructorNewCoursePage() {
                                   updated[secIdx].directVideos![vidIdx].title = e.target.value;
                                   setSections(updated);
                                 }}
-                                className="flex-1 rounded border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-2 py-1 font-medium text-slate-800 dark:text-white"
+                                className="flex-1 rounded border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-2 py-1 font-medium text-slate-800 dark:text-white"
                               />
                             </div>
                             <div className="flex items-center gap-2">
@@ -601,7 +612,7 @@ export default function InstructorNewCoursePage() {
                                   setSections(updated);
                                 }}
                                 placeholder="Video URL"
-                                className="w-48 rounded border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-2 py-1 font-mono text-[11px] text-slate-600 dark:text-slate-300"
+                                className="w-48 rounded border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-2 py-1 font-mono text-[11px] text-slate-600 dark:text-slate-300"
                               />
                             </div>
                           </div>
@@ -619,7 +630,7 @@ export default function InstructorNewCoursePage() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5"
+                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5"
                 >
                   <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
@@ -632,7 +643,7 @@ export default function InstructorNewCoursePage() {
                   </div>
 
                   <div className="space-y-4">
-                    <label className="flex items-start gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                    <label className="flex items-start gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover">
                       <input
                         type="checkbox"
                         checked={antiSkipEnforced}
@@ -645,7 +656,7 @@ export default function InstructorNewCoursePage() {
                       </div>
                     </label>
 
-                    <label className="flex items-start gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                    <label className="flex items-start gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover">
                       <input
                         type="checkbox"
                         checked={preventForwardSeeking}
@@ -658,7 +669,7 @@ export default function InstructorNewCoursePage() {
                       </div>
                     </label>
 
-                    <label className="flex items-start gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                    <label className="flex items-start gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover">
                       <input
                         type="checkbox"
                         checked={requireFullWatchToUnlockAssignment}
@@ -681,7 +692,7 @@ export default function InstructorNewCoursePage() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5"
+                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5"
                 >
                   <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">
@@ -695,7 +706,7 @@ export default function InstructorNewCoursePage() {
 
                   <div className="space-y-4">
                     {sections.map((sec, idx) => (
-                      <div key={sec.id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-4 space-y-3">
+                      <div key={sec.id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated p-4 space-y-3">
                         <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
                           <span>Section {idx + 1} Assessment</span>
                           <span className="rounded bg-blue-100 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 px-2 py-0.5">Pass Mark: {sec.assignment?.minPassingScore || 75}%</span>
@@ -710,7 +721,7 @@ export default function InstructorNewCoursePage() {
                               setSections(updated);
                             }
                           }}
-                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-3 py-1.5 text-xs font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                         />
                       </div>
                     ))}
@@ -725,7 +736,7 @@ export default function InstructorNewCoursePage() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5"
+                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5"
                 >
                   <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
@@ -745,7 +756,7 @@ export default function InstructorNewCoursePage() {
                       type="text"
                       value={certificateTitle}
                       onChange={(e) => setCertificateTitle(e.target.value)}
-                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                     />
                   </div>
 
@@ -765,21 +776,56 @@ export default function InstructorNewCoursePage() {
 
           {/* Right Column Summary Card */}
           <div className="space-y-4">
-            <div className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
+            <div className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
+              {/* Live Course Card Preview with Thumbnail */}
+              <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated shadow-xs">
+                <div className="relative aspect-video w-full overflow-hidden bg-slate-900 flex items-center justify-center">
+                  {thumbnailUrl ? (
+                    <img
+                      src={thumbnailUrl}
+                      alt="Course thumbnail preview"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-slate-500 text-center p-3">
+                      <Layers className="h-6 w-6 text-slate-500 mb-1" />
+                      <span className="text-[10px] font-semibold text-slate-400">No Thumbnail Set</span>
+                    </div>
+                  )}
+                  <span className="absolute top-2 left-2 rounded-md bg-blue-600/90 backdrop-blur-xs px-2 py-0.5 text-[9px] font-bold text-white shadow-xs">
+                    {track}
+                  </span>
+                  <span className="absolute bottom-2 right-2 rounded-md bg-slate-900/80 backdrop-blur-xs px-2 py-0.5 text-[9px] font-medium text-slate-200">
+                    {level}
+                  </span>
+                </div>
+                <div className="p-3 space-y-1">
+                  <div className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">
+                    {title || "Untitled Course"}
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">{durationWeeks} Weeks</span>
+                    <span className="font-extrabold text-[#2563EB] dark:text-blue-400">
+                      ₹{price.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Curriculum Structure Summary</h3>
               <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
                 <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-400 dark:text-slate-500">Total Sections:</span>
+                  <span className="text-slate-400 dark:text-slate-400">Total Sections:</span>
                   <span className="font-bold text-slate-800 dark:text-slate-200">{sections.length}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-400 dark:text-slate-500">Total Lectures:</span>
+                  <span className="text-slate-400 dark:text-slate-400">Total Lectures:</span>
                   <span className="font-bold text-slate-800 dark:text-slate-200">
                     {sections.reduce((acc, s) => acc + (s.directVideos?.length || 0) + (s.subsections?.reduce((subAcc, sub) => subAcc + sub.videos.length, 0) || 0), 0)}
                   </span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-400 dark:text-slate-500">Instructor:</span>
+                  <span className="text-slate-400 dark:text-slate-400">Instructor:</span>
                   <span className="font-bold text-[#2563EB] dark:text-blue-400">Dr. Rohit Kapoor</span>
                 </div>
               </div>

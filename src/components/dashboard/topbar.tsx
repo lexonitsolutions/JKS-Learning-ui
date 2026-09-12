@@ -154,23 +154,23 @@ export function DashboardTopbar({
   const clerkName = clerkUser?.fullName || [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") || clerkUser?.username;
 
   const resolvedInitials = isAdmin
-    ? "AD"
+    ? (session?.initials && session.initials !== "AD" ? session.initials : "LX")
     : isInstructor
-    ? (session?.initials ?? userInitials ?? "RK")
+    ? (session?.initials ?? userInitials ?? "LE")
     : clerkUser?.firstName && clerkUser?.lastName
     ? `${clerkUser.firstName[0]}${clerkUser.lastName[0]}`.toUpperCase()
     : (session?.initials ?? userInitials ?? (clerkName ? clerkName.slice(0, 2).toUpperCase() : "ST"));
 
   const userName = isAdmin
-    ? (session?.name && session.name !== "John Doe" ? session.name : "Ava Desai")
+    ? (session?.name && session.name !== "John Doe" && session.name !== "Ava Desai" ? session.name : "Lexon Administrator")
     : isInstructor
-    ? (session?.name ?? "Dr. Rohit Kapoor")
+    ? (session?.name ?? "Lecturer")
     : (clerkName || session?.name || "Student");
 
   const userEmail = isAdmin
-    ? (session?.email ? session.email : "admin@jkslearning.dev")
+    ? (session?.email && session.email !== "admin@jkslearning.dev" ? session.email : "lexonitservices@gmail.com")
     : isInstructor
-    ? (session?.email ?? "instructor@jkslearning.dev")
+    ? (session?.email ?? "")
     : (clerkEmail || session?.email || "");
 
   const userAvatar =
@@ -228,7 +228,7 @@ export function DashboardTopbar({
             type="button"
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open mobile navigation"
-            className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 dark:border-slate-800 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 shadow-xs backdrop-blur-md transition-all hover:bg-white dark:hover:bg-slate-800 md:hidden cursor-pointer active:scale-95"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 dark:border-slate-800 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 shadow-xs backdrop-blur-md transition-all hover:bg-white dark:hover:bg-surface-hover md:hidden cursor-pointer active:scale-95"
           >
             <Menu className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2]" />
           </button>
@@ -257,7 +257,7 @@ export function DashboardTopbar({
               className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                 exploreOpen
                   ? "border-[#2563EB] bg-blue-50/80 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 shadow-xs"
-                  : "border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs"
+                  : "border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover shadow-xs"
               }`}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -277,7 +277,7 @@ export function DashboardTopbar({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.96 }}
                   transition={{ duration: 0.16, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2 w-56 sm:w-60 z-50 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-2 shadow-[0_12px_35px_rgba(20,50,100,0.12)] dark:shadow-[0_12px_35px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                  className="absolute right-0 top-full mt-2 w-56 sm:w-60 z-50 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated p-2 shadow-[0_12px_35px_rgba(20,50,100,0.12)] dark:shadow-[0_12px_35px_rgba(0,0,0,0.5)] backdrop-blur-xl"
                 >
                   <div className="space-y-1">
                     {EXPLORE_SECTIONS.map((item) => {
@@ -287,7 +287,7 @@ export function DashboardTopbar({
                           key={item.label}
                           href={item.href}
                           onClick={() => setExploreOpen(false)}
-                          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white group"
+                          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors hover:bg-slate-50 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white group"
                         >
                           <div className="flex h-6 w-6 items-center justify-center rounded-lg text-amber-500 group-hover:scale-110 transition-transform">
                             <Icon className="h-4 w-4 stroke-[2]" />
@@ -306,7 +306,7 @@ export function DashboardTopbar({
           <button
             type="button"
             aria-label="Notifications"
-            className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full border border-white/70 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 shadow-[0_4px_12px_rgba(20,50,100,0.06)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all hover:bg-white dark:hover:bg-slate-800 hover:shadow-md cursor-pointer"
+            className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full border border-white/70 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 shadow-[0_4px_12px_rgba(20,50,100,0.06)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all hover:bg-white dark:hover:bg-surface-hover hover:shadow-md cursor-pointer"
           >
             <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2]" />
             {badgeNotification && (
@@ -352,7 +352,7 @@ export function DashboardTopbar({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.95 }}
                   transition={{ duration: 0.16, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2 w-64 sm:w-72 max-w-[calc(100vw-24px)] z-50 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-2 shadow-[0_12px_40px_rgba(15,23,42,0.14)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl font-sans"
+                  className="absolute right-0 top-full mt-2 w-64 sm:w-72 max-w-[calc(100vw-24px)] z-50 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated p-2 shadow-[0_12px_40px_rgba(15,23,42,0.14)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl font-sans"
                 >
                   {/* User Profile Header */}
                   <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 p-3 bg-slate-50/70 dark:bg-slate-900/60 rounded-xl mb-1.5">
@@ -398,7 +398,7 @@ export function DashboardTopbar({
                     <Link
                       href={rootHref}
                       onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-primary-blue dark:hover:text-white transition-colors"
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-surface-hover hover:text-primary-blue dark:hover:text-white transition-colors"
                     >
                       <LayoutDashboard className="h-4 w-4 text-primary-blue" />
                       <span>{isAdmin ? "Admin Overview" : isInstructor ? "Instructor Dashboard" : "My Dashboard"}</span>
@@ -408,7 +408,7 @@ export function DashboardTopbar({
                       <Link
                         href="/dashboard/my-courses"
                         onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-primary-blue dark:hover:text-white transition-colors"
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-surface-hover hover:text-primary-blue dark:hover:text-white transition-colors"
                       >
                         <BookOpen className="h-4 w-4 text-emerald-600" />
                         <span>My Enrolled Courses</span>
@@ -418,7 +418,7 @@ export function DashboardTopbar({
                     <Link
                       href={isAdmin ? "/admin/ai-interviews" : "/dashboard/ai-interview"}
                       onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-primary-blue dark:hover:text-white transition-colors"
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-surface-hover hover:text-primary-blue dark:hover:text-white transition-colors"
                     >
                       <BrainCircuit className="h-4 w-4 text-purple-600" />
                       <span>AI Mock Interview</span>
@@ -427,7 +427,7 @@ export function DashboardTopbar({
                     <Link
                       href={isAdmin ? "/admin/payments" : "/dashboard/payments"}
                       onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-primary-blue dark:hover:text-white transition-colors"
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-surface-hover hover:text-primary-blue dark:hover:text-white transition-colors"
                     >
                       <CreditCard className="h-4 w-4 text-amber-600" />
                       <span>Invoices & Billing</span>
@@ -436,9 +436,9 @@ export function DashboardTopbar({
                     <Link
                       href={isAdmin ? "/admin/settings" : isInstructor ? "/instructor/profile" : "/dashboard/profile"}
                       onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-primary-blue dark:hover:text-white transition-colors"
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-surface-hover hover:text-primary-blue dark:hover:text-white transition-colors"
                     >
-                      <User className="h-4 w-4 text-slate-500" />
+                      <User className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                       <span>Profile & Settings</span>
                     </Link>
                   </div>
@@ -482,7 +482,7 @@ export function DashboardTopbar({
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 26, stiffness: 280 }}
-              className="relative z-10 flex h-full w-[280px] max-w-[85vw] flex-col bg-white dark:bg-[#0E1526] shadow-2xl border-r border-transparent dark:border-slate-800"
+              className="relative z-10 flex h-full w-[280px] max-w-[85vw] flex-col bg-white dark:bg-surface shadow-2xl border-r border-transparent dark:border-slate-800"
             >
               {/* Header inside drawer */}
               <div className="flex h-16 items-center justify-between px-5 border-b border-slate-100 dark:border-slate-800">
@@ -499,7 +499,7 @@ export function DashboardTopbar({
                     type="button"
                     onClick={() => setMobileMenuOpen(false)}
                     aria-label="Close navigation"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -521,7 +521,7 @@ export function DashboardTopbar({
                       className={`group flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
                         active
                           ? "bg-[#EFF6FF] dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 font-bold shadow-xs"
-                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
                       }`}
                     >
                       <Icon

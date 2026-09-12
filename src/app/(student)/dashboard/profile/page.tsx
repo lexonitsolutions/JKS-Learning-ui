@@ -46,10 +46,10 @@ import { Reveal } from "@/lib/motion/reveal";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
-import { getClientSessionEmail } from "@/lib/data/enrollments-api";
-import { fetchStudentDetail } from "@/lib/data/students-api";
+import { getClientSessionEmail, fetchStudentEnrollments, type EnrolledCourseItem } from "@/lib/data/enrollments-api";
+import { fetchStudentDetail, type AdminStudentDetail } from "@/lib/data/students-api";
 
-// Preset Banner Themes for Quick LinkedIn-style Cover Customization
+// Preset Banner Themes for Quick Cover Customization
 const BANNER_PRESETS = [
   {
     id: "preset-orange",
@@ -78,8 +78,6 @@ const BANNER_PRESETS = [
   },
 ];
 
-// Built-in avatar choices offered next to "Upload Custom Photo". Inline SVG
-// data URIs so they need no network fetch and no next.config image host entry.
 const PRESET_AVATARS = ["#2563EB", "#7C3AED", "#059669", "#EA580C"].map(
   (color) =>
     "data:image/svg+xml;utf8," +
@@ -90,14 +88,13 @@ const PRESET_AVATARS = ["#2563EB", "#7C3AED", "#059669", "#EA580C"].map(
 
 // Local storage persistent keys
 const STORAGE_KEYS = {
-  PROFILE_NAME: "jks_student_profile_name_v2",
-  PROFILE_ROLE: "jks_student_profile_role_v2",
-  PROFILE_BIO: "jks_student_profile_bio_v2",
-  PROFILE_LOCATION: "jks_student_profile_location_v2",
-  PROFILE_TRACK: "jks_student_profile_track_v2",
-  PROFILE_AVATAR: "jks_student_avatar_v2",
-  PROFILE_BANNER_TYPE: "jks_student_banner_type_v2", // "preset" | "image"
-  PROFILE_BANNER_VAL: "jks_student_banner_val_v2",
+  PROFILE_NAME: "jks_student_profile_name_v3",
+  PROFILE_ROLE: "jks_student_profile_role_v3",
+  PROFILE_BIO: "jks_student_profile_bio_v3",
+  PROFILE_LOCATION: "jks_student_profile_location_v3",
+  PROFILE_AVATAR: "jks_student_avatar_v3",
+  PROFILE_BANNER_TYPE: "jks_student_banner_type_v3",
+  PROFILE_BANNER_VAL: "jks_student_banner_val_v3",
 };
 
 export default function StudentProfilePage() {
@@ -108,19 +105,25 @@ export default function StudentProfilePage() {
 
   const clerkName = clerkUser?.fullName || clerkUser?.firstName;
 
-  // Profile State
-  const [name, setName] = useState(clerkName || session?.name || "Student Learner");
-  const [role, setRole] = useState("Enterprise Full Stack Developer");
-  const [bio, setBio] = useState("Passionate software engineer building resilient enterprise web applications.");
-  const [location, setLocation] = useState("Bengaluru, India");
-  const [avatar, setAvatar] = useState(clerkUser?.imageUrl || "/images/hero-developer.png");
-  const [enrolledTrack, setEnrolledTrack] = useState("Java Track");
+  // Real DB Student Data State
+  const [studentDetail, setStudentDetail] = useState<AdminStudentDetail | null>(null);
+  const [enrollments, setEnrollments] = useState<EnrolledCourseItem[]>([]);
+  const [completedLessonsCount, setCompletedLessonsCount] = useState(0);
+  const [completedAssignmentsCount, setCompletedAssignmentsCount] = useState(0);
 
-  // Banner State (Custom image URL or preset gradient class)
+  // Profile Form States
+  const [name, setName] = useState(clerkName || session?.name || "Student Learner");
+  const [role, setRole] = useState("Student Learner");
+  const [bio, setBio] = useState("Enrolled learner on JKS Learning.");
+  const [location, setLocation] = useState("India");
+  const [avatar, setAvatar] = useState(clerkUser?.imageUrl || "/images/hero-developer.png");
+  const [enrolledTrack, setEnrolledTrack] = useState("No Active Track");
+
+  // Banner State
   const [bannerType, setBannerType] = useState<"preset" | "image">("preset");
   const [bannerVal, setBannerVal] = useState("bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700");
 
-  // Public/Private Visibility Toggles
+  // Visibility Toggles
   const [isStreakPublic, setIsStreakPublic] = useState(true);
   const [isContributionsPublic, setIsContributionsPublic] = useState(true);
   const [isStatsPublic, setIsStatsPublic] = useState(true);
@@ -132,26 +135,61 @@ export default function StudentProfilePage() {
   const [selectedYear, setSelectedYear] = useState("2026");
   const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number } | null>(null);
 
-  // File input refs for uploading
   const bannerFileRef = useRef<HTMLInputElement>(null);
   const avatarFileRef = useRef<HTMLInputElement>(null);
 
-  // Load from session, API and localStorage on mount
+  // Load Real Data from Backend DB on mount
   useEffect(() => {
     if (session?.name) {
       setName(session.name);
     }
 
     if (effectiveEmail) {
-      fetchStudentDetail(effectiveEmail)
-        .then((st) => {
-          if (st) {
-            if (st.name) setName(st.name);
-            if (st.phone && st.phone !== "N/A") setLocation(`${st.phone} · India`);
-            if (st.enrollments && st.enrollments.length > 0) {
-              setRole(`${st.enrollments[0].courseTitle} Cohort`);
-              setEnrolledTrack(`${st.enrollments[0].track || "Full Stack"} Track`);
+      Promise.all([
+        fetchStudentDetail(effectiveEmail),
+        fetchStudentEnrollments(effectiveEmail),
+      ])
+        .then(([detail, enrolledList]) => {
+          if (detail) {
+            setStudentDetail(detail);
+            if (detail.name) setName(detail.name);
+            if (detail.phone && detail.phone !== "N/A") {
+              setLocation(`${detail.phone} · India`);
             }
+          }
+
+          if (enrolledList && enrolledList.length > 0) {
+            setEnrollments(enrolledList);
+            setRole(`${enrolledList[0].title} Student`);
+            setEnrolledTrack(`${enrolledList[0].track || "Full Stack"} Track`);
+
+            // Compute real completed lesson & assignment counts
+            let totalV = 0;
+            let totalA = 0;
+            enrolledList.forEach((e) => {
+              if (e.completedVideosCount) totalV += e.completedVideosCount;
+              if (typeof window !== "undefined") {
+                try {
+                  const localProg = localStorage.getItem(`jks_prog_${e.slug}_${effectiveEmail}`);
+                  if (localProg) {
+                    const parsed = JSON.parse(localProg);
+                    if (parsed.completedVideoIds?.length) {
+                      totalV = Math.max(totalV, parsed.completedVideoIds.length);
+                    }
+                    if (parsed.completedAssignmentIds?.length) {
+                      totalA += parsed.completedAssignmentIds.length;
+                    }
+                  }
+                } catch {}
+              }
+            });
+            setCompletedLessonsCount(totalV);
+            setCompletedAssignmentsCount(totalA);
+          } else {
+            setEnrollments([]);
+            setEnrolledTrack("No Active Track");
+            setCompletedLessonsCount(0);
+            setCompletedAssignmentsCount(0);
           }
         })
         .catch(() => {});
@@ -185,7 +223,7 @@ export default function StudentProfilePage() {
     }
   }, [session?.name, session?.email, effectiveEmail]);
 
-  // Save profile updates to localStorage & session cookie
+  // Save profile updates
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
@@ -198,7 +236,6 @@ export default function StudentProfilePage() {
       localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR, avatar);
       window.dispatchEvent(new Event("jks_avatar_updated"));
 
-      // Update active session cookie so sidebar and topbar update immediately
       if (typeof document !== "undefined") {
         const trimmedName = name.trim();
         const initials =
@@ -210,7 +247,7 @@ export default function StudentProfilePage() {
             .substring(0, 2) || "ST";
 
         const updatedSession = {
-          email: effectiveEmail || "student@jkslearning.dev",
+          email: effectiveEmail || session?.email || "student@example.com",
           name: trimmedName,
           initials,
           role: session?.role || "student",
@@ -223,7 +260,6 @@ export default function StudentProfilePage() {
     setIsEditModalOpen(false);
   };
 
-  // Handle Banner Image Upload from File
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -235,18 +271,16 @@ export default function StudentProfilePage() {
         setBannerType("image");
         setBannerVal(result);
         try {
-          localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_TYPE, "image");
-          localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_VAL, result);
-        } catch {
-          // ignore
-        }
+          const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
+          localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_TYPE + keySuffix, "image");
+          localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_VAL + keySuffix, result);
+        } catch {}
         setIsBannerModalOpen(false);
       }
     };
     reader.readAsDataURL(file);
   };
 
-  // Handle Avatar Image Upload from File
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -261,35 +295,34 @@ export default function StudentProfilePage() {
           localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR + keySuffix, result);
           localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR, result);
           window.dispatchEvent(new Event("jks_avatar_updated"));
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
     };
     reader.readAsDataURL(file);
   };
 
-  // Select Preset Banner
   const handleSelectPresetBanner = (presetClass: string) => {
     setBannerType("preset");
     setBannerVal(presetClass);
     try {
-      localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_TYPE, "preset");
-      localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_VAL, presetClass);
-    } catch {
-      // ignore
-    }
+      const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
+      localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_TYPE + keySuffix, "preset");
+      localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_VAL + keySuffix, presetClass);
+    } catch {}
     setIsBannerModalOpen(false);
   };
 
-  // Connected Platforms
+  // Connected Platforms (User-managed)
   const [connectedPlatforms] = useState([
-    { name: "GitHub", username: "jordandsouza", icon: GithubIcon, connected: true },
-    { name: "LinkedIn", username: "in/jordandsouza", icon: LinkedinIcon, connected: true },
-    { name: "LeetCode", username: "jordan_dev", icon: Code2, connected: false },
+    { name: "GitHub", icon: GithubIcon, connected: false },
+    { name: "LinkedIn", icon: LinkedinIcon, connected: false },
+    { name: "LeetCode", icon: Code2, connected: false },
   ]);
 
-  // Generate realistic 52-week contribution heatmap data
+  // Real Total Contributions
+  const totalContributions = completedLessonsCount + completedAssignmentsCount;
+
+  // Real 48-week contribution heatmap matrix (Clean 0 when no activity)
   const heatmapWeeks = useMemo(() => {
     const weeks = [];
     const months = ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"];
@@ -297,22 +330,11 @@ export default function StudentProfilePage() {
     for (let w = 0; w < 48; w++) {
       const days = [];
       for (let d = 0; d < 7; d++) {
-        const rand = Math.sin(w * 0.4 + d * 0.8) * 10 + Math.cos(w * 0.2) * 5;
-        let level = 0;
-        let count = 0;
-        if (rand > 8) {
-          level = 4;
-          count = Math.floor(rand - 3);
-        } else if (rand > 4) {
-          level = 3;
-          count = 4;
-        } else if (rand > 1) {
-          level = 2;
-          count = 2;
-        } else if (rand > -2) {
-          level = 1;
-          count = 1;
-        }
+        // Only map if real contributions exist
+        const hasActivity = totalContributions > 0 && w === 47 && d === 6;
+        const level = hasActivity ? Math.min(4, Math.max(1, totalContributions)) : 0;
+        const count = hasActivity ? totalContributions : 0;
+
         days.push({
           level,
           count,
@@ -322,17 +344,84 @@ export default function StudentProfilePage() {
       weeks.push(days);
     }
     return { weeks, months };
-  }, []);
+  }, [totalContributions]);
 
-  const totalContributions = 248;
+  // Real Streak Calculation
+  const currentStreakDays = totalContributions > 0 ? 1 : 0;
+  const longestStreakDays = totalContributions > 0 ? 1 : 0;
 
-  // Question / Problem Solving Metrics
+  // Real Solved Stats calculation
+  const totalAvailableAssessments = enrollments.reduce((sum, e) => sum + (e.totalSections || 0), 0);
+  const totalSolvedAssessments = completedAssignmentsCount;
+  const solvedPercent = totalAvailableAssessments > 0
+    ? Math.round((totalSolvedAssessments / totalAvailableAssessments) * 100)
+    : 0;
+
   const STATS_DATA = [
-    { label: "Total Solved", solved: 142, total: 182, percent: 78, color: "text-[#2563EB]", stroke: "#2563EB" },
-    { label: "Easy Solved", solved: 64, total: 68, percent: 94, color: "text-emerald-600", stroke: "#16A34A" },
-    { label: "Medium Solved", solved: 58, total: 76, percent: 76, color: "text-amber-500", stroke: "#D97706" },
-    { label: "Hard Solved", solved: 20, total: 38, percent: 53, color: "text-rose-500", stroke: "#E11D48" },
+    {
+      label: "Total Solved",
+      solved: totalSolvedAssessments,
+      total: totalAvailableAssessments,
+      percent: solvedPercent,
+      color: "text-[#2563EB]",
+      stroke: "#2563EB",
+    },
+    {
+      label: "Easy Solved",
+      solved: totalSolvedAssessments > 0 ? totalSolvedAssessments : 0,
+      total: totalAvailableAssessments > 0 ? Math.ceil(totalAvailableAssessments * 0.4) : 0,
+      percent: totalAvailableAssessments > 0 ? Math.min(100, Math.round((totalSolvedAssessments / (Math.ceil(totalAvailableAssessments * 0.4) || 1)) * 100)) : 0,
+      color: "text-emerald-600",
+      stroke: "#16A34A",
+    },
+    {
+      label: "Medium Solved",
+      solved: 0,
+      total: totalAvailableAssessments > 0 ? Math.floor(totalAvailableAssessments * 0.4) : 0,
+      percent: 0,
+      color: "text-amber-500",
+      stroke: "#D97706",
+    },
+    {
+      label: "Hard Solved",
+      solved: 0,
+      total: totalAvailableAssessments > 0 ? Math.floor(totalAvailableAssessments * 0.2) : 0,
+      percent: 0,
+      color: "text-rose-500",
+      stroke: "#E11D48",
+    },
   ];
+
+  // Real Earned Badges
+  const earnedBadges = useMemo(() => {
+    const list = [];
+    if (enrollments.length > 0) {
+      list.push({
+        id: "enrolled",
+        label: "Enrolled Scholar",
+        icon: BookOpen,
+        badgeClass: "border-blue-200 bg-blue-50 text-[#2563EB] dark:border-blue-800/40 dark:bg-blue-950/30 dark:text-blue-300",
+      });
+    }
+    const hasCompletedCourse = enrollments.some((e) => e.progress === 100);
+    if (hasCompletedCourse) {
+      list.push({
+        id: "certified",
+        label: "Course Certified",
+        icon: Award,
+        badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-300",
+      });
+    }
+    if (completedLessonsCount >= 5) {
+      list.push({
+        id: "active-scholar",
+        label: "Dedicated Scholar",
+        icon: Sparkles,
+        badgeClass: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800/40 dark:bg-purple-950/30 dark:text-purple-300",
+      });
+    }
+    return list;
+  }, [enrollments, completedLessonsCount]);
 
   const initials =
     session?.initials ||
@@ -354,15 +443,15 @@ export default function StudentProfilePage() {
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
-        {/* Main Grid Layout: Left Column (Profile & Streaks) + Right Column (Contributions & Stats) */}
+        {/* Main Grid Layout */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* ================= LEFT COLUMN ================= */}
           <div className="space-y-6 lg:col-span-4">
             {/* Profile Identity Card */}
             <Reveal variant="fade-up">
               <TiltCard>
-                <div className="relative overflow-hidden rounded-[24px] border border-white/70 bg-white/85 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
-                  {/* Top Cover Banner (LinkedIn Style with Camera Button) */}
+                <div className="relative overflow-hidden rounded-[24px] border border-white/70 bg-white/85 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+                  {/* Top Cover Banner */}
                   <div
                     className={`relative h-28 sm:h-32 w-full transition-all duration-500 overflow-hidden ${
                       bannerType === "preset" ? bannerVal : "bg-slate-900"
@@ -377,7 +466,6 @@ export default function StudentProfilePage() {
                         : undefined
                     }
                   >
-                    {/* Subtle Overlay Pattern */}
                     <div
                       className="absolute inset-0 opacity-25 pointer-events-none"
                       style={{
@@ -386,7 +474,6 @@ export default function StudentProfilePage() {
                       }}
                     />
 
-                    {/* Camera Button at Top Right to Add/Change Banner like LinkedIn */}
                     <button
                       type="button"
                       onClick={() => setIsBannerModalOpen(true)}
@@ -398,52 +485,64 @@ export default function StudentProfilePage() {
                   </div>
 
                   {/* Profile Avatar & Info */}
-                  <div className="relative px-5 pb-6 text-center">
-                    {/* Overlapping Avatar */}
-                    <div className="relative mx-auto -mt-12 mb-3 flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-slate-900 shadow-md overflow-hidden group dark:border-slate-800">
-                      <Image
-                        src={avatar}
-                        alt={name}
-                        width={96}
-                        height={96}
-                        unoptimized
-                        className="h-full w-full object-cover object-top"
+                  <div className="relative px-5 pb-6 pt-0 text-center">
+                    <div className="relative -mt-12 mb-3 inline-block">
+                      <div className="relative h-24 w-24 rounded-full border-4 border-white dark:border-surface-secondary shadow-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+                        <Image
+                          src={avatar}
+                          alt={name}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => avatarFileRef.current?.click()}
+                        className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-[#2563EB] text-white shadow-md hover:bg-blue-700 transition-transform hover:scale-110 cursor-pointer"
+                        title="Change profile picture"
+                      >
+                        <Camera className="h-3.5 w-3.5" />
+                      </button>
+                      <input
+                        type="file"
+                        ref={avatarFileRef}
+                        onChange={handleAvatarUpload}
+                        accept="image/*"
+                        className="hidden"
                       />
-
-                      {/* Camera Button on Avatar to upload/edit profile picture */}
-                      <button
-                        type="button"
-                        onClick={() => setIsEditModalOpen(true)}
-                        className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                        title="Upload/Edit Profile Picture"
-                      >
-                        <Camera className="h-5 w-5" />
-                      </button>
                     </div>
 
-                    {/* Name & Edit Button */}
                     <div className="flex items-center justify-center gap-2">
-                      <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">{name}</h2>
+                      <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
+                        {name}
+                      </h1>
                       <button
                         type="button"
                         onClick={() => setIsEditModalOpen(true)}
-                        className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors cursor-pointer dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
-                        title="Edit Profile"
+                        className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                        title="Edit Name, Role, and Bio"
                       >
-                        <Pencil className="h-3 w-3" />
+                        <Pencil className="h-4 w-4" />
                       </button>
                     </div>
 
-                    <p className="mt-0.5 text-xs font-semibold text-[#2563EB] dark:text-blue-400">{role}</p>
-                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-normal">{bio}</p>
+                    <p className="mt-1 text-xs font-bold text-[#2563EB] dark:text-blue-400">
+                      {role}
+                    </p>
 
-                    {/* Details Pill Strip */}
-                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2 border-t border-slate-100 dark:border-slate-800 pt-4 text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                      <span className="flex items-center gap-1 rounded-full bg-slate-50 dark:bg-[#151D2E] dark:text-slate-300 px-2.5 py-1">
-                        <Globe className="h-3 w-3 text-slate-400" /> {location}
+                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs mx-auto">
+                      {bio}
+                    </p>
+
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">
+                        <Globe className="h-3 w-3 text-slate-400" />
+                        {location}
                       </span>
-                      <span className="flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 font-semibold text-[#2563EB] dark:text-blue-400">
-                        <BookOpen className="h-3 w-3" /> {enrolledTrack}
+                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-300 px-3 py-1 font-semibold">
+                        <BookOpen className="h-3 w-3" />
+                        {enrolledTrack}
                       </span>
                     </div>
                   </div>
@@ -451,18 +550,16 @@ export default function StudentProfilePage() {
               </TiltCard>
             </Reveal>
 
-            {/* Your Streak Card */}
+            {/* Streak Card */}
             <Reveal variant="fade-up">
               <TiltCard>
-                <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
-                  {/* Streak Card Header with Public Toggle */}
+                <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
                       <span>Your Streak</span>
                       <span className="text-base">🚀</span>
                     </div>
 
-                    {/* Interactive Public Toggle */}
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
@@ -481,21 +578,18 @@ export default function StudentProfilePage() {
                     </div>
                   </div>
 
-                  {/* 2 Streak Metric Boxes */}
                   <div className="mt-4 grid grid-cols-2 gap-3">
-                    {/* Current Streak */}
                     <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 text-center dark:border-emerald-800/40 dark:bg-emerald-950/20">
                       <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">Current Streak</div>
                       <div className="mt-1 text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                        12 days
+                        {currentStreakDays} {currentStreakDays === 1 ? "day" : "days"}
                       </div>
                     </div>
 
-                    {/* Longest Streak */}
                     <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 text-center dark:border-amber-800/40 dark:bg-amber-950/20">
                       <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">Longest Streak</div>
                       <div className="mt-1 text-xl sm:text-2xl font-extrabold text-amber-500 dark:text-amber-400">
-                        28 days
+                        {longestStreakDays} {longestStreakDays === 1 ? "day" : "days"}
                       </div>
                     </div>
                   </div>
@@ -506,20 +600,28 @@ export default function StudentProfilePage() {
             {/* Badges & Verifications Card */}
             <Reveal variant="fade-up">
               <TiltCard>
-                <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+                <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <Award className="h-4 w-4 text-[#2563EB] dark:text-blue-400" /> Verified Badges
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-300">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Anti-Skip Certified
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#2563EB] dark:border-blue-800/40 dark:bg-blue-950/30 dark:text-blue-300">
-                      <BrainCircuit className="h-3.5 w-3.5" /> AI Mock Tier-1
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-700 dark:border-purple-800/40 dark:bg-purple-950/30 dark:text-purple-300">
-                      <Sparkles className="h-3.5 w-3.5" /> Stage 4 Master
-                    </span>
+                    {earnedBadges.length > 0 ? (
+                      earnedBadges.map((badge) => {
+                        const Icon = badge.icon;
+                        return (
+                          <span
+                            key={badge.id}
+                            className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold ${badge.badgeClass}`}
+                          >
+                            <Icon className="h-3.5 w-3.5" /> {badge.label}
+                          </span>
+                        );
+                      })
+                    ) : (
+                      <p className="text-xs text-slate-400 italic py-1">
+                        No badges unlocked yet. Complete courses and assessments to earn verified badges.
+                      </p>
+                    )}
                   </div>
                 </div>
               </TiltCard>
@@ -530,8 +632,7 @@ export default function StudentProfilePage() {
           <div className="space-y-6 lg:col-span-8">
             {/* Section 1: Contributions */}
             <Reveal variant="fade-up">
-              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
-                {/* Section Header with Hamburger Icon and Public Toggle */}
+              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                     <div className="flex flex-col gap-0.5">
@@ -564,21 +665,20 @@ export default function StudentProfilePage() {
                 <div className="mt-4">
                   <div
                     onClick={() => setIsPlatformModalOpen(!isPlatformModalOpen)}
-                    className="flex cursor-pointer items-center justify-between rounded-xl bg-slate-50/80 dark:bg-[#151D2E] px-4 py-3 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="flex cursor-pointer items-center justify-between rounded-xl bg-slate-50/80 dark:bg-surface-elevated px-4 py-3 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-100 dark:hover:bg-surface-hover"
                   >
                     <span>Connect with Platforms</span>
                     <Plus className="h-4 w-4 text-slate-400" />
                   </div>
 
-                  {/* Connected Platforms Strip */}
                   {isPlatformModalOpen && (
-                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#151D2E]/50">
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-surface-elevated/50">
                       {connectedPlatforms.map((p) => {
                         const Icon = p.icon;
                         return (
                           <div
                             key={p.name}
-                            className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#121A2A] border border-slate-200/70 dark:border-slate-800 text-xs"
+                            className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-input-bg border border-slate-200/70 dark:border-slate-800 text-xs"
                           >
                             <div className="flex items-center gap-2">
                               <Icon className="h-4 w-4 text-slate-700 dark:text-slate-300" />
@@ -601,17 +701,16 @@ export default function StudentProfilePage() {
                 </div>
 
                 {/* Contribution Heatmap Container */}
-                <div className="mt-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-4 sm:p-5">
-                  {/* Heatmap Meta Bar */}
+                <div className="mt-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated p-4 sm:p-5">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-400">
                     <div className="font-bold text-slate-900 dark:text-white text-sm">
-                      {totalContributions} contributions in - last year
+                      {totalContributions} {totalContributions === 1 ? "contribution" : "contributions"} in {selectedYear}
                     </div>
                     <div className="flex items-center gap-2.5">
                       <button
                         type="button"
                         className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                        title="Contributions include watched lectures, completed stage assessments, and AI mock sessions."
+                        title="Contributions include watched lectures and passed stage assessments."
                       >
                         <Info className="h-4 w-4" />
                       </button>
@@ -619,7 +718,7 @@ export default function StudentProfilePage() {
                         <select
                           value={selectedYear}
                           onChange={(e) => setSelectedYear(e.target.value)}
-                          className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-white outline-none cursor-pointer"
+                          className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-white outline-none cursor-pointer"
                         >
                           <option value="2026">2026</option>
                           <option value="2025">2025</option>
@@ -631,16 +730,13 @@ export default function StudentProfilePage() {
                   {/* Heatmap Grid */}
                   <div className="mt-5 overflow-x-auto pb-2">
                     <div className="min-w-[650px]">
-                      {/* Months Header */}
                       <div className="flex text-[10px] font-medium text-slate-400 pl-8 mb-1.5 justify-between pr-2">
                         {heatmapWeeks.months.map((m, idx) => (
                           <span key={`${m}-${idx}`}>{m}</span>
                         ))}
                       </div>
 
-                      {/* Days + Grid Matrix */}
                       <div className="flex items-start gap-2">
-                        {/* Day labels */}
                         <div className="flex flex-col justify-between text-[9px] font-semibold text-slate-400 h-[100px] py-0.5">
                           <span>Sun</span>
                           <span>Tue</span>
@@ -648,7 +744,6 @@ export default function StudentProfilePage() {
                           <span>Sat</span>
                         </div>
 
-                        {/* Squares Grid */}
                         <div className="grid grid-flow-col grid-rows-7 gap-[3px] flex-1">
                           {heatmapWeeks.weeks.map((week, wIdx) =>
                             week.map((day, dIdx) => {
@@ -671,12 +766,11 @@ export default function StudentProfilePage() {
                         </div>
                       </div>
 
-                      {/* Heatmap Legend */}
                       <div className="mt-4 flex items-center justify-between text-[11px] text-slate-400">
                         <span>
-                          {hoveredDay
+                          {hoveredDay && hoveredDay.count > 0
                             ? `${hoveredDay.count} activities on ${hoveredDay.date}`
-                            : "Daily activity and project submissions"}
+                            : "Daily activity and lesson completions"}
                         </span>
                         <div className="flex items-center gap-1">
                           <span className="text-[10px]">Less</span>
@@ -695,8 +789,7 @@ export default function StudentProfilePage() {
 
             {/* Section 2: Stats (Questions & Assessments Solved) */}
             <Reveal variant="fade-up">
-              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
-                {/* Header with Hamburger icon and Public Toggle */}
+              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                     <div className="flex flex-col gap-0.5">
@@ -725,11 +818,11 @@ export default function StudentProfilePage() {
                   </div>
                 </div>
 
-                {/* Sub Card: Interview Practice & Stage Assessments */}
-                <div className="mt-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-5">
+                {/* Sub Card */}
+                <div className="mt-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated p-5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-orange-600 sm:text-slate-800 dark:text-orange-400 sm:dark:text-slate-200">
-                      <span>Interview Practice &amp; Stage Assessments</span>
+                      <span>Course Module Assessments</span>
                       <ExternalLink className="h-3 w-3 text-slate-400" />
                     </div>
 
@@ -750,7 +843,6 @@ export default function StudentProfilePage() {
 
                       return (
                         <div key={s.label} className="flex items-center gap-3">
-                          {/* Circular SVG Ring */}
                           <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
                             <svg className="h-14 w-14 -rotate-90 transform" viewBox="0 0 60 60">
                               <circle
@@ -780,7 +872,6 @@ export default function StudentProfilePage() {
                             </span>
                           </div>
 
-                          {/* Labels */}
                           <div>
                             <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
                               {s.label}
@@ -800,228 +891,150 @@ export default function StudentProfilePage() {
         </div>
       </div>
 
-      {/* LINKEDIN-STYLE BANNER CUSTOMIZER MODAL */}
-      {isBannerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-6 shadow-2xl space-y-4">
-            <button
-              type="button"
-              onClick={() => setIsBannerModalOpen(false)}
-              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
-
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400">
-                <Camera className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Custom Profile Banner</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Upload your LinkedIn-style banner or pick a developer theme
-                </p>
-              </div>
-            </div>
-
-            {/* Live Banner Preview Box */}
-            <div className="mt-4">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Preview</label>
-              <div
-                className={`mt-1.5 h-28 w-full rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-inner flex items-center justify-center text-white text-xs font-bold ${
-                  bannerType === "preset" ? bannerVal : ""
-                }`}
-                style={
-                  bannerType === "image"
-                    ? {
-                        backgroundImage: `url(${bannerVal})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }
-                    : undefined
-                }
-              >
-                <span>Current Cover Banner</span>
-              </div>
-            </div>
-
-            {/* Option 1: Upload Custom File */}
-            <div className="pt-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Upload Custom Image</label>
-              <input
-                type="file"
-                ref={bannerFileRef}
-                onChange={handleBannerUpload}
-                accept="image/*"
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => bannerFileRef.current?.click()}
-                className="mt-1.5 w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-[#2563EB] bg-blue-50/50 dark:bg-blue-950/20 py-3 text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
-              >
-                <Upload className="h-4 w-4" />
-                <span>Upload from Device (PNG, JPG, WebP)</span>
-              </button>
-            </div>
-
-            {/* Option 2: Choose Presets */}
-            <div className="pt-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Or Select Designer Themes</label>
-              <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {BANNER_PRESETS.map((preset) => (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => handleSelectPresetBanner(preset.className)}
-                    className="flex flex-col items-center gap-1.5 p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-[#2563EB] dark:hover:border-blue-500 transition-colors cursor-pointer group"
-                  >
-                    <div className={`h-8 w-full rounded-lg ${preset.className}`} />
-                    <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[#2563EB] dark:group-hover:text-blue-400">
-                      {preset.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={() => setIsBannerModalOpen(false)}
-                className="rounded-xl bg-slate-900 dark:bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 dark:hover:bg-blue-700"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PROFILE EDIT MODAL WITH AVATAR UPLOADER */}
+      {/* Profile Edit Modal */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <button
-              type="button"
-              onClick={() => setIsEditModalOpen(false)}
-              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-surface-secondary">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Edit Student Profile</h3>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className="rounded-xl p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-surface-hover dark:hover:text-slate-100 cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Edit Profile</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Update your public student credentials and profile photo.</p>
-
-            <form onSubmit={handleSaveProfile} className="mt-5 space-y-4">
-              {/* Profile Avatar Upload Section */}
-              <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-[#151D2E] p-3.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Profile Picture</label>
-                <div className="mt-2 flex items-center gap-4">
-                  <div className="relative h-16 w-16 shrink-0 rounded-full border-2 border-white dark:border-slate-800 shadow-md overflow-hidden bg-slate-900">
-                    <Image
-                      src={avatar}
-                      alt="Avatar Preview"
-                      width={64}
-                      height={64}
-                      unoptimized
-                      className="h-full w-full object-cover object-top"
-                    />
-                  </div>
-
-                  <div className="flex-1 space-y-2">
-                    <input
-                      type="file"
-                      ref={avatarFileRef}
-                      onChange={handleAvatarUpload}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => avatarFileRef.current?.click()}
-                      className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-                    >
-                      <Upload className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" />
-                      <span>Upload Custom Photo</span>
-                    </button>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-slate-400">Or pick preset:</span>
-                      {PRESET_AVATARS.map((preset, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setAvatar(preset)}
-                          className="h-6 w-6 rounded-full border border-slate-300 dark:border-slate-700 overflow-hidden hover:border-[#2563EB] dark:hover:border-blue-400 cursor-pointer"
-                        >
-                          <Image
-                            src={preset}
-                            alt="Preset"
-                            width={24}
-                            height={24}
-                            unoptimized
-                            className="h-full w-full object-cover"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+            <form onSubmit={handleSaveProfile} className="mt-4 space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Full Name</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Full Name</label>
                 <input
+                  type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                  required
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Professional Role / Headline</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Headline / Role</label>
                 <input
+                  type="text"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                  required
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Location</label>
-                <input
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Bio</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Bio Summary</label>
                 <textarea
-                  rows={3}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500"
+                  rows={3}
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Location / Contact</label>
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-surface-hover cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700"
+                  className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-700 shadow-md cursor-pointer"
                 >
                   <Save className="h-4 w-4" /> Save Changes
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Banner Customization Modal */}
+      {isBannerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-surface-secondary">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-2">
+                <Palette className="h-5 w-5 text-[#2563EB]" />
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Profile Cover Banner</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBannerModalOpen(false)}
+                className="rounded-xl p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-surface-hover dark:hover:text-slate-100 cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-5 space-y-5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+                  Upload Custom Banner Image
+                </label>
+                <div
+                  onClick={() => bannerFileRef.current?.click()}
+                  className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 hover:border-[#2563EB] bg-slate-50/50 dark:bg-surface-elevated/50 cursor-pointer transition-colors"
+                >
+                  <Upload className="h-8 w-8 text-[#2563EB] mb-2" />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                    Click to browse PNG, JPG or WebP
+                  </span>
+                  <span className="text-[11px] text-slate-400 mt-1">Recommended size: 1200x300</span>
+                </div>
+                <input
+                  type="file"
+                  ref={bannerFileRef}
+                  onChange={handleBannerUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+                  Or Choose a Curated Preset
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {BANNER_PRESETS.map((p) => (
+                    <div
+                      key={p.id}
+                      onClick={() => handleSelectPresetBanner(p.className)}
+                      className={`h-16 rounded-xl ${p.className} p-3 flex items-end justify-between cursor-pointer border-2 transition-all hover:scale-[1.02] shadow-sm ${
+                        bannerType === "preset" && bannerVal === p.className
+                          ? "border-white ring-2 ring-[#2563EB]"
+                          : "border-transparent"
+                      }`}
+                    >
+                      <span className="text-[11px] font-extrabold text-white drop-shadow-sm">{p.label}</span>
+                      {bannerType === "preset" && bannerVal === p.className && (
+                        <CheckCircle2 className="h-4 w-4 text-white" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

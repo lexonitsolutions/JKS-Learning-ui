@@ -275,7 +275,7 @@ export function WebsiteChatbot() {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 10, scale: 0.95 }}
               transition={{ duration: 0.25 }}
-              className="hidden sm:flex items-center gap-2.5 rounded-2xl border border-blue-100 dark:border-slate-800 bg-white/95 dark:bg-[#111827]/95 px-4 py-2.5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.6)] backdrop-blur-md cursor-pointer hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-500 transition-all group"
+              className="hidden sm:flex items-center gap-2.5 rounded-2xl border border-blue-100 dark:border-slate-800 bg-white/95 dark:bg-surface-secondary/95 px-4 py-2.5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.6)] backdrop-blur-md cursor-pointer hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-500 transition-all group"
               onClick={() => setIsOpen(true)}
             >
               <div className="relative flex h-2.5 w-2.5 shrink-0">
@@ -347,7 +347,7 @@ export function WebsiteChatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.94 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-24 right-4 sm:right-6 z-50 flex h-[620px] max-h-[85vh] w-[calc(100vw-2rem)] max-w-sm sm:max-w-[430px] flex-col overflow-hidden rounded-[28px] border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#111827] shadow-[0_25px_60px_-15px_rgba(15,23,42,0.35),0_0_0_1px_rgba(255,255,255,0.8)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] backdrop-blur-2xl"
+            className="fixed bottom-24 right-4 sm:right-6 z-50 flex h-[620px] max-h-[85vh] w-[calc(100vw-2rem)] max-w-sm sm:max-w-[430px] flex-col overflow-hidden rounded-[28px] border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-surface-secondary shadow-[0_25px_60px_-15px_rgba(15,23,42,0.35),0_0_0_1px_rgba(255,255,255,0.8)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] backdrop-blur-2xl"
           >
             {/* Chatbot Luxury Header */}
             <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-4 text-white shrink-0 border-b border-white/10">
@@ -427,7 +427,7 @@ export function WebsiteChatbot() {
             </div>
 
             {/* Chat Body & Scroll Container */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-slate-50/90 via-slate-50/50 to-white dark:from-[#0E1526] dark:via-[#111827] dark:to-[#111827]">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-slate-50/90 via-slate-50/50 to-white dark:from-surface dark:via-surface-secondary dark:to-surface-secondary">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
@@ -451,13 +451,13 @@ export function WebsiteChatbot() {
                       className={`rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs ${
                         msg.sender === "user"
                           ? "bg-gradient-to-r from-[#2563EB] to-blue-600 text-white rounded-br-xs shadow-blue-500/20"
-                          : "bg-white dark:bg-[#151D2E] text-slate-800 dark:text-slate-100 border border-slate-100 dark:border-slate-800/80 rounded-bl-xs shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                          : "bg-white dark:bg-surface-elevated text-slate-800 dark:text-slate-100 border border-slate-100 dark:border-slate-800/80 rounded-bl-xs shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
                       }`}
                     >
                       <div className="whitespace-pre-line font-medium">{msg.text}</div>
                     </div>
 
-                    <span className="mt-1 text-[10px] text-slate-400 dark:text-slate-500 px-1 font-medium">{msg.timestamp}</span>
+                    <span className="mt-1 text-[10px] text-slate-400 dark:text-slate-400 px-1 font-medium">{msg.timestamp}</span>
 
                     {/* Interactive Quick Action Pills */}
                     {msg.options && (
@@ -478,7 +478,7 @@ export function WebsiteChatbot() {
                                 handleSendMessage(opt);
                               }
                             }}
-                            className="rounded-full border border-blue-200 dark:border-blue-800/60 bg-white dark:bg-[#151D2E] px-3.5 py-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 shadow-2xs hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-xs transition-all active:scale-95 cursor-pointer"
+                            className="rounded-full border border-blue-200 dark:border-blue-800/60 bg-white dark:bg-surface-elevated px-3.5 py-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 shadow-2xs hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-xs transition-all active:scale-95 cursor-pointer"
                           >
                             {opt}
                           </button>
@@ -490,7 +490,7 @@ export function WebsiteChatbot() {
                     {msg.isLeadForm && !leadSubmitted && (
                       <form
                         onSubmit={handleLeadSubmit}
-                        className="mt-3 w-full rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-gradient-to-br from-white via-blue-50/40 to-indigo-50/40 dark:from-[#111827] dark:via-[#151D2E] dark:to-[#1B2538] p-4 shadow-md shadow-blue-500/10 space-y-3 text-xs"
+                        className="mt-3 w-full rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-gradient-to-br from-white via-blue-50/40 to-indigo-50/40 dark:from-surface-secondary dark:via-surface-elevated dark:to-surface-hover p-4 shadow-md shadow-blue-500/10 space-y-3 text-xs"
                       >
                         <div className="font-black text-slate-900 dark:text-white flex items-center gap-1.5 text-sm">
                           <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -505,7 +505,7 @@ export function WebsiteChatbot() {
                             placeholder="e.g. Ramesh Kumar"
                             value={leadForm.name}
                             onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
+                            className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
                           />
                         </div>
 
@@ -517,7 +517,7 @@ export function WebsiteChatbot() {
                             placeholder="+91 98765 43210"
                             value={leadForm.phone}
                             onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
+                            className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
                           />
                         </div>
 
@@ -526,7 +526,7 @@ export function WebsiteChatbot() {
                           <select
                             value={leadForm.course}
                             onChange={(e) => setLeadForm({ ...leadForm, course: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
+                            className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
                           >
                             <option>Java Full Stack Developer Mastery</option>
                             <option>Modern Frontend Engineering (React 19 & Next.js)</option>
@@ -560,11 +560,11 @@ export function WebsiteChatbot() {
                       className="h-full w-full object-cover"
                     />
                   </div>
-                  <div className="flex items-center gap-1.5 bg-white dark:bg-[#151D2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl px-3.5 py-2.5 shadow-2xs">
+                  <div className="flex items-center gap-1.5 bg-white dark:bg-surface-elevated border border-slate-200/80 dark:border-slate-800/80 rounded-2xl px-3.5 py-2.5 shadow-2xs">
                     <span className="h-2 w-2 rounded-full bg-blue-600 animate-bounce" />
                     <span className="h-2 w-2 rounded-full bg-cyan-500 animate-bounce delay-150" />
                     <span className="h-2 w-2 rounded-full bg-indigo-600 animate-bounce delay-300" />
-                    <span className="text-[11px] text-slate-400 dark:text-slate-500 ml-1 font-medium">Advisor is typing...</span>
+                    <span className="text-[11px] text-slate-400 dark:text-slate-400 ml-1 font-medium">Advisor is typing...</span>
                   </div>
                 </div>
               )}
@@ -573,7 +573,7 @@ export function WebsiteChatbot() {
             </div>
 
             {/* Input Bar & Footer */}
-            <div className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-[#111827] p-3.5 space-y-2">
+            <div className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-secondary p-3.5 space-y-2">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -586,7 +586,7 @@ export function WebsiteChatbot() {
                   placeholder="Ask about syllabus, fees, scholarships..."
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-[#121A2A] px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium"
+                  className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-input-bg px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-surface-elevated focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-400 font-medium"
                 />
                 <button
                   type="submit"
@@ -597,7 +597,7 @@ export function WebsiteChatbot() {
                 </button>
               </form>
 
-              <div className="flex items-center justify-center text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+              <div className="flex items-center justify-center text-[10px] text-slate-400 dark:text-slate-400 font-medium">
                 <span>⚡ Instant AI Career Guidance · JKS Learning</span>
               </div>
             </div>

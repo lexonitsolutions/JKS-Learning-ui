@@ -172,14 +172,14 @@ export default function InstructorAssessmentsPage() {
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">
         {/* Action & Filter Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-1 shadow-xs">
+          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-1 shadow-xs">
             <button
               type="button"
               onClick={() => setActiveTab("Pending")}
               className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "Pending"
                   ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-surface-hover"
               }`}
             >
               Pending Evaluation ({pendingList.length})
@@ -190,7 +190,7 @@ export default function InstructorAssessmentsPage() {
               className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "Graded"
                   ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-surface-hover"
               }`}
             >
               Graded Submissions ({gradedList.length})
@@ -198,22 +198,22 @@ export default function InstructorAssessmentsPage() {
           </div>
 
           <div className="relative max-w-md w-full">
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-400" />
             <input
               type="text"
               placeholder="Search by student, assignment, or course…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white outline-none shadow-xs transition-colors focus:border-[#2563EB] dark:placeholder-slate-500"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white outline-none shadow-xs transition-colors focus:border-[#2563EB] dark:placeholder-slate-400"
             />
           </div>
         </div>
 
         {/* Submissions Table */}
-        <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl overflow-hidden">
+        <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-              <thead className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <thead className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <tr>
                   <th className="px-5 py-3.5">Student</th>
                   <th className="px-5 py-3.5">Assignment & Topic</th>
@@ -225,7 +225,7 @@ export default function InstructorAssessmentsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100/80 dark:divide-slate-800/80">
                 {displayedList.map((sub) => (
-                  <tr key={sub.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                  <tr key={sub.id} className="hover:bg-slate-50/70 dark:hover:bg-surface-hover transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-xs font-bold text-[#2563EB] dark:text-blue-400">
@@ -237,7 +237,7 @@ export default function InstructorAssessmentsPage() {
 
                     <td className="px-5 py-4">
                       <div className="font-bold text-slate-900 dark:text-white">{sub.assignmentTitle}</div>
-                      <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">{sub.type}</div>
+                      <div className="text-[11px] text-slate-400 dark:text-slate-400 font-medium">{sub.type}</div>
                     </td>
 
                     <td className="px-5 py-4 text-slate-600 dark:text-slate-300 font-medium">
@@ -267,7 +267,7 @@ export default function InstructorAssessmentsPage() {
                         className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                           sub.status === "Pending Review"
                             ? "bg-[#2563EB] text-white shadow-xs hover:bg-blue-700"
-                            : "border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#151D2E] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                            : "border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-surface-elevated text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover"
                         }`}
                       >
                         <FileCode className="h-3.5 w-3.5" />
@@ -290,7 +290,7 @@ export default function InstructorAssessmentsPage() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative flex w-full max-w-2xl flex-col rounded-[24px] border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-2xl overflow-hidden max-h-[90vh]"
+              className="relative flex w-full max-w-2xl flex-col rounded-[24px] border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-2xl overflow-hidden max-h-[90vh]"
             >
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-5 shrink-0">
                 <div className="flex items-center gap-3">
@@ -309,7 +309,7 @@ export default function InstructorAssessmentsPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedSubmission(null)}
-                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -340,7 +340,7 @@ export default function InstructorAssessmentsPage() {
                       required
                       value={scoreInput}
                       onChange={(e) => setScoreInput(Number(e.target.value))}
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-2.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                     />
                   </div>
 
@@ -372,7 +372,7 @@ export default function InstructorAssessmentsPage() {
                     value={feedbackInput}
                     onChange={(e) => setFeedbackInput(e.target.value)}
                     placeholder="Provide constructive feedback on architecture, scalability, or code cleanliness..."
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-[#121A2A] p-3 text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB] dark:placeholder-slate-500"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-input-bg p-3 text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB] dark:placeholder-slate-400"
                   />
                 </div>
 
@@ -380,7 +380,7 @@ export default function InstructorAssessmentsPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedSubmission(null)}
-                    className="rounded-xl px-4 py-2 font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="rounded-xl px-4 py-2 font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover"
                   >
                     Cancel
                   </button>

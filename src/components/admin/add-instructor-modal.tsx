@@ -27,6 +27,7 @@ export function AddInstructorModal({
 }: AddInstructorModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("lecturer123");
   const [role, setRole] = useState("Lead Trainer, Java Full Stack");
   const [track, setTrack] = useState("Full Stack");
   const [assignedCourses, setAssignedCourses] = useState(1);
@@ -38,14 +39,14 @@ export function AddInstructorModal({
     if (parts.length >= 2) {
       return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
-    return (fullName.slice(0, 2) || "IN").toUpperCase();
+    return (fullName.slice(0, 2) || "LE").toUpperCase();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
 
-    const newInst: AdminInstructor & { email?: string } = {
+    const newInst: AdminInstructor = {
       name: name.trim(),
       email: email.trim().toLowerCase(),
       initials: getInitials(name),
@@ -53,14 +54,16 @@ export function AddInstructorModal({
       assignedCourses: Number(assignedCourses) || 1,
       students: 0,
       status: "Active",
+      password: password.trim() || "lecturer123",
     };
 
     setIsSuccess(true);
     setTimeout(() => {
-      onSave(newInst as AdminInstructor);
+      onSave(newInst);
       setIsSuccess(false);
       setName("");
       setEmail("");
+      setPassword("lecturer123");
       setBio("");
       onClose();
     }, 800);
@@ -75,7 +78,7 @@ export function AddInstructorModal({
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative flex w-full max-w-xl flex-col rounded-[24px] border border-slate-100 bg-white shadow-2xl overflow-hidden dark:border-slate-800 dark:bg-[#111827] dark:shadow-none"
+          className="relative flex w-full max-w-xl flex-col rounded-[24px] border border-slate-100 bg-white shadow-2xl overflow-hidden dark:border-slate-800 dark:bg-surface-secondary dark:shadow-none"
         >
           {/* Modal Header */}
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-5">
@@ -95,7 +98,7 @@ export function AddInstructorModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-surface-hover dark:hover:text-slate-200 transition-colors cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
@@ -104,7 +107,7 @@ export function AddInstructorModal({
           {/* Modal Form Body */}
           <form onSubmit={handleSubmit} className="p-6 space-y-4 text-slate-800 dark:text-slate-200">
             {/* Live Avatar Preview Header */}
-            <div className="flex items-center gap-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-[#151D2E]">
+            <div className="flex items-center gap-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-surface-elevated">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2563EB] text-sm font-bold text-white shadow-xs">
                 {name ? getInitials(name) : "IN"}
               </div>
@@ -130,14 +133,14 @@ export function AddInstructorModal({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Dr. Ananya Sharma"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/30 dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                  Email Address *
+                  Email Address * (Real Working Email)
                 </label>
                 <div className="relative mt-1.5">
                   <input
@@ -145,11 +148,28 @@ export function AddInstructorModal({
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="instructor@jkslearning.com"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
+                    placeholder="e.g. lecturer.name@gmail.com"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
                   />
                 </div>
               </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Lecturer Login Password *
+                </label>
+                <span className="text-[11px] text-slate-400">Used by lecturer to access workspace</span>
+              </div>
+              <input
+                type="text"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Initial login password"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
+              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -163,7 +183,7 @@ export function AddInstructorModal({
                     setTrack(e.target.value);
                     setRole(`Lead Trainer, ${e.target.value}`);
                   }}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                 >
                   <option value="Full Stack">Full Stack</option>
                   <option value="Frontend">Frontend</option>
@@ -183,7 +203,7 @@ export function AddInstructorModal({
                   max="10"
                   value={assignedCourses}
                   onChange={(e) => setAssignedCourses(Number(e.target.value))}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                 />
               </div>
             </div>
@@ -197,7 +217,7 @@ export function AddInstructorModal({
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 placeholder="e.g. Principal Architect & Lead Trainer"
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
               />
             </div>
 
@@ -210,7 +230,7 @@ export function AddInstructorModal({
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="10+ years enterprise experience in microservices, cloud deployments..."
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white p-3 text-xs font-medium text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white p-3 text-xs font-medium text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
               />
             </div>
 
@@ -219,7 +239,7 @@ export function AddInstructorModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-surface-hover transition-colors cursor-pointer"
               >
                 Cancel
               </button>

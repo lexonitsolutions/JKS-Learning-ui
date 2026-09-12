@@ -149,10 +149,10 @@ export default function ResumeBuilderPage() {
 
       <div className="flex-1 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4 space-y-6">
         {/* Top Control Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-4 shadow-xs">
           <div className="flex items-center gap-3">
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Choose Template:</span>
-            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-[#151D2E] p-1">
+            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-surface-elevated p-1">
               {[
                 { id: "modern", label: "Modern Tech" },
                 { id: "minimalist", label: "ATS Minimalist" },
@@ -164,7 +164,7 @@ export default function ResumeBuilderPage() {
                   onClick={() => setTemplate(t.id as any)}
                   className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                     template === t.id
-                      ? "bg-white text-[#2563EB] shadow-xs dark:bg-[#111827] dark:text-blue-400"
+                      ? "bg-white text-[#2563EB] shadow-xs dark:bg-surface-secondary dark:text-blue-400"
                       : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                   }`}
                 >
@@ -192,7 +192,7 @@ export default function ResumeBuilderPage() {
           {/* ======================================================== */}
           <div className="lg:col-span-5 space-y-4 print:hidden">
             {/* Personal Details */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-5 shadow-xs space-y-3 text-xs">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-5 shadow-xs space-y-3 text-xs">
               <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <Sliders className="h-4 w-4 text-blue-600 dark:text-blue-400" /> Personal &amp; Contact Info
               </h3>
@@ -204,7 +204,7 @@ export default function ResumeBuilderPage() {
                     type="text"
                     value={personal.fullName}
                     onChange={(e) => setPersonal({ ...personal, fullName: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
+                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
                   />
                 </div>
                 <div>
@@ -213,7 +213,7 @@ export default function ResumeBuilderPage() {
                     type="text"
                     value={personal.headline}
                     onChange={(e) => setPersonal({ ...personal, headline: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
+                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -225,7 +225,7 @@ export default function ResumeBuilderPage() {
                     type="email"
                     value={personal.email}
                     onChange={(e) => setPersonal({ ...personal, email: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
+                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
                   />
                 </div>
                 <div>
@@ -234,7 +234,7 @@ export default function ResumeBuilderPage() {
                     type="tel"
                     value={personal.phone}
                     onChange={(e) => setPersonal({ ...personal, phone: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
+                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -245,7 +245,7 @@ export default function ResumeBuilderPage() {
                   type="text"
                   value={personal.linkedin}
                   onChange={(e) => setPersonal({ ...personal, linkedin: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
+                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
                 />
               </div>
 
@@ -255,7 +255,7 @@ export default function ResumeBuilderPage() {
                   type="text"
                   value={personal.github}
                   onChange={(e) => setPersonal({ ...personal, github: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
+                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
                 />
               </div>
 
@@ -265,13 +265,13 @@ export default function ResumeBuilderPage() {
                   rows={3}
                   value={personal.summary}
                   onChange={(e) => setPersonal({ ...personal, summary: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
+                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
                 />
               </div>
             </div>
 
             {/* Technical Skills */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-5 shadow-xs space-y-3 text-xs">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-5 shadow-xs space-y-3 text-xs">
               <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <Sparkles className="h-4 w-4 text-cyan-600 dark:text-cyan-400" /> Technical Skills
               </h3>
@@ -282,7 +282,7 @@ export default function ResumeBuilderPage() {
                   type="text"
                   value={skills.languages}
                   onChange={(e) => setSkills({ ...skills, languages: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
+                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
                 />
               </div>
 
@@ -292,7 +292,7 @@ export default function ResumeBuilderPage() {
                   type="text"
                   value={skills.frameworks}
                   onChange={(e) => setSkills({ ...skills, frameworks: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
+                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
                 />
               </div>
 
@@ -302,7 +302,7 @@ export default function ResumeBuilderPage() {
                   type="text"
                   value={skills.cloudDevOps}
                   onChange={(e) => setSkills({ ...skills, cloudDevOps: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
+                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2 text-xs outline-none focus:border-blue-600 dark:focus:border-blue-500"
                 />
               </div>
             </div>

@@ -147,13 +147,13 @@ export default function InstructorStudentsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-1 items-center gap-3 max-w-md w-full">
             <div className="relative w-full">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-400" />
               <input
                 type="text"
                 placeholder="Search students by name, email, or course…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] py-2.5 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-500 outline-none shadow-xs transition-colors focus:border-[#2563EB]"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg py-2.5 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-400 outline-none shadow-xs transition-colors focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -162,7 +162,7 @@ export default function InstructorStudentsPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3.5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:border-[#2563EB] shadow-xs"
+              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3.5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:border-[#2563EB] shadow-xs"
             >
               <option value="All">All Progress States</option>
               <option value="In Progress">In Progress</option>
@@ -178,7 +178,7 @@ export default function InstructorStudentsPage() {
             <Link
               key={st.id}
               href={`/instructor/students/${st.slug}`}
-              className="rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 shadow-sm space-y-3.5 active:scale-[0.99] transition-all hover:border-blue-300 dark:hover:border-blue-600/50"
+              className="rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary p-5 shadow-sm space-y-3.5 active:scale-[0.99] transition-all hover:border-blue-300 dark:hover:border-blue-600/50"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -187,7 +187,7 @@ export default function InstructorStudentsPage() {
                   </div>
                   <div>
                     <div className="font-extrabold text-slate-900 dark:text-white text-sm">{st.name}</div>
-                    <div className="text-[11px] text-slate-400 dark:text-slate-500">{st.email}</div>
+                    <div className="text-[11px] text-slate-400 dark:text-slate-400">{st.email}</div>
                   </div>
                 </div>
 
@@ -206,7 +206,7 @@ export default function InstructorStudentsPage() {
                 </span>
               </div>
 
-              <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-[#151D2E] p-2.5 rounded-xl">
+              <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-surface-elevated p-2.5 rounded-xl">
                 {st.courseTitle}
               </div>
 
@@ -242,10 +242,10 @@ export default function InstructorStudentsPage() {
         </div>
 
         {/* Desktop View: Full Data Table (>= 768px) */}
-        <div className="hidden md:block rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl overflow-hidden">
+        <div className="hidden md:block rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-              <thead className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <thead className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <tr>
                   <th className="px-5 py-4">Student</th>
                   <th className="px-5 py-4">Course Track</th>
@@ -260,7 +260,7 @@ export default function InstructorStudentsPage() {
                 {filteredStudents.map((st) => (
                   <tr
                     key={st.id}
-                    className="hover:bg-blue-50/40 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer"
+                    className="hover:bg-blue-50/40 dark:hover:bg-surface-hover transition-colors group cursor-pointer"
                   >
                     <td className="px-5 py-4">
                       <Link
@@ -273,9 +273,9 @@ export default function InstructorStudentsPage() {
                         <div>
                           <div className="font-bold text-slate-900 dark:text-white group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
                             <span>{st.name}</span>
-                            <Eye className="h-3 w-3 text-slate-400 dark:text-slate-500 group-hover:text-[#2563EB] dark:group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Eye className="h-3 w-3 text-slate-400 dark:text-slate-400 group-hover:text-[#2563EB] dark:group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
-                          <div className="text-[11px] text-slate-400 dark:text-slate-500">{st.email}</div>
+                          <div className="text-[11px] text-slate-400 dark:text-slate-400">{st.email}</div>
                         </div>
                       </Link>
                     </td>
@@ -290,7 +290,7 @@ export default function InstructorStudentsPage() {
                       <Link href={`/instructor/students/${st.slug}`} className="block space-y-1">
                         <div className="flex justify-between text-[11px] font-bold">
                           <span className="text-slate-900 dark:text-white">{st.progressPercent}%</span>
-                          <span className="text-slate-400 dark:text-slate-500 font-normal">
+                          <span className="text-slate-400 dark:text-slate-400 font-normal">
                             {st.completedVideos}/{st.totalVideos} videos
                           </span>
                         </div>
@@ -348,7 +348,7 @@ export default function InstructorStudentsPage() {
                     <td className="px-5 py-4 text-right">
                       <Link
                         href={`/instructor/students/${st.slug}`}
-                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-[#2563EB] hover:text-white dark:hover:bg-[#2563EB] dark:hover:text-white hover:border-[#2563EB] transition-all shadow-xs"
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-[#2563EB] hover:text-white dark:hover:bg-[#2563EB] dark:hover:text-white hover:border-[#2563EB] transition-all shadow-xs"
                       >
                         <span>View Academic Dossier</span>
                         <ChevronRight className="h-3.5 w-3.5" />

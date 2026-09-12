@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Printer, Download, CheckCircle2, ShieldCheck, QrCode, Building, Award, FileText } from "lucide-react";
 import { type Invoice } from "@/lib/data/invoices-store";
 import { JksLogo } from "@/components/common/jks-logo";
@@ -12,34 +13,89 @@ interface InvoiceModalProps {
 
 export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (!invoice) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
       }
     };
+
+    const handleBeforePrint = () => {
+      document.body.classList.add("printing-invoice");
+    };
+    const handleAfterPrint = () => {
+      document.body.classList.remove("printing-invoice");
+    };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("beforeprint", handleBeforePrint);
+    window.addEventListener("afterprint", handleAfterPrint);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("beforeprint", handleBeforePrint);
+      window.removeEventListener("afterprint", handleAfterPrint);
+      document.body.classList.remove("printing-invoice");
+    };
   }, [invoice, onClose]);
 
-  if (!invoice) return null;
+  if (!invoice || !mounted) return null;
 
   const handlePrint = () => {
+    document.body.classList.add("printing-invoice");
     window.print();
+    setTimeout(() => {
+      document.body.classList.remove("printing-invoice");
+    }, 1500);
   };
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center bg-slate-950/80 p-2 sm:p-4 md:p-6 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static"
+      id="printable-invoice-portal"
+      className="fixed inset-0 z-[100] flex items-start justify-center bg-slate-950/80 p-2 sm:p-4 md:p-6 backdrop-blur-md overflow-y-auto print:p-0 print:m-0 print:bg-white print:static"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
     >
-      <div className="relative w-full max-w-3xl rounded-2xl sm:rounded-3xl border border-slate-700/50 bg-white shadow-2xl overflow-hidden print:border-none print:shadow-none print:max-w-full my-4 sm:my-8">
+      {/* Strict Portrait A4 Print Isolation */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @media print {
+              @page {
+                size: portrait;
+                margin: 8mm;
+              }
+              body.printing-invoice > *:not(#printable-invoice-portal),
+              body:has(#printable-invoice-portal) > *:not(#printable-invoice-portal) {
+                display: none !important;
+              }
+              #printable-invoice-portal {
+                display: block !important;
+                position: static !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                z-index: 9999999 !important;
+              }
+              #printable-invoice-portal .print\\:hidden {
+                display: none !important;
+              }
+            }
+          `,
+        }}
+      />
+      <div className="relative w-full max-w-3xl rounded-2xl sm:rounded-3xl border border-slate-700/50 bg-white shadow-2xl overflow-hidden print:border-none print:shadow-none print:max-w-full my-4 sm:my-8 print:my-0">
 
         
         {/* Sticky Modal Action Topbar (Hidden in Print) */}
@@ -88,7 +144,7 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
           {/* Header Row */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5 border-b-2 border-slate-900 pb-5 sm:pb-6">
             <div className="space-y-2">
-              <JksLogo size="md" />
+              <JksLogo size="md" variant="light" href="" />
               <div className="text-xs text-slate-600 space-y-0.5 leading-relaxed">
                 <p className="font-extrabold text-slate-950 text-sm">JKS Learning Technologies Private Limited</p>
                 <p className="text-slate-600">Tech Park Phase II, Outer Ring Road, Bengaluru, Karnataka - 560103</p>
@@ -242,4 +298,6 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
       </div>
     </div>
   );
+
+  return typeof document !== "undefined" ? createPortal(modalContent, document.body) : null;
 }

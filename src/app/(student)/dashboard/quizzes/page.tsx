@@ -292,7 +292,7 @@ export default function QuizzesPage() {
                   className={`rounded-full px-4 py-2 text-xs font-bold transition-all cursor-pointer shrink-0 ${
                     isSelected
                       ? "bg-emerald-50 border border-emerald-300 text-emerald-700 shadow-xs dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-300"
-                      : "bg-slate-100/80 hover:bg-slate-200/80 text-slate-600 border border-transparent dark:bg-[#151D2E] dark:hover:bg-[#1B2538] dark:text-slate-300"
+                      : "bg-slate-100/80 hover:bg-slate-200/80 text-slate-600 border border-transparent dark:bg-surface-elevated dark:hover:bg-surface-hover dark:text-slate-300"
                   }`}
                 >
                   {cat}
@@ -312,7 +312,7 @@ export default function QuizzesPage() {
         <Reveal variant="stagger" className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {filteredQuizzes.map((quiz) => (
             <TiltCard key={quiz.id} className="h-full">
-              <div className="flex h-full flex-col justify-between overflow-hidden rounded-[24px] border border-white/70 bg-white/85 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+              <div className="flex h-full flex-col justify-between overflow-hidden rounded-[24px] border border-white/70 bg-white/85 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] dark:hover:border-border-strong">
                 {/* 3D Top Header Banner */}
                 <div
                   className={`relative flex h-36 w-full flex-col justify-center px-6 text-white bg-gradient-to-br ${quiz.bannerBg}`}
@@ -388,7 +388,7 @@ export default function QuizzesPage() {
       {/* Interactive Quiz Runner Modal */}
       {activeQuiz && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-slate-950/70 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
             {/* Close Button */}
             <button
               type="button"
@@ -433,7 +433,7 @@ export default function QuizzesPage() {
                           className={`flex items-center justify-between rounded-xl border p-3.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                             isChosen
                               ? "border-[#2563EB] bg-blue-50/80 text-[#2563EB] dark:border-blue-500 dark:bg-blue-950/40 dark:text-blue-300 shadow-xs"
-                              : "border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-[#151D2E] dark:hover:bg-[#1B2538] dark:text-slate-200"
+                              : "border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-surface-elevated dark:hover:bg-surface-hover dark:text-slate-200"
                           }`}
                         >
                           <div className="flex items-center gap-3">
@@ -461,7 +461,7 @@ export default function QuizzesPage() {
                     type="button"
                     disabled={currentQIndex === 0}
                     onClick={() => setCurrentQIndex((prev) => Math.max(0, prev - 1))}
-                    className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     Previous
                   </button>
@@ -511,7 +511,7 @@ export default function QuizzesPage() {
                           : `You scored ${res.percent}%. You need ${activeQuiz.passPercentage}% to pass.`}
                       </p>
 
-                      <div className="mx-auto mt-6 max-w-xs rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#151D2E] p-4">
+                      <div className="mx-auto mt-6 max-w-xs rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-surface-elevated p-4">
                         <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                           <span>Correct Answers</span>
                           <span className="text-[#2563EB] dark:text-blue-400">
@@ -530,7 +530,7 @@ export default function QuizzesPage() {
                         <button
                           type="button"
                           onClick={() => startQuiz(activeQuiz)}
-                          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#1B2538] cursor-pointer"
+                          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover cursor-pointer"
                         >
                           Retake Quiz
                         </button>

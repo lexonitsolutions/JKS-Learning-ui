@@ -10,14 +10,14 @@ export function ProgressBar({
   const pct = Math.max(0, Math.min(100, value));
   return (
     <div
-      className={cn("h-1 w-full rounded-full bg-border", className)}
+      className={cn("h-1 w-full rounded-full bg-surface-active", className)}
       role="progressbar"
       aria-valuenow={pct}
       aria-valuemin={0}
       aria-valuemax={100}
     >
       <div
-        className="h-full rounded-full bg-primary-blue transition-[width] duration-300"
+        className="h-full rounded-full bg-primary-fill transition-[width] duration-300"
         style={{ width: `${pct}%` }}
       />
     </div>

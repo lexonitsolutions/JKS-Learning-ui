@@ -18,6 +18,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { MagneticButton } from "@/components/interactions/magnetic-button";
 import { CountUpStat } from "@/components/marketing/count-up-stat";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
@@ -118,7 +119,7 @@ export function SuccessStoriesHero() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#eef4ff] to-[#dce9fc] dark:from-[#0B1020] dark:via-[#0E1526] dark:to-[#0B1020] pt-12 pb-16 lg:pt-20 lg:pb-20 transition-colors duration-300">
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#eef4ff] to-[#dce9fc] dark:from-background dark:via-surface dark:to-background pt-12 pb-16 lg:pt-20 lg:pb-20 transition-colors duration-300">
       {/* Soft ambient glows */}
       <div
         className="pointer-events-none absolute inset-0"
@@ -206,8 +207,7 @@ export function SuccessStoriesHero() {
                 <a
                   href="#stories-explorer"
                   className={
-                    buttonVariants({ size: "lg" }) +
-                    " rounded-xl bg-primary-blue hover:bg-primary-blue/90 text-white font-semibold shadow-lg shadow-primary-blue/25"
+                    cn(buttonVariants({ size: "lg" }), "rounded-xl bg-primary-fill hover:bg-primary-fill-hover text-white font-semibold shadow-lg shadow-primary-blue/25")
                   }
                 >
                   Explore Alumni Stories <ArrowRight className="h-4 w-4 ml-1.5" />
@@ -218,8 +218,7 @@ export function SuccessStoriesHero() {
                 <Link
                   href="/dashboard/ai-interview"
                   className={
-                    buttonVariants({ variant: "secondary", size: "lg" }) +
-                    " rounded-xl border border-transparent dark:border-slate-700/80 bg-white dark:bg-[#111827] text-slate-900 dark:text-slate-200 font-semibold shadow-md shadow-slate-900/5 hover:bg-white dark:hover:bg-[#151D2E] hover:text-primary-blue dark:hover:text-blue-400 hover:shadow-lg transition-all"
+                    cn(buttonVariants({ variant: "secondary", size: "lg" }), "rounded-xl border border-transparent dark:border-slate-700/80 bg-white dark:bg-surface-secondary text-slate-900 dark:text-slate-200 font-semibold shadow-md shadow-slate-900/5 hover:bg-white dark:hover:bg-surface-elevated hover:text-primary-blue dark:hover:text-blue-400 hover:shadow-lg transition-all")
                   }
                 >
                   Test Your Interview Readiness
@@ -248,7 +247,7 @@ export function SuccessStoriesHero() {
                     rotateY: reducedMotion ? 0 : rotateY,
                     transformStyle: "preserve-3d",
                   }}
-                  className="relative flex flex-col gap-4 rounded-[28px] border border-white/70 dark:border-slate-700/60 bg-white/55 dark:bg-[#111827]/70 p-5 shadow-[0_24px_60px_-16px_rgba(11,31,58,0.18)] dark:shadow-black/60 backdrop-blur-xl"
+                  className="relative flex flex-col gap-4 rounded-[28px] border border-white/70 dark:border-slate-700/60 bg-white/55 dark:bg-surface-secondary/70 p-5 shadow-[0_24px_60px_-16px_rgba(11,31,58,0.18)] dark:shadow-black/60 backdrop-blur-xl"
                 >
                   {/* Card 1 — Placement profile */}
                   <motion.div
@@ -256,10 +255,10 @@ export function SuccessStoriesHero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.55 }}
                     style={{ transform: "translateZ(36px)" }}
-                    className="flex items-center justify-between rounded-2xl bg-white dark:bg-[#151D2E] p-4 shadow-sm ring-1 ring-slate-900/[0.04] dark:ring-slate-700/40 transition-shadow hover:shadow-md"
+                    className="flex items-center justify-between rounded-2xl bg-white dark:bg-surface-elevated p-4 shadow-sm ring-1 ring-slate-900/[0.04] dark:ring-slate-700/40 transition-shadow hover:shadow-md dark:hover:ring-border-strong"
                   >
                     <div className="flex items-center gap-3.5">
-                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-blue to-cyan-500 text-white font-bold text-sm shadow-md">
+                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-fill to-cyan-500 text-white font-bold text-sm shadow-md">
                         PN
                       </div>
                       <div>
@@ -286,10 +285,10 @@ export function SuccessStoriesHero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.7 }}
                     style={{ transform: "translateZ(24px)" }}
-                    className="rounded-2xl bg-white dark:bg-[#151D2E] p-5 pb-6 shadow-sm ring-1 ring-slate-900/[0.04] dark:ring-slate-700/40 transition-shadow hover:shadow-md"
+                    className="rounded-2xl bg-white dark:bg-surface-elevated p-5 pb-6 shadow-sm ring-1 ring-slate-900/[0.04] dark:ring-slate-700/40 transition-shadow hover:shadow-md dark:hover:ring-border-strong"
                   >
                     <div className="flex items-center justify-center gap-2">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-blue dark:bg-primary-blue/80">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-fill dark:bg-primary-blue/80">
                         <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" aria-hidden>
                           <path
                             d="M2.5 6.5L5 9L9.5 3.5"
@@ -360,7 +359,7 @@ export function SuccessStoriesHero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.85 }}
                     style={{ transform: "translateZ(42px)" }}
-                    className="flex items-center justify-between rounded-2xl bg-white dark:bg-[#151D2E] p-4 shadow-sm ring-1 ring-slate-900/[0.04] dark:ring-slate-700/40 transition-shadow hover:shadow-md"
+                    className="flex items-center justify-between rounded-2xl bg-white dark:bg-surface-elevated p-4 shadow-sm ring-1 ring-slate-900/[0.04] dark:ring-slate-700/40 transition-shadow hover:shadow-md dark:hover:ring-border-strong"
                   >
                     <div className="flex items-center gap-3.5">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-blue/10 dark:bg-primary-blue/20 text-primary-blue dark:text-blue-400">
@@ -390,7 +389,7 @@ export function SuccessStoriesHero() {
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-16 lg:mt-20 grid grid-cols-2 lg:grid-cols-4 gap-y-8 rounded-2xl border border-transparent dark:border-slate-800/80 bg-white/90 dark:bg-[#111827]/90 px-6 py-8 shadow-[0_12px_40px_-12px_rgba(11,31,58,0.12)] dark:shadow-black/40 backdrop-blur-md lg:max-w-[920px]"
+          className="relative mt-16 lg:mt-20 grid grid-cols-2 lg:grid-cols-4 gap-y-8 rounded-2xl border border-transparent dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary/90 px-6 py-8 shadow-[0_12px_40px_-12px_rgba(11,31,58,0.12)] dark:shadow-black/40 backdrop-blur-md lg:max-w-[920px]"
         >
           {TRUST_METRICS.map((metric, i) => (
             <div

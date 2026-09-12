@@ -30,7 +30,7 @@ export default function InstructorAnalyticsPage() {
         {/* Top 4 Metric Summaries */}
         <Reveal variant="stagger" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <TiltCard>
-            <div className="flex h-full flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+            <div className="flex h-full flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Avg Course Completion</span>
               <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">81.4%</div>
               <div className="mt-1 flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
@@ -40,15 +40,15 @@ export default function InstructorAnalyticsPage() {
           </TiltCard>
 
           <TiltCard>
-            <div className="flex h-full flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+            <div className="flex h-full flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Total Watch Hours</span>
               <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">14,820 hrs</div>
-              <div className="mt-1 text-xs font-medium text-slate-400 dark:text-slate-500">Across 3 courses</div>
+              <div className="mt-1 text-xs font-medium text-slate-400 dark:text-slate-400">Across 3 courses</div>
             </div>
           </TiltCard>
 
           <TiltCard>
-            <div className="flex h-full flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+            <div className="flex h-full flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">1st-Attempt Pass Rate</span>
               <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">86.8%</div>
               <div className="mt-1 text-xs font-semibold text-blue-600 dark:text-blue-400">High comprehension</div>
@@ -56,7 +56,7 @@ export default function InstructorAnalyticsPage() {
           </TiltCard>
 
           <TiltCard>
-            <div className="flex h-full flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+            <div className="flex h-full flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Student Satisfaction</span>
               <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">98.2%</div>
               <div className="mt-1 text-xs font-medium text-amber-500 dark:text-amber-400 flex items-center gap-1">
@@ -69,13 +69,13 @@ export default function InstructorAnalyticsPage() {
         {/* Charts & Breakdowns */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Module Engagement Rate Chart */}
-          <div className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
+          <div className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">Module-by-Module Completion Rate</h3>
               </div>
-              <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Java Full Stack Track</span>
+              <span className="text-xs text-slate-400 dark:text-slate-400 font-medium">Java Full Stack Track</span>
             </div>
 
             <div className="space-y-3 pt-2">
@@ -103,13 +103,13 @@ export default function InstructorAnalyticsPage() {
           </div>
 
           {/* Assessment Score Distribution */}
-          <div className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
+          <div className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">Grade Score Distribution</h3>
               </div>
-              <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">All 3,520 Students</span>
+              <span className="text-xs text-slate-400 dark:text-slate-400 font-medium">All 3,520 Students</span>
             </div>
 
             <div className="grid grid-cols-4 gap-3 pt-2">
@@ -135,7 +135,7 @@ export default function InstructorAnalyticsPage() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-slate-50 dark:bg-[#151D2E] p-3 text-xs text-slate-600 dark:text-slate-400 leading-relaxed border border-slate-100 dark:border-slate-800">
+            <div className="rounded-xl bg-slate-50 dark:bg-surface-elevated p-3 text-xs text-slate-600 dark:text-slate-400 leading-relaxed border border-slate-100 dark:border-slate-800">
               <span className="font-bold text-slate-900 dark:text-white">Teaching Insight:</span> Students demonstrate highest retention on Microservices Outbox coding assignments due to comprehensive step-by-step video breakdowns.
             </div>
           </div>

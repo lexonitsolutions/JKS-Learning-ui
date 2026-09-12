@@ -118,7 +118,7 @@ export function AboutWhatWeProvide() {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <section className="relative bg-bg-light dark:bg-[#0B1020] text-text-heading dark:text-white py-20 lg:py-32 px-6 lg:px-16 border-t border-border dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
+    <section className="relative bg-bg-light dark:bg-background text-text-heading dark:text-white py-20 lg:py-32 px-6 lg:px-16 border-t border-border dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
       <div className="mx-auto max-w-[1280px] space-y-16">
         {/* Section Header */}
         <div className="space-y-4 max-w-3xl">
@@ -141,7 +141,7 @@ export function AboutWhatWeProvide() {
           {CAPABILITIES.map((panel, idx) => (
             <div
               key={panel.num}
-              className="rounded-[36px] border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#111827] p-8 sm:p-12 lg:p-16 shadow-[0_12px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-300 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-14 items-center"
+              className="rounded-[36px] border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-8 sm:p-12 lg:p-16 shadow-[0_12px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-300 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-14 items-center dark:hover:border-border-strong"
             >
               {/* Left Column: Narrative Content */}
               <div className="space-y-6">
@@ -181,7 +181,7 @@ export function AboutWhatWeProvide() {
                 <div className="pt-2">
                   <Link
                     href={panel.ctaHref}
-                    className="inline-flex items-center gap-2 rounded-xl bg-primary-blue px-6 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl bg-primary-fill px-6 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all cursor-pointer"
                   >
                     <span>{panel.ctaText}</span>
                     <ArrowRight className="h-4 w-4" />

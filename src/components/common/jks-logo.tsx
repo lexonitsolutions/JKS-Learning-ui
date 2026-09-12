@@ -41,6 +41,7 @@ export function JksLogo({
           width={dim.width}
           height={dim.height}
           priority={priority}
+          style={{ width: "auto", height: "auto" }}
           className={`object-contain transition-transform duration-200 hover:opacity-95 ${dim.class} ${imgClassName}`}
         />
       ) : variant === "light" ? (
@@ -50,6 +51,7 @@ export function JksLogo({
           width={dim.width}
           height={dim.height}
           priority={priority}
+          style={{ width: "auto", height: "auto" }}
           className={`object-contain transition-transform duration-200 hover:opacity-95 ${dim.class} ${imgClassName}`}
         />
       ) : (
@@ -60,6 +62,7 @@ export function JksLogo({
             width={dim.width}
             height={dim.height}
             priority={priority}
+            style={{ width: "auto", height: "auto" }}
             className={`object-contain transition-transform duration-200 hover:opacity-95 dark:hidden ${dim.class} ${imgClassName}`}
           />
           <Image
@@ -68,6 +71,7 @@ export function JksLogo({
             width={dim.width}
             height={dim.height}
             priority={priority}
+            style={{ width: "auto", height: "auto" }}
             className={`object-contain transition-transform duration-200 hover:opacity-95 hidden dark:inline-block ${dim.class} ${imgClassName}`}
           />
         </>

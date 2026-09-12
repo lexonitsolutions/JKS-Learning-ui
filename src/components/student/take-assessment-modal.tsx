@@ -79,7 +79,7 @@ export function TakeAssessmentModal({
         initial={{ opacity: 0, scale: 0.96, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96 }}
-        className="relative w-full max-w-lg rounded-[24px] border border-white/70 bg-white/95 p-6 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-[#111827]"
+        className="relative w-full max-w-lg rounded-[24px] border border-white/70 bg-white/95 p-6 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-surface-secondary"
       >
         <button
           type="button"
@@ -107,7 +107,7 @@ export function TakeAssessmentModal({
                 {q.options.map((opt, optIdx) => (
                   <label
                     key={opt}
-                    className="flex items-center gap-2.5 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-[#151D2E] p-3 hover:bg-slate-50 dark:hover:bg-[#1B2538] dark:text-slate-200 cursor-pointer transition-colors"
+                    className="flex items-center gap-2.5 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-surface-elevated p-3 hover:bg-slate-50 dark:hover:bg-surface-hover dark:text-slate-200 cursor-pointer transition-colors"
                   >
                     <input
                       type="radio"
@@ -128,7 +128,7 @@ export function TakeAssessmentModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 cursor-pointer"
+            className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-surface-hover cursor-pointer"
           >
             Cancel
           </button>

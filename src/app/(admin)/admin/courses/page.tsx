@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Plus, BookOpen, Search, Award, Star, TrendingUp, Sparkles, Video, Layers } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { CourseWorkflowModal, type CourseWorkflowData } from "@/components/admin/course-workflow-modal";
-import { useAllCourses, saveCourse, type FullCourse } from "@/lib/data/courses-store";
+import { useAllCourses, saveCourse, saveCourseAsync, type FullCourse } from "@/lib/data/courses-store";
 import type { Track } from "@/lib/data/courses";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
@@ -22,7 +22,7 @@ export default function AdminCoursesPage() {
     return matchesTrack && matchesQuery;
   });
 
-  const handleCreateCourseFromModal = (newCourse: CourseWorkflowData) => {
+  const handleCreateCourseFromModal = async (newCourse: CourseWorkflowData) => {
     const fullCourse: FullCourse = {
       id: `crs-${Date.now()}`,
       slug: newCourse.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, ""),
@@ -34,6 +34,7 @@ export default function AdminCoursesPage() {
       rating: 5.0,
       studentsEnrolled: 0,
       summary: "Comprehensive multi-stage enterprise engineering curriculum.",
+      thumbnail: newCourse.thumbnailUrl || "",
       createdAt: new Date().toISOString(),
       status: "Published",
       sections: newCourse.stages.map((stg) => ({
@@ -61,7 +62,7 @@ export default function AdminCoursesPage() {
         },
       })),
     };
-    saveCourse(fullCourse);
+    await saveCourseAsync(fullCourse);
   };
 
   const totalEnrolled = courses.reduce((acc, c) => acc + (c.studentsEnrolled || 0), 0);
@@ -71,7 +72,7 @@ export default function AdminCoursesPage() {
       <DashboardTopbar
         title="Courses"
         subtitle="Manage curriculum, video lectures, sequential stage assignments, and certificates."
-        userInitials="AD"
+        userInitials="LX"
       />
 
       <div className="flex-1 space-y-5 p-3 sm:p-6 lg:p-8 lg:pt-4">
@@ -80,17 +81,17 @@ export default function AdminCoursesPage() {
           {/* Search and Filters */}
           <div className="flex flex-1 flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
             <div className="relative w-full sm:w-auto sm:min-w-[260px]">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-400" />
               <input
                 type="text"
                 placeholder="Search courses…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-500 outline-none shadow-xs transition-colors focus:border-[#2563EB] dark:focus:border-blue-500"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-400 outline-none shadow-xs transition-colors focus:border-[#2563EB] dark:focus:border-blue-500"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-1 shadow-xs overflow-x-auto">
+            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated p-1 shadow-xs overflow-x-auto">
               {["All", "Full Stack", "Frontend", "SAP"].map((trk) => (
                 <button
                   key={trk}
@@ -113,7 +114,7 @@ export default function AdminCoursesPage() {
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] px-3 py-2 sm:py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3 py-2 sm:py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
               title="Quick Workflow Modal"
             >
               Quick Wizard
@@ -132,7 +133,7 @@ export default function AdminCoursesPage() {
         {/* 3 Metric Cards */}
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <TiltCard>
-            <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
+            <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Active Courses</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400">
@@ -145,7 +146,7 @@ export default function AdminCoursesPage() {
           </TiltCard>
 
           <TiltCard>
-            <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
+            <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Enrolled Students</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
@@ -160,7 +161,7 @@ export default function AdminCoursesPage() {
           </TiltCard>
 
           <TiltCard>
-            <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
+            <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Protected Video Player</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
@@ -174,11 +175,11 @@ export default function AdminCoursesPage() {
         </Reveal>
 
         {/* Main Courses Table */}
-        <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827]/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
+        <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs min-w-[680px]">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
                   <th className="pb-3 pr-4 pl-0">Course Name &amp; Structure</th>
                   <th className="px-4 pb-3">Track</th>
                   <th className="px-4 pb-3">Price</th>
@@ -189,19 +190,45 @@ export default function AdminCoursesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
-                {filteredCourses.map((c) => {
-                  const sectionCount = c.sections?.length || 0;
-                  const totalVids = (c.sections || []).reduce((acc, s) => {
-                    const direct = s.directVideos?.length || 0;
-                    const subVids = s.subsections?.reduce((subAcc, sub) => subAcc + sub.videos.length, 0) || 0;
-                    return acc + direct + subVids;
-                  }, 0);
+                {filteredCourses.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-slate-500 dark:text-slate-400">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <BookOpen className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                        <p className="text-sm font-semibold">No courses found in database</p>
+                        <p className="text-xs text-slate-400">Create a new course using the &ldquo;New Course&rdquo; button above.</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCourses.map((c) => {
+                    const sectionCount = c.sections?.length || 0;
+                    const totalVids = (c.sections || []).reduce((acc, s) => {
+                      const direct = s.directVideos?.length || 0;
+                      const subVids = s.subsections?.reduce((subAcc, sub) => subAcc + sub.videos.length, 0) || 0;
+                      return acc + direct + subVids;
+                    }, 0);
 
-                  return (
-                    <tr key={c.id || c.slug} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                    return (
+                      <tr key={c.id || c.slug} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-hover">
                       <td className="py-4 pr-4 pl-0 whitespace-nowrap">
-                        <div className="font-bold text-slate-900 dark:text-white">{c.title}</div>
-                        <div className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">/{c.slug}</div>
+                        <div className="flex items-center gap-3">
+                          {c.thumbnail ? (
+                            <img
+                              src={c.thumbnail}
+                              alt={c.title}
+                              className="h-10 w-16 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs"
+                            />
+                          ) : (
+                            <div className="flex h-10 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-900 via-slate-900 to-indigo-950 text-[10px] font-extrabold text-white shrink-0 shadow-2xs border border-white/10">
+                              {c.track?.slice(0, 4)}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <div className="font-bold text-slate-900 dark:text-white truncate max-w-xs">{c.title}</div>
+                            <div className="text-[11px] text-slate-400 dark:text-slate-400 font-mono">/{c.slug}</div>
+                          </div>
+                        </div>
                       </td>
                       <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
                         <span className="inline-flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
@@ -245,14 +272,14 @@ export default function AdminCoursesPage() {
                       <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
                         <Link
                           href={`/dashboard/my-courses/${c.slug}`}
-                          className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] px-3 py-1.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-xs hover:bg-[#EFF6FF] dark:hover:bg-slate-800 transition-colors inline-block"
+                          className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3 py-1.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-xs hover:bg-[#EFF6FF] dark:hover:bg-surface-hover transition-colors inline-block"
                         >
                           View Learning UI
                         </Link>
                       </td>
                     </tr>
                   );
-                })}
+                }))}
               </tbody>
             </table>
           </div>

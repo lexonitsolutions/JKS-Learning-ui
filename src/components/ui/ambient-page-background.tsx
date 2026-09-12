@@ -5,7 +5,7 @@
 export function AmbientPageBackground() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#F8FAFF] via-[#FBFCFF] to-[#F1F5FD] dark:from-[#0B1020] dark:via-[#0E1526] dark:to-[#0B1020]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#F8FAFF] via-[#FBFCFF] to-[#F1F5FD] dark:from-background dark:via-surface dark:to-background" />
       <div
         className="absolute inset-0 opacity-40 dark:opacity-25"
         style={{

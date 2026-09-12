@@ -36,6 +36,7 @@ import { InvoiceModal } from "@/components/common/invoice-modal";
 
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { fetchDbCourses } from "@/lib/data/courses";
 
 const AVAILABLE_COURSES = [
   {
@@ -43,13 +44,13 @@ const AVAILABLE_COURSES = [
     slug: "java-full-stack-mastery",
     title: "Java Full Stack Developer Mastery",
     subtitle: "Spring Boot 3, Distributed Microservices, React 19, Kafka & AWS Cloud",
-    duration: "24 Weeks (Live Cohort)",
+    duration: "16 Weeks (Live Cohort)",
     nextBatch: "Starts Sept 5, 2026",
     seatsLeft: 4,
-    price: 45000,
-    discount: 5000,
+    price: 29999,
+    discount: 3000,
     popular: true,
-    curriculum: ["Core Java 21 & OOP", "Spring Boot 3 Microservices", "React 19 & Next.js", "Docker, Kafka, AWS"],
+    curriculum: ["Core Java 21 & Concurrency", "Spring Boot 3 Microservices", "React 19 & Next.js", "Docker, Kafka, AWS"],
     batches: [
       { id: "b1", label: "Weekday Morning", time: "7:30 AM - 9:30 AM IST", days: "Mon - Fri" },
       { id: "b2", label: "Weekend Intensive", time: "10:00 AM - 2:00 PM IST", days: "Sat - Sun" },
@@ -59,15 +60,15 @@ const AVAILABLE_COURSES = [
   {
     id: "modern-frontend",
     slug: "modern-frontend-engineering",
-    title: "Modern Frontend Engineering",
-    subtitle: "React 19, Next.js 15, TypeScript, Web Performance & Micro-Frontends",
-    duration: "16 Weeks (Live Cohort)",
+    title: "Modern Frontend Engineering (React 19 & Next.js)",
+    subtitle: "React 19, Next.js App Router, Tailwind CSS, TypeScript & Three.js 3D WebGL",
+    duration: "10 Weeks (Live Cohort)",
     nextBatch: "Starts Sept 8, 2026",
     seatsLeft: 6,
-    price: 35000,
-    discount: 3500,
+    price: 24999,
+    discount: 2500,
     popular: false,
-    curriculum: ["React 19 & Hooks", "Next.js 15 App Router", "Tailwind & Framer Motion", "Performance Profiling"],
+    curriculum: ["React 19 & Hooks", "Next.js App Router", "Tailwind & Three.js", "Performance Profiling"],
     batches: [
       { id: "b1", label: "Weekday Morning", time: "8:00 AM - 10:00 AM IST", days: "Mon - Fri" },
       { id: "b2", label: "Weekend Intensive", time: "10:00 AM - 2:00 PM IST", days: "Sat - Sun" },
@@ -75,16 +76,16 @@ const AVAILABLE_COURSES = [
   },
   {
     id: "sap-s4hana",
-    slug: "sap-s4hana-enterprise",
+    slug: "sap-s4hana-enterprise-systems",
     title: "SAP S/4HANA Enterprise Systems",
-    subtitle: "SAP ABAP Cloud, CDS Views, Fiori Elements & S/4HANA Integrations",
-    duration: "20 Weeks (Live Sandboxes)",
+    subtitle: "SAP S/4HANA FI/CO, MM, SD configuration, ABAP Cloud on BTP & Clean Core",
+    duration: "12 Weeks (Live Sandboxes)",
     nextBatch: "Starts Sept 12, 2026",
     seatsLeft: 3,
-    price: 65000,
-    discount: 7500,
+    price: 34999,
+    discount: 3500,
     popular: false,
-    curriculum: ["ABAP Cloud Syntax", "Core Data Services (CDS)", "Fiori & OData v4", "BADI & Enhancement Framework"],
+    curriculum: ["S/4HANA Core Architecture", "Procure-to-Pay (MM) & FI/CO", "ABAP Cloud (RAP)", "BTP Clean Core Extensibility"],
     batches: [
       { id: "b1", label: "Weekend Intensive", time: "9:00 AM - 1:00 PM IST", days: "Sat - Sun" },
       { id: "b2", label: "Weekday Evening", time: "7:30 PM - 9:30 PM IST", days: "Mon - Fri" },
@@ -94,14 +95,14 @@ const AVAILABLE_COURSES = [
     id: "dotnet-microservices",
     slug: "dotnet-full-stack-developer",
     title: ".NET 9 Enterprise Microservices & Cloud",
-    subtitle: "C# 13, ASP.NET Core, Clean Architecture, Entity Framework & Azure",
-    duration: "20 Weeks (Live Cohort)",
+    subtitle: "C# 13, ASP.NET Core Web API, Entity Framework Core 9, Azure & Blazor WebAssembly",
+    duration: "14 Weeks (Live Cohort)",
     nextBatch: "Starts Sept 10, 2026",
     seatsLeft: 5,
-    price: 45000,
-    discount: 5000,
+    price: 27999,
+    discount: 3000,
     popular: false,
-    curriculum: ["C# 13 & .NET 9 Core", "Clean Architecture", "Microservices & MediatR", "Azure Container Apps"],
+    curriculum: ["C# 13 & .NET 9 Core", "ASP.NET Core Web APIs", "Entity Framework Core 9", "Azure Container Apps & CI/CD"],
     batches: [
       { id: "b1", label: "Weekday Morning", time: "7:30 AM - 9:30 AM IST", days: "Mon - Fri" },
       { id: "b2", label: "Weekend Intensive", time: "10:00 AM - 2:00 PM IST", days: "Sat - Sun" },
@@ -132,8 +133,25 @@ function CourseRegistrationContent() {
   // Form State
   const initialCourse =
     AVAILABLE_COURSES.find((c) => c.slug === preSelectedSlug) || AVAILABLE_COURSES[0];
+  const [coursesList, setCoursesList] = useState(AVAILABLE_COURSES);
   const [selectedCourse, setSelectedCourse] = useState(initialCourse);
   const [selectedBatch, setSelectedBatch] = useState(initialCourse.batches[0]);
+
+  React.useEffect(() => {
+    fetchDbCourses().then((dbCourses) => {
+      if (Array.isArray(dbCourses)) {
+        const liveSlugs = new Set(dbCourses.map((c) => c.slug));
+        const filtered = AVAILABLE_COURSES.filter((c) => liveSlugs.has(c.slug));
+        if (filtered.length > 0) {
+          setCoursesList(filtered);
+          if (!liveSlugs.has(selectedCourse.slug)) {
+            setSelectedCourse(filtered[0]);
+            setSelectedBatch(filtered[0].batches[0]);
+          }
+        }
+      }
+    });
+  }, []);
 
   const [studentInfo, setStudentInfo] = useState({
     name: "",
@@ -231,7 +249,7 @@ function CourseRegistrationContent() {
 
 
   return (
-    <div className="min-h-screen bg-bg-light dark:bg-[#0B1020] text-text-heading dark:text-white py-12 px-4 sm:px-6 lg:px-16 font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-bg-light dark:bg-background text-text-heading dark:text-white py-12 px-4 sm:px-6 lg:px-16 font-sans transition-colors duration-300">
       <div className="mx-auto max-w-5xl space-y-8">
         {/* Page Hero Header */}
         <div className="text-center space-y-2 max-w-2xl mx-auto">
@@ -257,10 +275,10 @@ function CourseRegistrationContent() {
               key={s.num}
               className={`relative rounded-2xl border p-4 transition-all ${
                 step === s.num
-                  ? "border-primary-blue bg-white dark:bg-[#111827] text-primary-blue dark:text-blue-400 shadow-lg shadow-primary-blue/10 ring-2 ring-primary-blue/20 font-bold"
+                  ? "border-primary-blue bg-white dark:bg-surface-secondary text-primary-blue dark:text-blue-400 shadow-lg shadow-primary-blue/10 ring-2 ring-primary-blue/20 font-bold"
                   : step > s.num
                   ? "border-emerald-500/40 dark:border-emerald-800/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300"
-                  : "border-border dark:border-slate-800 bg-white/70 dark:bg-[#111827]/70 text-text-body/60 dark:text-slate-400"
+                  : "border-border dark:border-slate-800 bg-white/70 dark:bg-surface-secondary/70 text-text-body/60 dark:text-slate-400"
               }`}
             >
               <div className="flex items-center justify-center gap-2">
@@ -269,7 +287,7 @@ function CourseRegistrationContent() {
                     step > s.num
                       ? "bg-emerald-600 text-white"
                       : step === s.num
-                      ? "bg-primary-blue text-white"
+                      ? "bg-primary-fill text-white"
                       : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}
                 >
@@ -286,7 +304,7 @@ function CourseRegistrationContent() {
         {/* STEP 1: SELECT CAREER TRACK & LIVE BATCH                  */}
         {/* ======================================================== */}
         {step === 1 && (
-          <div className="space-y-6 rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
+          <div className="space-y-6 rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border dark:border-slate-800/80 pb-4">
               <div>
                 <h2 className="text-xl font-bold text-text-heading dark:text-white">1. Select Your Engineering Track</h2>
@@ -297,7 +315,7 @@ function CourseRegistrationContent() {
 
             {/* Course Grid */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {AVAILABLE_COURSES.map((course) => {
+              {coursesList.map((course) => {
                 const isSelected = selectedCourse.id === course.id;
 
                 return (
@@ -310,11 +328,11 @@ function CourseRegistrationContent() {
                     className={`group relative rounded-2xl border p-5 transition-all cursor-pointer space-y-3.5 ${
                       isSelected
                         ? "border-primary-blue dark:border-blue-500/80 bg-blue-50/50 dark:bg-blue-950/20 shadow-md ring-2 ring-primary-blue/20 dark:ring-blue-500/30"
-                        : "border-border dark:border-slate-800 bg-white dark:bg-[#151D2E] hover:border-primary-blue/40 dark:hover:border-blue-500/50 hover:shadow-sm"
+                        : "border-border dark:border-slate-800 bg-white dark:bg-surface-elevated hover:border-primary-blue/40 dark:hover:border-blue-500/50 hover:shadow-sm"
                     }`}
                   >
                     {course.popular && (
-                      <span className="absolute top-4 right-4 rounded-full bg-primary-blue px-3 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider shadow-xs">
+                      <span className="absolute top-4 right-4 rounded-full bg-primary-fill px-3 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider shadow-xs">
                         ★ Most Enrolled
                       </span>
                     )}
@@ -364,7 +382,7 @@ function CourseRegistrationContent() {
             </div>
 
             {/* Batch Schedule Selector */}
-            <div className="rounded-2xl border border-blue-100 dark:border-slate-800 bg-blue-50/30 dark:bg-[#151D2E]/60 p-5 space-y-3">
+            <div className="rounded-2xl border border-blue-100 dark:border-slate-800 bg-blue-50/30 dark:bg-surface-elevated/60 p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-text-heading dark:text-white flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-primary-blue dark:text-blue-400" /> Select Preferred Batch Timing for {selectedCourse.title}:
@@ -385,8 +403,8 @@ function CourseRegistrationContent() {
                       onClick={() => setSelectedBatch(batch)}
                       className={`rounded-xl border p-3.5 text-left transition-all cursor-pointer ${
                         isSelected
-                          ? "border-primary-blue dark:border-blue-500 bg-white dark:bg-[#111827] text-primary-blue dark:text-blue-400 font-bold shadow-sm ring-1 ring-primary-blue/30"
-                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] text-text-body dark:text-slate-300 hover:border-primary-blue/40"
+                          ? "border-primary-blue dark:border-blue-500 bg-white dark:bg-surface-secondary text-primary-blue dark:text-blue-400 font-bold shadow-sm ring-1 ring-primary-blue/30"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated text-text-body dark:text-slate-300 hover:border-primary-blue/40"
                       }`}
                     >
                       <div className="text-xs font-bold text-primary-blue dark:text-blue-400">{batch.label}</div>
@@ -421,7 +439,7 @@ function CourseRegistrationContent() {
                   </Link>
                   <Link
                     href={`/register?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
-                    className="flex-1 sm:flex-none text-center rounded-xl border border-amber-300 dark:border-amber-800 bg-white dark:bg-[#111827] px-4 py-2 text-xs font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-[#151D2E] transition-colors"
+                    className="flex-1 sm:flex-none text-center rounded-xl border border-amber-300 dark:border-amber-800 bg-white dark:bg-surface-secondary px-4 py-2 text-xs font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-surface-elevated transition-colors"
                   >
                     Register
                   </Link>
@@ -433,7 +451,7 @@ function CourseRegistrationContent() {
               <button
                 type="button"
                 onClick={handleStep1Continue}
-                className="flex items-center justify-center gap-2 rounded-xl bg-primary-blue px-6 sm:px-7 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 rounded-xl bg-primary-fill px-6 sm:px-7 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all cursor-pointer"
               >
                 <span>Continue</span>
                 <ArrowRight className="h-4 w-4 shrink-0" />
@@ -446,7 +464,7 @@ function CourseRegistrationContent() {
         {/* STEP 2: STUDENT DETAILS FORM                              */}
         {/* ======================================================== */}
         {step === 2 && (
-          <div className="space-y-6 rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
+          <div className="space-y-6 rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border dark:border-slate-800/80 pb-4">
               <div>
                 <h2 className="text-xl font-bold text-text-heading dark:text-white">2. Student Academic &amp; Contact Dossier</h2>
@@ -469,13 +487,13 @@ function CourseRegistrationContent() {
                 <div className="flex items-center justify-center gap-3 pt-2">
                   <Link
                     href={`/login?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
-                    className="rounded-xl bg-primary-blue px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-600 transition-colors"
+                    className="rounded-xl bg-primary-fill px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-600 transition-colors"
                   >
                     Log In Now →
                   </Link>
                   <Link
                     href={`/register?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
-                    className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2538] transition-colors"
+                    className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-surface-elevated px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors"
                   >
                     Create Account
                   </Link>
@@ -491,7 +509,7 @@ function CourseRegistrationContent() {
                     placeholder="e.g. Ramesh Varma"
                     value={studentInfo.name}
                     onChange={(e) => setStudentInfo({ ...studentInfo, name: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-input-bg focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
                   />
                 </div>
 
@@ -503,7 +521,7 @@ function CourseRegistrationContent() {
                     placeholder="+91 98765 43210"
                     value={studentInfo.phone}
                     onChange={(e) => setStudentInfo({ ...studentInfo, phone: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 font-mono"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-input-bg focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 font-mono"
                   />
                 </div>
 
@@ -515,7 +533,7 @@ function CourseRegistrationContent() {
                     placeholder="ramesh.varma@gmail.com"
                     value={studentInfo.email}
                     onChange={(e) => setStudentInfo({ ...studentInfo, email: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-input-bg focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
                   />
                   {isUserAuthenticated && (
                     <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 px-3 py-1.5 rounded-lg">
@@ -535,7 +553,7 @@ function CourseRegistrationContent() {
                     placeholder="e.g. Hyderabad, Telangana"
                     value={studentInfo.city}
                     onChange={(e) => setStudentInfo({ ...studentInfo, city: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-input-bg focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
                   />
                 </div>
 
@@ -544,12 +562,12 @@ function CourseRegistrationContent() {
                   <select
                     value={studentInfo.qualification}
                     onChange={(e) => setStudentInfo({ ...studentInfo, qualification: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-input-bg focus:border-primary-blue"
                   >
-                    <option className="dark:bg-[#111827]">B.Tech / B.E (CSE / IT / ECE)</option>
-                    <option className="dark:bg-[#111827]">MCA / M.Tech</option>
-                    <option className="dark:bg-[#111827]">BCA / B.Sc Computer Science</option>
-                    <option className="dark:bg-[#111827]">Non-IT Graduate / Diploma</option>
+                    <option className="dark:bg-surface-secondary">B.Tech / B.E (CSE / IT / ECE)</option>
+                    <option className="dark:bg-surface-secondary">MCA / M.Tech</option>
+                    <option className="dark:bg-surface-secondary">BCA / B.Sc Computer Science</option>
+                    <option className="dark:bg-surface-secondary">Non-IT Graduate / Diploma</option>
                   </select>
                 </div>
 
@@ -558,12 +576,12 @@ function CourseRegistrationContent() {
                   <select
                     value={studentInfo.experience}
                     onChange={(e) => setStudentInfo({ ...studentInfo, experience: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-[#121A2A] focus:border-primary-blue"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-input-bg focus:border-primary-blue"
                   >
-                    <option className="dark:bg-[#111827]">Fresher (2025/2026 Batch Graduate)</option>
-                    <option className="dark:bg-[#111827]">0-2 Years IT Experience</option>
-                    <option className="dark:bg-[#111827]">2-5 Years IT Experience (Career Upgrade)</option>
-                    <option className="dark:bg-[#111827]">Non-IT Working Professional (Career Switch)</option>
+                    <option className="dark:bg-surface-secondary">Fresher (2025/2026 Batch Graduate)</option>
+                    <option className="dark:bg-surface-secondary">0-2 Years IT Experience</option>
+                    <option className="dark:bg-surface-secondary">2-5 Years IT Experience (Career Upgrade)</option>
+                    <option className="dark:bg-surface-secondary">Non-IT Working Professional (Career Switch)</option>
                   </select>
                 </div>
               </div>
@@ -574,7 +592,7 @@ function CourseRegistrationContent() {
                 type="button"
                 onClick={() => setStep(1)}
                 aria-label="Go back to courses"
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-3.5 sm:px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2538] transition-all cursor-pointer"
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3.5 sm:px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover transition-all cursor-pointer"
               >
                 <ArrowLeft className="h-4 w-4 shrink-0" />
                 <span className="hidden sm:inline">Back</span>
@@ -584,7 +602,7 @@ function CourseRegistrationContent() {
                 type="button"
                 disabled={!isUserAuthenticated || !studentInfo.name || !studentInfo.phone || !studentInfo.email}
                 onClick={() => setStep(3)}
-                className="flex items-center justify-center gap-2 rounded-xl bg-primary-blue px-5 sm:px-7 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all disabled:opacity-40 cursor-pointer"
+                className="flex items-center justify-center gap-2 rounded-xl bg-primary-fill px-5 sm:px-7 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all disabled:opacity-40 cursor-pointer"
               >
                 <span>Continue to Billing</span>
                 <ArrowRight className="h-4 w-4 shrink-0" />
@@ -600,7 +618,7 @@ function CourseRegistrationContent() {
         {step === 3 && (
           <form
             onSubmit={handleSubmitEnrollment}
-            className="space-y-6 rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40"
+            className="space-y-6 rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40"
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border dark:border-slate-800/80 pb-4">
               <div>
@@ -627,7 +645,7 @@ function CourseRegistrationContent() {
             </div>
 
             {/* Coupon Code Input */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E]/80 p-4 space-y-2">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated/80 p-4 space-y-2">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Tag className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" /> Apply Scholarship / Admission Coupon:
               </label>
@@ -637,12 +655,12 @@ function CourseRegistrationContent() {
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
                   placeholder="Enter coupon (e.g. ADMISSION10)"
-                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] p-2.5 text-xs text-text-heading dark:text-white uppercase font-mono outline-none focus:border-primary-blue"
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-text-heading dark:text-white uppercase font-mono outline-none focus:border-primary-blue"
                 />
                 <button
                   type="button"
                   onClick={handleApplyCoupon}
-                  className="rounded-xl bg-primary-blue px-4 py-2 text-xs font-bold text-white hover:bg-blue-600 cursor-pointer"
+                  className="rounded-xl bg-primary-fill px-4 py-2 text-xs font-bold text-white hover:bg-blue-600 cursor-pointer"
                 >
                   Apply
                 </button>
@@ -668,7 +686,7 @@ function CourseRegistrationContent() {
                     className={`rounded-xl border p-3.5 text-center transition-all cursor-pointer ${
                       paymentMode === mode
                         ? "border-primary-blue dark:border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-primary-blue dark:text-blue-400 font-bold shadow-xs ring-1 ring-primary-blue/30"
-                        : "border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] text-text-body dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600"
+                        : "border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated text-text-body dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600"
                     }`}
                   >
                     <CreditCard className="h-4 w-4 mx-auto mb-1 text-primary-blue dark:text-blue-400" />
@@ -679,7 +697,7 @@ function CourseRegistrationContent() {
             </div>
 
             {/* Full 18% GST Invoice Computation Breakdown */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-[#151D2E] p-5 space-y-2.5 text-xs">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-surface-elevated p-5 space-y-2.5 text-xs">
               <div className="font-bold text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-800 pb-2">
                 Official Tax Invoice Itemization
               </div>
@@ -716,7 +734,7 @@ function CourseRegistrationContent() {
                 type="button"
                 onClick={() => setStep(2)}
                 aria-label="Go back to previous step"
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-3.5 sm:px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2538] transition-all cursor-pointer"
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3.5 sm:px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover transition-all cursor-pointer"
               >
                 <ArrowLeft className="h-4 w-4 shrink-0" />
                 <span className="hidden sm:inline">Back</span>
@@ -725,7 +743,7 @@ function CourseRegistrationContent() {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="flex items-center justify-center gap-2 rounded-xl bg-primary-blue px-5 sm:px-8 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all cursor-pointer disabled:opacity-50"
+                className="flex items-center justify-center gap-2 rounded-xl bg-primary-fill px-5 sm:px-8 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all cursor-pointer disabled:opacity-50"
               >
                 <span>{isProcessing ? "Processing..." : "Complete Enrollment"}</span>
                 <ArrowRight className="h-4 w-4 shrink-0" />
@@ -739,7 +757,7 @@ function CourseRegistrationContent() {
         {/* STEP 4: ENROLLMENT CONFIRMATION & INVOICE RECEIPT         */}
         {/* ======================================================== */}
         {step === 4 && generatedInvoice && (
-          <div className="space-y-6 rounded-[28px] border border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-[#111827] p-8 sm:p-12 text-center shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
+          <div className="space-y-6 rounded-[28px] border border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-surface-secondary p-8 sm:p-12 text-center shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
             <div className="flex h-20 w-20 mx-auto items-center justify-center rounded-3xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shadow-md ring-2 ring-emerald-200 dark:ring-emerald-800">
               <CheckCircle2 className="h-10 w-10" />
             </div>
@@ -758,14 +776,14 @@ function CourseRegistrationContent() {
               <button
                 type="button"
                 onClick={() => setShowInvoiceModal(true)}
-                className="flex items-center gap-2 rounded-xl bg-primary-blue px-6 py-3.5 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all cursor-pointer"
+                className="flex items-center gap-2 rounded-xl bg-primary-fill px-6 py-3.5 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all cursor-pointer"
               >
                 <Printer className="h-4 w-4" /> View &amp; Print Official Tax Invoice PDF
               </button>
 
               <Link
                 href="/dashboard/my-courses"
-                className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#151D2E] px-6 py-3.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1B2538] transition-all"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated px-6 py-3.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-surface-hover transition-all"
               >
                 Launch Student Dashboard <ArrowRight className="h-4 w-4" />
               </Link>
@@ -776,11 +794,11 @@ function CourseRegistrationContent() {
         {/* Auth Gate Modal for Unauthenticated Users */}
         {showAuthGateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="relative w-full max-w-md rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#111827] p-6 sm:p-8 text-center shadow-2xl space-y-5">
+            <div className="relative w-full max-w-md rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-secondary p-6 sm:p-8 text-center shadow-2xl space-y-5">
               <button
                 type="button"
                 onClick={() => setShowAuthGateModal(false)}
-                className="absolute top-4 right-4 rounded-full p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                className="absolute top-4 right-4 rounded-full p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
@@ -797,7 +815,7 @@ function CourseRegistrationContent() {
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-50 dark:bg-[#151D2E] border border-slate-100 dark:border-slate-800 p-3 text-left space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
+              <div className="rounded-xl bg-slate-50 dark:bg-surface-elevated border border-slate-100 dark:border-slate-800 p-3 text-left space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Automatic LMS portal access provisioning</span>
@@ -815,14 +833,14 @@ function CourseRegistrationContent() {
               <div className="flex flex-col gap-2.5 pt-1">
                 <Link
                   href={`/login?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-primary-blue py-3 px-4 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-primary-fill py-3 px-4 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all"
                 >
                   <span>Log In to Continue</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   href={`/register?from=${encodeURIComponent(`/register-course?course=${selectedCourse.slug}`)}`}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] py-3 px-4 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2538] transition-colors"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated py-3 px-4 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors"
                 >
                   Create Free Student Account
                 </Link>
@@ -848,7 +866,7 @@ export default function CourseRegistrationPage() {
       fallback={
         <div className="min-h-screen bg-bg-light flex items-center justify-center text-text-heading">
           <div className="flex items-center gap-2 text-xs font-semibold text-primary-blue">
-            <span className="h-2 w-2 rounded-full bg-primary-blue animate-ping" />
+            <span className="h-2 w-2 rounded-full bg-primary-fill animate-ping" />
             Loading Official Registration Portal...
           </div>
         </div>

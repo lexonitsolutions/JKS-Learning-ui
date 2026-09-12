@@ -22,7 +22,7 @@ export default function PaymentsPage() {
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <TiltCard>
-            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Investment</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-[#2563EB] dark:bg-blue-950/40 dark:text-blue-400">
@@ -35,7 +35,7 @@ export default function PaymentsPage() {
           </TiltCard>
 
           <TiltCard>
-            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+            <div className="rounded-[20px] border border-white/70 bg-white/75 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Billing Support</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400">
@@ -48,7 +48,7 @@ export default function PaymentsPage() {
           </TiltCard>
         </Reveal>
 
-        <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+        <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs min-w-[600px]">
               <thead>
@@ -63,7 +63,7 @@ export default function PaymentsPage() {
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                 {invoices.map((inv) => (
-                  <tr key={inv.id} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-[#151D2E]/60">
+                  <tr key={inv.id} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-elevated/60">
                     <td className="py-4 pr-4 pl-0 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
                       {inv.invoiceNumber}
                       <div className="text-[10px] text-slate-400 font-normal">

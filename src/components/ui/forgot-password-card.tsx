@@ -133,7 +133,7 @@ export function ForgotPasswordCard() {
   return (
     <motion.div
       {...cardMotion}
-      className="flex w-full max-w-md flex-col overflow-hidden rounded-3xl bg-white dark:bg-[#111827] shadow-2xl border border-slate-100 dark:border-slate-800/80 p-6 sm:p-8"
+      className="flex w-full max-w-md flex-col overflow-hidden rounded-3xl bg-white dark:bg-surface-secondary shadow-2xl border border-slate-100 dark:border-slate-800/80 p-6 sm:p-8"
     >
       {/* Top Header */}
       <div className="mb-6 flex items-center justify-between">
@@ -168,7 +168,7 @@ export function ForgotPasswordCard() {
                   type="email"
                   autoComplete="email"
                   placeholder="name@example.com"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] px-3.5 py-2.5 pl-10 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 transition-all"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 pl-10 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 transition-all"
                   {...registerEmail("email")}
                 />
                 <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
@@ -236,7 +236,7 @@ export function ForgotPasswordCard() {
                 id="reset-code"
                 type="text"
                 placeholder="Enter 6-digit code"
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 tracking-widest font-mono transition-all"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 tracking-widest font-mono transition-all"
                 {...registerReset("code")}
               />
               {resetErrors.code && (
@@ -251,14 +251,14 @@ export function ForgotPasswordCard() {
                 <label htmlFor="reset-new-password" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   New Password <span className="text-blue-500">*</span>
                 </label>
-                <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">Min. 10 chars</span>
+                <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400">Min. 10 chars</span>
               </div>
               <div className="relative">
                 <input
                   id="reset-new-password"
                   type={passwordVisible ? "text" : "password"}
                   placeholder="Enter new password"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] px-3.5 py-2.5 pr-10 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 transition-all"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 pr-10 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 transition-all"
                   {...registerReset("newPassword")}
                 />
                 <button
@@ -286,7 +286,7 @@ export function ForgotPasswordCard() {
                   id="reset-confirm-password"
                   type={confirmVisible ? "text" : "password"}
                   placeholder="Confirm new password"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] px-3.5 py-2.5 pr-10 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 transition-all"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 pr-10 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 transition-all"
                   {...registerReset("confirmPassword")}
                 />
                 <button

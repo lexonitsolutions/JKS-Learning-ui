@@ -27,6 +27,7 @@ import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import { fetchAdminStudents, type AdminStudentRecord } from "@/lib/data/students-api";
+import { getExactStudentCourseProgress } from "@/lib/data/enrollments-api";
 
 export function getStudentProgressRating(progress: number) {
   if (progress >= 85) {
@@ -97,40 +98,38 @@ export default function AdminStudentsPage() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const loadStudents = useCallback(async (showToastNotification = false) => {
-    if (showToastNotification) setIsRefreshing(true);
-    else setIsLoading(true);
+  const loadStudents = useCallback(async (isUserRefresh = false) => {
+    if (isUserRefresh) {
+      setIsRefreshing(true);
+    }
 
     try {
       const data = await fetchAdminStudents();
       const enriched = data.map((student) => {
         const updatedEnrollments = student.enrollments.map((e) => {
-          let prog = e.progress || 0;
-          if (typeof window !== "undefined") {
-            try {
-              const localKey = `jks_prog_${e.courseSlug}_${student.email.toLowerCase().trim()}`;
-              const raw = localStorage.getItem(localKey);
-              if (raw) {
-                const parsed = JSON.parse(raw);
-                const count = (parsed.completedVideoIds?.length || 0) + (parsed.completedAssignmentIds?.length || 0);
-                if (count > 0) {
-                  prog = Math.max(prog, Math.min(100, Math.round((count / 9) * 100)));
-                }
-              }
-            } catch {}
-          }
-          return { ...e, progress: prog };
+          const dbProg = typeof e.progress === "number" ? e.progress : 0;
+          const dbVids = typeof e.completedVideosCount === "number" ? e.completedVideosCount : 0;
+          const exact = getExactStudentCourseProgress(e.courseSlug, student.email);
+          const maxProg = Math.max(dbProg, exact.completedMilestones > 0 ? exact.overallPercent : 0);
+          const maxVids = Math.max(dbVids, exact.completedVideoIds.length);
+          return {
+            ...e,
+            progress: maxProg,
+            completedVideosCount: maxVids,
+          };
         });
         return { ...student, enrollments: updatedEnrollments };
       });
 
       setStudents(enriched);
-      if (showToastNotification) {
+      if (isUserRefresh) {
         showToast(`Roster updated in real time. ${data.length} registered students loaded.`);
       }
     } catch (err) {
       console.error("Failed to load students:", err);
-      showToast("Error updating students roster from API.");
+      if (isUserRefresh) {
+        showToast("Error updating students roster from API.");
+      }
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -242,17 +241,15 @@ export default function AdminStudentsPage() {
   return (
     <>
       <DashboardTopbar
-        title="Students Management"
-        subtitle={`Live database roster: ${totalRegistered} registered ${
-          totalRegistered === 1 ? "student" : "students"
-        } across all enterprise tracks.`}
-        userInitials="AD"
+        title="Students Directory"
+        subtitle={`${students.length} registered students across all enterprise curriculum tracks.`}
+        userInitials="LX"
       />
 
       <div className="flex-1 space-y-5 p-3 sm:p-6 lg:p-8 lg:pt-4">
         {/* Toast Alert */}
         {toastMessage && (
-          <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-blue-200 dark:border-blue-800 bg-white/95 dark:bg-[#1B2538]/95 px-5 py-3.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-2xl backdrop-blur-md animate-in fade-in">
+          <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-blue-200 dark:border-blue-800 bg-white/95 dark:bg-surface-hover/95 px-5 py-3.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-2xl backdrop-blur-md animate-in fade-in">
             <CheckCircle2 className="h-4 w-4 text-[#2563EB] dark:text-blue-400 shrink-0" />
             <span>{toastMessage}</span>
           </div>
@@ -264,7 +261,7 @@ export default function AdminStudentsPage() {
             {[1, 2, 3].map((n) => (
               <div
                 key={n}
-                className="rounded-[20px] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-[#111827] p-5 shadow-sm animate-pulse space-y-3"
+                className="rounded-[20px] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-surface-secondary p-5 shadow-sm animate-pulse space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div className="h-3.5 w-28 rounded bg-slate-200 dark:bg-slate-800" />
@@ -278,7 +275,7 @@ export default function AdminStudentsPage() {
         ) : (
           <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <TiltCard>
-              <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
+              <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Registered</span>
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400">
@@ -293,7 +290,7 @@ export default function AdminStudentsPage() {
             </TiltCard>
 
             <TiltCard>
-              <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
+              <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Enrolled Learners</span>
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
@@ -310,7 +307,7 @@ export default function AdminStudentsPage() {
             </TiltCard>
 
             <TiltCard>
-              <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
+              <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">No Courses Yet</span>
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">
@@ -328,18 +325,18 @@ export default function AdminStudentsPage() {
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div className="flex flex-1 flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
             <div className="relative w-full sm:w-auto sm:min-w-[280px]">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-400" />
               <input
                 type="text"
                 placeholder="Search by name, email, phone, or course…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-500 outline-none shadow-xs transition-colors focus:border-[#2563EB] dark:focus:border-blue-500"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-400 outline-none shadow-xs transition-colors focus:border-[#2563EB] dark:focus:border-blue-500"
               />
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] p-1 shadow-xs overflow-x-auto">
+            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated p-1 shadow-xs overflow-x-auto">
               {[
                 { id: "All", label: `All (${totalRegistered})` },
                 { id: "Enrolled", label: `Enrolled (${enrolledCount})` },
@@ -366,7 +363,7 @@ export default function AdminStudentsPage() {
               type="button"
               onClick={() => loadStudents(true)}
               disabled={isRefreshing}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer disabled:opacity-50"
               title="Refresh student roster from database"
             >
               <RefreshCw
@@ -378,7 +375,7 @@ export default function AdminStudentsPage() {
             <button
               type="button"
               onClick={handleExportCSV}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
             >
               <Download className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" />
               <span>Export CSV</span>
@@ -387,11 +384,11 @@ export default function AdminStudentsPage() {
         </div>
 
         {/* Students Table with Skeleton (Skull UI) Loading Animation */}
-        <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827]/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
+        <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs min-w-[760px]">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
                   <th className="pb-3 pr-4 pl-0">Student Profile</th>
                   <th className="px-4 pb-3">Student Rating</th>
                   <th className="px-4 pb-3">Contact Details</th>
@@ -422,7 +419,7 @@ export default function AdminStudentsPage() {
                       <td className="px-4 py-4">
                         <div className="space-y-1">
                           <div className="h-3.5 w-20 rounded bg-slate-200 dark:bg-slate-800" />
-                          <div className="h-2.5 w-14 rounded bg-slate-100 dark:bg-slate-850" />
+                          <div className="h-2.5 w-14 rounded bg-slate-100 dark:bg-surface-hover" />
                         </div>
                       </td>
                       <td className="pr-0 py-4 pl-4 text-right">
@@ -432,11 +429,11 @@ export default function AdminStudentsPage() {
                   ))
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-slate-400 dark:text-slate-500 font-medium">
+                    <td colSpan={5} className="py-12 text-center text-slate-400 dark:text-slate-400 font-medium">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <Users className="h-8 w-8 text-slate-300 dark:text-slate-600" />
                         <span className="font-bold text-slate-700 dark:text-slate-200">No students found</span>
-                        <span className="text-xs text-slate-400 dark:text-slate-500">
+                        <span className="text-xs text-slate-400 dark:text-slate-400">
                           {searchQuery
                             ? "No registered students match your search criteria."
                             : "No registered student records exist in the database."}
@@ -459,7 +456,7 @@ export default function AdminStudentsPage() {
                       <tr
                         key={s.id}
                         onClick={() => router.push(`/admin/students/${s.id}`)}
-                        className="group transition-colors hover:bg-blue-50/50 dark:hover:bg-slate-800/40 cursor-pointer"
+                        className="group transition-colors hover:bg-blue-50/50 dark:hover:bg-surface-hover cursor-pointer"
                         title="Click to view full student profile & academic dossier"
                       >
                         {/* Student Name & Email */}
@@ -477,7 +474,7 @@ export default function AdminStudentsPage() {
                                   </span>
                                 )}
                               </div>
-                              <div className="text-[11px] font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                              <div className="text-[11px] font-medium text-slate-400 dark:text-slate-400 flex items-center gap-1">
                                 <span>{s.email}</span>
                               </div>
                             </div>
@@ -501,7 +498,7 @@ export default function AdminStudentsPage() {
                                     <Star className="h-4 w-4 text-amber-500 fill-amber-500 shrink-0" />
                                     <span className="text-[13px] font-black text-slate-900 dark:text-white">
                                       {rating.score}
-                                      <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">/5</span>
+                                      <span className="text-[11px] font-bold text-slate-400 dark:text-slate-400">/5</span>
                                     </span>
                                   </div>
 
@@ -513,16 +510,16 @@ export default function AdminStudentsPage() {
                                   </span>
 
                                   {/* Enrolled Courses Count */}
-                                  <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                                  <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400">
                                     ({s.enrollments.length} {s.enrollments.length === 1 ? "Course" : "Courses"})
                                   </span>
                                 </div>
                               );
                             })()
                           ) : (
-                            <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
+                            <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-400">
                               <Star className="h-4 w-4 text-slate-300 dark:text-slate-600 shrink-0" />
-                              <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                              <span className="text-xs font-medium text-slate-400 dark:text-slate-400">
                                 —/5 <span className="text-slate-300 dark:text-slate-600">•</span> Unrated
                               </span>
                             </div>
@@ -532,7 +529,7 @@ export default function AdminStudentsPage() {
                         {/* Phone & Contact */}
                         <td className="px-4 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300 font-medium">
                           <div className="flex items-center gap-1.5">
-                            <Phone className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                            <Phone className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400 shrink-0" />
                             <span>
                               {s.phone && s.phone !== "N/A" ? s.phone : "No phone provided"}
                             </span>
@@ -542,7 +539,7 @@ export default function AdminStudentsPage() {
                         {/* Registration Date */}
                         <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                            <Calendar className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400 shrink-0" />
                             <span>
                               {new Date(s.registeredAt).toLocaleDateString("en-IN", {
                                 day: "numeric",
@@ -551,7 +548,7 @@ export default function AdminStudentsPage() {
                               })}
                             </span>
                           </div>
-                          <div className="text-[10px] text-slate-400 dark:text-slate-500 pl-5">
+                          <div className="text-[10px] text-slate-400 dark:text-slate-400 pl-5">
                             {new Date(s.registeredAt).toLocaleTimeString("en-IN", {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -578,7 +575,7 @@ export default function AdminStudentsPage() {
                               onClick={() =>
                                 showToast(`Direct messaging initiated with ${s.email}...`)
                               }
-                              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
+                              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white transition-colors"
                               title="Message Student"
                             >
                               <Mail className="h-3.5 w-3.5" />

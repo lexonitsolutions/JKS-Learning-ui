@@ -16,6 +16,8 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { useAllCourses } from "@/lib/data/courses-store";
 
 /**
  * 3D Interactive Isometric Workstation Animation
@@ -194,7 +196,7 @@ function VelocityPerformanceChart() {
       {/* Floating Hover Tooltip */}
       {hoveredPoint && (
         <div
-          className="absolute z-20 pointer-events-none -translate-x-1/2 -translate-y-full rounded-xl bg-slate-900 dark:bg-[#1B2538] px-3 py-1.5 text-xs text-white shadow-xl backdrop-blur-md border border-slate-800 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150"
+          className="absolute z-20 pointer-events-none -translate-x-1/2 -translate-y-full rounded-xl bg-slate-900 dark:bg-surface-hover px-3 py-1.5 text-xs text-white shadow-xl backdrop-blur-md border border-slate-800 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150"
           style={{
             left: `${(hoveredPoint.x / 600) * 100}%`,
             top: `${(hoveredPoint.y / 220) * 100 - 10}%`,
@@ -210,13 +212,17 @@ function VelocityPerformanceChart() {
 
 export default function InstructorDashboardPage() {
   const [selectedSemester] = useState("This Semester");
+  const session = useMockSession();
+  const lecturerName = session?.name || "Lecturer";
+  const lecturerInitials = session?.initials || "LE";
+  const liveCourses = useAllCourses();
 
   return (
     <>
       <DashboardTopbar
         title="Lecturer Command Center"
         subtitle="Manage curriculum velocity, student assessments, live doubt sessions, and academic excellence."
-        userInitials="RK"
+        userInitials={lecturerInitials}
       />
 
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-[1360px] mx-auto w-full">
@@ -233,7 +239,7 @@ export default function InstructorDashboardPage() {
                 </span>
 
                 <h1 className="text-2xl sm:text-4xl lg:text-[40px] font-extrabold tracking-tight text-white leading-tight">
-                  Dr. Rohit Kapoor 👋
+                  {lecturerName} 👋
                 </h1>
 
                 <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-normal pt-1">
@@ -268,7 +274,7 @@ export default function InstructorDashboardPage() {
         <Reveal variant="stagger" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {/* Card 1: Enrolled Students */}
           <TiltCard>
-            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 dark:hover:border-border-strong">
               <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#2F54EB] dark:text-blue-400">
                 <Users className="h-6 w-6" />
               </div>
@@ -286,17 +292,17 @@ export default function InstructorDashboardPage() {
 
           {/* Card 2: Active Courses */}
           <TiltCard>
-            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 dark:hover:border-border-strong">
               <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#2F54EB] dark:text-blue-400">
                 <BookOpen className="h-6 w-6" />
               </div>
               <div className="space-y-0.5 min-w-0">
                 <div className="text-2xl sm:text-[28px] font-black text-slate-900 dark:text-white leading-tight">
-                  3
+                  {liveCourses.length}
                 </div>
                 <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Active Courses</div>
-                <div className="text-xs font-medium text-slate-400 dark:text-slate-500 pt-0.5 truncate">
-                  2 Published • 1 In Studio
+                <div className="text-xs font-medium text-slate-400 dark:text-slate-400 pt-0.5 truncate">
+                  {liveCourses.length > 0 ? `${liveCourses.length} Published in DB` : "0 Courses in DB"}
                 </div>
               </div>
             </div>
@@ -304,7 +310,7 @@ export default function InstructorDashboardPage() {
 
           {/* Card 3: Pending Reviews */}
           <TiltCard>
-            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 dark:hover:border-border-strong">
               <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
                 <ClipboardList className="h-6 w-6" />
               </div>
@@ -323,7 +329,7 @@ export default function InstructorDashboardPage() {
 
           {/* Card 4: Faculty Rating */}
           <TiltCard>
-            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+            <div className="flex h-full items-center gap-4 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 dark:hover:border-border-strong">
               <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400">
                 <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
               </div>
@@ -332,7 +338,7 @@ export default function InstructorDashboardPage() {
                   4.9 / 5.0
                 </div>
                 <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Faculty Rating</div>
-                <div className="text-xs font-medium text-slate-400 dark:text-slate-500 pt-0.5 truncate">
+                <div className="text-xs font-medium text-slate-400 dark:text-slate-400 pt-0.5 truncate">
                   98.6% Student Satisfaction
                 </div>
               </div>
@@ -345,7 +351,7 @@ export default function InstructorDashboardPage() {
         {/* ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           {/* Left: Curriculum Velocity & Performance Card (60%) */}
-          <div className="lg:col-span-7 flex flex-col justify-between rounded-[26px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 sm:p-6 shadow-[0_10px_35px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+          <div className="lg:col-span-7 flex flex-col justify-between rounded-[26px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary p-5 sm:p-6 shadow-[0_10px_35px_rgb(20,50,100,0.04)] backdrop-blur-xl">
             <div className="flex items-center justify-between pb-2">
               <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
                 Curriculum Velocity & Performance
@@ -354,10 +360,10 @@ export default function InstructorDashboardPage() {
               <div className="relative">
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors"
                 >
                   <span>{selectedSemester}</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" />
                 </button>
               </div>
             </div>
@@ -366,7 +372,7 @@ export default function InstructorDashboardPage() {
           </div>
 
           {/* Right: Live Doubt Clearing Card (40%) */}
-          <div className="lg:col-span-5 flex flex-col justify-between rounded-[26px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-5 sm:p-6 shadow-[0_10px_35px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-6">
+          <div className="lg:col-span-5 flex flex-col justify-between rounded-[26px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary p-5 sm:p-6 shadow-[0_10px_35px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">Live Doubt Clearing</h3>
               <Link
@@ -379,7 +385,7 @@ export default function InstructorDashboardPage() {
 
             <div className="space-y-2.5 flex-1 flex flex-col justify-center">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">Next Session</span>
+                <span className="text-xs font-semibold text-slate-400 dark:text-slate-400">Next Session</span>
                 <span className="rounded-md bg-blue-50 dark:bg-blue-950/50 px-2.5 py-0.5 text-[10px] font-black text-[#2563EB] dark:text-blue-400 tracking-wider uppercase">
                   SCHEDULED
                 </span>
@@ -396,7 +402,7 @@ export default function InstructorDashboardPage() {
 
             <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
               <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
-                <Users className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                <Users className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" />
                 <span>42 Students RSVP&apos;d</span>
               </span>
 

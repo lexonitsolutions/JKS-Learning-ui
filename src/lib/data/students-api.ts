@@ -38,6 +38,9 @@ export interface StudentCourseDetail {
   progress: number;
   completedVideosCount?: number;
   completedVideoIds?: string[];
+  completedAssignmentIds?: string[];
+  totalMilestones?: number;
+  completedMilestones?: number;
   totalVideos?: number;
   totalModules?: number;
   enrolledAt: string;
@@ -59,6 +62,20 @@ export interface StudentInvoiceItem {
   createdAt: string;
 }
 
+export interface StudentAssessmentItem {
+  id: string;
+  title: string;
+  type: string;
+  courseTitle: string;
+  score: number;
+  maxScore: number;
+  status: string;
+  submittedAt: string;
+  feedback: string;
+  aiAuthenticityScore: number;
+  answers?: any;
+}
+
 export interface AdminStudentDetail {
   id: string;
   name: string;
@@ -71,6 +88,8 @@ export interface AdminStudentDetail {
   enrollments: StudentCourseDetail[];
   totalEnrolled: number;
   invoices: StudentInvoiceItem[];
+  assessments?: StudentAssessmentItem[];
+  submissions?: StudentAssessmentItem[];
 }
 
 export async function fetchAdminStudents(): Promise<AdminStudentRecord[]> {
@@ -84,7 +103,7 @@ export async function fetchAdminStudents(): Promise<AdminStudentRecord[]> {
       if (Array.isArray(data)) return data;
     }
   } catch (err) {
-    console.error("Failed to fetch admin students from backend:", err);
+    console.warn("Backend /admin/students unavailable, returning fallback:", (err as Error)?.message || err);
   }
   return [];
 }
@@ -99,7 +118,7 @@ export async function fetchStudentDetail(idOrSlug: string): Promise<AdminStudent
       return await res.json();
     }
   } catch (err) {
-    console.error(`Failed to fetch student detail for ${idOrSlug}:`, err);
+    console.warn(`Backend /admin/students/${idOrSlug} unavailable:`, (err as Error)?.message || err);
   }
   return null;
 }

@@ -56,7 +56,7 @@ export function AiMockHero() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#F8FAFF] via-[#FFFFFF] to-[#F1F5FD] dark:from-[#0B1020] dark:via-[#0E1526] dark:to-[#0B1020] pt-12 pb-16 lg:pt-16 lg:pb-24 transition-colors duration-300">
+    <section className="relative overflow-hidden bg-gradient-to-b from-[#F8FAFF] via-[#FFFFFF] to-[#F1F5FD] dark:from-background dark:via-surface dark:to-background pt-12 pb-16 lg:pt-16 lg:pb-24 transition-colors duration-300">
       {/* Subtle Studio Ambient Background Light & Perspective Floor Grid */}
       <div
         className="pointer-events-none absolute inset-0 opacity-40 dark:opacity-20"
@@ -102,7 +102,7 @@ export function AiMockHero() {
               Practice interviews <br className="hidden sm:inline" />
               an{" "}
               <span className="text-primary-blue dark:text-blue-400">AI actually</span>{" "}
-              <span className="bg-gradient-to-r from-primary-blue to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary-fill to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                 evaluates.
               </span>
             </motion.h1>
@@ -128,7 +128,7 @@ export function AiMockHero() {
               <MagneticButton>
                 <Link
                   href="/dashboard/ai-interview"
-                  className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-primary-blue px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-600 hover:shadow-blue-500/35 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-primary-fill px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-600 hover:shadow-blue-500/35 cursor-pointer"
                 >
                   <span>Start AI Mock Interview</span>
                   <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20">
@@ -139,7 +139,7 @@ export function AiMockHero() {
 
               <Link
                 href="/courses"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white/90 dark:bg-[#111827]/90 px-6 py-3.5 text-sm font-semibold text-slate-800 dark:text-slate-200 shadow-xs backdrop-blur-sm transition-all hover:bg-slate-50 dark:hover:bg-[#151D2E] hover:border-slate-300 dark:hover:border-slate-600"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white/90 dark:bg-surface-secondary/90 px-6 py-3.5 text-sm font-semibold text-slate-800 dark:text-slate-200 shadow-xs backdrop-blur-sm transition-all hover:bg-slate-50 dark:hover:bg-surface-elevated hover:border-slate-300 dark:hover:border-slate-600"
               >
                 <span>Browse Career Tracks</span>
                 <ChevronRight className="h-4 w-4 text-slate-500 dark:text-slate-400" />
@@ -158,7 +158,7 @@ export function AiMockHero() {
                 return (
                   <div
                     key={pill.title}
-                    className="flex items-center gap-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-[#111827]/80 p-2.5 shadow-xs backdrop-blur-sm"
+                    className="flex items-center gap-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-surface-secondary/80 p-2.5 shadow-xs backdrop-blur-sm"
                   >
                     <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-primary-blue dark:text-blue-400">
                       <Icon className="h-3.5 w-3.5" />
@@ -256,7 +256,7 @@ export function AiMockHero() {
               animate={{ opacity: 1, scale: 1, x: 0 }}
               transition={{ duration: 0.7, delay: 0.3 }}
               style={reducedMotion ? undefined : { z: 60 }}
-              className="absolute -top-2 left-0 sm:left-4 z-20 w-48 sm:w-60 rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/85 dark:bg-[#111827]/90 p-3.5 sm:p-4 shadow-xl shadow-blue-500/10 dark:shadow-black/40 backdrop-blur-xl"
+              className="absolute -top-2 left-0 sm:left-4 z-20 w-48 sm:w-60 rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/85 dark:bg-surface-secondary/90 p-3.5 sm:p-4 shadow-xl shadow-blue-500/10 dark:shadow-black/40 backdrop-blur-xl"
             >
               <div className="text-xs font-bold text-slate-800 dark:text-white">Real-time Voice Analysis</div>
 
@@ -266,7 +266,7 @@ export function AiMockHero() {
                   (h, i) => (
                     <motion.div
                       key={i}
-                      className="w-1 rounded-full bg-gradient-to-t from-primary-blue to-cyan-400"
+                      className="w-1 rounded-full bg-gradient-to-t from-primary-fill to-cyan-400"
                       animate={{
                         height: [
                           h * 0.4,
@@ -301,7 +301,7 @@ export function AiMockHero() {
               animate={{ opacity: 1, scale: 1, x: 0 }}
               transition={{ duration: 0.7, delay: 0.4 }}
               style={reducedMotion ? undefined : { z: 50 }}
-              className="absolute top-2 right-0 sm:right-2 z-20 w-56 sm:w-68 rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/85 dark:bg-[#111827]/90 p-3.5 sm:p-4 shadow-xl shadow-blue-500/10 dark:shadow-black/40 backdrop-blur-xl"
+              className="absolute top-2 right-0 sm:right-2 z-20 w-56 sm:w-68 rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/85 dark:bg-surface-secondary/90 p-3.5 sm:p-4 shadow-xl shadow-blue-500/10 dark:shadow-black/40 backdrop-blur-xl"
             >
               <div className="text-xs font-bold text-slate-800 dark:text-white">Competency Score</div>
 
@@ -332,23 +332,23 @@ export function AiMockHero() {
                 {/* Legend List */}
                 <div className="flex flex-col gap-1 text-[10px] text-slate-600 dark:text-slate-300 font-medium">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary-blue" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary-fill" />
                     <span>Communication</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary-blue" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary-fill" />
                     <span>Problem Solving</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary-blue" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary-fill" />
                     <span>Leadership</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary-blue" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary-fill" />
                     <span>Domain Knowledge</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary-blue" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary-fill" />
                     <span>Adaptability</span>
                   </div>
                 </div>
@@ -361,7 +361,7 @@ export function AiMockHero() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.5 }}
               style={reducedMotion ? undefined : { z: 70 }}
-              className="absolute bottom-2 right-2 sm:right-6 z-20 w-48 sm:w-60 rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/85 dark:bg-[#111827]/90 p-3.5 sm:p-4 shadow-xl shadow-blue-500/10 dark:shadow-black/40 backdrop-blur-xl"
+              className="absolute bottom-2 right-2 sm:right-6 z-20 w-48 sm:w-60 rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/85 dark:bg-surface-secondary/90 p-3.5 sm:p-4 shadow-xl shadow-blue-500/10 dark:shadow-black/40 backdrop-blur-xl"
             >
               <div className="text-xs font-bold text-slate-800 dark:text-white">Improvement Roadmap</div>
 
@@ -408,7 +408,7 @@ export function AiMockHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.6 }}
-          className="mt-14 sm:mt-18 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827]/90 px-6 py-5 shadow-sm backdrop-blur-md"
+          className="mt-14 sm:mt-18 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary/90 px-6 py-5 shadow-sm backdrop-blur-md"
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">

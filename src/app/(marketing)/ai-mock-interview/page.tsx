@@ -21,6 +21,7 @@ import {
   Cpu,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { MagneticButton } from "@/components/interactions/magnetic-button";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
@@ -169,14 +170,14 @@ export default function AiMockInterviewPage() {
           {HOW_IT_WORKS.map((item) => (
             <TiltCard
               key={item.step}
-              className="relative flex flex-col justify-between rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-7 shadow-xs hover:border-primary-blue/40 dark:hover:border-blue-500/40 hover:shadow-md transition-all"
+              className="relative flex flex-col justify-between rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-7 shadow-xs hover:border-primary-blue/40 dark:hover:border-blue-500/40 hover:shadow-md transition-all"
             >
               <div>
                 <div className="flex items-center justify-between">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-blue/10 dark:bg-blue-950/60 text-primary-blue dark:text-blue-400">
                     <item.icon className="h-6 w-6" />
                   </div>
-                  <span className="text-2xl font-bold font-mono text-primary-blue/25 dark:text-blue-400/30">{item.step}</span>
+                  <span className="text-2xl font-bold font-mono text-primary-blue/25 dark:text-blue-400/70">{item.step}</span>
                 </div>
                 <h3 className="text-h3 mt-5 text-text-heading font-semibold">{item.title}</h3>
                 <p className="mt-2.5 text-sm text-text-body leading-relaxed">{item.body}</p>
@@ -190,7 +191,7 @@ export default function AiMockInterviewPage() {
       </section>
 
       {/* 4. INTERVIEW TYPES: 3D INTERACTIVE TILT CARDS */}
-      <section className="relative bg-white dark:bg-[#0E1526] py-24 border-y border-border dark:border-slate-800/80">
+      <section className="relative bg-white dark:bg-surface py-24 border-y border-border dark:border-slate-800/80">
         <div className="mx-auto max-w-[1280px] px-6 lg:px-16">
           <Reveal className="mb-14 max-w-xl">
             <span className="text-label text-primary-blue">Specialized Tracks</span>
@@ -206,10 +207,10 @@ export default function AiMockInterviewPage() {
             {INTERVIEW_TYPES.map((type) => (
               <TiltCard
                 key={type.label}
-                className="group flex flex-col justify-between rounded-2xl border border-border dark:border-slate-800/80 bg-bg-light dark:bg-[#111827] p-6 transition-all hover:bg-white dark:hover:bg-[#151D2E] hover:border-primary-blue/40 dark:hover:border-blue-500/40 hover:shadow-lg"
+                className="group flex flex-col justify-between rounded-2xl border border-border dark:border-slate-800/80 bg-bg-light dark:bg-surface-secondary p-6 transition-all hover:bg-white dark:hover:bg-surface-elevated hover:border-primary-blue/40 dark:hover:border-blue-500/40 hover:shadow-lg"
               >
                 <div>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-blue/10 dark:bg-blue-950/60 text-primary-blue dark:text-blue-400 group-hover:bg-primary-blue group-hover:text-white transition-colors">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-blue/10 dark:bg-blue-950/60 text-primary-blue dark:text-blue-400 group-hover:bg-primary-fill group-hover:text-white transition-colors">
                     <type.icon className="h-5 w-5" />
                   </div>
                   <h3 className="mt-4 text-base font-bold text-text-heading">{type.label}</h3>
@@ -219,7 +220,7 @@ export default function AiMockInterviewPage() {
                     {type.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-md bg-white dark:bg-[#151D2E] border border-border/80 dark:border-slate-700/80 px-2 py-0.5 text-[10px] font-medium text-text-body dark:text-slate-300"
+                        className="rounded-md bg-white dark:bg-surface-elevated border border-border/80 dark:border-slate-700/80 px-2 py-0.5 text-[10px] font-medium text-text-body dark:text-slate-300"
                       >
                         {tag}
                       </span>
@@ -249,7 +250,7 @@ export default function AiMockInterviewPage() {
       </section>
 
       {/* 6. COMPARISON MATRIX: TRADITIONAL VS JKS AI */}
-      <section className="py-20 lg:py-24 bg-bg-light dark:bg-[#0B1020]">
+      <section className="py-20 lg:py-24 bg-bg-light dark:bg-background">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-16">
           <Reveal className="mb-10 sm:mb-14 text-center">
             <span className="text-label text-primary-blue">Comparative Advantage</span>
@@ -263,7 +264,7 @@ export default function AiMockInterviewPage() {
             {COMPARISON_ITEMS.map((item, idx) => (
               <div
                 key={idx}
-                className="rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-5 shadow-xs space-y-3.5"
+                className="rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-5 shadow-xs space-y-3.5"
               >
                 <div className="font-extrabold text-slate-900 dark:text-white text-sm border-b border-border/60 dark:border-slate-800 pb-2">
                   {item.feature}
@@ -291,11 +292,11 @@ export default function AiMockInterviewPage() {
           </div>
 
           {/* Desktop Table (>= md) */}
-          <Reveal variant="scale-in" className="hidden md:block overflow-hidden rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] shadow-sm">
+          <Reveal variant="scale-in" className="hidden md:block overflow-hidden rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-border dark:border-slate-800 bg-bg-light/80 dark:bg-[#151D2E] text-xs font-semibold text-text-heading uppercase tracking-wider">
+                  <tr className="border-b border-border dark:border-slate-800 bg-bg-light/80 dark:bg-surface-elevated text-xs font-semibold text-text-heading uppercase tracking-wider">
                     <th className="p-5">Evaluation Feature</th>
                     <th className="p-5 text-text-body">Traditional Mock Interviews</th>
                     <th className="p-5 text-primary-blue dark:text-blue-400 bg-primary-blue/[0.04] dark:bg-blue-950/20">JKS AI Mock Interview</th>
@@ -303,7 +304,7 @@ export default function AiMockInterviewPage() {
                 </thead>
                 <tbody className="divide-y divide-border/60 dark:divide-slate-800">
                   {COMPARISON_ITEMS.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-bg-light/40 dark:hover:bg-[#151D2E]/40 transition-colors">
+                    <tr key={idx} className="hover:bg-bg-light/40 dark:hover:bg-surface-elevated/40 transition-colors">
                       <td className="p-5 font-semibold text-text-heading">{item.feature}</td>
                       <td className="p-5 text-text-body">
                         <div className="flex items-center gap-2">
@@ -327,7 +328,7 @@ export default function AiMockInterviewPage() {
       </section>
 
       {/* 7. STATS STRIP */}
-      <section className="border-b border-border dark:border-slate-800/80 bg-white dark:bg-[#0E1526]">
+      <section className="border-b border-border dark:border-slate-800/80 bg-white dark:bg-surface">
         <Reveal
           variant="stagger"
           className="mx-auto grid max-w-[1280px] grid-cols-2 gap-8 px-6 py-16 lg:grid-cols-4 lg:px-16"
@@ -344,7 +345,7 @@ export default function AiMockInterviewPage() {
       </section>
 
       {/* 8. INTERACTIVE FAQ ACCORDION */}
-      <section className="py-24 bg-white dark:bg-[#0B1020]">
+      <section className="py-24 bg-white dark:bg-background">
         <div className="mx-auto max-w-[1280px] px-6 lg:px-16">
           <Reveal className="mb-12 text-center">
             <span className="text-label text-primary-blue">Frequently Asked Questions</span>
@@ -360,7 +361,7 @@ export default function AiMockInterviewPage() {
       </section>
 
       {/* 9. FINAL HIGH-CONVERTING CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-primary-dark via-primary-blue to-primary-dark py-20 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-r from-primary-dark via-primary-fill to-primary-dark py-20 text-white">
         <div
           className="pointer-events-none absolute inset-0 opacity-20"
           style={{
@@ -383,8 +384,7 @@ export default function AiMockInterviewPage() {
             <Link
               href="/dashboard/ai-interview"
               className={
-                buttonVariants({ variant: "secondary", size: "lg" }) +
-                " border-white bg-white text-primary-blue hover:bg-white/90 hover:text-primary-blue font-bold shadow-xl shadow-black/20"
+                cn(buttonVariants({ variant: "secondary", size: "lg" }), "border-white bg-white text-[#1E5EFF] hover:bg-blue-50 hover:text-[#1E5EFF] font-bold shadow-xl shadow-black/20")
               }
             >
               Start Your Mock Interview <ArrowRight className="h-4 w-4 ml-1" />

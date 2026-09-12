@@ -30,7 +30,7 @@ const COLUMNS = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-slate-800 dark:border-slate-800/80 bg-[#0B1020] dark:bg-[#070C18] text-slate-300">
+    <footer className="border-t border-slate-800 dark:border-slate-800/80 bg-[#0B1020] dark:bg-background text-slate-300">
       <div className="mx-auto max-w-[1280px] px-6 py-16 lg:px-16">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
           <div className="col-span-2">

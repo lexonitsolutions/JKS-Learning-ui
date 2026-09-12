@@ -28,18 +28,11 @@ export const MOCK_USERS: MockUser[] = [
     role: "student",
   },
   {
-    email: "admin@jkslearning.dev",
+    email: "lexonitservices@gmail.com",
     password: "admin123",
-    name: "Ava Desai",
-    initials: "AD",
+    name: "Lexon Administrator",
+    initials: "LX",
     role: "admin",
-  },
-  {
-    email: "instructor@jkslearning.dev",
-    password: "instructor123",
-    name: "Dr. Rohit Kapoor",
-    initials: "RK",
-    role: "instructor",
   },
 ];
 

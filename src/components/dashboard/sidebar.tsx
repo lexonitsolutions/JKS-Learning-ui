@@ -40,7 +40,7 @@ const STUDENT_MAIN_NAV: NavItem[] = [
   { href: "/dashboard/my-courses", label: "My Courses", icon: BookOpen },
   { href: "/dashboard/resume-builder", label: "Resume Maker", icon: FileText, badge: "New" },
   { href: "/dashboard/assessments", label: "Assessments", icon: ClipboardCheck },
-  { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit, badge: "AI" },
+  { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit, badge: "Soon" },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
 ];
 
@@ -146,15 +146,15 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
   const clerkName = clerkUser?.fullName || [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") || clerkUser?.username;
 
   const userEmail = isAdmin
-    ? (session?.email ? session.email : "admin@jkslearning.dev")
+    ? (session?.email && session.email !== "admin@jkslearning.dev" ? session.email : "lexonitservices@gmail.com")
     : isInstructor
-    ? (session?.email ?? "instructor@jkslearning.dev")
+    ? (session?.email ?? "")
     : (session?.email ?? clerkEmail ?? "");
 
   const userName = isAdmin
-    ? (session?.name && session.name !== "John Doe" ? session.name : "Ava Desai")
+    ? (session?.name && session.name !== "John Doe" && session.name !== "Ava Desai" ? session.name : "Lexon Administrator")
     : isInstructor
-    ? (session?.name ?? "Dr. Rohit Kapoor")
+    ? (session?.name ?? "Lecturer")
     : (session?.name ?? clerkName ?? "Student");
 
   const userAvatarUrl =
@@ -187,18 +187,18 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
           <div key={item.href} className="space-y-1">
             <Link
               href={item.href}
-              className={`group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium transition-all duration-200 ${
+              className={`group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                 isCoursesActive && pathname === coursesBaseHref
-                  ? "bg-blue-600 text-white font-semibold shadow-sm shadow-blue-500/25"
-                  : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+                  ? "bg-nav-item-active-bg text-nav-item-active-text font-semibold shadow-sm shadow-blue-500/25"
+                  : "text-nav-item hover:bg-nav-item-hover-bg hover:text-nav-item-hover-text"
               }`}
             >
               <div className="flex items-center gap-3">
                 <item.icon
                   className={`h-4 w-4 shrink-0 transition-colors ${
                     isCoursesActive && pathname === coursesBaseHref
-                      ? "text-white"
-                      : "text-slate-400 group-hover:text-slate-700"
+                      ? "text-nav-item-active-text"
+                      : "text-nav-item-icon group-hover:text-nav-item-hover-text"
                   }`}
                 />
                 <span className="truncate">{item.label}</span>
@@ -206,13 +206,13 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
             </Link>
 
             {/* Sub-menu under Courses */}
-            <div className="pl-6 pr-1 py-0.5 space-y-1 border-l-2 border-slate-100 ml-4">
+            <div className="pl-6 pr-1 py-0.5 space-y-1 border-l-2 border-border-subtle ml-4">
               <Link
                 href={coursesBaseHref}
-                className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-colors ${
+                className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                   pathname === coursesBaseHref
-                    ? "bg-blue-50 text-[#2563EB] font-bold"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    ? "bg-nav-sub-active-bg text-nav-sub-active-text font-bold"
+                    : "text-nav-item hover:bg-nav-item-hover-bg hover:text-nav-item-hover-text"
                 }`}
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
@@ -221,17 +221,17 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
               <Link
                 href={`${coursesBaseHref}/new`}
-                className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-colors ${
+                className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                   pathname === `${coursesBaseHref}/new`
-                    ? "bg-blue-50 text-[#2563EB] font-bold"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    ? "bg-nav-sub-active-bg text-nav-sub-active-text font-bold"
+                    : "text-nav-item hover:bg-nav-item-hover-bg hover:text-nav-item-hover-text"
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
                   <span>Upload / New</span>
                 </div>
-                <span className="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold text-white leading-none">
+                <span className="rounded bg-nav-item-active-bg px-1.5 py-0.5 text-[10px] font-bold text-nav-item-active-text leading-none">
                   +
                 </span>
               </Link>
@@ -250,18 +250,18 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                 isCollapsed
                   ? "h-10 w-10 justify-center rounded-xl"
                   : "w-full gap-3 px-3.5 py-2.5 rounded-xl text-[13.5px]"
-              } text-slate-400 hover:bg-slate-50/50`}
+              } text-text-muted hover:bg-nav-item-hover-bg/50`}
               title={`${item.label} (Feature Coming Soon — Disabled)`}
             >
               <item.icon
-                className={`shrink-0 text-slate-400 ${
+                className={`shrink-0 text-text-muted ${
                   isCollapsed ? "h-[19px] w-[19px]" : "h-4 w-4"
                 }`}
               />
               {!isCollapsed && (
                 <>
-                  <span className="truncate flex-1 font-medium text-slate-400">{item.label}</span>
-                  <span className="rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 px-1.5 py-0.5 text-[10px] font-bold leading-none">
+                  <span className="truncate flex-1 font-medium text-text-muted">{item.label}</span>
+                  <span className="rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-400/15 dark:text-amber-200 dark:border-amber-400/30 px-1.5 py-0.5 text-[10px] font-bold leading-none">
                     Soon
                   </span>
                 </>
@@ -286,7 +286,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
         <div key={item.href} className="relative group flex items-center justify-center">
           <Link
             href={item.href}
-            className={`relative flex items-center transition-all duration-200 ${
+            className={`relative flex items-center transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
               isCollapsed
                 ? "h-10 w-10 justify-center rounded-xl"
                 : "w-full gap-3 px-3.5 py-2.5 rounded-xl text-[13.5px]"
@@ -294,8 +294,8 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
               active
                 ? isCollapsed
                   ? "bg-gradient-to-tr from-[#2563EB] to-[#3B82F6] text-white shadow-md shadow-blue-500/30 scale-105"
-                  : "bg-blue-600 text-white font-semibold shadow-sm shadow-blue-500/25"
-                : "text-slate-600 hover:bg-slate-100/90 hover:text-slate-900 active:scale-95"
+                  : "bg-nav-item-active-bg text-nav-item-active-text font-semibold shadow-sm shadow-blue-500/25"
+                : "text-nav-item hover:bg-nav-item-hover-bg hover:text-nav-item-hover-text active:bg-surface-active active:scale-95"
             }`}
           >
             <item.icon
@@ -303,8 +303,8 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                 isCollapsed ? "h-[19px] w-[19px]" : "h-4 w-4"
               } ${
                 active
-                  ? "text-white"
-                  : "text-slate-400 group-hover:text-slate-700"
+                  ? "text-nav-item-active-text"
+                  : "text-nav-item-icon group-hover:text-nav-item-hover-text"
               }`}
             />
             {!isCollapsed && (
@@ -315,7 +315,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                     className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold leading-none ${
                       active
                         ? "bg-white/20 text-white"
-                        : "bg-blue-50 text-blue-600"
+                        : "bg-primary-blue/10 dark:bg-primary-blue/20 text-primary-ink"
                     }`}
                   >
                     {item.badge}
@@ -348,10 +348,10 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
         isCollapsed ? "w-[78px]" : "w-[260px]"
       }`}
     >
-      <div className="relative flex h-full flex-col rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#0E1526] shadow-[0_12px_36px_-6px_rgba(20,50,100,0.08),0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_12px_36px_-6px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all duration-300 overflow-hidden">
+      <div className="relative flex h-full flex-col rounded-[24px] border border-[var(--nav-border)] bg-[var(--nav-surface)] shadow-[0_12px_36px_-6px_rgba(20,50,100,0.08),0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_12px_36px_-6px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all duration-300 overflow-hidden">
         {/* Header: Logo & Toggle */}
         <div
-          className={`flex h-[72px] shrink-0 items-center border-b border-slate-100/70 dark:border-slate-800/80 transition-all duration-300 ${
+          className={`flex h-[72px] shrink-0 items-center border-b border-border-subtle transition-all duration-300 ${
             isCollapsed ? "flex-col justify-center gap-1 px-2" : "items-center px-4"
           }`}
         >
@@ -364,7 +364,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                   onClick={toggleSidebar}
                   aria-label="Collapse sidebar"
                   title="Collapse sidebar"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white transition-colors shrink-0 cursor-pointer"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-white transition-colors shrink-0 cursor-pointer"
                 >
                   <PanelLeftClose className="h-4 w-4 stroke-[2]" />
                 </button>
@@ -454,7 +454,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                   <div className="truncate text-[13px] font-bold text-slate-900 dark:text-white leading-tight">
                     {userName}
                   </div>
-                  <div className="truncate text-[11px] text-slate-400">
+                  <div className="truncate text-[11px] text-text-muted">
                     {isInstructor ? "Faculty ID: JKS.L0047" : userEmail}
                   </div>
                 </div>

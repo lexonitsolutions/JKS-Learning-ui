@@ -86,7 +86,7 @@ export function SuccessStoriesExplorer() {
   }, [spotlightStoryId]);
 
   return (
-    <section id="stories-explorer" className="py-20 lg:py-28 bg-bg-light/60 dark:bg-[#0B1020]/60 transition-colors duration-300">
+    <section id="stories-explorer" className="py-20 lg:py-28 bg-bg-light/60 dark:bg-background/60 transition-colors duration-300">
       <div className="mx-auto max-w-[1320px] px-6 lg:px-12">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-12 border-b border-border dark:border-slate-800/80">
@@ -111,7 +111,7 @@ export function SuccessStoriesExplorer() {
               placeholder="Search alumni, roles, companies..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-border dark:border-slate-800 bg-white dark:bg-[#121A2A] pl-10 pr-4 py-2.5 text-sm text-text-heading dark:text-white shadow-xs placeholder:text-text-body/50 dark:placeholder:text-slate-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/10 transition-all"
+              className="w-full rounded-xl border border-border dark:border-slate-800 bg-white dark:bg-input-bg pl-10 pr-4 py-2.5 text-sm text-text-heading dark:text-white shadow-xs placeholder:text-text-body/50 dark:placeholder:text-slate-400 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/10 transition-all"
             />
           </div>
         </div>
@@ -129,8 +129,8 @@ export function SuccessStoriesExplorer() {
                 onClick={() => setSelectedTrack(t.value)}
                 className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                   selectedTrack === t.value
-                    ? "bg-primary-blue text-white shadow-sm shadow-blue-500/20"
-                    : "bg-white dark:bg-[#111827] border border-border dark:border-slate-800 text-text-body dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#151D2E] hover:text-text-heading dark:hover:text-white"
+                    ? "bg-primary-fill text-white shadow-sm shadow-blue-500/20"
+                    : "bg-white dark:bg-surface-secondary border border-border dark:border-slate-800 text-text-body dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-elevated hover:text-text-heading dark:hover:text-white"
                 }`}
               >
                 {t.label}
@@ -150,7 +150,7 @@ export function SuccessStoriesExplorer() {
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-all cursor-pointer ${
                   selectedCategory === c.value
                     ? "bg-slate-900 dark:bg-blue-600 text-white"
-                    : "bg-white/80 dark:bg-[#111827]/80 border border-border/80 dark:border-slate-800 text-text-body dark:text-slate-300 hover:bg-white dark:hover:bg-[#151D2E] hover:text-text-heading dark:hover:text-white"
+                    : "bg-white/80 dark:bg-surface-secondary/80 border border-border/80 dark:border-slate-800 text-text-body dark:text-slate-300 hover:bg-white dark:hover:bg-surface-elevated hover:text-text-heading dark:hover:text-white"
                 }`}
               >
                 {c.label}
@@ -160,7 +160,7 @@ export function SuccessStoriesExplorer() {
         </div>
 
         {/* Featured Spotlight Career Deep-Dive */}
-        <div className="mt-8 sm:mt-12 overflow-hidden rounded-3xl border border-blue-200/80 dark:border-blue-900/60 bg-gradient-to-br from-white via-blue-50/40 to-cyan-50/20 dark:from-[#111827] dark:via-[#151D2E] dark:to-[#111827] p-4 sm:p-8 lg:p-10 shadow-lg shadow-blue-500/5 dark:shadow-black/40">
+        <div className="mt-8 sm:mt-12 overflow-hidden rounded-3xl border border-blue-200/80 dark:border-blue-900/60 bg-gradient-to-br from-white via-blue-50/40 to-cyan-50/20 dark:from-surface-secondary dark:via-surface-elevated dark:to-surface-secondary p-4 sm:p-8 lg:p-10 shadow-lg shadow-blue-500/5 dark:shadow-black/40">
           <div className="flex items-center gap-2 text-[11px] sm:text-xs font-bold text-primary-blue dark:text-blue-400 uppercase tracking-wider mb-4 sm:mb-6">
             <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
             <span className="truncate">Featured Career Transformation Spotlight</span>
@@ -170,7 +170,7 @@ export function SuccessStoriesExplorer() {
             {/* Left: Candidate Info & Journey */}
             <div className="lg:col-span-7 flex flex-col gap-4 sm:gap-5">
               <div className="flex items-start sm:items-center gap-3 sm:gap-4">
-                <div className="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-blue to-indigo-600 text-lg sm:text-xl font-bold text-white shadow-md">
+                <div className="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-fill to-indigo-600 text-lg sm:text-xl font-bold text-white shadow-md">
                   {getInitials(spotlightStory.name)}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -192,7 +192,7 @@ export function SuccessStoriesExplorer() {
               </div>
 
               {/* Quote */}
-              <div className="relative rounded-2xl border border-border/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#151D2E] p-4 sm:p-5 shadow-xs">
+              <div className="relative rounded-2xl border border-border/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-elevated p-4 sm:p-5 shadow-xs">
                 <Quote className="h-5 w-5 sm:h-6 sm:w-6 text-primary-blue/30 dark:text-blue-400/30 mb-1.5" />
                 <p className="text-xs sm:text-base text-text-body dark:text-slate-300 italic leading-relaxed">
                   &ldquo;{spotlightStory.quote}&rdquo;
@@ -209,7 +209,7 @@ export function SuccessStoriesExplorer() {
             {/* Right: Metrics & Capstone Breakdown */}
             <div className="lg:col-span-5 flex flex-col gap-3 sm:gap-4">
               {/* Transition Before vs After Card */}
-              <div className="rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-[#151D2E] p-4 sm:p-5 shadow-xs">
+              <div className="rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-surface-elevated p-4 sm:p-5 shadow-xs">
                 <div className="text-[11px] sm:text-xs uppercase font-bold tracking-wider text-text-body/70 dark:text-slate-400 mb-2.5">
                   Career Trajectory
                 </div>
@@ -231,7 +231,7 @@ export function SuccessStoriesExplorer() {
               </div>
 
               {/* AI Interview Growth & Capstone Card */}
-              <div className="rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-[#151D2E] p-4 sm:p-5 shadow-xs">
+              <div className="rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-surface-elevated p-4 sm:p-5 shadow-xs">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <div className="text-[11px] text-text-body dark:text-slate-400 font-medium">AI Mock Interview Growth</div>
@@ -270,8 +270,8 @@ export function SuccessStoriesExplorer() {
         {/* Stories Grid */}
         <div className="mt-12">
           {filteredStories.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border dark:border-slate-800 bg-white dark:bg-[#111827] p-12 text-center">
-              <GraduationCap className="mx-auto h-12 w-12 text-text-body/40 dark:text-slate-500" />
+            <div className="rounded-2xl border border-dashed border-border dark:border-slate-800 bg-white dark:bg-surface-secondary p-12 text-center">
+              <GraduationCap className="mx-auto h-12 w-12 text-text-body/40 dark:text-slate-400" />
               <h3 className="text-base font-bold text-text-heading dark:text-white mt-4">
                 No matching alumni stories found
               </h3>
@@ -284,7 +284,7 @@ export function SuccessStoriesExplorer() {
                   setSelectedCategory("All");
                   setSearchQuery("");
                 }}
-                className="mt-4 rounded-lg bg-primary-blue px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-primary-blue/90 cursor-pointer"
+                className="mt-4 rounded-lg bg-primary-fill px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-primary-fill-hover cursor-pointer"
               >
                 Reset Filters
               </button>
@@ -304,7 +304,7 @@ export function SuccessStoriesExplorer() {
                     exit={{ opacity: 0, scale: 0.96 }}
                     transition={{ duration: 0.4 }}
                   >
-                    <TiltCard className="group flex h-full flex-col justify-between rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 shadow-xs hover:border-primary-blue/40 dark:hover:border-blue-500/50 hover:shadow-xl dark:hover:shadow-black/60 transition-all duration-300">
+                    <TiltCard className="group flex h-full flex-col justify-between rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-6 shadow-xs hover:border-primary-blue/40 dark:hover:border-blue-500/50 hover:shadow-xl dark:hover:shadow-black/60 transition-all duration-300">
                       <div>
                         {/* Top Meta Header */}
                         <div className="flex items-start justify-between gap-3">
@@ -337,7 +337,7 @@ export function SuccessStoriesExplorer() {
                         </div>
 
                         {/* Placement Info Banner */}
-                        <div className="mt-4 rounded-xl bg-bg-light dark:bg-[#151D2E] p-3 border border-border/60 dark:border-slate-800">
+                        <div className="mt-4 rounded-xl bg-bg-light dark:bg-surface-elevated p-3 border border-border/60 dark:border-slate-800">
                           <div className="flex items-center justify-between text-xs">
                             <span className="font-semibold text-text-heading dark:text-white truncate">
                               {story.placedCompany}

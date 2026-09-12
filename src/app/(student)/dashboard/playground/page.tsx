@@ -501,7 +501,7 @@ export default function PlaygroundPage() {
                         {file.name}
                       </span>
                       {file.isEntry && (
-                        <span className="rounded bg-white/20 px-1 text-[9px] font-mono text-white">
+                        <span className="rounded bg-black/30 px-1 text-[9px] font-mono text-white">
                           entry
                         </span>
                       )}
@@ -590,9 +590,9 @@ export default function PlaygroundPage() {
           </div>
 
           {/* ================= RIGHT: Live Browser & Console Output ================= */}
-          <div className="w-full lg:w-[420px] shrink-0 flex flex-col bg-white dark:bg-[#111827] overflow-hidden">
+          <div className="w-full lg:w-[420px] shrink-0 flex flex-col bg-white dark:bg-surface-secondary overflow-hidden">
             {/* Output Header with Run Button */}
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#151D2E] px-3 py-2">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-surface-elevated px-3 py-2">
               <div className="flex items-center gap-1">
                 {currentLang === "html-css-js" && (
                   <button
@@ -600,7 +600,7 @@ export default function PlaygroundPage() {
                     onClick={() => setViewMode("browser")}
                     className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-bold transition-colors cursor-pointer ${
                       viewMode === "browser"
-                        ? "bg-white text-slate-900 shadow-xs dark:bg-[#111827] dark:text-white"
+                        ? "bg-white text-slate-900 shadow-xs dark:bg-surface-secondary dark:text-white"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                     }`}
                   >
@@ -613,7 +613,7 @@ export default function PlaygroundPage() {
                   onClick={() => setViewMode("console")}
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-bold transition-colors cursor-pointer ${
                     viewMode === "console"
-                      ? "bg-white text-slate-900 shadow-xs dark:bg-[#111827] dark:text-white"
+                      ? "bg-white text-slate-900 shadow-xs dark:bg-surface-secondary dark:text-white"
                       : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                   }`}
                 >
@@ -635,18 +635,18 @@ export default function PlaygroundPage() {
             </div>
 
             {/* Output Canvas */}
-            <div className="flex-1 relative bg-white dark:bg-[#111827] overflow-hidden">
+            <div className="flex-1 relative bg-white dark:bg-surface-secondary overflow-hidden">
               {viewMode === "browser" && currentLang === "html-css-js" ? (
                 <iframe
                   ref={iframeRef}
                   title="Live Sandbox Output"
                   sandbox="allow-scripts allow-modals"
-                  className="w-full h-full border-none bg-white dark:bg-[#111827]"
+                  className="w-full h-full border-none bg-white dark:bg-surface-secondary"
                 />
               ) : (
                 /* Terminal Console Output */
                 <div className="h-full w-full bg-slate-950 p-4 font-mono text-xs text-slate-200 overflow-y-auto">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2 text-[10px] text-slate-500 font-bold uppercase">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-2 text-[10px] text-slate-400 font-bold uppercase">
                     <span>Standard Output (stdout)</span>
                     <button
                       type="button"
@@ -660,7 +660,7 @@ export default function PlaygroundPage() {
 
                   <div className="mt-3 space-y-1.5">
                     {logs.length === 0 ? (
-                      <div className="text-slate-600 italic">No output yet. Click &quot;Run Code&quot; to execute.</div>
+                      <div className="text-slate-400 italic">No output yet. Click &quot;Run Code&quot; to execute.</div>
                     ) : (
                       logs.map((log, i) => (
                         <div

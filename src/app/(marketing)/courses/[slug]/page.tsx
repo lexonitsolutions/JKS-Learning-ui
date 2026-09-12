@@ -2,14 +2,14 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronDown, Download, PlayCircle, Star, Clock, Users, CheckCircle2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { MagneticButton } from "@/components/interactions/magnetic-button";
 import { Reveal } from "@/lib/motion/reveal";
-import { COURSES, getCourseBySlug } from "@/lib/data/courses";
+import { COURSES, fetchDbCourseBySlug } from "@/lib/data/courses";
 
-export function generateStaticParams() {
-  return COURSES.map((c) => ({ slug: c.slug }));
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function CourseDetailPage({
   params,
@@ -17,7 +17,7 @@ export default async function CourseDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const course = getCourseBySlug(slug);
+  const course = await fetchDbCourseBySlug(slug);
   if (!course) notFound();
 
   const totalTopics = course.modules.reduce((sum, m) => sum + m.topics.length, 0);
@@ -49,7 +49,7 @@ export default async function CourseDetailPage({
           <Reveal
             variant="fade-up"
             delay={0.1}
-            className="mt-8 flex items-center gap-4 rounded-lg border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-4"
+            className="mt-8 flex items-center gap-4 rounded-lg border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-4"
           >
             <PlayCircle className="h-10 w-10 shrink-0 text-primary-blue" />
             <div>
@@ -73,7 +73,7 @@ export default async function CourseDetailPage({
             <Reveal
               variant="stagger"
               staggerDelay={0.06}
-              className="mt-6 divide-y divide-border dark:divide-slate-800/80 rounded-lg border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827]"
+              className="mt-6 divide-y divide-border dark:divide-slate-800/80 rounded-lg border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary"
             >
               {course.modules.map((module, i) => (
                 <details key={module.title} className="group" open={i === 0}>
@@ -133,20 +133,20 @@ export default async function CourseDetailPage({
 
         {/* Sticky purchase card */}
         <aside className="lg:sticky lg:top-24 lg:h-fit">
-          <Reveal variant="scale-in" className="rounded-lg border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 shadow-md dark:shadow-slate-950/50">
+          <Reveal variant="scale-in" className="rounded-lg border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-6 shadow-md dark:shadow-slate-950/50">
             <div className="text-h1 text-text-heading">
               &#8377;{course.price.toLocaleString("en-IN")}
             </div>
             <MagneticButton className="mt-5 block w-full">
               <Link
                 href={`/register-course?course=${course.slug}`}
-                className={buttonVariants({ size: "lg" }) + " w-full"}
+                className={cn(buttonVariants({ size: "lg" }), "w-full")}
               >
                 Enroll Now
               </Link>
             </MagneticButton>
 
-            <button className={buttonVariants({ variant: "secondary", size: "md" }) + " mt-3 w-full"}>
+            <button className={cn(buttonVariants({ variant: "secondary", size: "md" }), "mt-3 w-full")}>
               <Download className="h-4 w-4" /> Download Brochure
             </button>
             <ul className="mt-6 space-y-2 border-t border-border dark:border-slate-800 pt-6 text-sm text-text-body">

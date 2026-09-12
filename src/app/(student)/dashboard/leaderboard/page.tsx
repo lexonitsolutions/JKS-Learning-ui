@@ -29,18 +29,18 @@ interface StreakMaintainer {
 }
 
 const TOP_STREAK_MAINTAINERS: StreakMaintainer[] = [
-  { rank: 1, name: "Satish Jhamwer", initials: "SJ", streakDays: 904, color: "bg-amber-100 text-amber-700" },
-  { rank: 2, name: "Peeyush Raj", initials: "PR", streakDays: 621, color: "bg-orange-100 text-orange-700" },
-  { rank: 3, name: "Akkal Dhami", initials: "AD", streakDays: 421, color: "bg-amber-50 text-amber-800" },
-  { rank: 4, name: "APROSE LALB...", initials: "AL", streakDays: 400, color: "bg-slate-100 text-slate-700" },
-  { rank: 5, name: "Ayush Gupta", initials: "AG", streakDays: 390, color: "bg-purple-100 text-purple-700" },
-  { rank: 6, name: "Shadan Atmash", initials: "SA", streakDays: 380, color: "bg-blue-100 text-blue-700" },
-  { rank: 7, name: "Neha Khan", initials: "NK", streakDays: 312, color: "bg-rose-100 text-rose-700" },
-  { rank: 8, name: "Ganesh Kumar...", initials: "GK", streakDays: 303, color: "bg-emerald-100 text-emerald-700" },
-  { rank: 9, name: "Lakshmikanth T...", initials: "LT", streakDays: 298, color: "bg-indigo-100 text-indigo-700" },
-  { rank: 10, name: "Prabhulal Ragh...", initials: "PR", streakDays: 293, color: "bg-cyan-100 text-cyan-700" },
-  { rank: 11, name: "Vikas Verma", initials: "VV", streakDays: 291, color: "bg-teal-100 text-teal-700" },
-  { rank: 12, name: "Ahmad Raza", initials: "AR", streakDays: 261, color: "bg-pink-100 text-pink-700" },
+  { rank: 1, name: "Satish Jhamwer", initials: "SJ", streakDays: 904, color: "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300" },
+  { rank: 2, name: "Peeyush Raj", initials: "PR", streakDays: 621, color: "bg-orange-100 text-orange-700 dark:bg-orange-400/15 dark:text-orange-300" },
+  { rank: 3, name: "Akkal Dhami", initials: "AD", streakDays: 421, color: "bg-amber-50 text-amber-800 dark:bg-amber-300/10 dark:text-amber-200" },
+  { rank: 4, name: "APROSE LALB...", initials: "AL", streakDays: 400, color: "bg-slate-100 text-slate-700 dark:bg-slate-400/15 dark:text-slate-200" },
+  { rank: 5, name: "Ayush Gupta", initials: "AG", streakDays: 390, color: "bg-purple-100 text-purple-700 dark:bg-purple-400/15 dark:text-purple-300" },
+  { rank: 6, name: "Shadan Atmash", initials: "SA", streakDays: 380, color: "bg-blue-100 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300" },
+  { rank: 7, name: "Neha Khan", initials: "NK", streakDays: 312, color: "bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300" },
+  { rank: 8, name: "Ganesh Kumar...", initials: "GK", streakDays: 303, color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300" },
+  { rank: 9, name: "Lakshmikanth T...", initials: "LT", streakDays: 298, color: "bg-indigo-100 text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300" },
+  { rank: 10, name: "Prabhulal Ragh...", initials: "PR", streakDays: 293, color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-400/15 dark:text-cyan-300" },
+  { rank: 11, name: "Vikas Verma", initials: "VV", streakDays: 291, color: "bg-teal-100 text-teal-700 dark:bg-teal-400/15 dark:text-teal-300" },
+  { rank: 12, name: "Ahmad Raza", initials: "AR", streakDays: 261, color: "bg-pink-100 text-pink-700 dark:bg-pink-400/15 dark:text-pink-300" },
 ];
 
 const TOP_SOLVERS = [
@@ -65,7 +65,7 @@ export default function LeaderboardPage() {
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
         {/* Top Header Banner with Podium */}
         <Reveal variant="fade-up">
-          <div className="relative overflow-hidden rounded-[24px] border border-white/70 bg-gradient-to-r from-amber-50/60 via-white to-blue-50/40 p-6 sm:p-8 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-gradient-to-r dark:from-[#151D2E] dark:via-[#111827] dark:to-[#0B1020] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+          <div className="relative overflow-hidden rounded-[24px] border border-white/70 bg-gradient-to-r from-amber-50/60 via-white to-blue-50/40 p-6 sm:p-8 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-gradient-to-r dark:from-surface-elevated dark:via-surface-secondary dark:to-background dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               {/* Left Title */}
               <div>
@@ -130,7 +130,7 @@ export default function LeaderboardPage() {
           {/* LEFT: Top Streak Maintainers (12 ranked cards) */}
           <div className="lg:col-span-7">
             <Reveal variant="fade-up">
-              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -160,7 +160,7 @@ export default function LeaderboardPage() {
                               ? "border-orange-300 bg-orange-50/30 shadow-xs dark:border-orange-500/50 dark:bg-orange-950/30"
                               : isTop3
                                 ? "border-amber-200 bg-amber-50/20 shadow-xs dark:border-amber-600/40 dark:bg-amber-950/20"
-                                : "border-slate-200/70 bg-slate-50/40 hover:bg-white dark:border-slate-800 dark:bg-[#151D2E]/60 dark:hover:bg-[#151D2E]"
+                                : "border-slate-200/70 bg-slate-50/40 hover:bg-white dark:border-slate-800 dark:bg-surface-elevated/60 dark:hover:bg-surface-elevated"
                         }`}
                       >
                         {/* Rank Badge */}
@@ -216,7 +216,7 @@ export default function LeaderboardPage() {
           {/* RIGHT: Today's Top Solvers */}
           <div className="lg:col-span-5">
             <Reveal variant="fade-up">
-              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+              <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -232,7 +232,7 @@ export default function LeaderboardPage() {
                   <select
                     value={period}
                     onChange={(e) => setPeriod(e.target.value)}
-                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-white outline-none cursor-pointer"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-white outline-none cursor-pointer"
                   >
                     <option value="Today">Today</option>
                     <option value="This Week">This Week</option>
@@ -245,7 +245,7 @@ export default function LeaderboardPage() {
                   {TOP_SOLVERS.map((s) => (
                     <div
                       key={s.name}
-                      className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#151D2E] hover:bg-slate-50 dark:hover:bg-[#1B2538] transition-colors"
+                      className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <div

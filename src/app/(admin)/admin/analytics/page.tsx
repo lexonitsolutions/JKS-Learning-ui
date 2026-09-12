@@ -26,7 +26,7 @@ export default function AdminAnalyticsPage() {
         {/* Metric Cards in 2 Columns on Mobile (2 rows) */}
         <Reveal variant="stagger" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <TiltCard>
-          <div className="rounded-[20px] border border-white/70 bg-white/75 p-3.5 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+          <div className="rounded-[20px] border border-white/70 bg-white/75 p-3.5 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
             <div className="flex items-center justify-between">
               <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 line-clamp-1">Gross Revenue</span>
               <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg sm:rounded-full bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-400">
@@ -39,7 +39,7 @@ export default function AdminAnalyticsPage() {
           </TiltCard>
 
           <TiltCard>
-          <div className="rounded-[20px] border border-white/70 bg-white/75 p-3.5 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+          <div className="rounded-[20px] border border-white/70 bg-white/75 p-3.5 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
             <div className="flex items-center justify-between">
               <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 line-clamp-1">Completion Rate</span>
               <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg sm:rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
@@ -52,7 +52,7 @@ export default function AdminAnalyticsPage() {
           </TiltCard>
 
           <TiltCard>
-          <div className="rounded-[20px] border border-white/70 bg-white/75 p-3.5 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+          <div className="rounded-[20px] border border-white/70 bg-white/75 p-3.5 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
             <div className="flex items-center justify-between">
               <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 line-clamp-1">Active Students</span>
               <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
@@ -65,7 +65,7 @@ export default function AdminAnalyticsPage() {
           </TiltCard>
 
           <TiltCard>
-          <div className="rounded-[20px] border border-white/70 bg-white/75 p-3.5 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none">
+          <div className="rounded-[20px] border border-white/70 bg-white/75 p-3.5 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
             <div className="flex items-center justify-between">
               <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 line-clamp-1">AI Interviews</span>
               <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
@@ -81,7 +81,7 @@ export default function AdminAnalyticsPage() {
         {/* 2-Column Analytics Breakdown */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* Revenue Curve */}
-          <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none lg:col-span-7">
+          <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none lg:col-span-7">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">Monthly Revenue Velocity</h3>
@@ -95,7 +95,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Revenue by Track & Popularity */}
-          <div className="flex flex-col justify-between rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#111827] dark:shadow-none lg:col-span-5">
+          <div className="flex flex-col justify-between rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none lg:col-span-5">
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">Revenue & Demand by Track</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Distribution across technology verticals</p>

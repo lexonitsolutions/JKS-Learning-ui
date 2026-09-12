@@ -263,7 +263,7 @@ export function RevenueChart({
       {/* Floating HTML tooltip */}
       {hoveredIndex !== null && points[hoveredIndex] && (
         <div
-          className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full rounded-lg bg-slate-900 dark:bg-[#1B2538] border border-transparent dark:border-slate-700/80 px-2.5 py-1 text-xs font-semibold text-white shadow-lg transition-all"
+          className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full rounded-lg bg-slate-900 dark:bg-surface-hover border border-transparent dark:border-slate-700/80 px-2.5 py-1 text-xs font-semibold text-white shadow-lg transition-all"
           style={{
             left: `${(points[hoveredIndex].x / width) * 100}%`,
             top: `${(points[hoveredIndex].y / height) * 100 - 8}%`,

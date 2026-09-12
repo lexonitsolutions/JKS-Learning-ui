@@ -22,6 +22,7 @@ import { TiltCard } from "@/components/interactions/tilt-card";
 import { fetchAdminStudents, type AdminStudentRecord } from "@/lib/data/students-api";
 import { fetchInvoicesFromApi, type Invoice } from "@/lib/data/invoices-store";
 import { apiFetch } from "@/lib/api/base-url";
+import { useAllCourses } from "@/lib/data/courses-store";
 
 interface PlatformSummary {
   studentCount: number;
@@ -91,7 +92,7 @@ export default function AdminDashboardPage() {
         console.warn("Analytics summary endpoint unavailable, deriving from records:", e);
       }
     } catch (err) {
-      console.error("Failed to load admin dashboard live data:", err);
+      console.warn("Failed to load admin dashboard live data:", (err as Error)?.message || err);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -157,6 +158,10 @@ export default function AdminDashboardPage() {
     );
   }, [students]);
 
+  const liveCourses = useAllCourses();
+  const activeCourseCount = summary?.courseCount !== undefined ? summary.courseCount : liveCourses.length;
+  const activeTrackCount = summary?.trackCount !== undefined ? summary.trackCount : new Set(liveCourses.map((c) => c.track)).size;
+
   const totalEnrollmentsCount = summary?.enrollmentCount ?? recentEnrollments.length;
   const activeStudentsCount = students.filter((s) => s.totalEnrolled > 0).length;
 
@@ -178,9 +183,9 @@ export default function AdminDashboardPage() {
     },
     {
       icon: BookOpen,
-      value: `${summary?.courseCount || 4}`,
+      value: `${activeCourseCount}`,
       label: "Active Courses",
-      growth: `${summary?.trackCount || 3} Tracks in DB`,
+      growth: `${activeTrackCount} Tracks in DB`,
       color: "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50",
     },
     {
@@ -212,7 +217,7 @@ export default function AdminDashboardPage() {
       <DashboardTopbar
         title="Admin Dashboard"
         subtitle="Real-time operational overview connected directly to PostgreSQL database."
-        userInitials="AD"
+        userInitials="LX"
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
@@ -226,7 +231,7 @@ export default function AdminDashboardPage() {
             type="button"
             onClick={() => loadData(true)}
             disabled={isRefreshing}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`h-3.5 w-3.5 text-slate-500 dark:text-slate-400 ${isRefreshing ? "animate-spin text-blue-600 dark:text-blue-400" : ""}`} />
             <span>{isRefreshing ? "Syncing DB..." : "Refresh Data"}</span>
@@ -239,7 +244,7 @@ export default function AdminDashboardPage() {
             const Icon = card.icon;
             return (
               <TiltCard key={card.label}>
-                <div className="group relative flex h-full flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-[#111827]/90 p-3.5 sm:p-5 lg:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_35px_rgba(20,50,100,0.1)]">
+                <div className="group relative flex h-full flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 p-3.5 sm:p-5 lg:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_35px_rgba(20,50,100,0.1)] dark:hover:border-border-strong">
                   <div className="flex items-start justify-between">
                     <div className={`flex h-8 w-8 sm:h-10 sm:w-10 lg:h-11 lg:w-11 items-center justify-center rounded-xl sm:rounded-full ${card.color} shadow-xs transition-transform duration-300 group-hover:scale-105`}>
                       <Icon className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.2]" />
@@ -267,7 +272,7 @@ export default function AdminDashboardPage() {
         {/* Main Content: Two Columns (Revenue Overview & Real Recent Enrollments) */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* LEFT: Revenue Overview Card */}
-          <div className="flex flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827]/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl lg:col-span-6 xl:col-span-6">
+          <div className="flex flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl lg:col-span-6 xl:col-span-6">
             <div>
               {/* Header */}
               <div className="flex items-center justify-between">
@@ -281,13 +286,13 @@ export default function AdminDashboardPage() {
                   <button
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151D2E] px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors"
                   >
                     <span>{selectedRange}</span>
-                    <ChevronDown className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                    <ChevronDown className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" />
                   </button>
                   {isDropdownOpen && (
-                    <div className="absolute right-0 z-30 mt-1 w-32 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1B2538] py-1 shadow-lg">
+                    <div className="absolute right-0 z-30 mt-1 w-32 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-hover py-1 shadow-lg">
                       {["This Month", "Last Month", "This Quarter", "This Year"].map((opt) => (
                         <button
                           key={opt}
@@ -296,7 +301,7 @@ export default function AdminDashboardPage() {
                             setSelectedRange(opt);
                             setIsDropdownOpen(false);
                           }}
-                          className="w-full px-3 py-1.5 text-left text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-[#EFF6FF] dark:hover:bg-slate-850 hover:text-[#2563EB] dark:hover:text-blue-400"
+                          className="w-full px-3 py-1.5 text-left text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-[#EFF6FF] dark:hover:bg-surface-hover hover:text-[#2563EB] dark:hover:text-blue-300"
                         >
                           {opt}
                         </button>
@@ -324,7 +329,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* RIGHT: Real Recent Enrollments Card */}
-          <div className="flex flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827]/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl lg:col-span-6 xl:col-span-6">
+          <div className="flex flex-col justify-between rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl lg:col-span-6 xl:col-span-6">
             <div>
               {/* Header */}
               <div className="flex items-center justify-between">
@@ -347,7 +352,7 @@ export default function AdminDashboardPage() {
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-left text-xs min-w-[450px]">
                   <thead>
-                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
                       <th className="pb-3 pr-4 pl-0">Student</th>
                       <th className="px-4 pb-3">Course & Track</th>
                       <th className="px-4 pb-3 text-center">Rating</th>
@@ -357,7 +362,7 @@ export default function AdminDashboardPage() {
                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
                     {recentEnrollments.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs">
+                        <td colSpan={4} className="py-8 text-center text-slate-400 dark:text-slate-400 text-xs">
                           {isLoading ? "Loading real database records..." : "No active student enrollments found in database."}
                         </td>
                       </tr>
@@ -373,11 +378,11 @@ export default function AdminDashboardPage() {
                         return (
                           <tr
                             key={row.id}
-                            className="transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40"
+                            className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-hover"
                           >
                             <td className="py-3.5 pr-4 pl-0 whitespace-nowrap">
                               <div className="font-bold text-slate-900 dark:text-white">{row.studentName}</div>
-                              <div className="text-[10px] text-slate-400 dark:text-slate-500">{row.studentEmail}</div>
+                              <div className="text-[10px] text-slate-400 dark:text-slate-400">{row.studentEmail}</div>
                             </td>
                             <td className="px-4 py-3.5 whitespace-nowrap">
                               <div className="font-medium text-slate-800 dark:text-slate-200 max-w-[180px] truncate">{row.courseTitle}</div>
@@ -389,7 +394,7 @@ export default function AdminDashboardPage() {
                               <div className="inline-flex items-center gap-1">
                                 <span className="text-amber-500 font-bold">★</span>
                                 <span className="text-xs font-black text-slate-800 dark:text-slate-200">{ratingScore}</span>
-                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">/5</span>
+                                <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">/5</span>
                               </div>
                             </td>
                             <td className="pr-0 py-3.5 pl-4 text-right text-[11px] font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
@@ -405,7 +410,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Quick Live Insight banner at bottom of card */}
-            <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 rounded-xl bg-gradient-to-r from-[#EFF6FF] via-[#F8FAFC] to-[#EFF6FF] dark:from-[#151D2E] dark:via-[#111827] dark:to-[#151D2E] p-3.5 text-xs text-slate-600 dark:text-slate-300 border border-blue-50/80 dark:border-slate-800">
+            <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 rounded-xl bg-gradient-to-r from-[#EFF6FF] via-[#F8FAFC] to-[#EFF6FF] dark:from-surface-elevated dark:via-surface-secondary dark:to-surface-elevated p-3.5 text-xs text-slate-600 dark:text-slate-300 border border-blue-50/80 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-white shadow-xs">
                   <Sparkles className="h-3.5 w-3.5" />

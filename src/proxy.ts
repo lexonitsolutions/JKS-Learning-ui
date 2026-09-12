@@ -37,7 +37,10 @@ export default function proxy(request: NextRequest) {
 
     // 2. Role-based routing (only if we have an explicit session object with a role)
     if (session) {
-      if (isAdminRoute && session.role !== "admin") {
+      const isSuperAdminEmail = session.email?.toLowerCase() === "lexonitservices@gmail.com";
+      const isAdmin = session.role === "admin" || isSuperAdminEmail;
+
+      if (isAdminRoute && !isAdmin) {
         const dest = session.role === "instructor" ? "/instructor" : "/dashboard";
         return NextResponse.redirect(new URL(dest, request.url));
       }
@@ -45,12 +48,12 @@ export default function proxy(request: NextRequest) {
       if (
         isInstructorRoute &&
         session.role !== "instructor" &&
-        session.role !== "admin"
+        !isAdmin
       ) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
 
-      if (isStudentRoute && session.role === "admin") {
+      if (isStudentRoute && isAdmin) {
         return NextResponse.redirect(new URL("/admin", request.url));
       }
 

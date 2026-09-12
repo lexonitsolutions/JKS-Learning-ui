@@ -19,21 +19,15 @@ import {
   Trash2,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
-import { getStoredCourses, type FullCourse } from "@/lib/data/courses-store";
+import { useAllCourses, type FullCourse } from "@/lib/data/courses-store";
 import { Reveal } from "@/lib/motion/reveal";
 import { TiltCard } from "@/components/interactions/tilt-card";
 
 export default function InstructorCoursesPage() {
-  const [courses, setCourses] = useState<FullCourse[]>([]);
+  const courses = useAllCourses();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTrack, setSelectedTrack] = useState<string>("All");
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
-
-  useEffect(() => {
-    // Load courses from courses-store
-    const loaded = getStoredCourses();
-    setCourses(loaded);
-  }, []);
 
   const filteredCourses = courses.filter((crs) => {
     const query = searchQuery.toLowerCase();
@@ -56,13 +50,13 @@ export default function InstructorCoursesPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-1 items-center gap-3 max-w-md">
             <div className="relative w-full">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-400" />
               <input
                 type="text"
                 placeholder="Search courses by keyword or module…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-500 outline-none shadow-xs transition-colors focus:border-[#2563EB]"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-400 outline-none shadow-xs transition-colors focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -71,7 +65,7 @@ export default function InstructorCoursesPage() {
             <select
               value={selectedTrack}
               onChange={(e) => setSelectedTrack(e.target.value)}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:border-[#2563EB]"
+              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:border-[#2563EB]"
             >
               <option value="All">All Tracks</option>
               <option value="Full Stack">Full Stack</option>
@@ -82,7 +76,7 @@ export default function InstructorCoursesPage() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121A2A] px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:border-[#2563EB]"
+              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:border-[#2563EB]"
             >
               <option value="All">All Statuses</option>
               <option value="Published">Published</option>
@@ -110,7 +104,7 @@ export default function InstructorCoursesPage() {
 
             return (
               <TiltCard key={crs.id}>
-                <div className="flex h-full flex-col justify-between rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all hover:shadow-lg">
+                <div className="flex h-full flex-col justify-between rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all hover:shadow-lg dark:hover:border-border-strong">
                   <div>
                     {/* Header: Track & Status */}
                     <div className="flex items-center justify-between">
@@ -139,18 +133,18 @@ export default function InstructorCoursesPage() {
                     </div>
 
                     {/* Meta Stats Grid */}
-                    <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-slate-50/80 dark:bg-[#151D2E] p-2.5 text-center text-xs">
+                    <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-slate-50/80 dark:bg-surface-elevated p-2.5 text-center text-xs">
                       <div>
                         <div className="font-extrabold text-slate-900 dark:text-white">{crs.sections.length}</div>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Sections</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Sections</div>
                       </div>
                       <div>
                         <div className="font-extrabold text-slate-900 dark:text-white">{totalVideos}</div>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Videos</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Videos</div>
                       </div>
                       <div>
                         <div className="font-extrabold text-slate-900 dark:text-white">{totalAssignments}</div>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Tests</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Tests</div>
                       </div>
                     </div>
                   </div>
@@ -159,7 +153,7 @@ export default function InstructorCoursesPage() {
                   <div className="mt-5 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4">
                     <div className="flex items-center justify-between text-xs">
                       <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400 font-medium">
-                        <Users className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                        <Users className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" />
                         {crs.studentsEnrolled.toLocaleString()} Students
                       </span>
                       <span className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
@@ -171,7 +165,7 @@ export default function InstructorCoursesPage() {
                     <div className="grid grid-cols-2 gap-2 pt-2">
                       <Link
                         href={`/instructor/students?course=${crs.slug}`}
-                        className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors"
                       >
                         <Users className="h-3.5 w-3.5" />
                         <span>Roster</span>

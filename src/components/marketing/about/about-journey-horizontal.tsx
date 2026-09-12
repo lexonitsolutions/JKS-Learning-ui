@@ -84,7 +84,7 @@ export function AboutJourneyHorizontal() {
   const reducedMotion = useReducedMotion();
 
   return (
-    <section className="relative bg-bg-light dark:bg-[#0B1020] text-text-heading dark:text-white py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-16 border-t border-border dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
+    <section className="relative bg-bg-light dark:bg-background text-text-heading dark:text-white py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-16 border-t border-border dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
       <div className="mx-auto max-w-[1280px] space-y-8 sm:space-y-12">
         {/* Clean Section Header (Numbers and play/pause buttons removed) */}
         <div className="space-y-2.5 max-w-2xl border-b border-border dark:border-slate-800/80 pb-6 sm:pb-8">
@@ -128,7 +128,7 @@ export function AboutJourneyHorizontal() {
               return (
                 <div
                   key={`${stage.step}-${idx}`}
-                  className="w-[300px] sm:w-[360px] lg:w-[390px] shrink-0 rounded-[32px] border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] p-6 sm:p-8 transition-all duration-300 hover:border-primary-blue dark:hover:border-blue-500/80 hover:shadow-[0_20px_50px_rgba(37,99,235,0.12)] dark:hover:shadow-black/60 hover:-translate-y-1 space-y-5 flex flex-col justify-between shadow-xs cursor-default"
+                  className="w-[300px] sm:w-[360px] lg:w-[390px] shrink-0 rounded-[32px] border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-6 sm:p-8 transition-all duration-300 hover:border-primary-blue dark:hover:border-blue-500/80 hover:shadow-[0_20px_50px_rgba(37,99,235,0.12)] dark:hover:shadow-black/60 hover:-translate-y-1 space-y-5 flex flex-col justify-between shadow-xs cursor-default"
                 >
                   {/* Card Top Pill */}
                   <div className="flex items-center justify-between">
@@ -142,7 +142,7 @@ export function AboutJourneyHorizontal() {
 
                   {/* Card Heading & Subtitle */}
                   <div className="space-y-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 font-mono">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-400 font-mono">
                       {stage.pill}
                     </span>
                     <h3 className="text-2xl font-extrabold text-text-heading dark:text-white tracking-tight">

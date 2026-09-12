@@ -57,8 +57,8 @@ export default function SSOCallbackPage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#F8FAFC] dark:bg-[#0B1020] p-4 sm:p-6 md:p-10">
-      <div className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-2xl">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#F8FAFC] dark:bg-background p-4 sm:p-6 md:p-10">
+      <div className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-2xl">
         {/* Brand header */}
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/60 dark:from-slate-900/80 dark:via-blue-950/40 dark:to-slate-900/80 px-7 py-5">
           <JksLogo size="md" href="" />
@@ -113,7 +113,7 @@ export default function SSOCallbackPage() {
                         ? "border-transparent bg-[#16a34a] text-white"
                         : active
                           ? "border-[#2563EB] bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400"
-                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] text-slate-300 dark:text-slate-600",
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated text-slate-300 dark:text-slate-600",
                     ].join(" ")}
                   >
                     {done ? (
@@ -132,12 +132,12 @@ export default function SSOCallbackPage() {
                     <span
                       className={[
                         "block text-sm font-bold transition-colors duration-500",
-                        done || active ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500",
+                        done || active ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-400",
                       ].join(" ")}
                     >
                       {s.label}
                     </span>
-                    <span className="block text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                    <span className="block text-[11px] font-medium text-slate-400 dark:text-slate-400">
                       {s.detail}
                     </span>
                   </span>
@@ -175,16 +175,16 @@ export default function SSOCallbackPage() {
           )}
         </div>
 
-        <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] px-7 py-3.5">
-          <p className="text-center text-[11px] font-medium text-slate-400 dark:text-slate-500">
+        <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated px-7 py-3.5">
+          <p className="text-center text-[11px] font-medium text-slate-400 dark:text-slate-400">
             Secured by Clerk · JKS Learning
           </p>
         </div>
       </div>
 
       <AuthenticateWithRedirectCallback
-        signInFallbackRedirectUrl="/dashboard"
-        signUpFallbackRedirectUrl="/dashboard"
+        signInFallbackRedirectUrl="/auth-redirect"
+        signUpFallbackRedirectUrl="/auth-redirect"
         continueSignUpUrl="/sign-up"
       />
     </div>

@@ -100,7 +100,7 @@ export function InteractiveHero() {
   return (
     <section
       ref={containerRef}
-      className="relative min-h-[92vh] sm:min-h-screen w-full overflow-hidden bg-gradient-to-b from-[#FAFBFD] via-[#F4F7FC] to-[#EDF2FA] dark:from-[#0B1020] dark:via-[#0E1526] dark:to-[#111827] text-slate-900 dark:text-slate-100 flex flex-col justify-between pt-8 sm:pt-14 pb-0"
+      className="relative min-h-[92vh] sm:min-h-screen w-full overflow-hidden bg-gradient-to-b from-[#FAFBFD] via-[#F4F7FC] to-[#EDF2FA] dark:from-background dark:via-surface dark:to-surface-secondary text-slate-900 dark:text-slate-100 flex flex-col justify-between pt-8 sm:pt-14 pb-0"
     >
       {/* Ambient Brand Blue & Cyan Glow Orbs */}
       <div
@@ -126,7 +126,7 @@ export function InteractiveHero() {
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="inline-flex items-center gap-2 rounded-full border border-blue-200/90 dark:border-blue-800/60 bg-white/90 dark:bg-[#111827]/90 px-4 py-1.5 text-xs font-semibold text-[#1E5EFF] dark:text-blue-400 shadow-[0_2px_12px_rgba(30,94,255,0.08)] backdrop-blur-md"
+          className="inline-flex items-center gap-2 rounded-full border border-blue-200/90 dark:border-blue-800/60 bg-white/90 dark:bg-surface-secondary/90 px-4 py-1.5 text-xs font-semibold text-[#1E5EFF] dark:text-blue-400 shadow-[0_2px_12px_rgba(30,94,255,0.08)] backdrop-blur-md"
         >
           <Sparkles className="h-3.5 w-3.5 fill-[#1E5EFF] dark:fill-blue-400 text-[#1E5EFF] dark:text-blue-400" />
           <span>Anti-Skip Enforced · AI Interview Ready · Verified Credentials</span>
@@ -173,7 +173,7 @@ export function InteractiveHero() {
 
           <Link
             href="/ai-mock-interview"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white/90 dark:bg-[#151D2E] px-5 py-3.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm backdrop-blur-md transition-all hover:bg-slate-50 dark:hover:bg-[#1B2538] hover:text-slate-900 dark:hover:text-white"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white/90 dark:bg-surface-elevated px-5 py-3.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm backdrop-blur-md transition-all hover:bg-slate-50 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
           >
             <BrainCircuit className="h-4 w-4 text-[#1E5EFF] dark:text-blue-400" />
             <span>Practice AI Mock</span>
@@ -232,7 +232,7 @@ export function InteractiveHero() {
           {/* Floating Badge 1: Top-Left */}
           <div
             ref={badgeLeftRef}
-            className="absolute top-12 sm:top-20 -left-2 sm:left-4 z-30 max-w-[190px] sm:max-w-[220px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827]/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
+            className="absolute top-12 sm:top-20 -left-2 sm:left-4 z-30 max-w-[190px] sm:max-w-[220px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
             <div className="flex items-center justify-between text-[11px] font-bold text-slate-800 dark:text-slate-100">
               <span className="flex items-center gap-1.5">
@@ -249,7 +249,7 @@ export function InteractiveHero() {
           {/* Floating Badge 2: Right */}
           <div
             ref={badgeRightRef}
-            className="absolute top-28 sm:top-36 -right-2 sm:right-2 z-30 max-w-[210px] sm:max-w-[250px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827]/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
+            className="absolute top-28 sm:top-36 -right-2 sm:right-2 z-30 max-w-[210px] sm:max-w-[250px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/60 font-bold text-[10px] text-[#1E5EFF] dark:text-blue-400">
@@ -270,7 +270,7 @@ export function InteractiveHero() {
           {/* Floating Badge 3: Bottom-Left */}
           <div
             ref={badgeBottomRef}
-            className="absolute bottom-16 sm:bottom-24 -left-4 sm:left-0 z-30 rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827]/95 px-3.5 py-2.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105 hidden sm:block"
+            className="absolute bottom-16 sm:bottom-24 -left-4 sm:left-0 z-30 rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 px-3.5 py-2.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105 hidden sm:block"
           >
             <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
               <span className="relative flex h-2 w-2">

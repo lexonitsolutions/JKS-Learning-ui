@@ -78,7 +78,7 @@ export default function InstructorSettingsPage() {
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-4xl mx-auto w-full">
         <form onSubmit={handleSave} className="space-y-6">
           {/* SECTION 1: TEACHING & EVALUATION AUTOMATION */}
-          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-5">
+          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-5">
             <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
               <Sliders className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
               <div>
@@ -99,7 +99,7 @@ export default function InstructorSettingsPage() {
                 <select
                   value={passingThreshold}
                   onChange={(e) => setPassingThreshold(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="70">70% (Standard Pass)</option>
                   <option value="75">75% (Recommended)</option>
@@ -115,7 +115,7 @@ export default function InstructorSettingsPage() {
                 <select
                   value={lateSubmissionPenalty}
                   onChange={(e) => setLateSubmissionPenalty(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="0">0% (Grace Period / No Penalty)</option>
                   <option value="5">5% deduction per 24 hours</option>
@@ -131,7 +131,7 @@ export default function InstructorSettingsPage() {
                 <select
                   value={aiPlagiarismSensitivity}
                   onChange={(e) => setAiPlagiarismSensitivity(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="Strict">Strict (Flag &gt; 10% AI code generation)</option>
                   <option value="Standard">Standard (Flag &gt; 25% AI code generation)</option>
@@ -158,7 +158,7 @@ export default function InstructorSettingsPage() {
             </div>
 
             <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover">
                 <input
                   type="checkbox"
                   checked={autoApprovePassingQuizzes}
@@ -179,7 +179,7 @@ export default function InstructorSettingsPage() {
           </div>
 
           {/* SECTION 2: LIVE OFFICE HOURS & DOUBT CLEARING */}
-          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-5">
+          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-5">
             <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
               <Calendar className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
               <div>
@@ -198,7 +198,7 @@ export default function InstructorSettingsPage() {
                 <select
                   value={timeZone}
                   onChange={(e) => setTimeZone(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="Asia/Kolkata (IST)">Asia/Kolkata (IST)</option>
                   <option value="UTC">UTC (Universal Coordinated)</option>
@@ -213,7 +213,7 @@ export default function InstructorSettingsPage() {
                 <select
                   value={defaultSlotDuration}
                   onChange={(e) => setDefaultSlotDuration(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="15">15 Minutes (Quick Query)</option>
                   <option value="30">30 Minutes (Standard)</option>
@@ -227,7 +227,7 @@ export default function InstructorSettingsPage() {
                 <select
                   value={maxDoubtStudents}
                   onChange={(e) => setMaxDoubtStudents(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-2.5 font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="1">1-on-1 Private Consultation</option>
                   <option value="5">Small Pod (Up to 5)</option>
@@ -238,7 +238,7 @@ export default function InstructorSettingsPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover">
                 <input
                   type="checkbox"
                   checked={autoAcceptBookings}
@@ -253,12 +253,12 @@ export default function InstructorSettingsPage() {
                 </div>
               </label>
 
-              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3 space-y-1">
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated p-3 space-y-1">
                 <label className="font-bold text-slate-900 dark:text-white">Buffer Time Between Calls</label>
                 <select
                   value={bufferTime}
                   onChange={(e) => setBufferTime(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] p-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none"
                 >
                   <option value="5">5 Minutes Buffer</option>
                   <option value="10">10 Minutes Buffer (Recommended)</option>
@@ -269,7 +269,7 @@ export default function InstructorSettingsPage() {
           </div>
 
           {/* SECTION 3: VIDEO SECURITY & ANTI-PIRACY PROTECTION */}
-          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
+          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
             <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
               <ShieldCheck className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
               <div>
@@ -283,7 +283,7 @@ export default function InstructorSettingsPage() {
             </div>
 
             <div className="space-y-3 text-xs">
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover">
                 <input
                   type="checkbox"
                   checked={dynamicWatermark}
@@ -301,7 +301,7 @@ export default function InstructorSettingsPage() {
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover">
                 <input
                   type="checkbox"
                   checked={enforceAntiSkip}
@@ -319,7 +319,7 @@ export default function InstructorSettingsPage() {
                 </div>
               </label>
 
-              <div className="flex items-center justify-between rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5">
+              <div className="flex items-center justify-between rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated p-3.5">
                 <div>
                   <div className="font-bold text-slate-900 dark:text-white">Maximum Allowed Playback Speed</div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -329,7 +329,7 @@ export default function InstructorSettingsPage() {
                 <select
                   value={maxPlaybackSpeed}
                   onChange={(e) => setMaxPlaybackSpeed(e.target.value)}
-                  className="rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-3 py-1.5 font-bold text-slate-800 dark:text-white outline-none"
+                  className="rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3 py-1.5 font-bold text-slate-800 dark:text-white outline-none"
                 >
                   <option value="1.25x">1.25x (Strict Comprehension)</option>
                   <option value="1.5x">1.5x (Recommended)</option>
@@ -341,7 +341,7 @@ export default function InstructorSettingsPage() {
           </div>
 
           {/* SECTION 4: STUDENT COMMUNICATION & NOTIFICATIONS */}
-          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
+          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl space-y-4">
             <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
               <Bell className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
               <div>
@@ -355,7 +355,7 @@ export default function InstructorSettingsPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover">
                 <input
                   type="checkbox"
                   checked={notifySubmissions}
@@ -370,7 +370,7 @@ export default function InstructorSettingsPage() {
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover">
                 <input
                   type="checkbox"
                   checked={notifyForumDoubt}
@@ -385,7 +385,7 @@ export default function InstructorSettingsPage() {
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover">
                 <input
                   type="checkbox"
                   checked={allowDirectMessaging}
@@ -400,7 +400,7 @@ export default function InstructorSettingsPage() {
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-[#151D2E] p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated p-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover">
                 <input
                   type="checkbox"
                   checked={publicBioVisible}
@@ -442,14 +442,14 @@ export default function InstructorSettingsPage() {
                     type="time"
                     value={quietHoursStart}
                     onChange={(e) => setQuietHoursStart(e.target.value)}
-                    className="rounded-lg border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-white"
+                    className="rounded-lg border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-white"
                   />
                   <span>and</span>
                   <input
                     type="time"
                     value={quietHoursEnd}
                     onChange={(e) => setQuietHoursEnd(e.target.value)}
-                    className="rounded-lg border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#121A2A] px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-white"
+                    className="rounded-lg border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-white"
                   />
                   <span className="text-[11px] text-slate-500 dark:text-slate-400">(Faculty Local Time)</span>
                 </div>

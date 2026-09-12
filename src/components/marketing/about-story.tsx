@@ -93,12 +93,12 @@ export function AboutStory() {
   }, [reducedMotion]);
 
   return (
-    <section ref={sectionRef} className="relative bg-white dark:bg-[#0B1020]">
+    <section ref={sectionRef} className="relative bg-white dark:bg-background">
       <div className="mx-auto max-w-[1280px] px-6 py-20 lg:px-16 lg:py-28">
         <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
             <div className="flex items-center gap-3">
-              <span className="h-px w-8 bg-primary-blue" />
+              <span className="h-px w-8 bg-primary-fill" />
               <span className="text-label text-primary-blue">Our Story</span>
             </div>
             <h2 className="text-h2 mt-4 text-text-heading">
@@ -120,7 +120,7 @@ export function AboutStory() {
             <span
               ref={railRef}
               aria-hidden
-              className="absolute top-2 bottom-2 left-[11px] w-px origin-top scale-y-0 bg-gradient-to-b from-primary-blue to-[#E9B872] sm:left-[15px]"
+              className="absolute top-2 bottom-2 left-[11px] w-px origin-top scale-y-0 bg-gradient-to-b from-primary-fill to-[#E9B872] sm:left-[15px]"
             />
 
             {MILESTONES.map((milestone) => (
@@ -132,9 +132,9 @@ export function AboutStory() {
                 <span
                   data-milestone-dot
                   aria-hidden
-                  className="absolute top-1.5 -left-10 flex h-[23px] w-[23px] items-center justify-center rounded-full border border-border dark:border-slate-800/80 bg-white dark:bg-[#111827] shadow-sm sm:-left-12 sm:h-[31px] sm:w-[31px]"
+                  className="absolute top-1.5 -left-10 flex h-[23px] w-[23px] items-center justify-center rounded-full border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary shadow-sm sm:-left-12 sm:h-[31px] sm:w-[31px]"
                 >
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary-blue sm:h-2 sm:w-2" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary-fill sm:h-2 sm:w-2" />
                 </span>
                 <span className="font-mono text-xs tracking-[0.18em] text-primary-blue">
                   {milestone.year}

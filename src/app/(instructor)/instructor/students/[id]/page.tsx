@@ -135,7 +135,7 @@ export default function InstructorStudentDetailsPage() {
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">
         {/* Toast Notification */}
         {toastMessage && (
-          <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-white/95 dark:bg-[#1B2538] px-5 py-3.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-4">
+          <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-white/95 dark:bg-surface-hover px-5 py-3.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-4">
             <CheckCircle2 className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
             <span>{toastMessage}</span>
           </div>
@@ -155,7 +155,7 @@ export default function InstructorStudentDetailsPage() {
             <button
               type="button"
               onClick={() => showToast("Exporting Complete Academic Dossier (PDF)...")}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151D2E] px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
             >
               <Download className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
               <span>Export Dossier (PDF)</span>
@@ -174,7 +174,7 @@ export default function InstructorStudentDetailsPage() {
 
         {/* Header Profile & Progress Rating Hero Card */}
         <Reveal variant="fade-up">
-          <div className="relative overflow-hidden rounded-[28px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-6 sm:p-7 shadow-[0_12px_40px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+          <div className="relative overflow-hidden rounded-[28px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-6 sm:p-7 shadow-[0_12px_40px_rgb(20,50,100,0.06)] backdrop-blur-xl">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
               {/* Left Column: Avatar & Information */}
               <div className="lg:col-span-7 flex flex-col sm:flex-row items-start sm:items-center gap-5">
@@ -185,7 +185,7 @@ export default function InstructorStudentDetailsPage() {
                       .map((n: string) => n[0])
                       .join("")}
                   </div>
-                  <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 border-2 border-white dark:border-[#111827] text-white shadow-sm">
+                  <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 border-2 border-white dark:border-surface-secondary text-white shadow-sm">
                     <Check className="h-4 w-4 stroke-[3]" />
                   </div>
                 </div>
@@ -210,19 +210,19 @@ export default function InstructorStudentDetailsPage() {
 
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400 pt-0.5 font-medium">
                     <span className="inline-flex items-center gap-1">
-                      <Mail className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                      <Mail className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" />
                       {student.email}
                     </span>
                     <span className="inline-flex items-center gap-1">
-                      <Phone className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                      <Phone className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" />
                       {student.phone}
                     </span>
                     <span className="inline-flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                      <MapPin className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" />
                       {student.location}
                     </span>
                     <span className="inline-flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                      <Calendar className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" />
                       Enrolled {student.joinedDate}
                     </span>
                   </div>
@@ -230,7 +230,7 @@ export default function InstructorStudentDetailsPage() {
               </div>
 
               {/* Right Column: Faculty Diagnostic Rating Box */}
-              <div className="lg:col-span-5 rounded-2xl border border-blue-100 dark:border-blue-950 bg-gradient-to-br from-blue-50/80 via-indigo-50/50 to-white dark:from-blue-950/40 dark:via-indigo-950/20 dark:to-[#151D2E] p-5 shadow-inner space-y-3">
+              <div className="lg:col-span-5 rounded-2xl border border-blue-100 dark:border-blue-950 bg-gradient-to-br from-blue-50/80 via-indigo-50/50 to-white dark:from-blue-950/40 dark:via-indigo-950/20 dark:to-surface-elevated p-5 shadow-inner space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                     Student Progress Rating
@@ -257,7 +257,7 @@ export default function InstructorStudentDetailsPage() {
                     <span className="text-2xl font-black text-slate-900 dark:text-white">
                       {student.performanceRating}
                     </span>
-                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500">/ 5.0</span>
+                    <span className="text-xs font-bold text-slate-400 dark:text-slate-400">/ 5.0</span>
                   </div>
 
                   <div className="text-right">
@@ -313,7 +313,7 @@ export default function InstructorStudentDetailsPage() {
                 className={`rounded-xl px-4 py-2.5 text-xs font-bold transition-all duration-150 cursor-pointer whitespace-nowrap ${
                   isActive
                     ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 {tab.label}
@@ -344,7 +344,7 @@ export default function InstructorStudentDetailsPage() {
                 <TiltCard key={course.courseId} className="h-full">
                   <div
                     onClick={() => handleSelectCourseDrilldown(course.courseTitle)}
-                    className="group flex h-full flex-col justify-between overflow-hidden rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] shadow-[0_10px_35px_rgb(20,50,100,0.07)] backdrop-blur-xl transition-all duration-300 hover:shadow-2xl hover:border-blue-300 dark:hover:border-blue-600/50 hover:-translate-y-1 cursor-pointer"
+                    className="group flex h-full flex-col justify-between overflow-hidden rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary shadow-[0_10px_35px_rgb(20,50,100,0.07)] backdrop-blur-xl transition-all duration-300 hover:shadow-2xl hover:border-blue-300 dark:hover:border-blue-600/50 hover:-translate-y-1 cursor-pointer"
                   >
                     {/* Top Gradient Hero Banner */}
                     <div className="relative flex h-32 flex-col justify-between bg-gradient-to-br from-slate-950 via-slate-900 to-[#1E3A8A] p-5 text-white overflow-hidden">
@@ -418,18 +418,18 @@ export default function InstructorStudentDetailsPage() {
                           </span>
                         )}
 
-                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500">
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-400">
                           {student.assignments.filter((a: StudentAssignmentSubmission) => a.courseTitle === course.courseTitle).length} Submissions
                         </span>
                       </div>
                     </div>
 
                     {/* Action Strip */}
-                    <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] p-4 flex items-center justify-between">
+                    <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-4 flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors">
                         Inspect Submissions & AI Scan
                       </span>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white dark:bg-[#1B2538] text-[#2563EB] dark:text-blue-400 shadow-xs group-hover:bg-[#2563EB] group-hover:text-white transition-all">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white dark:bg-surface-hover text-[#2563EB] dark:text-blue-400 shadow-xs group-hover:bg-[#2563EB] group-hover:text-white transition-all">
                         <ChevronRight className="h-4 w-4 stroke-[2.5]" />
                       </div>
                     </div>
@@ -446,10 +446,10 @@ export default function InstructorStudentDetailsPage() {
         {activeTab === "assignments" && (
           <div className="space-y-6">
             {/* Filter and Course Selection Strip */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white/90 dark:bg-[#111827] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white/90 dark:bg-surface-secondary p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1">
-                  <Filter className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" /> Filter by Track:
+                  <Filter className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" /> Filter by Track:
                 </span>
                 <button
                   type="button"
@@ -492,7 +492,7 @@ export default function InstructorStudentDetailsPage() {
                     className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors cursor-pointer ${
                       assignmentFilter === f.id
                         ? "bg-blue-100 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400"
-                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover"
                     }`}
                   >
                     {f.label}
@@ -522,7 +522,7 @@ export default function InstructorStudentDetailsPage() {
               {filteredAssignments.map((asg: StudentAssignmentSubmission) => (
                 <div
                   key={asg.id}
-                  className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5 transition-all hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-900/60"
+                  className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5 transition-all hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-900/60"
                 >
                   {/* Top Header: Title, Course Badge & Score */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -531,7 +531,7 @@ export default function InstructorStudentDetailsPage() {
                         <span className="rounded-md bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 border border-blue-100 dark:border-blue-900/60">
                           {asg.courseTitle}
                         </span>
-                        <span className="text-xs text-slate-400 dark:text-slate-500">Submitted: {asg.submittedAt}</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-400">Submitted: {asg.submittedAt}</span>
                       </div>
                       <h4 className="mt-1.5 text-lg font-extrabold text-slate-900 dark:text-white">{asg.title}</h4>
                     </div>
@@ -551,7 +551,7 @@ export default function InstructorStudentDetailsPage() {
                           setInspectingAssignment(asg);
                           setInspectModalTab("answers");
                         }}
-                        className="inline-flex items-center gap-2 rounded-xl bg-slate-900 dark:bg-[#151D2E] px-4 py-2.5 text-xs font-bold text-white border border-transparent dark:border-slate-700 shadow-md hover:bg-slate-800 dark:hover:bg-slate-700 active:scale-95 transition-all cursor-pointer"
+                        className="inline-flex items-center gap-2 rounded-xl bg-slate-900 dark:bg-surface-elevated px-4 py-2.5 text-xs font-bold text-white border border-transparent dark:border-slate-700 shadow-md hover:bg-slate-800 dark:hover:bg-slate-700 active:scale-95 transition-all cursor-pointer"
                       >
                         <Eye className="h-3.5 w-3.5 text-blue-400" />
                         <span>Inspect Solution & Code</span>
@@ -560,7 +560,7 @@ export default function InstructorStudentDetailsPage() {
                   </div>
 
                   {/* AI vs Human Breakdown Card */}
-                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-[#151D2E] p-5 space-y-4">
+                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-surface-elevated p-5 space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5">
                         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 shadow-xs">
@@ -608,7 +608,7 @@ export default function InstructorStudentDetailsPage() {
                   </div>
 
                   {/* Submission Answers Preview Snippet */}
-                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121A2A] p-4 space-y-2">
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-input-bg p-4 space-y-2">
                     <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                       <span className="flex items-center gap-1.5">
                         <FileText className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" /> Submitted Executive Summary
@@ -650,7 +650,7 @@ export default function InstructorStudentDetailsPage() {
           <div className="space-y-6">
             <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <TiltCard>
-                <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+                <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Study Time</span>
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400">
@@ -667,7 +667,7 @@ export default function InstructorStudentDetailsPage() {
               </TiltCard>
 
               <TiltCard>
-                <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+                <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Learning Streak</span>
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-500">
@@ -682,7 +682,7 @@ export default function InstructorStudentDetailsPage() {
               </TiltCard>
 
               <TiltCard>
-                <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+                <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">AI Mock Readiness</span>
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400">
@@ -697,7 +697,7 @@ export default function InstructorStudentDetailsPage() {
               </TiltCard>
 
               <TiltCard>
-                <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+                <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Assessments Passed</span>
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
@@ -714,7 +714,7 @@ export default function InstructorStudentDetailsPage() {
 
             {/* Weekly Study Hours & Skills Radar */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-7 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-4">
+              <div className="lg:col-span-7 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">Weekly Study Hours Breakdown</h3>
@@ -745,7 +745,7 @@ export default function InstructorStudentDetailsPage() {
               </div>
 
               {/* Verified Competency Breakdown */}
-              <div className="lg:col-span-5 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-4">
+              <div className="lg:col-span-5 rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-4">
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">Domain Competency Ratings</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Verified through automated assessments & code reviews</p>
@@ -777,11 +777,11 @@ export default function InstructorStudentDetailsPage() {
         {/* ========================================================================= */}
         {activeTab === "quizzes" && (
           <div className="space-y-4">
-            <div className="rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
+            <div className="rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs min-w-[650px] text-slate-700 dark:text-slate-300">
                   <thead>
-                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold uppercase text-slate-400 dark:text-slate-500">
+                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold uppercase text-slate-400 dark:text-slate-400">
                       <th className="pb-3">Assessment Title</th>
                       <th className="px-4 pb-3">Category</th>
                       <th className="px-4 pb-3">Score</th>
@@ -793,7 +793,7 @@ export default function InstructorStudentDetailsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
                     {student.quizzes.map((qz: StudentQuizResult) => (
-                      <tr key={qz.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                      <tr key={qz.id} className="hover:bg-slate-50/70 dark:hover:bg-surface-hover transition-colors">
                         <td className="py-3.5 font-bold text-slate-900 dark:text-white">{qz.title}</td>
                         <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">{qz.category}</td>
                         <td className="px-4 py-3.5 font-black text-[#2563EB] dark:text-blue-400">{qz.score}%</td>
@@ -825,7 +825,7 @@ export default function InstructorStudentDetailsPage() {
               {student.certificates.map((cert) => (
                 <div
                   key={cert.id}
-                  className="rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#111827] p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl flex items-start gap-4"
+                  className="rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl flex items-start gap-4"
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 shadow-xs shrink-0">
                     <Award className="h-6 w-6" />
@@ -841,7 +841,7 @@ export default function InstructorStudentDetailsPage() {
                     <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                       Verification ID: {cert.verificationId}
                     </div>
-                    <div className="text-[11px] text-slate-400 dark:text-slate-500">Issued on {cert.issueDate}</div>
+                    <div className="text-[11px] text-slate-400 dark:text-slate-400">Issued on {cert.issueDate}</div>
                   </div>
                 </div>
               ))}
@@ -854,7 +854,7 @@ export default function InstructorStudentDetailsPage() {
         {/* ========================================================================= */}
         {activeTab === "guidance" && (
           <div className="space-y-6">
-            <form onSubmit={handleSendGuidance} className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-4">
+            <form onSubmit={handleSendGuidance} className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-4">
               <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
                 <MessageSquare className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
                 <div>
@@ -873,11 +873,11 @@ export default function InstructorStudentDetailsPage() {
                 value={guidanceText}
                 onChange={(e) => setGuidanceText(e.target.value)}
                 placeholder={`Provide strategic recommendations for ${student.name} regarding their coding assignments, microservices architecture, capstone design, or AI mock interview readiness...`}
-                className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-[#121A2A] p-4 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-500 outline-none focus:border-[#2563EB] focus:bg-white dark:focus:bg-[#121A2A] transition-colors"
+                className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-input-bg p-4 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB] focus:bg-white dark:focus:bg-input-bg transition-colors"
               />
 
               <div className="flex items-center justify-between pt-2">
-                <span className="text-xs text-slate-400 dark:text-slate-500">Faculty Lead: Dr. Rohit Kapoor</span>
+                <span className="text-xs text-slate-400 dark:text-slate-400">Faculty Lead: Dr. Rohit Kapoor</span>
                 <button
                   type="submit"
                   className="flex items-center gap-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 px-6 py-2.5 text-xs font-extrabold text-white shadow-md shadow-blue-500/25 transition-all cursor-pointer"
@@ -901,7 +901,7 @@ export default function InstructorStudentDetailsPage() {
         {/* TAB 7: TIMELINE                                                           */}
         {/* ========================================================================= */}
         {activeTab === "timeline" && (
-          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#111827] p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-4">
+          <div className="rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-4">
             <h3 className="text-sm font-extrabold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
               Chronological Academic Activity Log
             </h3>
@@ -912,7 +912,7 @@ export default function InstructorStudentDetailsPage() {
                   <div className="space-y-0.5 flex-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-extrabold text-slate-900 dark:text-white">{log.title}</span>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{log.timestamp}</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">{log.timestamp}</span>
                     </div>
                     <p className="text-xs text-slate-600 dark:text-slate-400">{log.description}</p>
                   </div>
@@ -928,8 +928,8 @@ export default function InstructorStudentDetailsPage() {
       {/* ========================================================================= */}
       {inspectingAssignment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 sm:p-6 backdrop-blur-sm overflow-y-auto">
-          <div className="relative flex w-full max-w-4xl flex-col rounded-[28px] border border-white/80 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-2xl overflow-hidden max-h-[90vh]">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-slate-900 dark:bg-[#151D2E] px-6 py-4 text-white">
+          <div className="relative flex w-full max-w-4xl flex-col rounded-[28px] border border-white/80 dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-2xl overflow-hidden max-h-[90vh]">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-slate-900 dark:bg-surface-elevated px-6 py-4 text-white">
               <div className="flex items-center gap-2.5">
                 <Code2 className="h-5 w-5 text-blue-400" />
                 <div>
@@ -948,7 +948,7 @@ export default function InstructorStudentDetailsPage() {
 
             <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-100px)]">
               {/* Executive Summary */}
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#151D2E] p-4 space-y-1.5">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-4 space-y-1.5">
                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">
                   Executive Architecture Blueprint
                 </span>
@@ -958,7 +958,7 @@ export default function InstructorStudentDetailsPage() {
               </div>
 
               {/* Methodology */}
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121A2A] p-4 space-y-1.5">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-input-bg p-4 space-y-1.5">
                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">
                   Implementation Methodology
                 </span>

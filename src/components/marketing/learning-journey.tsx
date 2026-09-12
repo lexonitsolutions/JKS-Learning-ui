@@ -45,7 +45,7 @@ export function LearningJourney() {
   }, [reducedMotion]);
 
   return (
-    <section ref={sectionRef} className="bg-white dark:bg-[#0B1020] py-24">
+    <section ref={sectionRef} className="bg-white dark:bg-background py-24">
       <div className="mx-auto max-w-[1280px] px-6 lg:px-16">
         <Reveal className="mb-16 max-w-xl">
           <span className="text-label text-primary-blue">The Learning Journey</span>
@@ -61,7 +61,7 @@ export function LearningJourney() {
           >
             <div
               ref={fillRef}
-              className="h-full w-full origin-left bg-primary-blue"
+              className="h-full w-full origin-left bg-primary-fill"
               style={{ transform: "scaleX(0)" }}
             />
           </div>
@@ -70,7 +70,7 @@ export function LearningJourney() {
             {STEPS.map((step, i) => (
               <Reveal key={step.title} variant="fade-up" delay={reducedMotion ? 0 : i * 0.08}>
                 <div className="relative flex flex-col items-center text-center md:items-start md:text-left">
-                  <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary-blue bg-white dark:bg-[#111827]">
+                  <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary-blue bg-white dark:bg-surface-secondary">
                     <step.icon className="h-5 w-5 text-primary-blue" />
                   </div>
                   <h3 className="text-h3 mt-4 text-text-heading">{step.title}</h3>

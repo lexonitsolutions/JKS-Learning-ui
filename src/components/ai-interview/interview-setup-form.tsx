@@ -66,7 +66,7 @@ export function InterviewSetupForm() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 rounded-[24px] border border-white/70 bg-white/85 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl sm:p-8 dark:border-slate-800/80 dark:bg-[#111827]/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div className="mx-auto max-w-3xl space-y-8 rounded-[24px] border border-white/70 bg-white/85 p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl sm:p-8 dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border/80 pb-5 dark:border-slate-800">
         <div className="flex items-center gap-3">
@@ -100,7 +100,7 @@ export function InterviewSetupForm() {
                 className={`relative flex items-center justify-between rounded-xl border p-3.5 text-left transition-all cursor-pointer ${
                   isSelected
                     ? "border-primary-blue bg-primary-blue/5 shadow-xs dark:border-blue-500 dark:bg-primary-blue/15"
-                    : "border-border bg-bg-light/50 hover:bg-bg-light dark:border-slate-800 dark:bg-[#151D2E]/60 dark:hover:bg-[#151D2E]"
+                    : "border-border bg-bg-light/50 hover:bg-bg-light dark:border-slate-800 dark:bg-surface-elevated/60 dark:hover:bg-surface-elevated"
                 }`}
               >
                 <div>
@@ -112,7 +112,7 @@ export function InterviewSetupForm() {
                 {isSelected && (
                   <motion.div
                     layoutId="track-pill"
-                    className="h-2 w-2 rounded-full bg-primary-blue dark:bg-blue-400"
+                    className="h-2 w-2 rounded-full bg-primary-fill dark:bg-blue-400"
                   />
                 )}
               </button>
@@ -137,8 +137,8 @@ export function InterviewSetupForm() {
                 onClick={() => setExperience(level.id)}
                 className={`rounded-xl border p-3 text-center transition-all cursor-pointer ${
                   isSelected
-                    ? "border-primary-blue bg-primary-blue text-white shadow-md shadow-primary-blue/20 dark:border-blue-500 dark:bg-blue-600"
-                    : "border-border bg-bg-light/60 hover:bg-white text-text-heading dark:border-slate-800 dark:bg-[#151D2E]/60 dark:hover:bg-[#151D2E] dark:text-slate-200"
+                    ? "border-primary-blue bg-primary-fill text-white shadow-md shadow-primary-blue/20 dark:border-blue-500 dark:bg-blue-600"
+                    : "border-border bg-bg-light/60 hover:bg-white text-text-heading dark:border-slate-800 dark:bg-surface-elevated/60 dark:hover:bg-surface-elevated dark:text-slate-200"
                 }`}
               >
                 <div className="text-xs font-bold leading-none">{level.label}</div>
@@ -169,12 +169,12 @@ export function InterviewSetupForm() {
                 className={`group flex items-start gap-3 rounded-xl border p-4 text-left transition-all cursor-pointer ${
                   isSelected
                     ? "border-primary-blue bg-primary-blue/[0.04] shadow-xs dark:border-blue-500 dark:bg-primary-blue/15"
-                    : "border-border bg-white hover:border-primary-blue/30 dark:border-slate-800 dark:bg-[#151D2E]/60 dark:hover:border-blue-500/40 dark:hover:bg-[#151D2E]"
+                    : "border-border bg-white hover:border-primary-blue/30 dark:border-slate-800 dark:bg-surface-elevated/60 dark:hover:border-blue-500/40 dark:hover:bg-surface-elevated"
                 }`}
               >
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                    isSelected ? "bg-primary-blue text-white dark:bg-blue-600" : "bg-primary-blue/10 text-primary-blue dark:bg-primary-blue/20 dark:text-blue-400"
+                    isSelected ? "bg-primary-fill text-white dark:bg-blue-600" : "bg-primary-blue/10 text-primary-blue dark:bg-primary-blue/20 dark:text-blue-400"
                   }`}
                 >
                   <Icon className="h-4 w-4" />

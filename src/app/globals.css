@@ -3,20 +3,26 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+  color-scheme: light;
+
   /* LIGHT THEME TOKENS */
   --background: #f4f7fc;
   --foreground: #0f172a;
 
+  /* Elevation hierarchy: canvas -> surface -> secondary -> elevated -> hover */
   --surface: #ffffff;
   --surface-secondary: #f8fafc;
   --surface-elevated: #ffffff;
+  --surface-hover: #f1f5f9;
+  --surface-active: #e2e8f0;
   --input-bg: #ffffff;
   --border: #e2e8f0;
   --border-subtle: #f1f5f9;
+  --border-strong: #cbd5e1;
 
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
   --text-disabled: #cbd5e1;
 
   /* JKS Brand Colors */
@@ -25,6 +31,17 @@
   --color-primary-blue-hover: #1649cc;
   --color-primary-blue-active: #0f3ba8;
   --color-primary-blue-subtle: rgba(30, 94, 255, 0.08);
+  /* Readable brand ink — pairs with the current surface, not the opposite theme.
+     Deeper than --color-primary-blue so it still clears AA when it sits on the
+     10%-tint chip backgrounds (5.5:1 there, vs 4.45:1 for the raw brand blue). */
+  --color-primary-ink: #1a52e0;
+  /* Solid fills that carry white label text (kept dark enough for AA) */
+  --color-primary-fill: #1e5eff;
+  --color-primary-fill-hover: #2167ff;
+  --color-error-fill: #dc2626;
+  --color-error-fill-hover: #b91c1c;
+  /* Outline/ghost button ink: near-black in light, near-white in dark */
+  --color-contrast-ink: #0b1f3a;
 
   --color-bg-light: #f5f8ff;
   --color-text-heading: #0f172a;
@@ -38,6 +55,21 @@
   --color-error: #dc2626;
   --color-error-bg: #fef2f2;
   --color-info: #1e5eff;
+
+  /* Focus ring */
+  --ring: #1e5eff;
+
+  /* Sidebar / navigation chrome */
+  --nav-surface: rgba(255, 255, 255, 0.9);
+  --nav-border: rgba(255, 255, 255, 0.8);
+  --nav-item: #475569;
+  --nav-item-icon: #94a3b8;
+  --nav-item-hover-bg: #f1f5f9;
+  --nav-item-hover-text: #0f172a;
+  --nav-item-active-bg: #2563eb;
+  --nav-item-active-text: #ffffff;
+  --nav-sub-active-bg: #eff6ff;
+  --nav-sub-active-text: #2563eb;
 
   /* Radius */
   --radius-sm: 6px;
@@ -53,55 +85,93 @@
   --shadow-soft-3d: 0 10px 30px -5px rgba(20, 50, 100, 0.05), 0 2px 6px -1px rgba(20, 50, 100, 0.03);
   --shadow-soft-3d-lg: 0 20px 40px -8px rgba(15, 45, 90, 0.08), 0 4px 12px -2px rgba(15, 45, 90, 0.04);
   --shadow-blue-glow: 0 10px 25px -5px rgba(30, 94, 255, 0.25);
+  --shadow-popover: 0 12px 40px -8px rgba(15, 23, 42, 0.16), 0 2px 8px -2px rgba(15, 23, 42, 0.08);
 }
 
 .dark,
 :root.dark,
 [data-theme="dark"] {
-  /* DARK THEME TOKENS - Balanced, eye-friendly, professional */
-  --background: #0b1020;
-  --foreground: #f8fafc;
+  color-scheme: dark;
 
-  --surface: #111827;
-  --surface-secondary: #151d2e;
-  --surface-elevated: #1b2538;
-  --input-bg: #121a2a;
-  --border: #263247;
-  --border-subtle: #1e293b;
+  /* ---------------------------------------------------------------------- */
+  /* DARK THEME — Executive Obsidian.                                        */
+  /* Five distinct elevation steps so the UI reads as layered depth rather   */
+  /* than one flat black plane. Every step is measurably lighter than the    */
+  /* one beneath it, and every text token clears WCAG AA on all of them.     */
+  /* ---------------------------------------------------------------------- */
 
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-disabled: #64748b;
+  --background: #080b13; /* app canvas — the deepest layer */
+  --foreground: #f1f5f9;
+
+  --surface: #0e1421; /* sidebar, topbar, page chrome */
+  --surface-secondary: #131c2c; /* cards, panels, table shells */
+  --surface-elevated: #1a2438; /* dropdowns, modals, popovers, tooltips */
+  --surface-hover: #1f2b43; /* hovered rows / list items */
+  --surface-active: #26334e; /* pressed / selected rows */
+  --input-bg: #0f1725;
+  --border: #26334d;
+  --border-subtle: #1c2740;
+  --border-strong: #3a4a69;
+
+  --text-primary: #f1f5f9; /* 15.6:1 on cards */
+  --text-secondary: #a9b6ca; /* 8.3:1 on cards */
+  --text-muted: #8293ab; /* 5.5:1 on cards — still AA */
+  --text-disabled: #5b6a80;
 
   /* JKS Brand Colors in Dark Mode */
-  --color-primary-dark: #070c18;
+  --color-primary-dark: #060910;
   --color-primary-blue: #3b82f6;
-  --color-primary-blue-hover: #2563eb;
-  --color-primary-blue-active: #1d4ed8;
-  --color-primary-blue-subtle: rgba(59, 130, 246, 0.14);
+  --color-primary-blue-hover: #60a5fa;
+  --color-primary-blue-active: #93c5fd;
+  --color-primary-blue-subtle: rgba(96, 165, 250, 0.14);
+  /* Brand ink lightens in dark so links/labels stay legible on dark surfaces */
+  --color-primary-ink: #7cb0ff;
+  /* Fills stay deep enough that white label text still clears AA (5.2:1 / 4.7:1) */
+  --color-primary-fill: #2563eb;
+  --color-primary-fill-hover: #1d4ed8;
+  --color-error-fill: #e11d48;
+  --color-error-fill-hover: #be123c;
+  --color-contrast-ink: #e2e8f0;
 
-  --color-bg-light: #0b1020;
-  --color-text-heading: #f8fafc;
+  /* Sits one step above the canvas so "light band" sections, neutral badges
+     and subtle hover fills stay visible instead of merging with the page. */
+  --color-bg-light: #111a2a;
+  --color-text-heading: #f1f5f9;
   --color-text-body: #cbd5e1;
-  --color-border: #263247;
+  --color-border: #26334d;
 
-  --color-success: #22c55e;
-  --color-success-bg: rgba(34, 197, 94, 0.12);
-  --color-warning: #f59e0b;
-  --color-warning-bg: rgba(245, 158, 11, 0.12);
-  --color-error: #ef4444;
-  --color-error-bg: rgba(239, 68, 68, 0.12);
-  --color-info: #60a5fa;
+  --color-success: #34d399;
+  --color-success-bg: rgba(52, 211, 153, 0.14);
+  --color-warning: #fbbf24;
+  --color-warning-bg: rgba(251, 191, 36, 0.14);
+  --color-error: #fb7185;
+  --color-error-bg: rgba(251, 113, 133, 0.14);
+  --color-info: #7dd3fc;
+
+  /* Focus ring */
+  --ring: #60a5fa;
+
+  /* Sidebar / navigation chrome */
+  --nav-surface: rgba(14, 20, 33, 0.92);
+  --nav-border: rgba(38, 51, 77, 0.9);
+  --nav-item: #a9b6ca;
+  --nav-item-icon: #8293ab;
+  --nav-item-hover-bg: #1f2b43;
+  --nav-item-hover-text: #f8fafc;
+  --nav-item-active-bg: #2563eb;
+  --nav-item-active-text: #ffffff;
+  --nav-sub-active-bg: rgba(59, 130, 246, 0.18);
+  --nav-sub-active-text: #93c5fd;
 
   /* Shadows - Dark Mode */
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.35);
-  --shadow-md: 0 4px 12px 0 rgb(0 0 0 / 0.45);
-  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.55);
-  --shadow-card: 0 4px 24px rgb(0 0 0 / 0.4);
-  --shadow-soft-3d: 0 10px 30px -5px rgba(0, 0, 0, 0.45), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
-  --shadow-soft-3d-lg: 0 20px 40px -8px rgba(0, 0, 0, 0.55), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
-  --shadow-blue-glow: 0 10px 25px -5px rgba(59, 130, 246, 0.22);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.45);
+  --shadow-md: 0 4px 14px 0 rgb(0 0 0 / 0.55);
+  --shadow-lg: 0 12px 28px -4px rgb(0 0 0 / 0.65);
+  --shadow-card: 0 4px 20px rgb(0 0 0 / 0.4);
+  --shadow-soft-3d: 0 10px 30px -5px rgba(0, 0, 0, 0.55), 0 2px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-soft-3d-lg: 0 20px 40px -8px rgba(0, 0, 0, 0.65), 0 4px 12px -2px rgba(0, 0, 0, 0.5);
+  --shadow-blue-glow: 0 10px 25px -5px rgba(59, 130, 246, 0.28);
+  --shadow-popover: 0 16px 48px -12px rgba(0, 0, 0, 0.75), 0 2px 10px -2px rgba(0, 0, 0, 0.6);
 }
 
 @theme inline {
@@ -111,14 +181,30 @@
   --color-surface: var(--surface);
   --color-surface-secondary: var(--surface-secondary);
   --color-surface-elevated: var(--surface-elevated);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-active: var(--surface-active);
   --color-input-bg: var(--input-bg);
 
   --color-primary-dark: var(--color-primary-dark);
   --color-primary-blue: var(--color-primary-blue);
+  --color-primary-blue-hover: var(--color-primary-blue-hover);
+  --color-primary-blue-active: var(--color-primary-blue-active);
+  --color-primary-blue-subtle: var(--color-primary-blue-subtle);
+  --color-primary-ink: var(--color-primary-ink);
+  --color-primary-fill: var(--color-primary-fill);
+  --color-primary-fill-hover: var(--color-primary-fill-hover);
+  --color-error-fill: var(--color-error-fill);
+  --color-error-fill-hover: var(--color-error-fill-hover);
+  --color-contrast-ink: var(--color-contrast-ink);
   --color-bg-light: var(--color-bg-light);
   --color-text-heading: var(--color-text-heading);
   --color-text-body: var(--color-text-body);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
   --color-border: var(--color-border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-ring: var(--ring);
   --color-success: var(--color-success);
   --color-success-bg: var(--color-success-bg);
   --color-warning: var(--color-warning);
@@ -126,6 +212,15 @@
   --color-error: var(--color-error);
   --color-error-bg: var(--color-error-bg);
   --color-info: var(--color-info);
+
+  --color-nav-item: var(--nav-item);
+  --color-nav-item-icon: var(--nav-item-icon);
+  --color-nav-item-hover-bg: var(--nav-item-hover-bg);
+  --color-nav-item-hover-text: var(--nav-item-hover-text);
+  --color-nav-item-active-bg: var(--nav-item-active-bg);
+  --color-nav-item-active-text: var(--nav-item-active-text);
+  --color-nav-sub-active-bg: var(--nav-sub-active-bg);
+  --color-nav-sub-active-text: var(--nav-sub-active-text);
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -136,11 +231,12 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-card: var(--shadow-card);
+  --shadow-popover: var(--shadow-popover);
   --shadow-soft-3d: var(--shadow-soft-3d);
   --shadow-soft-3d-lg: var(--shadow-soft-3d-lg);
   --shadow-blue-glow: var(--shadow-blue-glow);
 
-  --font-sans: var(--font-manrope);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "SF Compact", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   --animate-marquee: marquee var(--duration, 40s) linear infinite;
   --animate-marquee-vertical: marquee-vertical var(--duration, 40s) linear infinite;
@@ -199,9 +295,9 @@
 .dark .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(30, 41, 59, 0.6) 0%,
-    rgba(51, 65, 85, 0.8) 50%,
-    rgba(30, 41, 59, 0.6) 100%
+    rgba(31, 43, 67, 0.75) 0%,
+    rgba(58, 74, 105, 0.9) 50%,
+    rgba(31, 43, 67, 0.75) 100%
   );
   background-size: 200% 100%;
 }
@@ -213,7 +309,121 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* ========================================================================= */
+/* BASE LAYER DEFAULTS                                                       */
+/* Lives in @layer base so every Tailwind utility still wins over it. These  */
+/* only supply a sane theme-aware fallback for chrome the utilities rarely   */
+/* reach: native form controls, select options, scrollbars, selection and    */
+/* the focus ring.                                                           */
+/* ========================================================================= */
+@layer base {
+  ::selection {
+    background-color: color-mix(in srgb, var(--ring) 26%, transparent);
+    color: var(--text-primary);
+  }
+
+  /* Native form controls pick up the theme instead of staying white-on-white.
+     Scoped to .dark so light mode keeps exactly the rendering it had before. */
+  .dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+  .dark textarea,
+  .dark select {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border-color: var(--border);
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+  }
+
+  /* Native dropdown lists render with the OS palette — pin them to the theme */
+  .dark select option,
+  .dark select optgroup {
+    background-color: var(--surface-elevated);
+    color: var(--text-primary);
+  }
+
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"],
+  progress {
+    accent-color: var(--ring);
+  }
+
+  /* Date/time pickers ship a dark-only indicator glyph */
+  .dark input[type="date"]::-webkit-calendar-picker-indicator,
+  .dark input[type="time"]::-webkit-calendar-picker-indicator,
+  .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  .dark input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.6);
+    opacity: 0.65;
+    cursor: pointer;
+  }
+
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover,
+  .dark input:-webkit-autofill:focus,
+  .dark textarea:-webkit-autofill,
+  .dark select:-webkit-autofill {
+    -webkit-text-fill-color: var(--text-primary);
+    -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
+    caret-color: var(--text-primary);
+  }
+
+  /* A single, unmistakable keyboard focus treatment across both themes */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Themed scrollbars so overflow panes stop reading as bright white gutters */
+  * {
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border-strong);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-muted);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  .dark hr {
+    border-color: var(--border);
+  }
+}
+
 @layer utilities {
+  /* Opt-out used by the horizontal chip rails in Bookmarks / Quizzes. */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
   .text-display {
     font-size: 36px;
     font-weight: 700;
@@ -262,3 +472,114 @@ body {
     text-transform: uppercase;
   }
 }
+
+/* ========================================================================= */
+/* PRINT MEDIA OPTIMIZATION FOR TAX INVOICES & VERIFIED CERTIFICATES        */
+/* ========================================================================= */
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Isolate Certificate Printing (Single Landscape Page) */
+  body.printing-certificate,
+  body:has(#printable-certificate-portal),
+  body:has(#printable-certificate-modal) {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.printing-certificate > *:not(#printable-certificate-portal),
+  body:has(#printable-certificate-portal) > *:not(#printable-certificate-portal) {
+    display: none !important;
+  }
+
+  /* Fallback if modal is within tree */
+  body:has(#printable-certificate-modal) > *:not(:has(#printable-certificate-modal)) {
+    display: none !important;
+  }
+
+  #printable-certificate-portal,
+  #printable-certificate-modal {
+    display: flex !important;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+    break-after: avoid !important;
+    break-inside: avoid !important;
+    z-index: 9999999 !important;
+  }
+
+  #printable-certificate-portal > div,
+  #printable-certificate-modal > div {
+    border: none !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+
+  .certificate-printable-sheet {
+    box-sizing: border-box !important;
+    width: 297mm !important;
+    height: 210mm !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+    break-after: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Isolate Invoice Printing */
+  body.printing-invoice,
+  body:has(#printable-invoice-portal) {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.printing-invoice > *:not(#printable-invoice-portal),
+  body:has(#printable-invoice-portal) > *:not(#printable-invoice-portal) {
+    display: none !important;
+  }
+
+  body:has(#printable-invoice-modal) > *:not(:has(#printable-invoice-modal)) {
+    display: none !important;
+  }
+
+  #printable-invoice-portal,
+  #printable-invoice-modal {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    z-index: 9999999 !important;
+  }
+}
+

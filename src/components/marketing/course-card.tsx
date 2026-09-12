@@ -9,10 +9,18 @@ export function CourseCard({ course }: { course: Course }) {
   return (
     <TiltCard className="h-full">
       <Link href={`/courses/${course.slug}`} className="block h-full">
-        <Card className="h-full flex flex-col justify-between transition-shadow hover:shadow-lg rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#111827]">
+        <Card className="h-full flex flex-col justify-between transition-shadow hover:shadow-lg rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-surface-secondary dark:hover:border-border-strong">
           <div>
-            <div className="flex h-28 sm:h-36 items-center justify-center bg-gradient-to-br from-primary-dark to-primary-blue p-2 text-center">
-              <span className="text-[11px] sm:text-label font-bold text-white/85 line-clamp-1">{course.track}</span>
+            <div className="relative flex h-28 sm:h-36 items-center justify-center bg-gradient-to-br from-primary-dark to-primary-fill overflow-hidden text-center">
+              {course.thumbnail ? (
+                <img
+                  src={course.thumbnail}
+                  alt={course.title}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="text-[11px] sm:text-label font-bold text-white/85 line-clamp-1">{course.track}</span>
+              )}
             </div>
             <div className="p-3 sm:p-5">
               <div className="mb-1.5 sm:mb-2 flex items-center gap-1.5">
@@ -23,10 +31,10 @@ export function CourseCard({ course }: { course: Course }) {
 
               <div className="mt-2.5 sm:mt-4 flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-body-sm text-text-body">
                 <span className="flex items-center gap-0.5 sm:gap-1">
-                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400 dark:text-slate-500" /> {course.durationWeeks}w
+                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400 dark:text-slate-400" /> {course.durationWeeks}w
                 </span>
                 <span className="flex items-center gap-0.5 sm:gap-1">
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400 dark:text-slate-500" /> {course.studentsEnrolled.toLocaleString()}
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400 dark:text-slate-400" /> {course.studentsEnrolled.toLocaleString()}
                 </span>
                 <span className="flex items-center gap-0.5 sm:gap-1 font-bold text-slate-700 dark:text-slate-200">
                   <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-warning text-warning" /> {course.rating}

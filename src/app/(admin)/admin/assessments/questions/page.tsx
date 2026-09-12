@@ -129,7 +129,7 @@ export default function AssessmentQuestionsPage() {
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs dark:border-slate-800/80 dark:bg-[#111827]">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs dark:border-slate-800/80 dark:bg-surface-secondary">
           <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
@@ -137,7 +137,7 @@ export default function AssessmentQuestionsPage() {
               placeholder="Search question bank by keyword, concept, or ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2 text-xs text-slate-900 outline-none focus:border-[#2563EB] focus:bg-white dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500 dark:focus:bg-[#121A2A]"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2 text-xs text-slate-900 outline-none focus:border-[#2563EB] focus:bg-white dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500 dark:focus:bg-input-bg"
             />
           </div>
 
@@ -145,7 +145,7 @@ export default function AssessmentQuestionsPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
             >
               <option value="All">All Categories</option>
               <option value="Java Full Stack">Java Full Stack</option>
@@ -160,7 +160,7 @@ export default function AssessmentQuestionsPage() {
             <select
               value={selectedDifficulty}
               onChange={(e) => setSelectedDifficulty(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
             >
               <option value="All">All Difficulties</option>
               <option value="Easy">Easy</option>
@@ -175,7 +175,7 @@ export default function AssessmentQuestionsPage() {
           {filtered.map((q) => (
             <div
               key={q.id}
-              className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs space-y-4 hover:border-slate-300 transition-all dark:border-slate-800/80 dark:bg-[#111827] dark:hover:border-slate-700/80"
+              className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs space-y-4 hover:border-slate-300 transition-all dark:border-slate-800/80 dark:bg-surface-secondary dark:hover:border-slate-700/80"
             >
               {/* Question Meta Row */}
               <div className="flex items-start justify-between gap-3">
@@ -235,7 +235,7 @@ export default function AssessmentQuestionsPage() {
                       className={`flex items-center gap-2.5 rounded-xl border p-3 ${
                         isCorrect
                           ? "border-emerald-500 bg-emerald-50/70 text-emerald-950 font-bold dark:border-emerald-500/60 dark:bg-emerald-950/40 dark:text-emerald-300"
-                          : "border-slate-200 bg-slate-50/50 text-slate-700 dark:border-slate-800 dark:bg-[#151D2E] dark:text-slate-300"
+                          : "border-slate-200 bg-slate-50/50 text-slate-700 dark:border-slate-800 dark:bg-surface-elevated dark:text-slate-300"
                       }`}
                     >
                       <div
@@ -263,7 +263,7 @@ export default function AssessmentQuestionsPage() {
           ))}
 
           {filtered.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
+            <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center text-xs text-slate-400 dark:border-slate-800 dark:text-slate-400">
               No questions found matching your filter criteria.
             </div>
           )}
@@ -273,7 +273,7 @@ export default function AssessmentQuestionsPage() {
       {/* Add New Question Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto dark:bg-black/75">
-          <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-2xl space-y-4 my-8 dark:border-slate-800 dark:bg-[#111827]">
+          <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-2xl space-y-4 my-8 dark:border-slate-800 dark:bg-surface-secondary">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-base font-black text-slate-900 dark:text-white">Add Question to Question Bank</h3>
               <button
@@ -292,7 +292,7 @@ export default function AssessmentQuestionsPage() {
                   <select
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value as any })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
+                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                   >
                     <option value="Java Full Stack">Java Full Stack</option>
                     <option value="React 19 & Next.js">React 19 &amp; Next.js</option>
@@ -309,7 +309,7 @@ export default function AssessmentQuestionsPage() {
                   <select
                     value={form.difficulty}
                     onChange={(e) => setForm({ ...form, difficulty: e.target.value as any })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
+                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                   >
                     <option value="Easy">Easy</option>
                     <option value="Medium">Medium</option>
@@ -323,7 +323,7 @@ export default function AssessmentQuestionsPage() {
                     type="number"
                     value={form.marks}
                     onChange={(e) => setForm({ ...form, marks: Number(e.target.value) })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white"
+                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                   />
                 </div>
               </div>
@@ -336,7 +336,7 @@ export default function AssessmentQuestionsPage() {
                   placeholder="Enter the technical scenario or question statement..."
                   value={form.questionText}
                   onChange={(e) => setForm({ ...form, questionText: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500"
+                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400"
                 />
               </div>
 
@@ -347,7 +347,7 @@ export default function AssessmentQuestionsPage() {
                   placeholder="Optional code block in Java, TypeScript, SQL..."
                   value={form.codeSnippet}
                   onChange={(e) => setForm({ ...form, codeSnippet: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 font-mono text-xs outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500"
+                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 font-mono text-xs outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400"
                 />
               </div>
 
@@ -377,7 +377,7 @@ export default function AssessmentQuestionsPage() {
                         next[idx] = e.target.value;
                         setForm({ ...form, options: next });
                       }}
-                      className="flex-1 rounded-xl border border-slate-200 p-2 text-xs outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500"
+                      className="flex-1 rounded-xl border border-slate-200 p-2 text-xs outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400"
                     />
                   </div>
                 ))}
@@ -390,7 +390,7 @@ export default function AssessmentQuestionsPage() {
                   placeholder="Explain why the chosen answer is correct..."
                   value={form.explanation}
                   onChange={(e) => setForm({ ...form, explanation: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-[#121A2A] dark:text-white dark:placeholder-slate-500"
+                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400"
                 />
               </div>
 
@@ -398,7 +398,7 @@ export default function AssessmentQuestionsPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="rounded-xl px-4 py-2 font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 cursor-pointer"
+                  className="rounded-xl px-4 py-2 font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-surface-hover cursor-pointer"
                 >
                   Cancel
                 </button>

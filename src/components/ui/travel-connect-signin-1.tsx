@@ -10,7 +10,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 
-import { loginWithApi, registerWithApi, loginWithMockCredentials, performLogout } from "@/lib/auth/use-mock-auth";
+import {
+  loginWithApi,
+  registerWithApi,
+  loginWithMockCredentials,
+  performLogout,
+  getApprovedInstructors,
+} from "@/lib/auth/use-mock-auth";
 import { MOCK_USERS, type MockRole } from "@/lib/auth/mock-users";
 
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
@@ -280,7 +286,9 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
 
     // If already signed in, immediately navigate to target
     if (isSignedIn || session) {
-      window.location.assign(from);
+      const isSuperAdmin = session?.email?.toLowerCase() === "lexonitservices@gmail.com";
+      const isAdmin = isSuperAdmin || session?.role === "admin";
+      window.location.assign(isAdmin ? "/admin" : from);
       return;
     }
 
@@ -295,7 +303,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
       await signIn.authenticateWithRedirect({
         strategy,
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: from,
+        redirectUrlComplete: "/auth-redirect",
       });
       // On success the browser navigates away; nothing runs after this.
     } catch (err) {
@@ -314,7 +322,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
     return (
       <motion.div
         {...cardMotion}
-        className="flex w-full max-w-md flex-col items-center justify-center rounded-3xl bg-white dark:bg-[#111827] p-8 text-center shadow-2xl border border-slate-100 dark:border-slate-800/80"
+        className="flex w-full max-w-md flex-col items-center justify-center rounded-3xl bg-white dark:bg-surface-secondary p-8 text-center shadow-2xl border border-slate-100 dark:border-slate-800/80"
       >
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 mb-4">
           <CheckCircle2 className="h-8 w-8 text-[#2563EB] dark:text-blue-400" />
@@ -349,11 +357,11 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   return (
     <motion.div
       {...cardMotion}
-      className="flex w-full max-w-4xl flex-col md:flex-row overflow-hidden rounded-3xl bg-white dark:bg-[#111827] shadow-2xl border border-slate-100 dark:border-slate-800/80"
+      className="flex w-full max-w-4xl flex-col md:flex-row overflow-hidden rounded-3xl bg-white dark:bg-surface-secondary shadow-2xl border border-slate-100 dark:border-slate-800/80"
     >
       {/* Desktop Left side — animated dot map + brand */}
       <div className="relative hidden h-[620px] w-1/2 overflow-hidden border-r border-slate-100 dark:border-slate-800/80 md:block">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/70 dark:from-[#0B1020] dark:via-[#111827] dark:to-[#151D2E]">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/70 dark:from-background dark:via-surface-secondary dark:to-surface-elevated">
           {!reducedMotion && <DotMap />}
 
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8 text-center">
@@ -383,7 +391,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
       </div>
 
       {/* Right side — form */}
-      <div className="flex w-full flex-col justify-center bg-white dark:bg-[#111827] p-6 sm:p-8 md:w-1/2 md:p-10">
+      <div className="flex w-full flex-col justify-center bg-white dark:bg-surface-secondary p-6 sm:p-8 md:w-1/2 md:p-10">
         <FadeIn reducedMotion={reducedMotion} delay={0} y={20}>
           <div className="mb-6 flex items-center justify-between">
             <JksLogo size="md" />
@@ -405,7 +413,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
                 <button
                   type="button"
                   disabled={oauthLoading !== null}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-[#151D2E] p-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs transition-all duration-300 hover:bg-slate-100 dark:hover:bg-[#1B2538] hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer disabled:opacity-60"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-surface-elevated p-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs transition-all duration-300 hover:bg-slate-100 dark:hover:bg-surface-hover hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer disabled:opacity-60"
                   onClick={() => handleSocialAuth("oauth_google")}
                 >
                   <GoogleIcon />
@@ -417,7 +425,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
                 <button
                   type="button"
                   disabled={oauthLoading !== null}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-[#151D2E] p-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs transition-all duration-300 hover:bg-slate-100 dark:hover:bg-[#1B2538] hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer disabled:opacity-60"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-surface-elevated p-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs transition-all duration-300 hover:bg-slate-100 dark:hover:bg-surface-hover hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer disabled:opacity-60"
                   onClick={() => handleSocialAuth("oauth_github")}
                 >
                   <GithubIcon />
@@ -441,7 +449,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
                   <div className="w-full border-t border-slate-200 dark:border-slate-800" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase font-bold tracking-wider">
-                  <span className="bg-white dark:bg-[#111827] px-3 text-slate-400 dark:text-slate-500">or</span>
+                  <span className="bg-white dark:bg-surface-secondary px-3 text-slate-400 dark:text-slate-400">or</span>
                 </div>
               </div>
             </>
@@ -503,7 +511,7 @@ function PasswordInput({
         id={id}
         type={visible ? "text" : "password"}
         className={cn(
-          "w-full rounded-md border border-gray-200 dark:border-slate-700/80 bg-gray-50 dark:bg-[#121A2A] px-3 py-2.5 pr-10 text-sm text-gray-800 dark:text-white outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500",
+          "w-full rounded-md border border-gray-200 dark:border-slate-700/80 bg-gray-50 dark:bg-input-bg px-3 py-2.5 pr-10 text-sm text-gray-800 dark:text-white outline-none placeholder:text-gray-400 dark:placeholder:text-slate-400 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500",
           className
         )}
         {...props}
@@ -567,17 +575,22 @@ function SubmitButton({
 // Hard navigation, not router.push() — see (auth)/layout.tsx / proxy.ts:
 // /login, /admin, /dashboard are force-dynamic but the client Router Cache
 // can still replay a stale prefetch captured under a different auth state.
-// A full navigation always re-evaluates proxy.ts fresh.
 function redirectAfterLogin(role: MockRole, from: string | null) {
-  const fallback = role === "admin" ? "/admin" : role === "instructor" ? "/instructor" : "/dashboard";
-  window.location.assign(from ?? fallback);
+  if (role === "admin") {
+    window.location.assign("/admin");
+    return;
+  }
+  if (role === "instructor") {
+    window.location.assign("/instructor");
+    return;
+  }
+  window.location.assign(from || "/dashboard");
 }
 
 function LoginFields() {
   const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [quickLoginRole, setQuickLoginRole] = useState<MockRole | null>(null);
   const {
     register,
     handleSubmit,
@@ -591,20 +604,9 @@ function LoginFields() {
       setFormError(result.error);
       return;
     }
-    redirectAfterLogin(result.session.role, searchParams.get("from"));
-  };
-
-  const quickLogin = (role: MockRole) => {
-    const user = MOCK_USERS.find((u) => u.role === role);
-    if (!user) return;
-    setQuickLoginRole(role);
-    const result = loginWithMockCredentials(user.email, user.password);
-    if (!result.ok) {
-      setQuickLoginRole(null);
-      setFormError(result.error);
-      return;
-    }
-    redirectAfterLogin(result.session.role, searchParams.get("from"));
+    const isSuperAdmin = values.email.trim().toLowerCase() === "lexonitservices@gmail.com";
+    const role: MockRole = isSuperAdmin ? "admin" : result.session.role;
+    redirectAfterLogin(role, searchParams.get("from"));
   };
 
   return (
@@ -619,7 +621,7 @@ function LoginFields() {
             type="email"
             autoComplete="email"
             placeholder="name@example.com"
-            className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 transition-all"
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 transition-all"
             {...register("email")}
           />
           {errors.email && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.email.message}</p>}
@@ -667,39 +669,6 @@ function LoginFields() {
           </Link>
         </p>
       </form>
-
-      {/* Subtle Demo Credentials Widget */}
-      <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-        <p className="mb-2 text-center text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
-          Quick Demo Access
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={() => quickLogin("student")}
-            disabled={quickLoginRole !== null}
-            className="rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-[#151D2E] py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all hover:bg-slate-100 dark:hover:bg-[#1B2538] hover:border-slate-300 dark:hover:border-slate-600 disabled:opacity-50 cursor-pointer"
-          >
-            {quickLoginRole === "student" ? "Signing in…" : "Student"}
-          </button>
-          <button
-            type="button"
-            onClick={() => quickLogin("instructor")}
-            disabled={quickLoginRole !== null}
-            className="rounded-lg border border-purple-200 dark:border-purple-900/60 bg-purple-50/70 dark:bg-purple-950/40 py-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300 transition-all hover:bg-purple-100 dark:hover:bg-purple-900/50 hover:border-purple-300 dark:hover:border-purple-800 disabled:opacity-50 cursor-pointer"
-          >
-            {quickLoginRole === "instructor" ? "Signing in…" : "Lecturer"}
-          </button>
-          <button
-            type="button"
-            onClick={() => quickLogin("admin")}
-            disabled={quickLoginRole !== null}
-            className="rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/40 py-1.5 text-xs font-semibold text-blue-700 dark:text-blue-300 transition-all hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:border-blue-300 dark:hover:border-blue-800 disabled:opacity-50 cursor-pointer"
-          >
-            {quickLoginRole === "admin" ? "Signing in…" : "Admin"}
-          </button>
-        </div>
-      </div>
     </>
   );
 }
@@ -1032,7 +1001,7 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
             We sent a 6-digit confirmation code to:
           </p>
 
-          <div className="inline-flex items-center gap-2 rounded-xl bg-slate-100 dark:bg-[#151D2E] border border-slate-200 dark:border-slate-700/80 px-3 py-1.5 text-xs font-mono font-bold text-slate-800 dark:text-slate-200 shadow-xs">
+          <div className="inline-flex items-center gap-2 rounded-xl bg-slate-100 dark:bg-surface-elevated border border-slate-200 dark:border-slate-700/80 px-3 py-1.5 text-xs font-mono font-bold text-slate-800 dark:text-slate-200 shadow-xs">
             <Mail className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
             <span className="truncate max-w-[200px]">{registeredEmail}</span>
             <button
@@ -1068,7 +1037,7 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
                 className={`h-12 w-10 sm:h-14 sm:w-12 rounded-xl text-center font-mono text-xl sm:text-2xl font-black text-slate-900 dark:text-white outline-none transition-all duration-200 ${
                   digit
                     ? "border-2 border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 shadow-md shadow-blue-500/10 scale-105"
-                    : "border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-[#121A2A] focus:border-blue-600 dark:focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 focus:scale-105"
+                    : "border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-input-bg focus:border-blue-600 dark:focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 focus:scale-105"
                 }`}
               />
             ))}
@@ -1146,8 +1115,8 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
         </div>
 
         {/* Security Seal */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500">
-          <Lock className="h-3 w-3 text-slate-400 dark:text-slate-500" />
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-slate-400 dark:text-slate-400">
+          <Lock className="h-3 w-3 text-slate-400 dark:text-slate-400" />
           <span>256-Bit Encrypted Security &bull; Official JKS Credentials</span>
         </div>
       </form>
@@ -1184,7 +1153,7 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
           type="text"
           autoComplete="name"
           placeholder="e.g. Rahul Sharma"
-          className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 transition-all"
+          className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 transition-all"
           {...register("name")}
         />
         {errors.name && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.name.message}</p>}
@@ -1199,7 +1168,7 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
           type="email"
           autoComplete="email"
           placeholder="name@example.com"
-          className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-[#121A2A] px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-[#151D2E] focus:ring-4 focus:ring-blue-500/15 transition-all"
+          className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 transition-all"
           {...register("email")}
         />
         {errors.email && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.email.message}</p>}
@@ -1210,7 +1179,7 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
           <label htmlFor="register-password" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
             Password <span className="text-blue-500">*</span>
           </label>
-          <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">Min. 10 characters</span>
+          <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400">Min. 10 characters</span>
         </div>
         <PasswordInput
           id="register-password"

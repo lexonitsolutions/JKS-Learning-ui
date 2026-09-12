@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
   const lastUpdated = "September 4, 2026";
 
   return (
-    <div className="relative min-h-screen bg-slate-50 text-slate-800 dark:bg-[#0B1020] dark:text-slate-200 transition-colors duration-200">
+    <div className="relative min-h-screen bg-slate-50 text-slate-800 dark:bg-background dark:text-slate-200 transition-colors duration-200">
       {/* Hero Header */}
       <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-20 text-white lg:py-24">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-indigo-950/10 to-transparent pointer-events-none" />
@@ -87,7 +87,7 @@ export default function PrivacyPolicyPage() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
           {/* Desktop Table of Contents Sidebar */}
           <aside className="hidden lg:col-span-4 lg:block">
-            <div className="sticky top-28 space-y-4 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm dark:bg-[#111827] dark:border-slate-800/80">
+            <div className="sticky top-28 space-y-4 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm dark:bg-surface-secondary dark:border-slate-800/80">
               <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white">Table of Contents</h2>
@@ -99,16 +99,16 @@ export default function PrivacyPolicyPage() {
                     <a
                       key={sec.id}
                       href={`#${sec.id}`}
-                      className="group flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-blue-400"
+                      className="group flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors dark:text-slate-400 dark:hover:bg-surface-hover dark:hover:text-blue-400"
                     >
-                      <Icon className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0 dark:text-slate-500 dark:group-hover:text-blue-400" />
+                      <Icon className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0 dark:text-slate-400 dark:group-hover:text-blue-400" />
                       <span className="truncate">{sec.title}</span>
                     </a>
                   );
                 })}
               </nav>
 
-              <div className="mt-6 rounded-xl bg-slate-50 p-4 border border-slate-100 dark:bg-[#151D2E] dark:border-slate-800">
+              <div className="mt-6 rounded-xl bg-slate-50 p-4 border border-slate-100 dark:bg-surface-elevated dark:border-slate-800">
                 <div className="flex items-start gap-2">
                   <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                   <div>
@@ -128,7 +128,7 @@ export default function PrivacyPolicyPage() {
           {/* Policy Text Articles */}
           <main className="space-y-12 lg:col-span-8">
             {/* Quick Summary Callout */}
-            <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-indigo-50/40 to-white p-6 shadow-sm dark:bg-gradient-to-r dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-[#111827] dark:border-blue-900/40">
+            <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-indigo-50/40 to-white p-6 shadow-sm dark:bg-gradient-to-r dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-surface-secondary dark:border-blue-900/40">
               <h2 className="text-base font-bold text-blue-950 dark:text-blue-300 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 Executive Summary (TL;DR)
@@ -179,7 +179,7 @@ export default function PrivacyPolicyPage() {
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs dark:bg-[#111827] dark:border-slate-800/80">
+                <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs dark:bg-surface-secondary dark:border-slate-800/80">
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <UserCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                     A. Account & Profile Data
@@ -189,7 +189,7 @@ export default function PrivacyPolicyPage() {
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs dark:bg-[#111827] dark:border-slate-800/80">
+                <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs dark:bg-surface-secondary dark:border-slate-800/80">
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <FileCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                     B. Learning & Academic Progress
@@ -199,7 +199,7 @@ export default function PrivacyPolicyPage() {
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs dark:bg-[#111827] dark:border-slate-800/80">
+                <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs dark:bg-surface-secondary dark:border-slate-800/80">
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <Lock className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                     C. Payment & Billing Information
@@ -209,7 +209,7 @@ export default function PrivacyPolicyPage() {
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs dark:bg-[#111827] dark:border-slate-800/80">
+                <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs dark:bg-surface-secondary dark:border-slate-800/80">
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <Server className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                     D. Technical & Log Data
@@ -252,7 +252,7 @@ export default function PrivacyPolicyPage() {
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 JKS Learning features advanced AI-driven tools, including the AI Mock Interview Simulator and automated coding evaluation:
               </p>
-              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 dark:bg-[#111827] dark:border-slate-800/80">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 dark:bg-surface-secondary dark:border-slate-800/80">
                 <div className="flex items-start gap-2.5">
                   <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -285,9 +285,9 @@ export default function PrivacyPolicyPage() {
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 We only share personal data with trusted third-party service providers (sub-processors) who adhere to strict data protection standards:
               </p>
-              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:bg-[#111827] dark:border-slate-800">
+              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:bg-surface-secondary dark:border-slate-800">
                 <table className="w-full text-left text-xs">
-                  <thead className="border-b border-slate-100 bg-slate-50 text-slate-700 font-bold dark:bg-[#151D2E] dark:border-slate-800 dark:text-slate-200">
+                  <thead className="border-b border-slate-100 bg-slate-50 text-slate-700 font-bold dark:bg-surface-elevated dark:border-slate-800 dark:text-slate-200">
                     <tr>
                       <th className="p-3">Partner / Provider</th>
                       <th className="p-3">Purpose</th>
@@ -363,19 +363,19 @@ export default function PrivacyPolicyPage() {
                 Regardless of your geographic location, JKS Learning grants all students comprehensive control over their personal data:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="rounded-xl border border-slate-200 bg-white p-3.5 dark:bg-[#111827] dark:border-slate-800/80">
+                <div className="rounded-xl border border-slate-200 bg-white p-3.5 dark:bg-surface-secondary dark:border-slate-800/80">
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">Right to Access & Export</h4>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Request a machine-readable copy of your course progress, invoices, and certificates.</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-3.5 dark:bg-[#111827] dark:border-slate-800/80">
+                <div className="rounded-xl border border-slate-200 bg-white p-3.5 dark:bg-surface-secondary dark:border-slate-800/80">
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">Right to Rectification</h4>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Update your legal name, contact phone number, and password anytime from your profile.</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-3.5 dark:bg-[#111827] dark:border-slate-800/80">
+                <div className="rounded-xl border border-slate-200 bg-white p-3.5 dark:bg-surface-secondary dark:border-slate-800/80">
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">Right to Deletion</h4>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Request complete erasure of your account, interview audio, and resume files.</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-3.5 dark:bg-[#111827] dark:border-slate-800/80">
+                <div className="rounded-xl border border-slate-200 bg-white p-3.5 dark:bg-surface-secondary dark:border-slate-800/80">
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">Opt-Out of Marketing</h4>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Unsubscribe from promotional emails and webinar announcements with 1 click.</p>
                 </div>

@@ -3,15 +3,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-blue disabled:opacity-50 disabled:pointer-events-none",
+  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-50 disabled:pointer-events-none",
   {
     variants: {
       variant: {
-        primary: "bg-primary-blue text-white hover:brightness-110 active:brightness-95",
+        // Solid fills use the *fill* tokens, which stay dark enough in both
+        // themes for the white label to keep its AA contrast.
+        primary:
+          "bg-primary-fill text-white hover:bg-primary-fill-hover active:brightness-95",
+        // The outline variant used to inherit --color-primary-dark, which is
+        // near-black in dark mode — the button vanished. contrast-ink flips
+        // with the theme instead.
         secondary:
-          "border border-primary-dark text-primary-dark bg-transparent hover:bg-primary-dark hover:text-white",
-        tertiary: "text-primary-blue hover:underline underline-offset-4 px-0",
-        destructive: "bg-error text-white hover:brightness-110",
+          "border border-contrast-ink text-contrast-ink bg-transparent hover:bg-contrast-ink hover:text-background active:brightness-95",
+        tertiary: "text-primary-ink hover:underline underline-offset-4 px-0",
+        destructive:
+          "bg-error-fill text-white hover:bg-error-fill-hover active:brightness-95",
       },
       size: {
         sm: "h-9 px-4 text-sm",

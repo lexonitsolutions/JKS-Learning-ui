@@ -62,7 +62,7 @@ export function AboutBeyondClassroom() {
   const [activePillar, setActivePillar] = useState(REAL_WORLD_PILLARS[0]);
 
   return (
-    <section className="relative bg-bg-light dark:bg-[#0B1020] text-text-heading dark:text-white py-20 lg:py-32 px-6 lg:px-16 border-t border-border dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
+    <section className="relative bg-bg-light dark:bg-background text-text-heading dark:text-white py-20 lg:py-32 px-6 lg:px-16 border-t border-border dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
       <div className="mx-auto max-w-[1280px] space-y-16">
         {/* Section Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
@@ -93,12 +93,12 @@ export function AboutBeyondClassroom() {
                 className={`rounded-[28px] border p-8 transition-all duration-300 cursor-pointer space-y-4 flex flex-col justify-between ${
                   isSelected
                     ? "border-primary-blue dark:border-blue-500/80 bg-blue-50/40 dark:bg-blue-950/20 shadow-lg shadow-primary-blue/5 dark:shadow-black/40 ring-1 ring-primary-blue/20 dark:ring-blue-500/30"
-                    : "border-border dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#111827] hover:bg-white dark:hover:bg-[#151D2E] hover:border-slate-300 dark:hover:border-slate-700 shadow-xs"
+                    : "border-border dark:border-slate-800/80 bg-slate-50/50 dark:bg-surface-secondary hover:bg-white dark:hover:bg-surface-elevated hover:border-slate-300 dark:hover:border-slate-700 shadow-xs"
                 }`}
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-[#151D2E] border border-slate-200 dark:border-slate-700 text-primary-blue dark:text-blue-400 shadow-xs">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-surface-elevated border border-slate-200 dark:border-slate-700 text-primary-blue dark:text-blue-400 shadow-xs">
                       <Icon className="h-6 w-6" />
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-0.5 rounded-full">

@@ -31,31 +31,24 @@ export interface AdminCourseRow {
 }
 
 export const ADMIN_COURSES: AdminCourseRow[] = [
-  { title: "Java Full Stack Developer Mastery", track: "Full Stack", status: "Published", price: 24999, enrolled: 2140, rating: 4.8 },
-  { title: ".NET Full Stack Developer", track: "Full Stack", status: "Published", price: 22999, enrolled: 1380, rating: 4.7 },
-  { title: "Modern Frontend Engineering with React", track: "Frontend", status: "Published", price: 15999, enrolled: 3020, rating: 4.9 },
-  { title: "SAP ABAP Professional Track", track: "SAP", status: "Published", price: 28999, enrolled: 860, rating: 4.6 },
-  { title: "SAP MM Functional Consultant", track: "SAP", status: "Published", price: 26999, enrolled: 640, rating: 4.7 },
-  { title: "Advanced React Performance & Architecture", track: "Frontend", status: "Draft", price: 18999, enrolled: 0, rating: 0 },
-  { title: "SAP FICO Foundations", track: "SAP", status: "Draft", price: 25999, enrolled: 0, rating: 0 },
+  { title: "Java Full Stack Developer Mastery", track: "Full Stack", status: "Published", price: 29999, enrolled: 2140, rating: 4.9 },
+  { title: "Modern Frontend Engineering (React 19 & Next.js)", track: "Frontend", status: "Published", price: 24999, enrolled: 3020, rating: 4.9 },
+  { title: "SAP S/4HANA Enterprise Systems", track: "SAP", status: "Published", price: 34999, enrolled: 1500, rating: 4.8 },
+  { title: ".NET 9 Enterprise Microservices & Cloud", track: "Full Stack", status: "Published", price: 27999, enrolled: 1380, rating: 4.8 },
 ];
 
 export interface AdminInstructor {
   initials: string;
   name: string;
-  email?: string;
+  email: string;
   role: string;
   assignedCourses: number;
   students: number;
   status: "Active" | "Inactive";
+  password?: string;
 }
 
-export const ADMIN_INSTRUCTORS: AdminInstructor[] = [
-  { initials: "RK", name: "Rohit Kapoor", email: "rohit.kapoor@jkslearning.com", role: "Lead Trainer, Java Full Stack", assignedCourses: 2, students: 3520, status: "Active" },
-  { initials: "MS", name: "Meera Subramaniam", email: "meera.subramaniam@jkslearning.com", role: "Lead Trainer, SAP", assignedCourses: 2, students: 1500, status: "Active" },
-  { initials: "DP", name: "Dev Patil", email: "dev.patil@jkslearning.com", role: "Lead Trainer, Frontend", assignedCourses: 1, students: 3020, status: "Active" },
-  { initials: "AF", name: "Aisha Farooqui", email: "aisha.farooqui@jkslearning.com", role: "AI Interview Design Lead", assignedCourses: 0, students: 0, status: "Active" },
-];
+export const ADMIN_INSTRUCTORS: AdminInstructor[] = [];
 
 export interface AdminAssessmentRow {
   title: string;

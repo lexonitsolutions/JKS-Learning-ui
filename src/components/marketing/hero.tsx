@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { MagneticButton } from "@/components/interactions/magnetic-button";
 import { NetworkBackground } from "@/components/three/network-background";
 import { ThreadsBackdrop } from "@/components/three/threads-backdrop";
@@ -110,8 +111,7 @@ export function Hero({
               <Link
                 href={secondaryCta.href}
                 className={
-                  buttonVariants({ variant: "secondary", size: "lg" }) +
-                  " border-white text-white hover:bg-white hover:text-primary-dark"
+                  cn(buttonVariants({ variant: "secondary", size: "lg" }), "border-white text-white hover:bg-white hover:text-primary-dark")
                 }
               >
                 {secondaryCta.icon} {secondaryCta.label}

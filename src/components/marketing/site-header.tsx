@@ -66,7 +66,8 @@ export function SiteHeader() {
 
   const userEmail = clerkEmail || session?.email || "";
   const userName = clerkName || session?.name || userEmail.split("@")[0] || "Student";
-  const userRole = session?.role || "student";
+  const isSuperAdminEmail = userEmail.toLowerCase() === "lexonitservices@gmail.com";
+  const userRole = isSuperAdminEmail ? "admin" : (session?.role || "student");
 
   const userAvatar =
     customAvatar ||
@@ -75,8 +76,9 @@ export function SiteHeader() {
       ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || userEmail)}&background=2563eb&color=fff&bold=true&size=128`
       : undefined);
 
-  const userInitials =
-    clerkUser?.firstName && clerkUser?.lastName
+  const userInitials = isSuperAdminEmail
+    ? "LX"
+    : clerkUser?.firstName && clerkUser?.lastName
       ? `${clerkUser.firstName[0]}${clerkUser.lastName[0]}`.toUpperCase()
       : userName.slice(0, 2).toUpperCase();
 
@@ -86,9 +88,6 @@ export function SiteHeader() {
   // Dynamic Navigation items
   const navLinks = [
     { href: "/courses", label: "Courses" },
-    isUserAuthenticated
-      ? { href: dashboardHref, label: "Dashboard", isDashboard: true }
-      : { href: "/register-course", label: "Enroll Now", isEnroll: true },
     { href: "/ai-mock-interview", label: "AI Mock Interview" },
     { href: "/success-stories", label: "Success Stories" },
     { href: "/about", label: "About" },
@@ -115,7 +114,7 @@ export function SiteHeader() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b bg-white/85 dark:bg-[#0B1020]/90 text-text-heading dark:text-slate-100 backdrop-blur-xl transition-all duration-300 ${
+      className={`sticky top-0 z-50 border-b bg-white/85 dark:bg-background/90 text-text-heading dark:text-slate-100 backdrop-blur-xl transition-all duration-300 ${
         scrolled
           ? "border-border dark:border-slate-800/80 shadow-[0_4px_20px_rgba(11,31,58,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
           : "border-transparent"
@@ -127,8 +126,6 @@ export function SiteHeader() {
         <nav className="hidden items-center gap-7 md:flex">
           {navLinks.map((link) => {
             const active = pathname.startsWith(link.href) && link.href !== "/";
-            const isEnroll = link.isEnroll;
-            const isDashboard = link.isDashboard;
 
             return (
               <Link
@@ -137,23 +134,15 @@ export function SiteHeader() {
                 className={`group relative text-sm font-semibold transition-colors flex items-center gap-1.5 ${
                   active
                     ? "text-primary-blue dark:text-blue-400"
-                    : isEnroll
-                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40"
-                    : isDashboard
-                    ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/40"
                     : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                 }`}
               >
-                {isEnroll && <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />}
-                {isDashboard && <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 animate-pulse" />}
                 {link.label}
-                {!isEnroll && !isDashboard && (
-                  <span
-                    className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-primary-blue transition-all duration-300 ease-out ${
-                      active ? "w-full" : "w-0 group-hover:w-full"
-                    }`}
-                  />
-                )}
+                <span
+                  className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-primary-fill transition-all duration-300 ease-out ${
+                    active ? "w-full" : "w-0 group-hover:w-full"
+                  }`}
+                />
               </Link>
             );
           })}
@@ -167,7 +156,7 @@ export function SiteHeader() {
             <>
               <Link
                 href="/login"
-                className="hidden text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-white sm:block px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="hidden text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-white sm:block px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-hover"
               >
                 Log in
               </Link>
@@ -179,7 +168,7 @@ export function SiteHeader() {
               </Link>
               <Link
                 href="/register-course"
-                className="group inline-flex items-center gap-2 rounded-xl bg-primary-blue px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-primary-blue/25 transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-primary-blue/30"
+                className="group inline-flex items-center gap-2 rounded-xl bg-primary-fill px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-primary-blue/25 transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-primary-blue/30"
               >
                 Enroll Now
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
@@ -227,7 +216,7 @@ export function SiteHeader() {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border dark:border-slate-800 text-text-heading dark:text-slate-200 transition-colors hover:bg-bg-light dark:hover:bg-slate-800 md:hidden cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border dark:border-slate-800 text-text-heading dark:text-slate-200 transition-colors hover:bg-bg-light dark:hover:bg-surface-hover md:hidden cursor-pointer"
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -242,7 +231,7 @@ export function SiteHeader() {
             animate={reducedMotion ? { opacity: 1 } : { opacity: 1, height: "auto" }}
             exit={reducedMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-            className="overflow-hidden border-t border-border dark:border-slate-800 bg-white/95 dark:bg-[#0B1020]/95 backdrop-blur-xl md:hidden"
+            className="overflow-hidden border-t border-border dark:border-slate-800 bg-white/95 dark:bg-background/95 backdrop-blur-xl md:hidden"
           >
             <div className="flex flex-col gap-1 px-6 py-4">
               {navLinks.map((link, i) => {
@@ -259,7 +248,7 @@ export function SiteHeader() {
                       className={`block rounded-lg px-3 py-3 text-base font-medium transition-colors ${
                         active
                           ? "bg-primary-blue/10 dark:bg-blue-950/60 text-primary-blue dark:text-blue-400 font-bold"
-                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white"
+                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
                       }`}
                     >
                       {link.label}
@@ -277,13 +266,13 @@ export function SiteHeader() {
                 >
                   <Link
                     href="/login"
-                    className="block rounded-lg px-3 py-2.5 text-base font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white"
+                    className="block rounded-lg px-3 py-2.5 text-base font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
                   >
                     Log in
                   </Link>
                   <Link
                     href="/register"
-                    className="block text-center rounded-xl bg-primary-blue py-2.5 text-sm font-bold text-white shadow-xs hover:bg-blue-600"
+                    className="block text-center rounded-xl bg-primary-fill py-2.5 text-sm font-bold text-white shadow-xs hover:bg-blue-600"
                   >
                     Register
                   </Link>

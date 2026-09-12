@@ -50,50 +50,68 @@ export function useMockSession(): MockSession | null {
 
 export type LoginResult = { ok: true; session: MockSession } | { ok: false; error: string };
 
-const INSTRUCTORS_STORAGE_KEY = "jks_admin_instructors_v1";
+export const INSTRUCTORS_STORAGE_KEY = "jks_admin_instructors_v1";
 
-function getApprovedInstructors(): Array<{ name: string; email: string; initials: string; role: string }> {
+export interface StoredInstructor {
+  name: string;
+  email: string;
+  initials: string;
+  role: string;
+  assignedCourses?: number;
+  students?: number;
+  status?: "Active" | "Inactive";
+  password?: string;
+}
+
+export function getApprovedInstructors(): StoredInstructor[] {
   if (typeof window === "undefined") return [];
   try {
     const stored = localStorage.getItem(INSTRUCTORS_STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
     }
   } catch {
     // ignore
   }
-  return [
-    { name: "Dr. Rohit Kapoor", email: "instructor@jkslearning.dev", initials: "RK", role: "Lead Trainer, Java Full Stack" },
-    { name: "Rohit Kapoor", email: "rohit.kapoor@jkslearning.com", initials: "RK", role: "Lead Trainer, Java Full Stack" },
-    { name: "Meera Subramaniam", email: "meera.subramaniam@jkslearning.com", initials: "MS", role: "Lead Trainer, SAP" },
-    { name: "Dev Patil", email: "dev.patil@jkslearning.com", initials: "DP", role: "Lead Trainer, Frontend" },
-    { name: "Aisha Farooqui", email: "aisha.farooqui@jkslearning.com", initials: "AF", role: "AI Interview Design Lead" },
-  ];
+  return [];
+}
+
+export function saveApprovedInstructors(instructors: StoredInstructor[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(INSTRUCTORS_STORAGE_KEY, JSON.stringify(instructors));
+  } catch {
+    // ignore
+  }
+}
+
+export function deleteApprovedInstructor(email: string): StoredInstructor[] {
+  const current = getApprovedInstructors();
+  const normalized = email.trim().toLowerCase();
+  const updated = current.filter((inst) => inst.email.trim().toLowerCase() !== normalized);
+  saveApprovedInstructors(updated);
+  return updated;
+}
+
+export function isEmailApprovedInstructor(email: string): boolean {
+  if (!email) return false;
+  const normalized = email.trim().toLowerCase();
+  const approved = getApprovedInstructors();
+  return approved.some((inst) => inst.email?.trim().toLowerCase() === normalized);
 }
 
 export function loginWithMockCredentials(email: string, password: string): LoginResult {
   const normalizedEmail = email.trim().toLowerCase();
 
-  // First check static MOCK_USERS
+  // 1. Check static MOCK_USERS (Admin & Students)
   const staticUser = MOCK_USERS.find(
     (u) => u.email.toLowerCase() === normalizedEmail && u.password === password
   );
 
   if (staticUser) {
-    // If it's an instructor account, double-check that they are in the approved instructors list
-    if (staticUser.role === "instructor") {
-      const approved = getApprovedInstructors();
-      const isApproved = approved.some(
-        (inst) => inst.email?.toLowerCase() === normalizedEmail || staticUser.email === "instructor@jkslearning.dev"
-      );
-      if (!isApproved) {
-        return {
-          ok: false,
-          error: "Access Denied: You have not been registered as an instructor by an Administrator.",
-        };
-      }
-    }
-
     const session: MockSession = {
       email: staticUser.email,
       name: staticUser.name,
@@ -105,28 +123,37 @@ export function loginWithMockCredentials(email: string, password: string): Login
     return { ok: true, session };
   }
 
-  // Check dynamically admin-added instructors in localStorage
+  // 2. Check dynamically admin-added lecturers in localStorage
   const dynamicInstructors = getApprovedInstructors();
   const matchedInstructor = dynamicInstructors.find(
     (inst) => inst.email?.toLowerCase() === normalizedEmail
   );
 
   if (matchedInstructor) {
-    // Dynamic instructors accept default password 'instructor123' or 'admin123' or their password
-    if (password === "instructor123" || password === "admin123" || password.length >= 6) {
+    // Match instructor password if set, or accept default password 'lecturer123' / 'admin123' or length >= 6
+    const validPassword = matchedInstructor.password
+      ? password === matchedInstructor.password
+      : password === "lecturer123" || password === "instructor123" || password === "admin123" || password.length >= 6;
+
+    if (validPassword) {
       const session: MockSession = {
         email: matchedInstructor.email,
         name: matchedInstructor.name,
-        initials: matchedInstructor.initials || "IN",
+        initials: matchedInstructor.initials || "LE",
         role: "instructor",
       };
       document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
       window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
       return { ok: true, session };
     }
+    return { ok: false, error: "Incorrect password for this lecturer account." };
   }
 
-  return { ok: false, error: "Invalid email or password." };
+  // If user attempted an email that looks like an instructor or unapproved account
+  return {
+    ok: false,
+    error: "Invalid email or password. Note: Only lecturers registered by an Administrator can access the Lecturer workspace.",
+  };
 }
 
 export async function loginWithApi(email: string, password: string): Promise<LoginResult> {
