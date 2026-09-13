@@ -135,11 +135,13 @@ export function DashboardTopbar({
   subtitle = "Here's what's happening with your platform today.",
   userInitials,
   badgeNotification = true,
+  children,
 }: {
   title?: string;
   subtitle?: string;
   userInitials?: string;
   badgeNotification?: boolean;
+  children?: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -268,13 +270,21 @@ export function DashboardTopbar({
           </button>
 
           <div className="min-w-0 flex-1">
-            <h1 className="text-sm sm:text-xl lg:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 truncate">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400 line-clamp-1 hidden sm:block sm:text-sm">
-                {subtitle}
-              </p>
+            {children ? (
+              children
+            ) : (
+              <>
+                {title && (
+                  <h1 className="text-sm sm:text-xl lg:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 truncate">
+                    {title}
+                  </h1>
+                )}
+                {subtitle && (
+                  <p className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400 line-clamp-1 hidden sm:block sm:text-sm">
+                    {subtitle}
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>

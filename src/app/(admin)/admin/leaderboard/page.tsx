@@ -1,43 +1,68 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import {
   Trophy,
   Flame,
   Crown,
-  Medal,
-  Award,
-  ChevronDown,
   Sparkles,
   Search,
   CheckCircle2,
-  Code2,
-  BrainCircuit,
   Zap,
   Star,
   ShieldCheck,
-  TrendingUp,
-  RefreshCw,
-  Clock,
-  ArrowUpRight,
-  Filter,
+  Calendar,
+  ChevronDown,
+  ChevronRight,
+  ArrowRight,
+  Target,
   User,
-  ExternalLink,
+  Users,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
-import { TiltCard } from "@/components/interactions/tilt-card";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { fetchLeaderboardData, type LeaderboardItem, type LeaderboardResponse } from "@/lib/data/students-api";
+import { LeaderboardWaveAnimation } from "@/components/dashboard/leaderboard-wave";
+
+function HallOfExcellenceConfetti() {
+  const particles = [
+    { top: "14%", left: "12%", bg: "bg-rose-400", rotate: "rotate-12", size: "w-2 h-2 rounded-xs" },
+    { top: "24%", left: "7%", bg: "bg-amber-400", rotate: "-rotate-45", size: "w-1.5 h-3 rounded-xs" },
+    { top: "18%", left: "28%", bg: "bg-blue-400", rotate: "rotate-45", size: "w-2 h-2 rounded-full" },
+    { top: "34%", left: "24%", bg: "bg-indigo-400", rotate: "rotate-12", size: "w-1.5 h-2 rounded-xs" },
+    { top: "14%", right: "26%", bg: "bg-rose-400", rotate: "-rotate-12", size: "w-2 h-2 rounded-xs" },
+    { top: "32%", right: "32%", bg: "bg-sky-400", rotate: "rotate-45", size: "w-2 h-1.5 rounded-xs" },
+    { top: "12%", right: "10%", bg: "bg-amber-400", rotate: "rotate-45", size: "w-2.5 h-2 rounded-xs" },
+    { top: "26%", right: "6%", bg: "bg-emerald-400", rotate: "-rotate-12", size: "w-2 h-2 rounded-full" },
+    { top: "8%", left: "42%", bg: "bg-amber-300", rotate: "rotate-30", size: "w-1.5 h-1.5 rounded-full" },
+    { top: "10%", right: "42%", bg: "bg-violet-400", rotate: "-rotate-30", size: "w-1.5 h-2 rounded-xs" },
+  ];
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-80 select-none">
+      {particles.map((p, idx) => (
+        <span
+          key={idx}
+          className={`absolute ${p.bg} ${p.size} ${p.rotate} opacity-75 animate-pulse`}
+          style={{ top: p.top, left: p.left, right: p.right }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function AdminLeaderboardPage() {
   const session = useMockSession();
   const [data, setData] = useState<LeaderboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"all" | "streaks" | "solvers">("all");
-  const [selectedTrack, setSelectedTrack] = useState<string>("All");
+  const [selectedTrack, setSelectedTrack] = useState<string>("All Students");
   const [searchQuery, setSearchQuery] = useState("");
+  const [timeRange, setTimeRange] = useState<"week" | "month" | "all">("week");
+  const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
+
+  const rankingsTableRef = useRef<HTMLDivElement | null>(null);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -56,21 +81,32 @@ export default function AdminLeaderboardPage() {
   }, []);
 
   const rawList = useMemo(() => {
-    if (!data) return [];
-    if (activeTab === "streaks") {
-      return [...data.leaderboard].sort((a, b) => b.streakDays - a.streakDays);
-    }
-    if (activeTab === "solvers") {
-      return [...data.leaderboard].sort((a, b) => b.solvedAssignments - a.solvedAssignments);
-    }
+    if (!data?.leaderboard) return [];
     return [...data.leaderboard].sort((a, b) => b.points - a.points);
-  }, [data, activeTab]);
+  }, [data]);
+
+  // Top performer (Rank 1 overall)
+  const topPerformer = useMemo(() => {
+    if (!rawList || rawList.length === 0) return null;
+    return rawList[0];
+  }, [rawList]);
+
+  // Fixed track tabs matching design: All Students, Full Stack, Java, Frontend, SAP
+  const trackTabs = ["All Students", "Full Stack", "Java", "Frontend", "SAP"];
 
   // Filtered list
   const filteredList = useMemo(() => {
     let list = rawList;
-    if (selectedTrack !== "All") {
-      list = list.filter((item) => item.track.toLowerCase().includes(selectedTrack.toLowerCase()));
+    if (selectedTrack !== "All Students") {
+      const t = selectedTrack.toLowerCase();
+      list = list.filter((item) => {
+        const itemTrack = item.track.toLowerCase();
+        if (t === "java") return itemTrack.includes("java");
+        if (t === "frontend") return itemTrack.includes("frontend");
+        if (t === "sap") return itemTrack.includes("sap");
+        if (t === "full stack") return itemTrack.includes("full stack");
+        return itemTrack.includes(t);
+      });
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -85,388 +121,579 @@ export default function AdminLeaderboardPage() {
   }, [rawList, selectedTrack, searchQuery]);
 
   // Top 3 Podium
-  const topThree = useMemo(() => {
-    return filteredList.slice(0, 3);
-  }, [filteredList]);
+  const firstPlace = filteredList[0];
+  const secondPlace = filteredList[1];
+  const thirdPlace = filteredList[2];
 
-  const firstPlace = topThree[0];
-  const secondPlace = topThree[1];
-  const thirdPlace = topThree[2];
+  const scrollToRankings = () => {
+    rankingsTableRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <>
-      <DashboardTopbar
-        title="Student Leaderboard & Streaks"
-        subtitle="Live platform student rankings, activity streaks, and mastery XP metrics."
-        userInitials="AD"
-      />
+      <DashboardTopbar userInitials={session?.initials || "AD"}>
+        <div className="relative w-full max-w-md hidden sm:block">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search courses, topics, or anything..."
+            className="w-full rounded-full border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 pl-9 pr-4 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:border-blue-500 shadow-xs"
+          />
+        </div>
+      </DashboardTopbar>
 
-      <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
-        {/* TOP ADMIN METRIC STRIP */}
-        <Reveal variant="fade-up" className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-5 shadow-[0_4px_20px_rgb(20,50,100,0.04)] dark:shadow-none backdrop-blur-xl">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Ranked Students</span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400">
-                <Trophy className="h-4 w-4" />
-              </div>
+      <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">
+        {/* PAGE HEADER WITH TIME DROPDOWN */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 shadow-xs">
+              <Trophy className="h-5 w-5" />
             </div>
-            <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
-              {data?.metrics.totalActiveLearners || filteredList.length}
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                Leaderboard
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                Global student rankings, daily activity streaks, and mastery scores.
+              </p>
             </div>
-            <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Active cohort learners</div>
           </div>
 
-          <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-5 shadow-[0_4px_20px_rgb(20,50,100,0.04)] dark:shadow-none backdrop-blur-xl">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Completed Lessons</span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">
-                <Flame className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="mt-2 text-2xl font-black text-amber-600 dark:text-amber-400">
-              {data?.metrics.totalCompletedLessons || 0}
-            </div>
-            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">Video milestones achieved</div>
-          </div>
+          {/* This Week Dropdown */}
+          <div className="relative self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setIsTimeDropdownOpen((prev) => !prev)}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors cursor-pointer"
+            >
+              <Calendar className="h-3.5 w-3.5 text-slate-500" />
+              <span>
+                {timeRange === "week"
+                  ? "This Week"
+                  : timeRange === "month"
+                  ? "This Month"
+                  : "All Time"}
+              </span>
+              <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+            </button>
 
-          <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-5 shadow-[0_4px_20px_rgb(20,50,100,0.04)] dark:shadow-none backdrop-blur-xl">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Challenges Solved</span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 className="h-4 w-4" />
+            {isTimeDropdownOpen && (
+              <div className="absolute right-0 mt-1.5 w-36 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated py-1 shadow-lg z-30">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTimeRange("week");
+                    setIsTimeDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-xs font-semibold ${
+                    timeRange === "week"
+                      ? "text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-950/30"
+                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                  }`}
+                >
+                  This Week
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTimeRange("month");
+                    setIsTimeDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-xs font-semibold ${
+                    timeRange === "month"
+                      ? "text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-950/30"
+                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                  }`}
+                >
+                  This Month
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTimeRange("all");
+                    setIsTimeDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-xs font-semibold ${
+                    timeRange === "all"
+                      ? "text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-950/30"
+                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                  }`}
+                >
+                  All Time
+                </button>
               </div>
-            </div>
-            <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">
-              {data?.metrics.totalChallengesSolved || 0}
-            </div>
-            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">Passed assessments</div>
+            )}
           </div>
+        </div>
 
-          <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-5 shadow-[0_4px_20px_rgb(20,50,100,0.04)] dark:shadow-none backdrop-blur-xl">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Top Rank Champion</span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
-                <Crown className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="mt-2 text-lg font-black text-slate-900 dark:text-white truncate">
-              {firstPlace?.name || "Davood Khan"}
-            </div>
-            <div className="mt-1 text-xs text-purple-600 dark:text-purple-400 font-semibold">
-              {firstPlace?.points.toLocaleString() || "2,975"} XP Points
-            </div>
-          </div>
-        </Reveal>
-
-        {/* 3D PODIUM SECTION */}
-        {topThree.length >= 3 && (
+        {/* 1. TOP PERFORMER HERO SPOTLIGHT BANNER WITH DYNAMIC WAVE ANIMATION */}
+        {topPerformer && (
           <Reveal variant="fade-up">
-            <div className="relative overflow-hidden rounded-[26px] border border-white/80 dark:border-slate-800/80 bg-gradient-to-b from-white via-slate-50/50 to-blue-50/30 dark:from-surface-secondary dark:via-surface-secondary/80 dark:to-surface-elevated p-6 sm:p-8 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
-              <div className="text-center max-w-md mx-auto mb-8">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">
-                  <Trophy className="h-3.5 w-3.5" />
-                  <span>Cohort Top Achievers</span>
-                </span>
-                <h3 className="mt-2 text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                  Academic Honor Podium
-                </h3>
+            <div className="relative overflow-hidden rounded-[26px] border border-blue-400/30 bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#7C3AED] p-6 sm:p-8 text-white shadow-[0_16px_48px_rgba(37,99,235,0.28)]">
+              {/* Dynamic Animated Canvas Wave Mesh */}
+              <LeaderboardWaveAnimation />
+
+              {/* Ambient radial lighting overlays */}
+              <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-violet-400/20 blur-3xl pointer-events-none" />
+              <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl pointer-events-none" />
+
+              <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+                {/* Left Section: Performer Identity */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 text-amber-300 font-black text-xs uppercase tracking-wider">
+                    <Crown className="h-4 w-4 fill-amber-300" />
+                    <span>Top Performer</span>
+                  </div>
+
+                  <div className="flex items-center gap-4 mt-1">
+                    {/* Avatar with crown badge */}
+                    <div className="relative shrink-0">
+                      <div className="flex h-16 w-16 sm:h-18 sm:w-18 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-white font-black text-xl sm:text-2xl shadow-lg ring-4 ring-white/20 border border-white/40">
+                        {topPerformer.initials}
+                      </div>
+                      <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-amber-950 shadow-md border-2 border-white">
+                        <Crown className="h-3.5 w-3.5 fill-amber-950" />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
+                          {topPerformer.name}
+                        </h2>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white/15 backdrop-blur-md px-3 py-0.5 text-[10px] sm:text-xs font-black text-amber-300 border border-amber-300/40 tracking-wider shadow-xs">
+                          <Star className="h-3 w-3 fill-amber-300" />
+                          {topPerformer.badge || "GRANDMASTER ARCHITECT"}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-blue-100/90 font-medium">
+                        Enrolled Track: <span className="font-bold text-white uppercase">{topPerformer.track}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Section: 4 Key Metrics */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 border-t lg:border-t-0 lg:border-l border-white/15 pt-5 lg:pt-0 lg:pl-8">
+                  {/* Daily Streak */}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5 text-xs text-blue-100/80 font-semibold mb-1">
+                      <Flame className="h-4 w-4 text-orange-400 fill-orange-400" />
+                      <span>Daily Streak</span>
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-2xl sm:text-3xl font-black text-white">
+                        {topPerformer.streakDays}
+                      </span>
+                      <span className="text-xs text-blue-200 font-medium">Days</span>
+                    </div>
+                  </div>
+
+                  {/* Total XP */}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5 text-xs text-blue-100/80 font-semibold mb-1">
+                      <Zap className="h-4 w-4 text-amber-300 fill-amber-300" />
+                      <span>Total XP</span>
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-2xl sm:text-3xl font-black text-white">
+                        {topPerformer.points.toLocaleString()}
+                      </span>
+                      <span className="text-xs text-blue-200 font-medium">pts</span>
+                    </div>
+                  </div>
+
+                  {/* Solved */}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5 text-xs text-blue-100/80 font-semibold mb-1">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                      <span>Solved</span>
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-2xl sm:text-3xl font-black text-white">
+                        {topPerformer.solvedAssignments}
+                      </span>
+                      <span className="text-xs text-blue-200 font-medium">Tasks</span>
+                    </div>
+                  </div>
+
+                  {/* Accuracy */}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5 text-xs text-blue-100/80 font-semibold mb-1">
+                      <Target className="h-4 w-4 text-rose-300" />
+                      <span>Accuracy</span>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl sm:text-3xl font-black text-white">
+                        {topPerformer.accuracy}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        )}
+
+        {/* 2. HALL OF EXCELLENCE PODIUM CARD */}
+        <Reveal variant="fade-up">
+          <div className="relative overflow-hidden rounded-[26px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-8 shadow-xs">
+            {/* Confetti floating particles */}
+            <HallOfExcellenceConfetti />
+
+            {/* Header */}
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 border border-amber-200/50 dark:border-amber-800/40 shadow-xs">
+                  <Trophy className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white">
+                    Hall of Excellence
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Leading by continuous daily streak, curriculum mastery, and code assessment performance.
+                  </p>
+                </div>
               </div>
 
-              {/* 3D Podium Pillars */}
-              <div className="flex flex-col sm:flex-row items-end justify-center gap-4 sm:gap-6 pt-4 max-w-2xl mx-auto">
-                {/* 2nd Place */}
-                {secondPlace && (
-                  <div className="w-full sm:w-1/3 flex flex-col items-center order-2 sm:order-1">
-                    <div className="relative mb-2">
-                      <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700 text-slate-700 dark:text-slate-200 font-black text-base sm:text-lg shadow-md border-2 border-slate-300 dark:border-slate-600">
-                        {secondPlace.initials}
+              <button
+                type="button"
+                onClick={scrollToRankings}
+                className="inline-flex items-center gap-1.5 rounded-full border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/80 dark:bg-blue-950/40 px-3.5 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-100/80 dark:hover:bg-blue-900/60 transition-all cursor-pointer self-start sm:self-auto shadow-xs"
+              >
+                <span>View Full Rankings</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* 3D Podium Layout */}
+            <div className="relative z-10 pt-6 pb-2">
+              <div className="flex items-end justify-center gap-3 sm:gap-6 md:gap-8 max-w-2xl mx-auto">
+                {/* 2nd Place: Left (Silver) */}
+                {secondPlace ? (
+                  <div className="flex flex-col items-center flex-1 max-w-[190px]">
+                    <div className="relative mb-3 flex flex-col items-center">
+                      <div className="relative">
+                        <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 text-slate-800 font-black text-base sm:text-lg shadow-md ring-4 ring-slate-200/80 dark:ring-slate-700/80 border border-white">
+                          {secondPlace.initials}
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-300 dark:bg-slate-600 text-slate-900 dark:text-white text-[11px] font-black border border-white shadow-xs">
+                          2
+                        </div>
                       </div>
-                      <div className="absolute -bottom-2 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-slate-300 dark:bg-slate-600 text-slate-800 dark:text-white text-xs font-black shadow-xs ring-2 ring-white dark:ring-surface-secondary">
-                        2
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-extrabold text-sm text-slate-900 dark:text-white truncate max-w-[140px]">
-                        {secondPlace.name}
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[140px]">
-                        {secondPlace.track}
-                      </div>
-                      <div className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
-                        <Flame className="h-3.5 w-3.5" />
-                        <span>{secondPlace.streakDays}d Streak</span>
+
+                      <div className="text-center mt-2.5">
+                        <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate max-w-[120px] sm:max-w-[150px]">
+                          {secondPlace.name}
+                        </div>
+                        <div className="mt-1">
+                          <span className="inline-block rounded-full bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 uppercase">
+                            {secondPlace.track}
+                          </span>
+                        </div>
+                        <div className="mt-1 flex items-center justify-center gap-1 text-[10px] sm:text-xs font-semibold text-amber-600 dark:text-amber-400">
+                          <Flame className="h-3 w-3 fill-amber-500 text-amber-500" />
+                          <span>{secondPlace.streakDays}d Streak</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="mt-3 w-full h-24 sm:h-28 rounded-t-2xl bg-gradient-to-b from-slate-200 via-slate-100 to-slate-200/50 dark:from-slate-800 dark:via-slate-850 dark:to-slate-900 border-t-2 border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center shadow-inner">
-                      <span className="text-xl sm:text-2xl font-black text-slate-400 dark:text-slate-500">2nd</span>
-                      <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    {/* Silver Podium Pillar */}
+                    <div className="w-full h-28 sm:h-36 rounded-t-2xl bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 shadow-md flex flex-col items-center justify-center p-3 text-center border-t-2 border-white/60">
+                      <span className="text-xl sm:text-2xl font-black text-slate-700 dark:text-slate-200 tracking-tight">
+                        2nd
+                      </span>
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 font-mono mt-0.5">
                         {secondPlace.points.toLocaleString()} pts
                       </span>
                     </div>
                   </div>
+                ) : (
+                  <div className="flex-1 max-w-[190px]" />
                 )}
 
-                {/* 1st Place */}
+                {/* 1st Place: Center (Gold, Elevated Highest) */}
                 {firstPlace && (
-                  <div className="w-full sm:w-1/3 flex flex-col items-center order-1 sm:order-2 -translate-y-2 sm:-translate-y-4">
-                    <Crown className="h-7 w-7 text-amber-400 fill-amber-400 mb-1 animate-pulse" />
-                    <div className="relative mb-2">
-                      <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-400 via-amber-300 to-yellow-400 text-slate-950 font-black text-lg sm:text-xl shadow-lg shadow-amber-500/25 border-2 border-amber-300">
-                        {firstPlace.initials}
+                  <div className="flex flex-col items-center flex-1 max-w-[210px] -mt-6">
+                    <div className="relative mb-3 flex flex-col items-center">
+                      <Crown className="h-6 w-6 text-amber-400 fill-amber-400 mb-1 animate-bounce" />
+
+                      {/* Avatar surrounded by golden wreath SVG */}
+                      <div className="relative inline-flex items-center justify-center">
+                        <svg
+                          className="pointer-events-none absolute -inset-3 h-[calc(100%+24px)] w-[calc(100%+24px)] text-amber-400/90"
+                          viewBox="0 0 100 100"
+                          fill="currentColor"
+                        >
+                          {/* Left Laurel Branch */}
+                          <path d="M 28 75 C 20 60 20 40 28 25 C 22 28 18 36 18 46 C 18 58 22 68 28 75 Z" opacity="0.9" />
+                          <circle cx="21" cy="35" r="3" />
+                          <circle cx="18" cy="48" r="3.2" />
+                          <circle cx="21" cy="62" r="3" />
+                          {/* Right Laurel Branch */}
+                          <path d="M 72 75 C 80 60 80 40 72 25 C 78 28 82 36 82 46 C 82 58 78 68 72 75 Z" opacity="0.9" />
+                          <circle cx="79" cy="35" r="3" />
+                          <circle cx="82" cy="48" r="3.2" />
+                          <circle cx="79" cy="62" r="3" />
+                        </svg>
+
+                        <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-amber-950 font-black text-lg sm:text-2xl shadow-xl ring-4 ring-amber-300/80 border-2 border-white">
+                          {firstPlace.initials}
+                        </div>
+
+                        <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-amber-950 text-xs font-black border-2 border-white shadow-md">
+                          1
+                        </div>
                       </div>
-                      <div className="absolute -bottom-2 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 text-xs font-black shadow-md ring-2 ring-white dark:ring-surface-secondary">
-                        1
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-black text-base text-slate-900 dark:text-white truncate max-w-[160px]">
-                        {firstPlace.name}
-                      </div>
-                      <div className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[160px]">
-                        {firstPlace.track}
-                      </div>
-                      <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/40 px-2.5 py-0.5 text-xs font-black text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                        <Flame className="h-3.5 w-3.5 fill-amber-500" />
-                        <span>{firstPlace.streakDays} Day Streak</span>
+
+                      <div className="text-center mt-2.5">
+                        <div className="font-black text-xs sm:text-base text-slate-900 dark:text-white truncate max-w-[130px] sm:max-w-[170px]">
+                          {firstPlace.name}
+                        </div>
+                        <div className="mt-1">
+                          <span className="inline-block rounded-full bg-blue-50 dark:bg-blue-950/50 px-2.5 py-0.5 text-[9px] sm:text-[10px] font-black text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 uppercase">
+                            {firstPlace.track}
+                          </span>
+                        </div>
+                        <div className="mt-1 flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold text-amber-600 dark:text-amber-400">
+                          <Flame className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                          <span>{firstPlace.streakDays} Day Streak</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="mt-3 w-full h-32 sm:h-36 rounded-t-2xl bg-gradient-to-b from-amber-400 via-amber-300 to-yellow-400/80 border-t-2 border-amber-300 flex flex-col items-center justify-center shadow-lg shadow-amber-500/20">
-                      <span className="text-2xl sm:text-3xl font-black text-slate-950">1st</span>
-                      <span className="text-xs font-black text-slate-900">
+                    {/* Gold Podium Pillar */}
+                    <div className="w-full h-36 sm:h-48 rounded-t-2xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 shadow-xl flex flex-col items-center justify-center p-4 text-center border-t-2 border-yellow-100">
+                      <div className="flex items-center gap-1 text-amber-950">
+                        <svg className="h-5 w-3 text-amber-900/60" viewBox="0 0 20 30" fill="currentColor">
+                          <path d="M18,2 C10,10 5,20 18,28 C10,24 6,16 18,2 Z" />
+                        </svg>
+                        <span className="text-2xl sm:text-3xl font-black tracking-tight">1st</span>
+                        <svg className="h-5 w-3 text-amber-900/60 -scale-x-100" viewBox="0 0 20 30" fill="currentColor">
+                          <path d="M18,2 C10,10 5,20 18,28 C10,24 6,16 18,2 Z" />
+                        </svg>
+                      </div>
+                      <span className="text-xs sm:text-sm font-black text-amber-950/90 font-mono mt-0.5">
                         {firstPlace.points.toLocaleString()} pts
                       </span>
                     </div>
                   </div>
                 )}
 
-                {/* 3rd Place */}
-                {thirdPlace && (
-                  <div className="w-full sm:w-1/3 flex flex-col items-center order-3">
-                    <div className="relative mb-2">
-                      <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-200 to-amber-100 dark:from-orange-950 dark:to-amber-900 text-orange-900 dark:text-orange-200 font-black text-base sm:text-lg shadow-md border-2 border-orange-300 dark:border-orange-800">
-                        {thirdPlace.initials}
+                {/* 3rd Place: Right (Bronze) */}
+                {thirdPlace ? (
+                  <div className="flex flex-col items-center flex-1 max-w-[190px]">
+                    <div className="relative mb-3 flex flex-col items-center">
+                      <div className="relative">
+                        <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-amber-700 to-orange-400 text-white font-black text-base sm:text-lg shadow-md ring-4 ring-orange-200/80 dark:ring-orange-900/50 border border-white">
+                          {thirdPlace.initials}
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-orange-400 text-amber-950 text-[11px] font-black border border-white shadow-xs">
+                          3
+                        </div>
                       </div>
-                      <div className="absolute -bottom-2 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-orange-400 text-slate-950 text-xs font-black shadow-xs ring-2 ring-white dark:ring-surface-secondary">
-                        3
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-extrabold text-sm text-slate-900 dark:text-white truncate max-w-[140px]">
-                        {thirdPlace.name}
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[140px]">
-                        {thirdPlace.track}
-                      </div>
-                      <div className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
-                        <Flame className="h-3.5 w-3.5" />
-                        <span>{thirdPlace.streakDays}d Streak</span>
+
+                      <div className="text-center mt-2.5">
+                        <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate max-w-[120px] sm:max-w-[150px]">
+                          {thirdPlace.name}
+                        </div>
+                        <div className="mt-1">
+                          <span className="inline-block rounded-full bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 uppercase">
+                            {thirdPlace.track}
+                          </span>
+                        </div>
+                        <div className="mt-1 flex items-center justify-center gap-1 text-[10px] sm:text-xs font-semibold text-amber-600 dark:text-amber-400">
+                          <Flame className="h-3 w-3 fill-amber-500 text-amber-500" />
+                          <span>{thirdPlace.streakDays}d Streak</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="mt-3 w-full h-20 sm:h-24 rounded-t-2xl bg-gradient-to-b from-orange-200/90 via-amber-100 to-orange-200/40 dark:from-amber-950/80 dark:via-orange-950/90 dark:to-slate-900 border-t-2 border-orange-300 dark:border-orange-800 flex flex-col items-center justify-center shadow-inner">
-                      <span className="text-xl sm:text-2xl font-black text-orange-800/80 dark:text-orange-400">3rd</span>
-                      <span className="text-[11px] font-bold text-orange-900/80 dark:text-orange-300">
+                    {/* Bronze Podium Pillar */}
+                    <div className="w-full h-24 sm:h-30 rounded-t-2xl bg-gradient-to-b from-amber-200 via-orange-300 to-orange-400 dark:from-amber-900/60 dark:via-orange-950 dark:to-orange-900 shadow-md flex flex-col items-center justify-center p-3 text-center border-t-2 border-white/40">
+                      <span className="text-xl sm:text-2xl font-black text-amber-900 dark:text-amber-200 tracking-tight">
+                        3rd
+                      </span>
+                      <span className="text-[11px] sm:text-xs font-bold text-amber-800 dark:text-amber-300/90 font-mono mt-0.5">
                         {thirdPlace.points.toLocaleString()} pts
                       </span>
                     </div>
                   </div>
+                ) : (
+                  <div className="flex-1 max-w-[190px]" />
                 )}
               </div>
             </div>
-          </Reveal>
-        )}
+          </div>
+        </Reveal>
 
-        {/* CONTROLS */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white dark:bg-surface-secondary border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-x-auto">
-            {[
-              { id: "all", label: "Overall Mastery", icon: Trophy },
-              { id: "streaks", label: "Top Streaks", icon: Flame },
-              { id: "solvers", label: "Top Solvers", icon: Zap },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
+        {/* 3. TRACK FILTER TABS & SEARCH BAR */}
+        <div ref={rankingsTableRef} className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-2">
+          {/* Track Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+            {trackTabs.map((tab) => {
+              const isActive = selectedTrack === tab;
               return (
                 <button
-                  key={tab.id}
+                  key={tab}
                   type="button"
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  onClick={() => setSelectedTrack(tab)}
+                  className={`rounded-full px-4 py-1.5 text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                     isActive
-                      ? "bg-[#2563EB] text-white shadow-sm"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800"
                   }`}
                 >
-                  <Icon className="h-3.5 w-3.5" />
-                  <span>{tab.label}</span>
+                  {tab}
                 </button>
               );
             })}
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="relative w-full sm:w-56">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search student or track..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg py-2 pl-9 pr-3 text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-500/20"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={loadData}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-              title="Refresh Leaderboard"
-            >
-              <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            </button>
+          {/* Search Box */}
+          <div className="relative w-full md:w-64 shrink-0">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search students..."
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated pl-9 pr-3.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-xs"
+            />
           </div>
         </div>
 
-        {/* FULL LEADERBOARD ROSTER */}
-        <div className="overflow-hidden rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary/90 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated text-slate-500 dark:text-slate-400 uppercase font-black tracking-wider text-[10px]">
-                <tr>
-                  <th className="py-3.5 pl-6 pr-3">Rank</th>
-                  <th className="py-3.5 px-4">Student</th>
-                  <th className="py-3.5 px-4">Curriculum Track</th>
-                  <th className="py-3.5 px-4">Streak Days</th>
-                  <th className="py-3.5 px-4">Lessons & Tasks</th>
-                  <th className="py-3.5 px-4">Accuracy</th>
-                  <th className="py-3.5 px-4 text-right">Total XP</th>
-                  <th className="py-3.5 pr-6 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium text-slate-700 dark:text-slate-300">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={8} className="py-12 text-center text-slate-400">
-                      <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-[#2563EB]" />
-                      <span>Syncing live leaderboard from MongoDB...</span>
-                    </td>
+        {/* 4. REAL STUDENT RANKINGS TABLE */}
+        <Reveal variant="fade-up">
+          <div className="overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-surface-elevated shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800/80 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 bg-slate-50/50 dark:bg-slate-900/30">
+                    <th className="py-3.5 px-4 w-12 text-center">#</th>
+                    <th className="py-3.5 px-4">Student</th>
+                    <th className="py-3.5 px-4">Track</th>
+                    <th className="py-3.5 px-4">Streak</th>
+                    <th className="py-3.5 px-4">Total XP</th>
+                    <th className="py-3.5 px-4">Solved</th>
+                    <th className="py-3.5 px-4">Accuracy</th>
+                    <th className="py-3.5 px-4 w-10 text-right"></th>
                   </tr>
-                ) : filteredList.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="py-10 text-center text-slate-400">
-                      No students found matching your search.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredList.map((student) => (
-                    <tr
-                      key={student.id}
-                      className="transition-colors hover:bg-slate-50/80 dark:hover:bg-surface-hover"
-                    >
-                      <td className="py-4 pl-6 pr-3">
-                        <div className="flex items-center gap-2">
-                          {student.displayRank === 1 ? (
-                            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-400 text-slate-950 font-black text-xs shadow-xs">
-                              1
-                            </div>
-                          ) : student.displayRank === 2 ? (
-                            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-slate-300 dark:bg-slate-600 text-slate-900 dark:text-white font-black text-xs">
-                              2
-                            </div>
-                          ) : student.displayRank === 3 ? (
-                            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-orange-400 text-slate-950 font-black text-xs">
-                              3
-                            </div>
-                          ) : (
-                            <span className="text-slate-400 dark:text-slate-500 font-bold pl-2 text-xs">
-                              #{student.displayRank}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-xs">
-                            {student.initials}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
-                              <span>{student.name}</span>
-                              {student.isRealUser && (
-                                <span title="Verified Active Student">
-                                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-[11px] text-slate-400 font-mono">{student.email}</div>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="py-4 px-4">
-                        <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 dark:bg-blue-950/40 border border-blue-200/50 dark:border-blue-800/40 px-2 py-0.5 text-[11px] font-bold text-blue-700 dark:text-blue-300">
-                          {student.track}
-                        </span>
-                      </td>
-
-                      <td className="py-4 px-4">
-                        <div className="inline-flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400">
-                          <Flame className="h-4 w-4 fill-amber-500" />
-                          <span>{student.streakDays} Days</span>
-                        </div>
-                      </td>
-
-                      <td className="py-4 px-4">
-                        <div className="text-xs text-slate-800 dark:text-slate-200">
-                          <b>{student.completedVideos}</b> vids · <b>{student.solvedAssignments}</b> tasks
-                        </div>
-                      </td>
-
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
-                              style={{ width: `${student.accuracy}%` }}
-                            />
-                          </div>
-                          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                            {student.accuracy}%
-                          </span>
-                        </div>
-                      </td>
-
-                      <td className="py-4 px-4 text-right">
-                        <span className="text-sm font-black text-[#2563EB] dark:text-blue-400">
-                          {student.points.toLocaleString()}
-                        </span>
-                        <span className="text-[11px] text-slate-400 ml-1">XP</span>
-                      </td>
-
-                      <td className="py-4 pr-6 text-right">
-                        {student.isRealUser ? (
-                          <Link
-                            href={`/admin/students/${student.id}`}
-                            className="inline-flex items-center gap-1 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 hover:bg-[#2563EB] hover:text-white px-2.5 py-1 text-[11px] font-bold transition-all"
-                          >
-                            <span>Inspect</span>
-                            <ArrowUpRight className="h-3 w-3" />
-                          </Link>
-                        ) : (
-                          <span className="text-[11px] text-slate-400">Cohort Peer</span>
-                        )}
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={8} className="py-12 text-center text-slate-400 font-medium">
+                        Loading student rankings...
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : filteredList.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-12 text-center text-slate-400 font-medium">
+                        No students found matching your filters.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredList.map((student) => {
+                      let rankBadge = (
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs mx-auto">
+                          {student.displayRank}
+                        </span>
+                      );
+
+                      if (student.displayRank === 1) {
+                        rankBadge = (
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-amber-950 font-black text-xs shadow-xs mx-auto">
+                            1
+                          </span>
+                        );
+                      } else if (student.displayRank === 2) {
+                        rankBadge = (
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-300 dark:bg-slate-600 text-slate-800 dark:text-white font-black text-xs shadow-xs mx-auto">
+                            2
+                          </span>
+                        );
+                      } else if (student.displayRank === 3) {
+                        rankBadge = (
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-400 text-amber-950 font-black text-xs shadow-xs mx-auto">
+                            3
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <tr
+                          key={student.id}
+                          className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                        >
+                          {/* Rank */}
+                          <td className="py-3.5 px-4 text-center">{rankBadge}</td>
+
+                          {/* Student */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-xs">
+                                {student.initials}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
+                                  <span>{student.name}</span>
+                                  {student.isRealUser && (
+                                    <span title="Verified Active Student">
+                                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 inline" />
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Track */}
+                          <td className="py-3.5 px-4">
+                            <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                              {student.track}
+                            </span>
+                          </td>
+
+                          {/* Streak */}
+                          <td className="py-3.5 px-4">
+                            <div className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-bold">
+                              <Flame className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                              <span>{student.streakDays}</span>
+                            </div>
+                          </td>
+
+                          {/* Total XP */}
+                          <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100 font-mono">
+                            {student.points.toLocaleString()}
+                          </td>
+
+                          {/* Solved Tasks */}
+                          <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-semibold font-mono">
+                            {student.solvedAssignments}
+                          </td>
+
+                          {/* Accuracy */}
+                          <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300 font-semibold font-mono">
+                            {student.accuracy}%
+                          </td>
+
+                          {/* Chevron Action */}
+                          <td className="py-3.5 px-4 text-right">
+                            <Link href={`/admin/students/${student.id}`}>
+                              <ChevronRight className="h-4 w-4 text-slate-400 hover:text-blue-600 transition-colors inline" />
+                            </Link>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </>
   );
