@@ -108,9 +108,9 @@ export function AboutHeroVisual() {
              showing a visible seam against bg-bg-light. */
           style={{
             WebkitMaskImage:
-              "radial-gradient(ellipse 78% 78% at 50% 48%, #000 62%, transparent 97%)",
+              "radial-gradient(ellipse 98% 96% at 50% 50%, #000 85%, transparent 100%)",
             maskImage:
-              "radial-gradient(ellipse 78% 78% at 50% 48%, #000 62%, transparent 97%)",
+              "radial-gradient(ellipse 98% 96% at 50% 50%, #000 85%, transparent 100%)",
           }}
         >
           <Image

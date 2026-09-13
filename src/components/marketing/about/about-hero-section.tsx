@@ -39,7 +39,7 @@ export function AboutHeroSection() {
   const reducedMotion = useReducedMotion();
 
   return (
-    <section className="relative flex min-h-[90vh] flex-col justify-between overflow-hidden border-b border-border dark:border-slate-800/80 bg-bg-light dark:bg-background px-5 pb-12 pt-16 text-text-heading dark:text-white sm:px-6 lg:px-16 transition-colors duration-300">
+    <section className="relative flex min-h-[90vh] flex-col justify-between overflow-hidden border-b border-border dark:border-slate-800/80 bg-bg-light dark:bg-background px-4 pb-10 pt-20 text-text-heading dark:text-white sm:px-6 sm:pb-12 sm:pt-24 lg:px-16 transition-colors duration-300">
       {/* Subtle Ambient Radial Lights */}
       <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-[420px] w-[800px] rounded-full bg-gradient-to-b from-blue-500/8 via-cyan-400/5 to-transparent blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 right-10 h-72 w-72 rounded-full bg-indigo-500/5 blur-2xl" />
@@ -60,10 +60,10 @@ export function AboutHeroSection() {
       </div>
 
       {/* Main Editorial Headline & Narrative + 3D Scene */}
-      <div className="relative z-10 mx-auto grid w-full max-w-[1280px] grid-cols-1 items-center gap-10 py-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-8 lg:py-14">
+      <div className="relative z-10 mx-auto grid w-full max-w-[1280px] grid-cols-1 items-center gap-8 py-6 sm:gap-10 sm:py-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-8 lg:py-14">
         <div className="max-w-4xl space-y-6">
           <div className="space-y-1">
-            <h1 className="text-[1.9rem] font-black leading-[1.06] tracking-tight text-text-heading dark:text-white sm:text-5xl md:text-6xl lg:text-[52px] xl:text-[62px]">
+            <h1 className="text-[2.2rem] font-black leading-[1.08] tracking-tight text-text-heading dark:text-white sm:text-5xl md:text-6xl lg:text-[52px] xl:text-[62px]">
               LEARN TODAY.
               <br />
               <span className="text-primary-blue dark:text-blue-400">
@@ -101,7 +101,7 @@ export function AboutHeroSection() {
       {/* Infinite Loop Animation Showcase (2 Continuous Seamless Rows) */}
       <div className="relative z-10 my-6 w-full overflow-hidden space-y-3 pointer-events-none select-none">
         {/* Row 1 - Leftward Infinite Flow */}
-        <div className="flex gap-4 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+        <div className="flex gap-4 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_2%,black_98%,transparent)] sm:[mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
           <motion.div
             animate={reducedMotion ? false : { x: ["0%", "-50%"] }}
             transition={{
@@ -132,7 +132,7 @@ export function AboutHeroSection() {
         </div>
 
         {/* Row 2 - Rightward Infinite Flow */}
-        <div className="flex gap-4 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+        <div className="flex gap-4 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_2%,black_98%,transparent)] sm:[mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
           <motion.div
             animate={reducedMotion ? false : { x: ["-50%", "0%"] }}
             transition={{

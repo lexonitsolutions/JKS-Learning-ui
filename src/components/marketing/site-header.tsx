@@ -120,8 +120,8 @@ export function SiteHeader() {
           : "border-transparent"
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-6 lg:px-16">
-        <JksLogo size="md" className="py-1" />
+      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-3.5 sm:px-6 lg:px-16">
+        <JksLogo size="md" className="py-1 shrink-0" imgClassName="h-7 sm:h-9 w-auto" />
 
         <nav className="hidden items-center gap-7 md:flex">
           {navLinks.map((link) => {
@@ -148,9 +148,11 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Theme Toggle Button */}
-          <ThemeToggle />
+          <div className="shrink-0 scale-90 sm:scale-100">
+            <ThemeToggle />
+          </div>
 
           {!isUserAuthenticated ? (
             <>
@@ -168,10 +170,10 @@ export function SiteHeader() {
               </Link>
               <Link
                 href="/register-course"
-                className="group inline-flex items-center gap-2 rounded-xl bg-primary-fill px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-primary-blue/25 transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-primary-blue/30"
+                className="group inline-flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 rounded-xl bg-primary-fill px-2.5 py-1.5 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-primary-blue/25 transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-primary-blue/30"
               >
-                Enroll Now
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                <span>Enroll Now</span>
+                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
               </Link>
             </>
           ) : (
@@ -182,7 +184,7 @@ export function SiteHeader() {
                 className="flex items-center rounded-full p-0.5 transition-transform hover:scale-105 shrink-0 focus:outline-none"
                 aria-label="Open My Dashboard"
               >
-                <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-md ring-2 ring-blue-500/30 overflow-hidden">
+                <div className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-md ring-2 ring-blue-500/30 overflow-hidden">
                   {userAvatar ? (
                     <img
                       src={userAvatar}
@@ -201,11 +203,11 @@ export function SiteHeader() {
               {/* Dynamic Dashboard CTA Button */}
               <Link
                 href={dashboardHref}
-                className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-500/25 transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-blue-500/30 cursor-pointer"
+                className="group inline-flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-2.5 py-1.5 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-blue-500/25 transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-blue-500/30 cursor-pointer"
               >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>Dashboard</span>
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                <LayoutDashboard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline sm:inline">Dashboard</span>
+                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
               </Link>
             </>
           )}
@@ -216,9 +218,9 @@ export function SiteHeader() {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border dark:border-slate-800 text-text-heading dark:text-slate-200 transition-colors hover:bg-bg-light dark:hover:bg-surface-hover md:hidden cursor-pointer"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg border border-border dark:border-slate-800 text-text-heading dark:text-slate-200 transition-colors hover:bg-bg-light dark:hover:bg-surface-hover md:hidden cursor-pointer"
           >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {menuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
           </button>
         </div>
       </div>
