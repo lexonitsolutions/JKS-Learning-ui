@@ -180,6 +180,39 @@ export function transformBackendCourse(bc: BackendCourse): Course {
     }));
   }
 
+  let demoVideoUrl = "";
+  let demoVideoTitle = "";
+  if (Array.isArray(bc.sectionsJson) && bc.sectionsJson.length > 0) {
+    for (const s of bc.sectionsJson) {
+      if (s.subsections && s.subsections.length > 0) {
+        for (const sub of s.subsections) {
+          if (sub.videos && sub.videos.length > 0 && sub.videos[0].videoUrl) {
+            demoVideoUrl = sub.videos[0].videoUrl;
+            demoVideoTitle = sub.videos[0].title || s.title;
+            break;
+          }
+        }
+      }
+      if (!demoVideoUrl && s.directVideos && s.directVideos.length > 0 && s.directVideos[0].videoUrl) {
+        demoVideoUrl = s.directVideos[0].videoUrl;
+        demoVideoTitle = s.directVideos[0].title || s.title;
+      }
+      if (demoVideoUrl) break;
+    }
+  }
+
+  // Fallback high-quality demo video if not provided in DB
+  if (!demoVideoUrl) {
+    demoVideoUrl = bc.slug.includes("java")
+      ? "https://www.youtube.com/watch?v=eIrMbAQSU34"
+      : bc.slug.includes("frontend")
+      ? "https://www.youtube.com/watch?v=bMknfKXIFA8"
+      : bc.slug.includes("sap")
+      ? "https://www.youtube.com/watch?v=k1BneeJTDcU"
+      : "https://www.youtube.com/watch?v=28aEWu_yV_c";
+    demoVideoTitle = `${bc.title} — Foundation Architecture & Orientation Demo`;
+  }
+
   return {
     slug: bc.slug,
     title: bc.title,
@@ -190,6 +223,8 @@ export function transformBackendCourse(bc: BackendCourse): Course {
     rating: typeof bc.rating === "number" ? bc.rating : fallback?.rating || 4.9,
     studentsEnrolled: typeof bc.studentsEnrolled === "number" ? bc.studentsEnrolled : fallback?.studentsEnrolled || 0,
     summary: bc.summary || fallback?.summary || "",
+    demoVideoUrl,
+    demoVideoTitle,
     modules,
   };
 }

@@ -316,12 +316,12 @@ export default function LeaderboardPage() {
 
         {/* 2. HALL OF EXCELLENCE PODIUM CARD */}
         <Reveal variant="fade-up">
-          <div className="relative overflow-hidden rounded-[26px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-8 shadow-xs">
+          <div className="relative overflow-hidden rounded-[26px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-3.5 sm:p-8 shadow-xs">
             {/* Celebratory moving confetti & ribbon particles animation */}
             <CelebrationAnimation />
 
             {/* Header */}
-            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
               <div className="flex items-start gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 border border-amber-200/50 dark:border-amber-800/40 shadow-xs">
                   <Trophy className="h-4 w-4" />
@@ -347,43 +347,43 @@ export default function LeaderboardPage() {
             </div>
 
             {/* 3D Podium Layout */}
-            <div className="relative z-10 pt-6 pb-2">
-              <div className="flex items-end justify-center gap-3 sm:gap-6 md:gap-8 max-w-2xl mx-auto">
+            <div className="relative z-10 pt-4 sm:pt-6 pb-2">
+              <div className="flex items-end justify-center gap-1.5 sm:gap-6 md:gap-8 max-w-2xl mx-auto">
                 {/* 2nd Place: Left (Silver) */}
                 {secondPlace ? (
-                  <div className="flex flex-col items-center flex-1 max-w-[190px]">
-                    <div className="relative mb-3 flex flex-col items-center">
+                  <div className="flex flex-col items-center flex-1 min-w-0 max-w-[190px]">
+                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center min-h-[94px] sm:min-h-[116px] justify-end w-full">
                       <div className="relative">
-                        <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 text-slate-800 font-black text-base sm:text-lg shadow-md ring-4 ring-slate-200/80 dark:ring-slate-700/80 border border-white">
+                        <div className="flex h-11 w-11 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 text-slate-800 font-black text-sm sm:text-lg shadow-md ring-2 sm:ring-4 ring-slate-200/80 dark:ring-slate-700/80 border border-white">
                           {secondPlace.initials}
                         </div>
-                        <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-300 dark:bg-slate-600 text-slate-900 dark:text-white text-[11px] font-black border border-white shadow-xs">
+                        <div className="absolute -bottom-1 -right-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-slate-300 dark:bg-slate-600 text-slate-900 dark:text-white text-[9px] sm:text-[11px] font-black border border-white shadow-xs">
                           2
                         </div>
                       </div>
 
-                      <div className="text-center mt-2.5">
-                        <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate max-w-[120px] sm:max-w-[150px]">
+                      <div className="text-center mt-1.5 sm:mt-2.5 w-full">
+                        <div className="font-bold text-[11px] sm:text-sm text-slate-900 dark:text-white truncate max-w-[90px] sm:max-w-[150px] mx-auto">
                           {secondPlace.name}
                         </div>
-                        <div className="mt-1">
-                          <span className="inline-block rounded-full bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 uppercase">
+                        <div className="mt-0.5 sm:mt-1">
+                          <span className="inline-block rounded-full bg-blue-50 dark:bg-blue-950/50 px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 uppercase">
                             {secondPlace.track}
                           </span>
                         </div>
-                        <div className="mt-1 flex items-center justify-center gap-1 text-[10px] sm:text-xs font-semibold text-amber-600 dark:text-amber-400">
-                          <Flame className="h-3 w-3 fill-amber-500 text-amber-500" />
+                        <div className="mt-0.5 sm:mt-1 flex items-center justify-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs font-semibold text-amber-600 dark:text-amber-400">
+                          <Flame className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-amber-500 text-amber-500" />
                           <span>{secondPlace.streakDays}d Streak</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Silver Podium Pillar */}
-                    <div className="w-full h-28 sm:h-36 rounded-t-2xl bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 shadow-md flex flex-col items-center justify-center p-3 text-center border-t-2 border-white/60">
-                      <span className="text-xl sm:text-2xl font-black text-slate-700 dark:text-slate-200 tracking-tight">
+                    <div className="w-full h-24 sm:h-36 rounded-t-xl sm:rounded-t-2xl bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 shadow-md flex flex-col items-center justify-center p-2 sm:p-3 text-center border-t-2 border-white/60">
+                      <span className="text-lg sm:text-2xl font-black text-slate-700 dark:text-slate-200 tracking-tight">
                         2nd
                       </span>
-                      <span className="text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 font-mono mt-0.5">
+                      <span className="text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 font-mono mt-0.5">
                         {secondPlace.points.toLocaleString()} pts
                       </span>
                     </div>
@@ -394,14 +394,14 @@ export default function LeaderboardPage() {
 
                 {/* 1st Place: Center (Gold, Elevated Highest) */}
                 {firstPlace && (
-                  <div className="flex flex-col items-center flex-1 max-w-[210px] -mt-6">
-                    <div className="relative mb-3 flex flex-col items-center">
-                      <Crown className="h-6 w-6 text-amber-400 fill-amber-400 mb-1 animate-bounce" />
+                  <div className="flex flex-col items-center flex-1 min-w-0 max-w-[210px] -mt-4 sm:-mt-6">
+                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center min-h-[110px] sm:min-h-[136px] justify-end w-full">
+                      <Crown className="h-4 w-4 sm:h-6 sm:w-6 text-amber-400 fill-amber-400 mb-0.5 sm:mb-1 animate-bounce" />
 
                       {/* Avatar surrounded by golden wreath SVG */}
                       <div className="relative inline-flex items-center justify-center">
                         <svg
-                          className="pointer-events-none absolute -inset-3 h-[calc(100%+24px)] w-[calc(100%+24px)] text-amber-400/90"
+                          className="pointer-events-none absolute -inset-2 sm:-inset-3 h-[calc(100%+16px)] sm:h-[calc(100%+24px)] w-[calc(100%+16px)] sm:w-[calc(100%+24px)] text-amber-400/90"
                           viewBox="0 0 100 100"
                           fill="currentColor"
                         >
@@ -417,43 +417,43 @@ export default function LeaderboardPage() {
                           <circle cx="79" cy="62" r="3" />
                         </svg>
 
-                        <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-amber-950 font-black text-lg sm:text-2xl shadow-xl ring-4 ring-amber-300/80 border-2 border-white">
+                        <div className="flex h-13 w-13 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-amber-950 font-black text-base sm:text-2xl shadow-xl ring-2 sm:ring-4 ring-amber-300/80 border-2 border-white">
                           {firstPlace.initials}
                         </div>
 
-                        <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-amber-950 text-xs font-black border-2 border-white shadow-md">
+                        <div className="absolute -bottom-1 -right-1 flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-amber-400 text-amber-950 text-[10px] sm:text-xs font-black border-2 border-white shadow-md">
                           1
                         </div>
                       </div>
 
-                      <div className="text-center mt-2.5">
-                        <div className="font-black text-xs sm:text-base text-slate-900 dark:text-white truncate max-w-[130px] sm:max-w-[170px]">
+                      <div className="text-center mt-1.5 sm:mt-2.5 w-full">
+                        <div className="font-black text-xs sm:text-base text-slate-900 dark:text-white truncate max-w-[95px] sm:max-w-[170px] mx-auto">
                           {firstPlace.name}
                         </div>
-                        <div className="mt-1">
-                          <span className="inline-block rounded-full bg-blue-50 dark:bg-blue-950/50 px-2.5 py-0.5 text-[9px] sm:text-[10px] font-black text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 uppercase">
+                        <div className="mt-0.5 sm:mt-1">
+                          <span className="inline-block rounded-full bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 text-[8px] sm:text-[10px] font-black text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 uppercase">
                             {firstPlace.track}
                           </span>
                         </div>
-                        <div className="mt-1 flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold text-amber-600 dark:text-amber-400">
-                          <Flame className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                        <div className="mt-0.5 sm:mt-1 flex items-center justify-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs font-bold text-amber-600 dark:text-amber-400">
+                          <Flame className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-500 text-amber-500" />
                           <span>{firstPlace.streakDays} Day Streak</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Gold Podium Pillar */}
-                    <div className="w-full h-36 sm:h-48 rounded-t-2xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 shadow-xl flex flex-col items-center justify-center p-4 text-center border-t-2 border-yellow-100">
+                    <div className="w-full h-32 sm:h-48 rounded-t-xl sm:rounded-t-2xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 shadow-xl flex flex-col items-center justify-center p-2.5 sm:p-4 text-center border-t-2 border-yellow-100">
                       <div className="flex items-center gap-1 text-amber-950">
-                        <svg className="h-5 w-3 text-amber-900/60" viewBox="0 0 20 30" fill="currentColor">
+                        <svg className="h-4 w-2.5 sm:h-5 sm:w-3 text-amber-900/60" viewBox="0 0 20 30" fill="currentColor">
                           <path d="M18,2 C10,10 5,20 18,28 C10,24 6,16 18,2 Z" />
                         </svg>
-                        <span className="text-2xl sm:text-3xl font-black tracking-tight">1st</span>
-                        <svg className="h-5 w-3 text-amber-900/60 -scale-x-100" viewBox="0 0 20 30" fill="currentColor">
+                        <span className="text-xl sm:text-3xl font-black tracking-tight">1st</span>
+                        <svg className="h-4 w-2.5 sm:h-5 sm:w-3 text-amber-900/60 -scale-x-100" viewBox="0 0 20 30" fill="currentColor">
                           <path d="M18,2 C10,10 5,20 18,28 C10,24 6,16 18,2 Z" />
                         </svg>
                       </div>
-                      <span className="text-xs sm:text-sm font-black text-amber-950/90 font-mono mt-0.5">
+                      <span className="text-[10px] sm:text-sm font-black text-amber-950/90 font-mono mt-0.5">
                         {firstPlace.points.toLocaleString()} pts
                       </span>
                     </div>
@@ -462,39 +462,39 @@ export default function LeaderboardPage() {
 
                 {/* 3rd Place: Right (Bronze) */}
                 {thirdPlace ? (
-                  <div className="flex flex-col items-center flex-1 max-w-[190px]">
-                    <div className="relative mb-3 flex flex-col items-center">
+                  <div className="flex flex-col items-center flex-1 min-w-0 max-w-[190px]">
+                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center min-h-[94px] sm:min-h-[116px] justify-end w-full">
                       <div className="relative">
-                        <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-amber-700 to-orange-400 text-white font-black text-base sm:text-lg shadow-md ring-4 ring-orange-200/80 dark:ring-orange-900/50 border border-white">
+                        <div className="flex h-11 w-11 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-amber-700 to-orange-400 text-white font-black text-sm sm:text-lg shadow-md ring-2 sm:ring-4 ring-orange-200/80 dark:ring-orange-900/50 border border-white">
                           {thirdPlace.initials}
                         </div>
-                        <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-orange-400 text-amber-950 text-[11px] font-black border border-white shadow-xs">
+                        <div className="absolute -bottom-1 -right-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-orange-400 text-amber-950 text-[9px] sm:text-[11px] font-black border border-white shadow-xs">
                           3
                         </div>
                       </div>
 
-                      <div className="text-center mt-2.5">
-                        <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate max-w-[120px] sm:max-w-[150px]">
+                      <div className="text-center mt-1.5 sm:mt-2.5 w-full">
+                        <div className="font-bold text-[11px] sm:text-sm text-slate-900 dark:text-white truncate max-w-[90px] sm:max-w-[150px] mx-auto">
                           {thirdPlace.name}
                         </div>
-                        <div className="mt-1">
-                          <span className="inline-block rounded-full bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 uppercase">
+                        <div className="mt-0.5 sm:mt-1">
+                          <span className="inline-block rounded-full bg-blue-50 dark:bg-blue-950/50 px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 uppercase">
                             {thirdPlace.track}
                           </span>
                         </div>
-                        <div className="mt-1 flex items-center justify-center gap-1 text-[10px] sm:text-xs font-semibold text-amber-600 dark:text-amber-400">
-                          <Flame className="h-3 w-3 fill-amber-500 text-amber-500" />
+                        <div className="mt-0.5 sm:mt-1 flex items-center justify-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs font-semibold text-amber-600 dark:text-amber-400">
+                          <Flame className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-amber-500 text-amber-500" />
                           <span>{thirdPlace.streakDays}d Streak</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Bronze Podium Pillar */}
-                    <div className="w-full h-24 sm:h-30 rounded-t-2xl bg-gradient-to-b from-amber-200 via-orange-300 to-orange-400 dark:from-amber-900/60 dark:via-orange-950 dark:to-orange-900 shadow-md flex flex-col items-center justify-center p-3 text-center border-t-2 border-white/40">
-                      <span className="text-xl sm:text-2xl font-black text-amber-900 dark:text-amber-200 tracking-tight">
+                    <div className="w-full h-20 sm:h-30 rounded-t-xl sm:rounded-t-2xl bg-gradient-to-b from-amber-200 via-orange-300 to-orange-400 dark:from-amber-900/60 dark:via-orange-950 dark:to-orange-900 shadow-md flex flex-col items-center justify-center p-2 sm:p-3 text-center border-t-2 border-white/40">
+                      <span className="text-lg sm:text-2xl font-black text-amber-900 dark:text-amber-200 tracking-tight">
                         3rd
                       </span>
-                      <span className="text-[11px] sm:text-xs font-bold text-amber-800 dark:text-amber-300/90 font-mono mt-0.5">
+                      <span className="text-[10px] sm:text-xs font-bold text-amber-800 dark:text-amber-300/90 font-mono mt-0.5">
                         {thirdPlace.points.toLocaleString()} pts
                       </span>
                     </div>

@@ -11,6 +11,8 @@ export interface Course {
   studentsEnrolled: number;
   summary: string;
   thumbnail?: string;
+  demoVideoUrl?: string;
+  demoVideoTitle?: string;
   modules: { title: string; topics: string[] }[];
 }
 

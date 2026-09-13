@@ -18,10 +18,14 @@ import {
   ShoppingBag,
   X,
   MessageCircle,
+  Bookmark,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
 import { TiltCard } from "@/components/interactions/tilt-card";
+import { useUser } from "@clerk/nextjs";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { useStudentBookmarks } from "@/lib/data/bookmarks-store";
 import {
   useAllCourses,
   useStudentOwnedCourses,
@@ -31,7 +35,6 @@ import {
 } from "@/lib/data/courses-store";
 import { CourseCheckoutModal } from "@/components/dashboard/course-checkout-modal";
 
-// Comprehensive Catalog with official JKS Learning branding
 export interface CatalogCourse {
   id: string;
   slug: string;
@@ -45,6 +48,7 @@ export interface CatalogCourse {
   price: number;
   originalPrice?: number;
   badge?: string;
+  thumbnail?: string;
   thumbnailBg: string;
   gradientText?: string;
   bannerTitle: string;
@@ -69,6 +73,7 @@ export function mapFullCourseToCatalog(c: FullCourse): CatalogCourse {
     reviewsCount: `${c.studentsEnrolled?.toLocaleString() || "1K"}+ Enrolled`,
     price: c.price,
     originalPrice: Math.round(c.price * 1.5),
+    thumbnail: c.thumbnail,
     thumbnailBg: isJava
       ? "bg-gradient-to-br from-blue-950 via-slate-950 to-indigo-950"
       : isFrontend
@@ -129,9 +134,19 @@ export default function StudentAllCoursesPage() {
   const [selectedBundleCourses, setSelectedBundleCourses] = useState<string[]>([]);
   const [enrolledNotification, setEnrolledNotification] = useState<string | null>(null);
 
+  const session = useMockSession();
+  const { user: clerkUser } = useUser();
+  const email = (
+    clerkUser?.primaryEmailAddress?.emailAddress ||
+    clerkUser?.emailAddresses?.[0]?.emailAddress ||
+    session?.email ||
+    ""
+  ).toLowerCase().trim();
+
   const allCourses = useAllCourses();
-  const ownedCourses = useStudentOwnedCourses();
+  const ownedCourses = useStudentOwnedCourses(email);
   const ownedSlugs = useMemo(() => ownedCourses.map((c) => c.slug), [ownedCourses]);
+  const { isBookmarked, toggleBookmark } = useStudentBookmarks(email);
 
   const catalogCourses = useMemo(() => {
     const list = allCourses.map(mapFullCourseToCatalog);
@@ -280,40 +295,76 @@ export default function StudentAllCoursesPage() {
                   <div
                     className={`relative flex h-28 sm:h-36 md:h-44 lg:h-48 w-full flex-col items-center justify-center p-2.5 sm:p-4 text-center overflow-hidden ${course.thumbnailBg}`}
                   >
-                    {/* Background Pattern */}
-                    <div
-                      className="absolute inset-0 opacity-15"
-                      style={{
-                        backgroundImage:
-                          "radial-gradient(circle at 50% 50%, white 1px, transparent 1px)",
-                        backgroundSize: "14px 14px",
-                      }}
-                    />
+                    {/* Uploaded Thumbnail Image (if provided) */}
+                    {course.thumbnail ? (
+                      <>
+                        <img
+                          src={course.thumbnail}
+                          alt={course.title}
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+                      </>
+                    ) : (
+                      <>
+                        {/* Background Pattern */}
+                        <div
+                          className="absolute inset-0 opacity-15"
+                          style={{
+                            backgroundImage:
+                              "radial-gradient(circle at 50% 50%, white 1px, transparent 1px)",
+                            backgroundSize: "14px 14px",
+                          }}
+                        />
 
-                    {/* Thumbnail Artwork / Text Graphic */}
-                    <div className="relative z-10 space-y-0.5 sm:space-y-1">
-                      <div className="text-[10px] sm:text-xs md:text-sm font-black tracking-widest text-slate-200 uppercase">
-                        {course.bannerTitle}
-                      </div>
-                      <div
-                        className={`text-base sm:text-xl md:text-2xl lg:text-3xl font-black tracking-wider uppercase bg-gradient-to-r ${
-                          course.gradientText || "from-blue-400 to-cyan-400"
-                        } bg-clip-text text-transparent drop-shadow-xs line-clamp-1`}
-                      >
-                        {course.bannerSubtitle || course.title}
-                      </div>
-                      <div className="hidden sm:block text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider">
-                        MASTER SKILLS • JKS LEARNING
-                      </div>
-                    </div>
+                        {/* Thumbnail Artwork / Text Graphic */}
+                        <div className="relative z-10 space-y-0.5 sm:space-y-1">
+                          <div className="text-[10px] sm:text-xs md:text-sm font-black tracking-widest text-slate-200 uppercase">
+                            {course.bannerTitle}
+                          </div>
+                          <div
+                            className={`text-base sm:text-xl md:text-2xl lg:text-3xl font-black tracking-wider uppercase bg-gradient-to-r ${
+                              course.gradientText || "from-blue-400 to-cyan-400"
+                            } bg-clip-text text-transparent drop-shadow-xs line-clamp-1`}
+                          >
+                            {course.bannerSubtitle || course.title}
+                          </div>
+                          <div className="hidden sm:block text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider">
+                            MASTER SKILLS • JKS LEARNING
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Bookmark Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleBookmark(course);
+                      }}
+                      aria-label={isBookmarked(course.slug) ? "Remove bookmark" : "Bookmark course"}
+                      className={`absolute top-2 right-2 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full backdrop-blur-md transition-all duration-200 shadow-md ${
+                        isBookmarked(course.slug)
+                          ? "bg-amber-500 text-white shadow-amber-500/30 scale-105"
+                          : "bg-slate-900/60 text-white/80 hover:bg-slate-900/90 hover:text-white hover:scale-105"
+                      }`}
+                    >
+                      <Bookmark
+                        className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
+                          isBookmarked(course.slug) ? "fill-white" : ""
+                        }`}
+                      />
+                    </button>
 
                     {/* JKS Certified Badge */}
-                    <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 flex items-center gap-1 rounded-full bg-black/50 px-1.5 py-0.5 sm:px-2 backdrop-blur-md text-[7px] sm:text-[9px] font-medium text-slate-300">
+                    <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 z-10 flex items-center gap-1 rounded-full bg-black/50 px-1.5 py-0.5 sm:px-2 backdrop-blur-md text-[7px] sm:text-[9px] font-medium text-slate-300">
                       <span>JKS Certified</span>
                     </div>
 
                     {isOwned && (
-                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 rounded-md sm:rounded-lg bg-emerald-500 px-1.5 py-0.5 sm:px-2 text-[8px] sm:text-[10px] font-extrabold uppercase text-white shadow-xs">
+                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10 rounded-md sm:rounded-lg bg-emerald-500 px-1.5 py-0.5 sm:px-2 text-[8px] sm:text-[10px] font-extrabold uppercase text-white shadow-xs">
                         Enrolled
                       </div>
                     )}
@@ -378,14 +429,13 @@ export default function StudentAllCoursesPage() {
                           <span className="truncate">Continue</span>
                         </Link>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleEnroll(course)}
+                        <Link
+                          href={`/courses/${course.slug}`}
                           className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
                         >
                           <span className="truncate">Enroll Now</span>
                           <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
-                        </button>
+                        </Link>
                       )}
                     </div>
                   </div>

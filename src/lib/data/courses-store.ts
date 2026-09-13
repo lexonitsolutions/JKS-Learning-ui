@@ -4,6 +4,7 @@ import { useSyncExternalStore, useEffect } from "react";
 import { apiUrl } from "@/lib/api/base-url";
 import type { Track } from "./courses";
 import { mapBackendTrack } from "./courses-api";
+import { fetchStudentEnrollments, getClientSessionEmail } from "./enrollments-api";
 
 export type VideoSourceType = "upload" | "url";
 
@@ -247,24 +248,32 @@ export function deleteCourse(courseIdOrSlug: string) {
   });
 }
 
-export function getStudentOwnedSlugs(): string[] {
-  return safeLocalStorageGet<string[]>(STORAGE_KEYS.ENROLLMENTS, DEFAULT_ENROLLED_SLUGS);
+export function getStudentEnrollmentStorageKey(email?: string): string {
+  const effectiveEmail = (email || getClientSessionEmail() || "").toLowerCase().trim();
+  return effectiveEmail ? `jks_student_enrollments_${effectiveEmail}` : "jks_student_enrollments_guest";
 }
 
-export function enrollStudentCourse(slug: string): string[] {
-  const current = getStudentOwnedSlugs();
+export function getStudentOwnedSlugs(email?: string): string[] {
+  const key = getStudentEnrollmentStorageKey(email);
+  return safeLocalStorageGet<string[]>(key, DEFAULT_ENROLLED_SLUGS);
+}
+
+export function enrollStudentCourse(slug: string, email?: string): string[] {
+  const key = getStudentEnrollmentStorageKey(email);
+  const current = getStudentOwnedSlugs(email);
   if (!current.includes(slug)) {
     const updated = [...current, slug];
-    safeLocalStorageSet(STORAGE_KEYS.ENROLLMENTS, updated);
+    safeLocalStorageSet(key, updated);
     return updated;
   }
   return current;
 }
 
-export function unenrollStudentCourse(slug: string): string[] {
-  const current = getStudentOwnedSlugs();
+export function unenrollStudentCourse(slug: string, email?: string): string[] {
+  const key = getStudentEnrollmentStorageKey(email);
+  const current = getStudentOwnedSlugs(email);
   const updated = current.filter((s) => s !== slug);
-  safeLocalStorageSet(STORAGE_KEYS.ENROLLMENTS, updated);
+  safeLocalStorageSet(key, updated);
   return updated;
 }
 
@@ -434,11 +443,63 @@ export function useAllCourses(): FullCourse[] {
   return useSyncExternalStore(subscribe, getCoursesSnapshot, () => INITIAL_COURSES);
 }
 
-export function useStudentOwnedCourses(): FullCourse[] {
+const enrollmentsSnapshotCache: Record<string, { raw: string | null; slugs: string[] }> = {};
+
+function getStudentEnrollmentsSnapshot(storageKey: string): string[] {
+  if (typeof window === "undefined") return DEFAULT_ENROLLED_SLUGS;
+  const raw = localStorage.getItem(storageKey);
+  if (!raw) {
+    if (enrollmentsSnapshotCache[storageKey] && enrollmentsSnapshotCache[storageKey].raw === null) {
+      return enrollmentsSnapshotCache[storageKey].slugs;
+    }
+    enrollmentsSnapshotCache[storageKey] = { raw: null, slugs: DEFAULT_ENROLLED_SLUGS };
+    return DEFAULT_ENROLLED_SLUGS;
+  }
+  if (enrollmentsSnapshotCache[storageKey] && enrollmentsSnapshotCache[storageKey].raw === raw) {
+    return enrollmentsSnapshotCache[storageKey].slugs;
+  }
+  try {
+    const slugs = JSON.parse(raw) as string[];
+    enrollmentsSnapshotCache[storageKey] = { raw, slugs };
+    return slugs;
+  } catch {
+    return DEFAULT_ENROLLED_SLUGS;
+  }
+}
+
+export function useStudentOwnedCourses(userEmail?: string): FullCourse[] {
   const allCourses = useAllCourses();
+  const effectiveEmail = (userEmail || getClientSessionEmail() || "").toLowerCase().trim();
+  const storageKey = getStudentEnrollmentStorageKey(effectiveEmail);
+
+  useEffect(() => {
+    let isCancelled = false;
+    async function syncEnrollments() {
+      if (!effectiveEmail) return;
+      try {
+        const enrollments = await fetchStudentEnrollments(effectiveEmail);
+        if (!isCancelled) {
+          const slugs = Array.isArray(enrollments) ? enrollments.map((e) => e.slug) : [];
+          safeLocalStorageSet(storageKey, slugs);
+        }
+      } catch (err) {
+        console.warn("[courses-store] Failed to sync student enrollments:", err);
+      }
+    }
+    syncEnrollments();
+    const handleProgressChange = () => {
+      syncEnrollments();
+    };
+    window.addEventListener("jks_video_progress_changed", handleProgressChange);
+    return () => {
+      isCancelled = true;
+      window.removeEventListener("jks_video_progress_changed", handleProgressChange);
+    };
+  }, [effectiveEmail, storageKey]);
+
   const ownedSlugs = useSyncExternalStore(
     subscribe,
-    getEnrollmentsSnapshot,
+    () => getStudentEnrollmentsSnapshot(storageKey),
     () => DEFAULT_ENROLLED_SLUGS
   );
   return allCourses.filter((course) => ownedSlugs.includes(course.slug));

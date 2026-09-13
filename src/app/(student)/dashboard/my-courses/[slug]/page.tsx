@@ -45,6 +45,7 @@ import {
   ShieldCheck,
   AlertCircle,
   XCircle,
+  Loader2,
 } from "lucide-react";
 import {
   getFullCourseBySlug,
@@ -118,6 +119,7 @@ export default function CourseLearningHubPage({
   const [assignmentScores, setAssignmentScores] = useState<Record<string, number>>({});
   const [assignmentCooldowns, setAssignmentCooldowns] = useState<Record<string, number>>({});
   const [activeQuizAnswers, setActiveQuizAnswers] = useState<Record<number, number>>({});
+  const [isSubmittingAssessment, setIsSubmittingAssessment] = useState(false);
   const [now, setNow] = useState<number>(Date.now());
 
   // Active Tab below Video (Udemy style)
@@ -272,6 +274,19 @@ export default function CourseLearningHubPage({
           setActiveVideo(firstVid);
           setActiveSectionId(firstSecId);
         }
+
+        // Load persisted Q&A questions for this course
+        if (typeof window !== "undefined") {
+          try {
+            const savedQa = localStorage.getItem(`jks_qa_${slug}`);
+            if (savedQa) {
+              const parsed = JSON.parse(savedQa);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setQuestionsList(parsed);
+              }
+            }
+          } catch {}
+        }
       }
     };
 
@@ -373,108 +388,114 @@ export default function CourseLearningHubPage({
   };
 
   const handleSubmitAssignment = async (sec: Section) => {
-    const asgId = sec.assignment.id;
-    const questions = sec.assignment.questions || [];
-    const minPass = sec.assignment.minPassingScore || 70;
+    if (isSubmittingAssessment) return;
+    setIsSubmittingAssessment(true);
+    try {
+      const asgId = sec.assignment.id;
+      const questions = sec.assignment.questions || [];
+      const minPass = sec.assignment.minPassingScore || 70;
 
-    let calculatedScore = 0;
-    if (questions.length > 0) {
-      let correct = 0;
-      questions.forEach((q, idx) => {
-        const selected = activeQuizAnswers[idx];
-        const correctIdx = typeof q.correctIndex === "number" ? q.correctIndex : 0;
-        if (selected === correctIdx) {
-          correct++;
-        }
-      });
-      calculatedScore = Math.round((correct / questions.length) * 100);
-    } else {
-      // Default challenge / practical submission score
-      calculatedScore = 85;
-    }
-
-    const passed = calculatedScore >= minPass;
-    const cooldownDurationMs = 180 * 1000; // 3 minutes cooldown timer on fail
-    const cooldownExpiry = passed ? 0 : Date.now() + cooldownDurationMs;
-
-    let updatedCompletedAssignments = [...completedAssignmentIds];
-    if (passed) {
-      if (!updatedCompletedAssignments.includes(asgId)) {
-        updatedCompletedAssignments.push(asgId);
+      let calculatedScore = 0;
+      if (questions.length > 0) {
+        let correct = 0;
+        questions.forEach((q, idx) => {
+          const selected = activeQuizAnswers[idx];
+          const correctIdx = typeof q.correctIndex === "number" ? q.correctIndex : 0;
+          if (selected === correctIdx) {
+            correct++;
+          }
+        });
+        calculatedScore = Math.round((correct / questions.length) * 100);
+      } else {
+        // Default challenge / practical submission score
+        calculatedScore = 85;
       }
-    } else {
-      // If failed, remove from passed/completed list so certificate stays locked
-      updatedCompletedAssignments = updatedCompletedAssignments.filter((id) => id !== asgId);
-    }
 
-    const updatedScores = { ...assignmentScores, [asgId]: calculatedScore };
-    const updatedCooldowns = { ...assignmentCooldowns };
-    if (passed) {
-      delete updatedCooldowns[asgId];
-    } else {
-      updatedCooldowns[asgId] = cooldownExpiry;
-    }
+      const passed = calculatedScore >= minPass;
+      const cooldownDurationMs = 180 * 1000; // 3 minutes cooldown timer on fail
+      const cooldownExpiry = passed ? 0 : Date.now() + cooldownDurationMs;
 
-    setCompletedAssignmentIds(updatedCompletedAssignments);
-    setAssignmentScores(updatedScores);
-    setAssignmentCooldowns(updatedCooldowns);
+      let updatedCompletedAssignments = [...completedAssignmentIds];
+      if (passed) {
+        if (!updatedCompletedAssignments.includes(asgId)) {
+          updatedCompletedAssignments.push(asgId);
+        }
+      } else {
+        // If failed, remove from passed/completed list so certificate stays locked
+        updatedCompletedAssignments = updatedCompletedAssignments.filter((id) => id !== asgId);
+      }
 
-    // Save to local cache
-    if (typeof window !== "undefined") {
+      const updatedScores = { ...assignmentScores, [asgId]: calculatedScore };
+      const updatedCooldowns = { ...assignmentCooldowns };
+      if (passed) {
+        delete updatedCooldowns[asgId];
+      } else {
+        updatedCooldowns[asgId] = cooldownExpiry;
+      }
+
+      setCompletedAssignmentIds(updatedCompletedAssignments);
+      setAssignmentScores(updatedScores);
+      setAssignmentCooldowns(updatedCooldowns);
+
+      // Save to local cache
+      if (typeof window !== "undefined") {
+        try {
+          const key = `jks_prog_${slug}_${effectiveEmail || "student"}`;
+          localStorage.setItem(
+            key,
+            JSON.stringify({
+              completedVideoIds,
+              completedAssignmentIds: updatedCompletedAssignments,
+              assignmentScores: updatedScores,
+              assignmentCooldowns: updatedCooldowns,
+            })
+          );
+        } catch {}
+      }
+
+      // Persist real assessment submission to backend DB
       try {
-        const key = `jks_prog_${slug}_${effectiveEmail || "student"}`;
-        localStorage.setItem(
-          key,
-          JSON.stringify({
-            completedVideoIds,
-            completedAssignmentIds: updatedCompletedAssignments,
-            assignmentScores: updatedScores,
-            assignmentCooldowns: updatedCooldowns,
-          })
-        );
-      } catch {}
-    }
+        await submitAssessment({
+          courseSlug: slug,
+          assessmentId: asgId,
+          studentEmail: effectiveEmail,
+          answers: activeQuizAnswers,
+          score: calculatedScore,
+          feedback: passed
+            ? "Exceeded performance benchmark across all core competencies."
+            : "Score below passing mark. Please review relevant module lectures and re-attempt.",
+        });
+      } catch (err) {
+        console.warn("Failed to persist assessment submission to backend:", err);
+      }
 
-    // Persist real assessment submission to backend DB
-    try {
-      await submitAssessment({
-        courseSlug: slug,
-        assessmentId: asgId,
-        studentEmail: effectiveEmail,
-        answers: activeQuizAnswers,
+      // Sync to backend DB
+      try {
+        await syncAllCourseProgress({
+          courseSlug: slug,
+          studentEmail: effectiveEmail,
+          completedVideoIds,
+          completedAssignmentIds: updatedCompletedAssignments,
+          assignmentScores: updatedScores,
+        });
+      } catch (e) {
+        console.warn("Failed to save assignment progress:", e);
+      }
+
+      setActiveAssignmentSection(null);
+      setActiveQuizAnswers({});
+      setEvaluationResult({
+        sectionId: sec.id,
+        asgId,
+        title: sec.assignment.title,
         score: calculatedScore,
-        feedback: passed
-          ? "Exceeded performance benchmark across all core competencies."
-          : "Score below passing mark. Please review relevant module lectures and re-attempt.",
+        minPass,
+        passed,
+        cooldownUntil: passed ? undefined : cooldownExpiry,
       });
-    } catch (err) {
-      console.warn("Failed to persist assessment submission to backend:", err);
+    } finally {
+      setIsSubmittingAssessment(false);
     }
-
-    // Sync to backend DB
-    try {
-      await syncAllCourseProgress({
-        courseSlug: slug,
-        studentEmail: effectiveEmail,
-        completedVideoIds,
-        completedAssignmentIds: updatedCompletedAssignments,
-        assignmentScores: updatedScores,
-      });
-    } catch (e) {
-      console.warn("Failed to save assignment progress:", e);
-    }
-
-    setActiveAssignmentSection(null);
-    setActiveQuizAnswers({});
-    setEvaluationResult({
-      sectionId: sec.id,
-      asgId,
-      title: sec.assignment.title,
-      score: calculatedScore,
-      minPass,
-      passed,
-      cooldownUntil: passed ? undefined : cooldownExpiry,
-    });
   };
 
   const handleAddNote = () => {
@@ -503,7 +524,13 @@ export default function CourseLearningHubPage({
       replies: 0,
       hasInstructorResponse: false,
     };
-    setQuestionsList([q, ...questionsList]);
+    const updated = [q, ...questionsList];
+    setQuestionsList(updated);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(`jks_qa_${slug}`, JSON.stringify(updated));
+      } catch {}
+    }
     setNewQuestionTitle("");
     setNewQuestionBody("");
     setShowAskModal(false);
@@ -1898,16 +1925,25 @@ export default function CourseLearningHubPage({
                   </button>
                   <button
                     type="button"
-                    disabled={isCooldownActive}
+                    disabled={isCooldownActive || isSubmittingAssessment}
                     onClick={() => handleSubmitAssignment(activeAssignmentSection)}
                     className={`flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all ${
-                      isCooldownActive
+                      isCooldownActive || isSubmittingAssessment
                         ? "bg-slate-400 cursor-not-allowed opacity-60 dark:bg-slate-700"
                         : "bg-emerald-600 hover:bg-emerald-700 cursor-pointer hover:scale-105"
                     }`}
                   >
-                    <FileCheck className="h-4 w-4" />
-                    {isCooldownActive ? `Cooldown (${formatCooldown(secondsRemaining)})` : "Submit & Evaluate Score"}
+                    {isSubmittingAssessment ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Evaluating Score...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FileCheck className="h-4 w-4" />
+                        <span>{isCooldownActive ? `Cooldown (${formatCooldown(secondsRemaining)})` : "Submit & Evaluate Score"}</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

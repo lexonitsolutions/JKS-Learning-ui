@@ -151,7 +151,7 @@ export function CourseCheckoutModal({
       });
 
       // Synchronize in-app course enrollment
-      enrollStudentCourse(course.slug);
+      enrollStudentCourse(course.slug, effectiveEmail);
 
       // Trigger sync events across pages
       if (typeof window !== "undefined") {
@@ -166,7 +166,7 @@ export function CourseCheckoutModal({
       }
     } catch (err) {
       console.error("Payment registration fallback:", err);
-      enrollStudentCourse(course.slug);
+      enrollStudentCourse(course.slug, effectiveEmail);
       setPaymentSuccess(true);
     } finally {
       setIsProcessing(false);

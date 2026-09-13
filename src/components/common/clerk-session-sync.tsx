@@ -12,7 +12,10 @@ const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 export function ClerkSessionSync() {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
-  const lastSyncedEmail = useRef<string | null>(null);
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
+
+  const lastSyncedId = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -26,8 +29,8 @@ export function ClerkSessionSync() {
 
       if (!email) return;
 
-      if (lastSyncedEmail.current === email) return;
-      lastSyncedEmail.current = email;
+      if (lastSyncedId.current === user.id) return;
+      lastSyncedId.current = user.id;
 
       const fullName =
         user.fullName ||
@@ -81,7 +84,7 @@ export function ClerkSessionSync() {
       // the local user row on first sign-in (non-blocking).
       void (async () => {
         try {
-          const token = await getToken();
+          const token = await getTokenRef.current?.();
           if (!token) return;
 
           const res = await fetch(apiUrl("/auth/clerk-sync"), {
@@ -123,12 +126,12 @@ export function ClerkSessionSync() {
         }
       })();
 
-      // Dispatch event to notify all components
+      // Dispatch event to notify all components once
       window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
     } else {
       // If user was synced previously with Clerk and is now logged out from Clerk
-      if (lastSyncedEmail.current) {
-        lastSyncedEmail.current = null;
+      if (lastSyncedId.current) {
+        lastSyncedId.current = null;
         document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0`;
         try {
           localStorage.removeItem("jks_auth_user");
@@ -136,7 +139,7 @@ export function ClerkSessionSync() {
         window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
       }
     }
-  }, [user, isLoaded, getToken]);
+  }, [user?.id, isLoaded]);
 
   // No DOM output. This component used to render a second
   // <div id="clerk-captcha" className="hidden"> here; because it lives in the

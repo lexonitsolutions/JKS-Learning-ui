@@ -20,6 +20,7 @@ import {
   Volume2,
   Star,
   BookOpen,
+  Bookmark,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
@@ -30,6 +31,7 @@ import {
   useStudentOwnedCourses,
   enrollStudentCourse,
 } from "@/lib/data/courses-store";
+import { useStudentBookmarks } from "@/lib/data/bookmarks-store";
 import { CourseCheckoutModal } from "@/components/dashboard/course-checkout-modal";
 import { mapFullCourseToCatalog, type CatalogCourse } from "@/app/(student)/dashboard/courses/page";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
@@ -96,9 +98,21 @@ export default function StudentDashboardPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [enrolledToast, setEnrolledToast] = useState<string | null>(null);
 
+  const session = useMockSession();
+  const { user: clerkUser } = useUser();
+
+  const email = (
+    clerkUser?.primaryEmailAddress?.emailAddress ||
+    clerkUser?.emailAddresses?.[0]?.emailAddress ||
+    session?.email ||
+    ""
+  ).toLowerCase().trim();
+  const isAdmin = email === "lexonitservices@gmail.com" || session?.role === "admin";
+
   const allCourses = useAllCourses();
-  const ownedCourses = useStudentOwnedCourses();
+  const ownedCourses = useStudentOwnedCourses(email);
   const ownedSlugs = useMemo(() => ownedCourses.map((c) => c.slug), [ownedCourses]);
+  const { isBookmarked, toggleBookmark } = useStudentBookmarks(email);
 
   const catalogCourses = useMemo(() => allCourses.map(mapFullCourseToCatalog), [allCourses]);
 
@@ -121,16 +135,6 @@ export default function StudentDashboardPage() {
   }, [isPaused]);
 
   const activeOffer = OFFERS[currentSlide];
-  const session = useMockSession();
-  const { user: clerkUser } = useUser();
-
-  const email = (
-    clerkUser?.primaryEmailAddress?.emailAddress ||
-    clerkUser?.emailAddresses?.[0]?.emailAddress ||
-    session?.email ||
-    ""
-  ).toLowerCase().trim();
-  const isAdmin = email === "lexonitservices@gmail.com" || session?.role === "admin";
 
   useEffect(() => {
     if (isAdmin) {
@@ -388,35 +392,71 @@ export default function StudentDashboardPage() {
                   <div
                     className={`relative flex h-44 w-full flex-col items-center justify-center p-4 text-center overflow-hidden ${course.thumbnailBg}`}
                   >
-                    {/* Background Pattern */}
-                    <div
-                      className="absolute inset-0 opacity-15"
-                      style={{
-                        backgroundImage:
-                          "radial-gradient(circle at 50% 50%, white 1px, transparent 1px)",
-                        backgroundSize: "14px 14px",
-                      }}
-                    />
+                    {/* Uploaded Thumbnail Image (if provided) */}
+                    {course.thumbnail ? (
+                      <>
+                        <img
+                          src={course.thumbnail}
+                          alt={course.title}
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+                      </>
+                    ) : (
+                      <>
+                        {/* Background Pattern */}
+                        <div
+                          className="absolute inset-0 opacity-15"
+                          style={{
+                            backgroundImage:
+                              "radial-gradient(circle at 50% 50%, white 1px, transparent 1px)",
+                            backgroundSize: "14px 14px",
+                          }}
+                        />
 
-                    {/* Thumbnail Artwork / Text Graphic */}
-                    <div className="relative z-10 space-y-1">
-                      <div className="text-[14px] font-black tracking-widest text-slate-200 uppercase">
-                        {course.bannerTitle}
-                      </div>
-                      <div
-                        className={`text-2xl font-black tracking-wider uppercase bg-gradient-to-r ${
-                          course.gradientText || "from-blue-400 to-cyan-400"
-                        } bg-clip-text text-transparent drop-shadow-sm`}
-                      >
-                        {course.bannerSubtitle || course.title}
-                      </div>
-                      <div className="text-[9px] font-bold text-slate-400 tracking-wider">
-                        MASTER SKILLS • JKS LEARNING
-                      </div>
-                    </div>
+                        {/* Thumbnail Artwork / Text Graphic */}
+                        <div className="relative z-10 space-y-1">
+                          <div className="text-[14px] font-black tracking-widest text-slate-200 uppercase">
+                            {course.bannerTitle}
+                          </div>
+                          <div
+                            className={`text-2xl font-black tracking-wider uppercase bg-gradient-to-r ${
+                              course.gradientText || "from-blue-400 to-cyan-400"
+                            } bg-clip-text text-transparent drop-shadow-sm`}
+                          >
+                            {course.bannerSubtitle || course.title}
+                          </div>
+                          <div className="text-[9px] font-bold text-slate-400 tracking-wider">
+                            MASTER SKILLS • JKS LEARNING
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Bookmark Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleBookmark(course);
+                      }}
+                      aria-label={isBookmarked(course.slug) ? "Remove bookmark" : "Bookmark course"}
+                      className={`absolute top-2.5 right-2.5 z-20 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-md transition-all duration-200 shadow-md ${
+                        isBookmarked(course.slug)
+                          ? "bg-amber-500 text-white shadow-amber-500/30 scale-105"
+                          : "bg-slate-900/60 text-white/80 hover:bg-slate-900/90 hover:text-white hover:scale-105"
+                      }`}
+                    >
+                      <Bookmark
+                        className={`h-4 w-4 ${
+                          isBookmarked(course.slug) ? "fill-white" : ""
+                        }`}
+                      />
+                    </button>
 
                     {/* JKS Certified Badge */}
-                    <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/40 px-2 py-0.5 backdrop-blur-md text-[9px] font-medium text-slate-300">
+                    <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded-full bg-black/40 px-2 py-0.5 backdrop-blur-md text-[9px] font-medium text-slate-300">
                       <span>JKS Certified</span>
                     </div>
                   </div>
@@ -459,16 +499,15 @@ export default function StudentDashboardPage() {
                       </p>
                     </div>
 
-                    {/* Bottom CTA Button: JKS Brand Blue UI Color */}
+                    {/* Bottom CTA Button: Direct Link to Course Details & Enrollment */}
                     <div className="pt-2">
-                      <button
-                        type="button"
-                        onClick={() => handleQuickEnroll(course)}
+                      <Link
+                        href={`/courses/${course.slug}`}
                         className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2.5 px-4 text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
                       >
                         <span>Enroll Now</span>
                         <ArrowRight className="h-3.5 w-3.5" />
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -477,31 +516,35 @@ export default function StudentDashboardPage() {
           </Reveal>
         </div>
 
-        {/* AI Mock Interview CTA Banner with 3D Waveform & Live Readiness Check */}
+        {/* AI Mock Interview CTA Banner (Disabled / Coming Soon as requested) */}
         <Reveal variant="fade-up">
-          <div className="relative overflow-hidden rounded-[24px] border border-slate-800 bg-[#0B1F3A] p-6 text-white shadow-xl sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 dark:bg-surface-secondary dark:border-slate-800/80">
+          <div className="relative overflow-hidden rounded-[24px] border border-slate-800 bg-[#0B1F3A]/90 p-6 text-white shadow-xl sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 dark:bg-surface-secondary dark:border-slate-800/80 opacity-85">
             <div
-              className="pointer-events-none absolute -top-12 right-20 h-48 w-48 rounded-full opacity-40"
-              style={{ background: "radial-gradient(circle, rgba(56,189,248,0.3), transparent 70%)" }}
+              className="pointer-events-none absolute -top-12 right-20 h-48 w-48 rounded-full opacity-30"
+              style={{ background: "radial-gradient(circle, rgba(56,189,248,0.25), transparent 70%)" }}
             />
             <div className="relative z-10 max-w-xl">
-              <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-cyan-400">
-                <Zap className="h-3 w-3" /> AI Mock Interview
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-cyan-400">
+                  <Zap className="h-3 w-3" /> AI Mock Interview
+                </span>
+                <span className="rounded-full bg-cyan-500/20 border border-cyan-400/30 px-2 py-0.5 text-[10px] font-bold text-cyan-300 uppercase tracking-wide">
+                  Coming Soon
+                </span>
+              </div>
               <h3 className="mt-1.5 text-xl font-bold text-white tracking-tight">
-                Ready for another readiness check?
+                AI-Powered System Design & Coding Mock Interviews
               </h3>
               <p className="mt-1 text-sm text-slate-300">
-                Your last score was <span className="font-bold text-cyan-400">78/100</span> — try a
-                scenario-based interview to push higher.
+                Interactive real-time technical assessments and speech-enabled architectural reviews will be available in the upcoming release.
               </p>
             </div>
-            <Link
-              href="/dashboard/ai-interview"
-              className="relative z-10 inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-600 hover:scale-[1.02] sm:shrink-0"
+            <div
+              className="relative z-10 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800/80 border border-slate-700/70 px-5 py-2.5 text-xs font-bold text-slate-400 cursor-not-allowed select-none sm:shrink-0"
             >
-              Start Interview <ArrowRight className="h-4 w-4" />
-            </Link>
+              <Clock className="h-3.5 w-3.5 text-cyan-400" />
+              <span>Coming Soon</span>
+            </div>
           </div>
         </Reveal>
       </div>

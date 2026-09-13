@@ -218,18 +218,52 @@ const QUIZZES: Quiz[] = [
   },
 ];
 
-const CATEGORIES = [
-  "My Quizzes",
-  "React & Next.js",
-  "JavaScript Core",
-  "Java Full Stack",
-  "Node.js & Backend",
-  "DSA & Algorithms",
-  "System Design",
-];
+import { useAllCourses } from "@/lib/data/courses-store";
 
 export default function QuizzesPage() {
-  const [selectedCategory, setSelectedCategory] = useState("My Quizzes");
+  const allCourses = useAllCourses();
+
+  // Derive dynamic quizzes from live courses & their section assessments
+  const dynamicQuizzes = React.useMemo<Quiz[]>(() => {
+    const list: Quiz[] = [];
+
+    allCourses.forEach((course) => {
+      (course.sections || []).forEach((sec) => {
+        if (sec.assignment && sec.assignment.questions && sec.assignment.questions.length > 0) {
+          list.push({
+            id: `quiz-${course.slug}-${sec.id}`,
+            title: sec.assignment.title || `${sec.title} Quiz`,
+            category: course.track,
+            bannerTitle: course.title.split(" ")[0] || "Track",
+            bannerSubtitle: sec.title,
+            bannerBg: course.slug.includes("java")
+              ? "from-blue-950 via-slate-900 to-indigo-950"
+              : course.slug.includes("frontend")
+              ? "from-cyan-950 via-slate-900 to-blue-950"
+              : "from-slate-950 via-purple-950 to-slate-900",
+            questionsCount: sec.assignment.questions.length,
+            passPercentage: sec.assignment.minPassingScore || 70,
+            durationMinutes: Math.max(5, sec.assignment.questions.length * 2),
+            questions: sec.assignment.questions.map((q) => ({
+              question: q.prompt,
+              options: q.choices && q.choices.length > 0 ? q.choices : ["True", "False"],
+              correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
+              explanation: `Review key principles in ${sec.title} to master this assessment requirement.`,
+            })),
+          });
+        }
+      });
+    });
+
+    return list.length > 0 ? list : QUIZZES;
+  }, [allCourses]);
+
+  const categories = React.useMemo(() => {
+    const unique = Array.from(new Set(dynamicQuizzes.map((q) => q.category)));
+    return ["All Quizzes", ...unique];
+  }, [dynamicQuizzes]);
+
+  const [selectedCategory, setSelectedCategory] = useState("All Quizzes");
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
 
   // Active Quiz Running State
@@ -238,9 +272,9 @@ export default function QuizzesPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const filteredQuizzes =
-    selectedCategory === "My Quizzes"
-      ? QUIZZES
-      : QUIZZES.filter((q) => q.category === selectedCategory);
+    selectedCategory === "All Quizzes"
+      ? dynamicQuizzes
+      : dynamicQuizzes.filter((q) => q.category === selectedCategory);
 
   const startQuiz = (quiz: Quiz) => {
     setActiveQuiz(quiz);
@@ -282,7 +316,7 @@ export default function QuizzesPage() {
         {/* Category Filter Chips Bar (matching reference design) */}
         <Reveal variant="fade-up">
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {CATEGORIES.map((cat) => {
+            {categories.map((cat) => {
               const isSelected = selectedCategory === cat;
               return (
                 <button
