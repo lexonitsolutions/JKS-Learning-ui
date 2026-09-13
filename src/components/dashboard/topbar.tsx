@@ -82,8 +82,8 @@ const INSTRUCTOR_NAV: NavItem[] = [
   { href: "/instructor/settings", label: "Settings", icon: Settings },
 ];
 
-// Explore Dropdown Items (4 dedicated sections)
-const EXPLORE_SECTIONS = [
+// Explore Dropdown Items for Student Workspace
+const STUDENT_EXPLORE_SECTIONS = [
   {
     label: "Leaderboard",
     href: "/dashboard/leaderboard",
@@ -103,6 +103,30 @@ const EXPLORE_SECTIONS = [
     label: "Playground",
     href: "/dashboard/playground",
     icon: Code2,
+  },
+];
+
+// Explore Dropdown Items for Admin Workspace
+const ADMIN_EXPLORE_SECTIONS = [
+  {
+    label: "Student Leaderboard",
+    href: "/admin/leaderboard",
+    icon: Trophy,
+  },
+  {
+    label: "Question Bank",
+    href: "/admin/assessments/questions",
+    icon: ClipboardCheck,
+  },
+  {
+    label: "Code Playground",
+    href: "/admin/playground",
+    icon: Code2,
+  },
+  {
+    label: "AI Mock Interviews",
+    href: "/admin/ai-interviews",
+    icon: Sparkles,
   },
 ];
 
@@ -149,6 +173,16 @@ export function DashboardTopbar({
   const isInstructor = pathname.startsWith("/instructor");
   const navItems = isAdmin ? ADMIN_NAV : isInstructor ? INSTRUCTOR_NAV : STUDENT_NAV;
   const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
+  const exploreSections = isAdmin
+    ? ADMIN_EXPLORE_SECTIONS
+    : isInstructor
+    ? [
+        { label: "Student Leaderboard", href: "/admin/leaderboard", icon: Trophy },
+        { label: "Assessments", href: "/instructor/assessments", icon: ClipboardCheck },
+        { label: "Code Playground", href: "/admin/playground", icon: Code2 },
+        { label: "Platform Analytics", href: "/instructor/analytics", icon: Sparkles },
+      ]
+    : STUDENT_EXPLORE_SECTIONS;
 
   const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
   const clerkName = clerkUser?.fullName || [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") || clerkUser?.username;
@@ -280,7 +314,7 @@ export function DashboardTopbar({
                   className="absolute right-0 top-full mt-2 w-56 sm:w-60 z-50 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated p-2 shadow-[0_12px_35px_rgba(20,50,100,0.12)] dark:shadow-[0_12px_35px_rgba(0,0,0,0.5)] backdrop-blur-xl"
                 >
                   <div className="space-y-1">
-                    {EXPLORE_SECTIONS.map((item) => {
+                    {exploreSections.map((item) => {
                       const Icon = item.icon;
                       return (
                         <Link

@@ -26,6 +26,7 @@ import { Reveal } from "@/lib/motion/reveal";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 import { fetchStudentEnrollments, getClientSessionEmail, getExactStudentCourseProgress, type EnrolledCourseItem } from "@/lib/data/enrollments-api";
+import { CourseThumbnail } from "@/components/common/course-thumbnail";
 
 export default function MyCoursesPage() {
   const session = useMockSession();
@@ -262,28 +263,29 @@ export default function MyCoursesPage() {
             {filteredCourses.map((course) => (
               <TiltCard key={course.id || course.slug} className="h-full">
                 <div className="flex h-full flex-col justify-between overflow-hidden rounded-[22px] border border-white/80 bg-white/90 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:border-blue-200 dark:border-slate-800/80 dark:bg-surface-secondary dark:hover:border-blue-500/40">
-                  {/* Card Header Gradient Banner */}
-                  <div className="relative flex h-28 items-center justify-between bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 overflow-hidden">
-                    <div
-                      className="absolute inset-0 opacity-15"
-                      style={{
-                        backgroundImage:
-                          "radial-gradient(circle at 50% 50%, white 1px, transparent 1px)",
-                        backgroundSize: "14px 14px",
-                      }}
+                  {/* Card Header Thumbnail Banner */}
+                  <div className="relative h-36 w-full overflow-hidden bg-slate-950">
+                    <CourseThumbnail
+                      src={course.thumbnail}
+                      title={course.title}
+                      track={course.track}
+                      className="w-full h-full"
+                      aspectRatio="16/9"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
 
-                    <div className="relative z-10">
-                      <span className="rounded-md bg-blue-500/20 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-300 border border-blue-400/20">
+                    <div className="absolute top-3 left-4 z-10">
+                      <span className="rounded-md bg-blue-500/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-300 border border-blue-400/30 backdrop-blur-md">
                         {course.track}
                       </span>
-                      <div className="mt-2 text-xs text-slate-300 font-medium">
-                        {course.level} · {course.durationWeeks} Weeks
-                      </div>
                     </div>
 
-                    <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-blue-300 backdrop-blur-md shadow-xs">
-                      <BookOpen className="h-5 w-5" />
+                    <div className="absolute top-3 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-md shadow-xs border border-white/20">
+                      <BookOpen className="h-4 w-4 text-blue-400" />
+                    </div>
+
+                    <div className="absolute bottom-2.5 left-4 z-10 text-xs text-slate-200 font-medium drop-shadow-md">
+                      {course.level} · {course.durationWeeks} Weeks
                     </div>
                   </div>
 

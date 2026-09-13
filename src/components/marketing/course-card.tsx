@@ -3,6 +3,7 @@ import { Star, Clock, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TiltCard } from "@/components/interactions/tilt-card";
+import { CourseThumbnail } from "@/components/common/course-thumbnail";
 import type { Course } from "@/lib/data/courses";
 
 export function CourseCard({ course }: { course: Course }) {
@@ -11,16 +12,14 @@ export function CourseCard({ course }: { course: Course }) {
       <Link href={`/courses/${course.slug}`} className="block h-full">
         <Card className="h-full flex flex-col justify-between transition-shadow hover:shadow-lg rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-surface-secondary dark:hover:border-border-strong">
           <div>
-            <div className="relative flex h-28 sm:h-36 items-center justify-center bg-gradient-to-br from-primary-dark to-primary-fill overflow-hidden text-center">
-              {course.thumbnail ? (
-                <img
-                  src={course.thumbnail}
-                  alt={course.title}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span className="text-[11px] sm:text-label font-bold text-white/85 line-clamp-1">{course.track}</span>
-              )}
+            <div className="relative h-28 sm:h-36 overflow-hidden">
+              <CourseThumbnail
+                src={course.thumbnail}
+                title={course.title}
+                track={course.track}
+                className="w-full h-full"
+                aspectRatio="16/9"
+              />
             </div>
             <div className="p-3 sm:p-5">
               <div className="mb-1.5 sm:mb-2 flex items-center gap-1.5">

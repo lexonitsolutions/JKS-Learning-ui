@@ -28,6 +28,7 @@ import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import { fetchAdminStudents, type AdminStudentRecord } from "@/lib/data/students-api";
 import { getExactStudentCourseProgress } from "@/lib/data/enrollments-api";
+import { MessageStudentModal } from "@/components/admin/message-student-modal";
 
 export function getStudentProgressRating(progress: number) {
   if (progress >= 85) {
@@ -92,6 +93,14 @@ export default function AdminStudentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTab, setFilterTab] = useState<"All" | "Enrolled" | "NoCourses">("All");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [messageModalStudent, setMessageModalStudent] = useState<{
+    name: string;
+    email: string;
+    phone?: string;
+    id?: string;
+    initials?: string;
+    enrolledCourses?: string[];
+  } | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -573,7 +582,13 @@ export default function AdminStudentsPage() {
                             <button
                               type="button"
                               onClick={() =>
-                                showToast(`Direct messaging initiated with ${s.email}...`)
+                                setMessageModalStudent({
+                                  name: s.name,
+                                  email: s.email,
+                                  phone: s.phone,
+                                  id: s.id,
+                                  enrolledCourses: s.enrollments.map((e) => e.courseTitle),
+                                })
                               }
                               className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white transition-colors"
                               title="Message Student"
@@ -591,6 +606,15 @@ export default function AdminStudentsPage() {
           </div>
         </div>
       </div>
+
+      {/* DIRECT MESSAGE STUDENT MODAL */}
+      <MessageStudentModal
+        isOpen={Boolean(messageModalStudent)}
+        onClose={() => setMessageModalStudent(null)}
+        student={messageModalStudent}
+        onMessageSent={(summary) => showToast(summary)}
+      />
     </>
   );
 }
+

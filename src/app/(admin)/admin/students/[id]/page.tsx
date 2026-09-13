@@ -82,6 +82,8 @@ import {
   fetchCourseProgress,
   getExactStudentCourseProgress,
 } from "@/lib/data/enrollments-api";
+import { CourseThumbnail } from "@/components/common/course-thumbnail";
+import { MessageStudentModal } from "@/components/admin/message-student-modal";
 
 type HubTabType = "overview" | "qa" | "notes" | "announcements" | "reviews" | "tools";
 
@@ -98,6 +100,7 @@ export default function AdminStudentDetailsPage() {
   );
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
 
   // Full Screen Student Course Learning & Assignment Inspector View State
   const [inspectingCourse, setInspectingCourse] = useState<StudentCourseDetail | null>(null);
@@ -983,7 +986,7 @@ export default function AdminStudentDetailsPage() {
 
                     <button
                       type="button"
-                      onClick={() => showToast(`Composing direct email to ${student.email}...`)}
+                      onClick={() => setIsMessageModalOpen(true)}
                       className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-all cursor-pointer"
                     >
                       <Mail className="h-3.5 w-3.5" />
@@ -1090,28 +1093,29 @@ export default function AdminStudentDetailsPage() {
                       <TiltCard key={course.enrollmentId} className="h-full">
                         <div className="group flex h-full flex-col justify-between overflow-hidden rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary/90 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-800/50">
                           {/* Rich Visual Header Banner with Course Image */}
-                          <div className="relative flex h-36 items-center justify-between p-5 overflow-hidden bg-slate-950">
-                            <Image
-                              src={course.thumbnail || "/images/course-java.png"}
-                              alt={course.courseTitle}
-                              fill
-                              unoptimized
-                              className="object-cover opacity-40 transition-transform duration-500 group-hover:scale-105"
+                          <div className="relative h-40 overflow-hidden bg-slate-950">
+                            <CourseThumbnail
+                              src={course.thumbnail}
+                              title={course.courseTitle}
+                              track={course.track}
+                              className="w-full h-full"
+                              aspectRatio="16/9"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
 
-                            <div className="relative z-10 flex flex-col justify-between h-full">
+                            <div className="absolute top-4 left-4 z-10">
                               <span className="inline-flex self-start rounded-md bg-blue-500/30 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-300 border border-blue-400/30 backdrop-blur-md">
                                 {course.track}
                               </span>
-                              <div className="text-xs text-slate-200 font-semibold flex items-center gap-1.5">
-                                <Clock className="h-3.5 w-3.5 text-blue-400" />
-                                <span>24 Weeks · Cohort Enrolled</span>
-                              </div>
                             </div>
 
-                            <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-md shadow-xs border border-white/20">
-                              <BookOpen className="h-5 w-5 text-blue-400" />
+                            <div className="absolute bottom-3 left-4 z-10 text-xs text-slate-200 font-semibold flex items-center gap-1.5 drop-shadow-md">
+                              <Clock className="h-3.5 w-3.5 text-blue-400" />
+                              <span>24 Weeks · Cohort Enrolled</span>
+                            </div>
+
+                            <div className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-md shadow-xs border border-white/20">
+                              <BookOpen className="h-4 w-4 text-blue-400" />
                             </div>
                           </div>
 
@@ -1516,6 +1520,25 @@ export default function AdminStudentDetailsPage() {
         invoice={selectedInvoice}
         onClose={() => setSelectedInvoice(null)}
       />
+
+      {/* DIRECT MESSAGE STUDENT MODAL */}
+      <MessageStudentModal
+        isOpen={isMessageModalOpen}
+        onClose={() => setIsMessageModalOpen(false)}
+        student={
+          student
+            ? {
+                name: student.name,
+                email: student.email,
+                phone: student.phone,
+                id: student.id,
+                enrolledCourses: student.enrollments.map((e) => e.courseTitle),
+              }
+            : null
+        }
+        onMessageSent={(summary) => showToast(summary)}
+      />
     </>
   );
 }
+
