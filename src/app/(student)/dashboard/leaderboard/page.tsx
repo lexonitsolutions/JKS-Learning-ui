@@ -25,33 +25,7 @@ import { useUser } from "@clerk/nextjs";
 import { fetchLeaderboardData, type LeaderboardItem, type LeaderboardResponse } from "@/lib/data/students-api";
 import { getClientSessionEmail } from "@/lib/data/enrollments-api";
 import { LeaderboardWaveAnimation } from "@/components/dashboard/leaderboard-wave";
-
-function HallOfExcellenceConfetti() {
-  const particles = [
-    { top: "14%", left: "12%", bg: "bg-rose-400", rotate: "rotate-12", size: "w-2 h-2 rounded-xs" },
-    { top: "24%", left: "7%", bg: "bg-amber-400", rotate: "-rotate-45", size: "w-1.5 h-3 rounded-xs" },
-    { top: "18%", left: "28%", bg: "bg-blue-400", rotate: "rotate-45", size: "w-2 h-2 rounded-full" },
-    { top: "34%", left: "24%", bg: "bg-indigo-400", rotate: "rotate-12", size: "w-1.5 h-2 rounded-xs" },
-    { top: "14%", right: "26%", bg: "bg-rose-400", rotate: "-rotate-12", size: "w-2 h-2 rounded-xs" },
-    { top: "32%", right: "32%", bg: "bg-sky-400", rotate: "rotate-45", size: "w-2 h-1.5 rounded-xs" },
-    { top: "12%", right: "10%", bg: "bg-amber-400", rotate: "rotate-45", size: "w-2.5 h-2 rounded-xs" },
-    { top: "26%", right: "6%", bg: "bg-emerald-400", rotate: "-rotate-12", size: "w-2 h-2 rounded-full" },
-    { top: "8%", left: "42%", bg: "bg-amber-300", rotate: "rotate-30", size: "w-1.5 h-1.5 rounded-full" },
-    { top: "10%", right: "42%", bg: "bg-violet-400", rotate: "-rotate-30", size: "w-1.5 h-2 rounded-xs" },
-  ];
-
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-80 select-none">
-      {particles.map((p, idx) => (
-        <span
-          key={idx}
-          className={`absolute ${p.bg} ${p.size} ${p.rotate} opacity-75 animate-pulse`}
-          style={{ top: p.top, left: p.left, right: p.right }}
-        />
-      ))}
-    </div>
-  );
-}
+import { CelebrationAnimation } from "@/components/dashboard/celebration-animation";
 
 export default function LeaderboardPage() {
   const session = useMockSession();
@@ -343,8 +317,8 @@ export default function LeaderboardPage() {
         {/* 2. HALL OF EXCELLENCE PODIUM CARD */}
         <Reveal variant="fade-up">
           <div className="relative overflow-hidden rounded-[26px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-8 shadow-xs">
-            {/* Confetti floating particles */}
-            <HallOfExcellenceConfetti />
+            {/* Celebratory moving confetti & ribbon particles animation */}
+            <CelebrationAnimation />
 
             {/* Header */}
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
