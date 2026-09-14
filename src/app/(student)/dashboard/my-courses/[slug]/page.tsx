@@ -66,6 +66,8 @@ import {
 import { CertificateModal } from "@/components/common/certificate-modal";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
+import { useCourseReviews } from "@/lib/data/reviews-store";
+import { useCourseQA } from "@/lib/data/qa-store";
 
 function TwitterIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -127,35 +129,22 @@ export default function CourseLearningHubPage({
   const [showSchedulerBanner, setShowSchedulerBanner] = useState(true);
   const [showSchedulerModal, setShowSchedulerModal] = useState(false);
 
-  // Q&A State
+  // Real Q&A Hook & State
   const [qaSearch, setQaSearch] = useState("");
   const [showAskModal, setShowAskModal] = useState(false);
   const [newQuestionTitle, setNewQuestionTitle] = useState("");
   const [newQuestionBody, setNewQuestionBody] = useState("");
-  const [questionsList, setQuestionsList] = useState([
-    {
-      id: "q-1",
-      author: "Rahul Sharma",
-      avatar: "/images/hero-developer.png",
-      title: "How does Virtual Thread scheduling differ from ForkJoinPool in Java 21?",
-      timeAgo: "2 days ago",
-      lecture: "02. Modern Java 21 Features",
-      upvotes: 14,
-      replies: 3,
-      hasInstructorResponse: true,
-    },
-    {
-      id: "q-2",
-      author: "Priya Patel",
-      avatar: "/images/student-3d-developer.png",
-      title: "Getting ClassNotFoundException when packaging Spring Boot JAR with custom dependencies",
-      timeAgo: "4 days ago",
-      lecture: "04. Spring Boot 3 Core",
-      upvotes: 8,
-      replies: 2,
-      hasInstructorResponse: true,
-    },
-  ]);
+  const { questions: questionsList, askQuestion, answerQuestion, toggleUpvote } = useCourseQA(slug);
+  const [activeReplyQuestionId, setActiveReplyQuestionId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+
+  // Real Reviews Hook & State
+  const { reviews: reviewsList, stats: reviewStats, addReview } = useCourseReviews(slug);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewComment, setReviewComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   // Notes State
   const [newNoteText, setNewNoteText] = useState("");
@@ -273,19 +262,6 @@ export default function CourseLearningHubPage({
         if (firstVid) {
           setActiveVideo(firstVid);
           setActiveSectionId(firstSecId);
-        }
-
-        // Load persisted Q&A questions for this course
-        if (typeof window !== "undefined") {
-          try {
-            const savedQa = localStorage.getItem(`jks_qa_${slug}`);
-            if (savedQa) {
-              const parsed = JSON.parse(savedQa);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                setQuestionsList(parsed);
-              }
-            }
-          } catch {}
         }
       }
     };
@@ -513,27 +489,50 @@ export default function CourseLearningHubPage({
   const handlePostQuestion = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newQuestionTitle.trim()) return;
-    const q = {
-      id: `q-${Date.now()}`,
-      author: studentName,
-      avatar: "/images/hero-developer.png",
+    askQuestion({
       title: newQuestionTitle,
-      timeAgo: "Just now",
+      details: newQuestionBody,
+      author: studentName,
+      authorEmail: effectiveEmail,
       lecture: activeVideo?.title || "Current Lecture",
-      upvotes: 1,
-      replies: 0,
-      hasInstructorResponse: false,
-    };
-    const updated = [q, ...questionsList];
-    setQuestionsList(updated);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem(`jks_qa_${slug}`, JSON.stringify(updated));
-      } catch {}
-    }
+    });
     setNewQuestionTitle("");
     setNewQuestionBody("");
     setShowAskModal(false);
+  };
+
+  const handlePostReply = (questionId: string) => {
+    if (!replyText.trim()) return;
+    const isStaff = effectiveEmail.includes("admin") || effectiveEmail.includes("lexon");
+    answerQuestion(questionId, {
+      content: replyText,
+      author: isStaff ? "JKS Technical Faculty" : studentName,
+      authorEmail: effectiveEmail,
+      authorRole: isStaff ? "admin" : "student",
+    });
+    setReplyText("");
+    setActiveReplyQuestionId(null);
+  };
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewTitle.trim() || !reviewComment.trim()) return;
+    setIsSubmittingReview(true);
+    try {
+      addReview({
+        studentName,
+        studentEmail: effectiveEmail,
+        rating: reviewRating,
+        title: reviewTitle,
+        reviewText: reviewComment,
+      });
+      setShowReviewForm(false);
+      setReviewTitle("");
+      setReviewComment("");
+      setReviewRating(5);
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   return (
@@ -879,19 +878,43 @@ export default function CourseLearningHubPage({
 
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-600 font-medium dark:text-slate-400">
                       <div className="flex items-center gap-1.5 text-amber-600 font-bold dark:text-amber-400">
-                        <span className="text-sm font-extrabold">{course.rating || 4.8}</span>
+                        <span className="text-sm font-extrabold">
+                          {reviewStats.totalRatings > 0 ? reviewStats.averageRating : (course.rating || 5.0)}
+                        </span>
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => (
-                            <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                            <Star
+                              key={i}
+                              className={`h-3.5 w-3.5 ${
+                                i < Math.round(reviewStats.totalRatings > 0 ? reviewStats.averageRating : (course.rating || 5))
+                                  ? "fill-amber-400 text-amber-400"
+                                  : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"
+                              }`}
+                            />
                           ))}
                         </div>
-                        <span className="text-slate-500 font-normal dark:text-slate-400">({course.studentsEnrolled ? `${(course.studentsEnrolled * 6).toLocaleString()} ratings` : "1,240 ratings"})</span>
+                        <span className="text-slate-500 font-normal dark:text-slate-400">
+                          ({reviewStats.totalRatings > 0
+                            ? `${reviewStats.totalRatings.toLocaleString()} ${reviewStats.totalRatings === 1 ? "rating" : "ratings"}`
+                            : "No reviews yet"})
+                        </span>
                       </div>
 
                       <span>•</span>
-                      <span>{course.studentsEnrolled ? `${course.studentsEnrolled.toLocaleString()} students` : "14,845 students"}</span>
+                      <span>
+                        {course.studentsEnrolled
+                          ? `${course.studentsEnrolled.toLocaleString()} students`
+                          : "Enrolled students only"}
+                      </span>
                       <span>•</span>
-                      <span>{course.durationWeeks ? `${course.durationWeeks * 2} total hours` : "32 total hours"}</span>
+                      <span>
+                        {(() => {
+                          const totalSecs = allVideos.reduce((acc, v) => acc + (v.durationSeconds || 300), 0);
+                          const h = Math.floor(totalSecs / 3600);
+                          const m = Math.floor((totalSecs % 3600) / 60);
+                          return h > 0 ? `${h}h ${m}m total hours` : `${m}m total video`;
+                        })()}
+                      </span>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-1 dark:text-slate-400">
@@ -900,7 +923,7 @@ export default function CourseLearningHubPage({
                       </span>
                       <span>•</span>
                       <span className="flex items-center gap-1">
-                        <Globe className="h-3.5 w-3.5 text-slate-400" /> English, Hindi
+                        <Globe className="h-3.5 w-3.5 text-slate-400" /> Telugu, English
                       </span>
                       <span>•</span>
                       <span className="flex items-center gap-1">
@@ -950,14 +973,41 @@ export default function CourseLearningHubPage({
                     <h3 className="text-sm font-extrabold text-slate-900 mb-4 dark:text-white">By the numbers</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-xs text-slate-700 dark:text-slate-300">
                       <div className="space-y-2">
-                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Skill level:</span> <span className="font-bold text-slate-900 dark:text-white">{course.level || "All Levels"}</span></div>
-                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Students:</span> <span className="font-bold text-slate-900 dark:text-white">{course.studentsEnrolled || "14,845"}</span></div>
-                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Languages:</span> <span className="font-bold text-slate-900 dark:text-white">English, Hindi</span></div>
-                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Captions:</span> <span className="font-bold text-slate-900 dark:text-white">Yes</span></div>
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Skill level:</span>{" "}
+                          <span className="font-bold text-slate-900 dark:text-white">{course.level || "Intermediate"}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Students:</span>{" "}
+                          <span className="font-bold text-slate-900 dark:text-white">
+                            {course.studentsEnrolled ? `${course.studentsEnrolled.toLocaleString()} enrolled` : "Enrolled Students"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Languages:</span>{" "}
+                          <span className="font-bold text-slate-900 dark:text-white">Telugu, English</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Captions:</span>{" "}
+                          <span className="font-bold text-slate-900 dark:text-white">Available</span>
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Lectures:</span> <span className="font-bold text-slate-900 dark:text-white">{allVideos.length || 42}</span></div>
-                        <div><span className="text-slate-500 dark:text-slate-400 font-medium">Video:</span> <span className="font-bold text-slate-900 dark:text-white">32 total hours</span></div>
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Lectures:</span>{" "}
+                          <span className="font-bold text-slate-900 dark:text-white">{allVideos.length} lectures</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Video:</span>{" "}
+                          <span className="font-bold text-slate-900 dark:text-white">
+                            {(() => {
+                              const totalSecs = allVideos.reduce((acc, v) => acc + (v.durationSeconds || 300), 0);
+                              const h = Math.floor(totalSecs / 3600);
+                              const m = Math.floor((totalSecs % 3600) / 60);
+                              return h > 0 ? `${h}h ${m}m total length` : `${m} mins total length`;
+                            })()}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1023,42 +1073,42 @@ export default function CourseLearningHubPage({
 
                   {/* Instructor Section */}
                   <div className="border-t border-slate-100 pt-6 space-y-4 dark:border-slate-800">
-                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Instructor</h3>
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Instructor &amp; Faculty</h3>
 
                     <div className="flex flex-col sm:flex-row items-start gap-4">
-                      <div className="relative h-16 w-16 shrink-0 rounded-full border-2 border-slate-200 overflow-hidden bg-slate-900 dark:border-slate-700">
+                      <div className="relative h-16 w-16 shrink-0 rounded-2xl border border-slate-200 overflow-hidden bg-slate-900 dark:border-slate-700 flex items-center justify-center p-2">
                         <Image
-                          src="/images/hero-developer.png"
-                          alt="Shubham Saurav"
+                          src="/images/jks-logo.png"
+                          alt="JKS Learning Faculty"
                           width={64}
                           height={64}
                           unoptimized
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-contain"
                         />
                       </div>
 
                       <div className="space-y-2 flex-1">
                         <div>
-                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">Shubham Saurav &amp; JKS Mentor Team</h4>
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">JKS Learning Technical Faculty &amp; Mentors</h4>
                           <p className="text-xs text-slate-500 font-medium dark:text-slate-400">
-                            Lead Enterprise Architect &amp; Engineering Educator (10+ Years Experience)
+                            Senior Staff Enterprise Architects &amp; Educators (10+ Years Experience)
                           </p>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <button type="button" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover">
+                          <button type="button" aria-label="Faculty Twitter" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover">
                             <TwitterIcon className="h-3.5 w-3.5" />
                           </button>
-                          <button type="button" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover">
+                          <button type="button" aria-label="Faculty LinkedIn" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover">
                             <LinkedinIcon className="h-3.5 w-3.5" />
                           </button>
-                          <button type="button" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover">
+                          <button type="button" aria-label="Faculty YouTube" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover">
                             <YoutubeIcon className="h-3.5 w-3.5" />
                           </button>
                         </div>
 
                         <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-300">
-                          Shubham Saurav is a senior software engineer and architect with a deep passion for teaching. Over the past decade, he has mentored over 50,000+ engineers globally.
+                          Industry-proven staff engineers and architects with over a decade of production experience building high-throughput enterprise systems, distributed architectures, and scalable applications. Dedicated to providing practical, job-ready guidance.
                         </p>
                       </div>
                     </div>
@@ -1091,58 +1141,163 @@ export default function CourseLearningHubPage({
                     </button>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {questionsList
                       .filter((q) =>
-                        qaSearch ? q.title.toLowerCase().includes(qaSearch.toLowerCase()) : true
+                        qaSearch
+                          ? q.title.toLowerCase().includes(qaSearch.toLowerCase()) ||
+                            (q.details && q.details.toLowerCase().includes(qaSearch.toLowerCase()))
+                          : true
                       )
                       .map((q) => (
                         <div
                           key={q.id}
-                          className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2 hover:border-slate-300 transition-colors dark:border-slate-800 dark:bg-surface-elevated dark:hover:border-slate-700"
+                          className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 space-y-3 hover:border-slate-300 transition-colors dark:border-slate-800 dark:bg-surface-elevated dark:hover:border-slate-700"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-3">
-                              <div className="relative h-8 w-8 shrink-0 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
-                                <Image
-                                  src={q.avatar}
-                                  alt={q.author}
-                                  width={32}
-                                  height={32}
-                                  unoptimized
-                                  className="h-full w-full object-cover"
-                                />
+                              <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xs shadow-xs">
+                                {q.author.slice(0, 2).toUpperCase()}
                               </div>
                               <div>
-                                <h4 className="text-xs font-bold text-slate-900 dark:text-white">{q.title}</h4>
-                                <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-400">
-                                  <span>{q.author}</span>
+                                <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{q.title}</h4>
+                                <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-400 dark:text-slate-400">
+                                  <span className="font-semibold text-slate-700 dark:text-slate-300">{q.author}</span>
                                   <span>•</span>
                                   <span>{q.lecture}</span>
                                   <span>•</span>
-                                  <span>{q.timeAgo}</span>
+                                  <span>{q.formattedDate}</span>
                                 </div>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
-                              <span className="flex items-center gap-1 text-xs text-slate-500 font-bold bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 dark:bg-surface-secondary dark:border-slate-700 dark:text-slate-300">
+                              <button
+                                type="button"
+                                onClick={() => toggleUpvote(q.id, effectiveEmail)}
+                                className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${
+                                  q.upvotedBy?.includes(effectiveEmail.toLowerCase())
+                                    ? "bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-950/50 dark:border-blue-800 dark:text-blue-400"
+                                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 dark:bg-surface-secondary dark:border-slate-700 dark:text-slate-300 dark:hover:bg-surface-hover"
+                                }`}
+                              >
                                 <ThumbsUp className="h-3 w-3" /> {q.upvotes}
-                              </span>
-                              <span className="flex items-center gap-1 text-xs text-slate-500 font-bold bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 dark:bg-surface-secondary dark:border-slate-700 dark:text-slate-300">
-                                <MessageSquare className="h-3 w-3" /> {q.replies}
+                              </button>
+                              <span className="flex items-center gap-1 text-xs text-slate-500 font-bold bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 dark:bg-surface-secondary dark:border-slate-700 dark:text-slate-300">
+                                <MessageSquare className="h-3 w-3" /> {q.answers?.length || 0}
                               </span>
                             </div>
                           </div>
 
+                          {q.details && (
+                            <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-300 font-mono bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                              {q.details}
+                            </p>
+                          )}
+
                           {q.hasInstructorResponse && (
-                            <div className="mt-2 rounded-xl bg-blue-50/70 border border-blue-100 p-2.5 text-[11px] text-slate-700 flex items-center gap-1.5 dark:bg-blue-950/40 dark:border-blue-900/40 dark:text-blue-300">
-                              <CheckCircle2 className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400 shrink-0" />
-                              <span>Instructor verified answer available</span>
+                            <div className="rounded-xl bg-emerald-50/80 border border-emerald-200/80 p-2.5 text-[11px] text-emerald-800 flex items-center gap-1.5 dark:bg-emerald-950/40 dark:border-emerald-900/40 dark:text-emerald-300">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                              <span className="font-semibold">Instructor verified answer available below</span>
                             </div>
                           )}
+
+                          {/* Existing Replies */}
+                          {q.answers && q.answers.length > 0 && (
+                            <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                                Replies &amp; Answers ({q.answers.length})
+                              </div>
+                              {q.answers.map((ans) => (
+                                <div
+                                  key={ans.id}
+                                  className={`rounded-xl p-3 text-xs space-y-1 ${
+                                    ans.isInstructorVerified
+                                      ? "bg-blue-50/80 border border-blue-200/80 text-blue-950 dark:bg-blue-950/30 dark:border-blue-900/50 dark:text-blue-200"
+                                      : "bg-slate-50 border border-slate-100 text-slate-700 dark:bg-surface-secondary dark:border-slate-800 dark:text-slate-300"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5 font-bold">
+                                      <span>{ans.author}</span>
+                                      {ans.isInstructorVerified && (
+                                        <span className="rounded bg-blue-600 text-white px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider">
+                                          Instructor
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-[10px] text-slate-400">{ans.formattedDate}</span>
+                                  </div>
+                                  <p className="leading-relaxed">{ans.content}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Inline Reply Box Trigger & Form */}
+                          <div className="pt-1">
+                            {activeReplyQuestionId === q.id ? (
+                              <div className="space-y-2 rounded-xl bg-slate-50 p-3 border border-slate-200 dark:bg-surface-secondary dark:border-slate-800">
+                                <textarea
+                                  rows={2}
+                                  value={replyText}
+                                  onChange={(e) => setReplyText(e.target.value)}
+                                  placeholder="Write your reply or answer as admin / student..."
+                                  className="w-full rounded-lg border border-slate-200 p-2.5 text-xs text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700 dark:bg-input-bg dark:text-white"
+                                />
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveReplyQuestionId(null);
+                                      setReplyText("");
+                                    }}
+                                    className="rounded-lg px-3 py-1.5 text-xs font-bold text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-surface-hover"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePostReply(q.id)}
+                                    className="rounded-lg bg-[#2563EB] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shadow-xs"
+                                  >
+                                    Post Reply
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveReplyQuestionId(q.id);
+                                  setReplyText("");
+                                }}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
+                              >
+                                <MessageSquare className="h-3.5 w-3.5" />
+                                <span>Add an Answer or Reply</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
                       ))}
+
+                    {questionsList.length === 0 && (
+                      <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center space-y-3">
+                        <HelpCircle className="h-8 w-8 text-slate-400 mx-auto" />
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-white">No questions asked yet</h4>
+                        <p className="text-xs text-slate-500 max-w-sm mx-auto dark:text-slate-400">
+                          Have a query about a lecture or project? Ask the mentors and technical faculty directly.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setShowAskModal(true)}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700"
+                        >
+                          <Plus className="h-3.5 w-3.5" /> Ask the First Question
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1204,19 +1359,19 @@ export default function CourseLearningHubPage({
                 <div className="space-y-4 max-w-3xl">
                   <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3 shadow-2xs dark:border-slate-800 dark:bg-surface-elevated">
                     <div className="flex items-center gap-3">
-                      <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
+                      <div className="relative h-10 w-10 shrink-0 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 flex items-center justify-center p-1.5">
                         <Image
-                          src="/images/hero-developer.png"
+                          src="/images/jks-logo.png"
                           alt="Instructor"
                           width={40}
                           height={40}
                           unoptimized
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-contain"
                         />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">Shubham Saurav (Instructor)</h4>
-                        <span className="text-[11px] text-slate-400 dark:text-slate-400">Posted 3 days ago</span>
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">JKS Technical Faculty &amp; Mentors</h4>
+                        <span className="text-[11px] text-slate-400 dark:text-slate-400">Official Course Announcement</span>
                       </div>
                     </div>
 
@@ -1234,71 +1389,200 @@ export default function CourseLearningHubPage({
               {/* TAB 5: REVIEWS */}
               {activeTab === "reviews" && (
                 <div className="space-y-6 max-w-3xl">
-                  <div className="flex items-center gap-6 rounded-2xl border border-slate-200 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-surface-elevated">
-                    <div className="text-center">
-                      <div className="text-4xl font-black text-slate-900 dark:text-white">4.8</div>
-                      <div className="flex items-center justify-center gap-0.5 mt-1">
+                  {/* Reviews Summary Header */}
+                  <div className="flex flex-col sm:flex-row items-center gap-6 rounded-2xl border border-slate-200 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-surface-elevated">
+                    <div className="text-center sm:text-left shrink-0">
+                      <div className="text-4xl font-black text-slate-900 dark:text-white">
+                        {reviewStats.totalRatings > 0 ? reviewStats.averageRating : "5.0"}
+                      </div>
+                      <div className="flex items-center justify-center sm:justify-start gap-0.5 mt-1">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                          <Star
+                            key={i}
+                            className={`h-4 w-4 ${
+                              i < Math.round(reviewStats.totalRatings > 0 ? reviewStats.averageRating : 5)
+                                ? "fill-amber-400 text-amber-400"
+                                : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"
+                            }`}
+                          />
                         ))}
                       </div>
-                      <span className="text-[11px] text-slate-500 font-medium dark:text-slate-400">Course Rating</span>
+                      <span className="text-[11px] text-slate-500 font-medium dark:text-slate-400">
+                        {reviewStats.totalRatings > 0
+                          ? `${reviewStats.totalRatings.toLocaleString()} verified student reviews`
+                          : "Course Rating"}
+                      </span>
                     </div>
 
-                    <div className="flex-1 space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
-                      <div className="flex items-center gap-2">
-                        <span className="w-12 text-slate-500 dark:text-slate-400">5 stars</span>
-                        <div className="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                          <div className="h-full bg-amber-400 rounded-full" style={{ width: "82%" }} />
+                    <div className="flex-1 w-full space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
+                      {[5, 4, 3, 2, 1].map((star) => (
+                        <div key={star} className="flex items-center gap-2">
+                          <span className="w-12 text-slate-500 dark:text-slate-400">{star} stars</span>
+                          <div className="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                            <div
+                              className="h-full bg-amber-400 rounded-full transition-all duration-300"
+                              style={{
+                                width: `${reviewStats.totalRatings > 0 ? reviewStats.percentages[star as 1 | 2 | 3 | 4 | 5] : star === 5 ? 100 : 0}%`,
+                              }}
+                            />
+                          </div>
+                          <span className="w-8 text-right font-bold">
+                            {reviewStats.totalRatings > 0 ? `${reviewStats.percentages[star as 1 | 2 | 3 | 4 | 5]}%` : star === 5 ? "100%" : "0%"}
+                          </span>
                         </div>
-                        <span className="w-8 text-right font-bold">82%</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-12 text-slate-500 dark:text-slate-400">4 stars</span>
-                        <div className="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                          <div className="h-full bg-amber-400 rounded-full" style={{ width: "14%" }} />
-                        </div>
-                        <span className="w-8 text-right font-bold">14%</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-12 text-slate-500 dark:text-slate-400">3 stars</span>
-                        <div className="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                          <div className="h-full bg-amber-400 rounded-full" style={{ width: "3%" }} />
-                        </div>
-                        <span className="w-8 text-right font-bold">3%</span>
-                      </div>
+                      ))}
+                    </div>
+
+                    <div className="shrink-0 self-center">
+                      <button
+                        type="button"
+                        onClick={() => setShowReviewForm(!showReviewForm)}
+                        className="rounded-xl bg-[#2563EB] px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                      >
+                        {showReviewForm ? "Close Review Form" : "Write a Review"}
+                      </button>
                     </div>
                   </div>
 
-                  {/* Student Testimonials */}
-                  <div className="space-y-3">
-                    {[
-                      {
-                        name: "Ananya Roy",
-                        date: "1 week ago",
-                        rating: 5,
-                        text: "Best course for Full Stack engineering! The system architecture explanation and real milestone assessments helped me crack my Tier-1 technical interviews.",
-                      },
-                      {
-                        name: "Vikram Malhotra",
-                        date: "2 weeks ago",
-                        rating: 5,
-                        text: "Crystal clear explanations. The combination of video lectures with anti-skip protection and realistic coding challenges made learning super effective.",
-                      },
-                    ].map((rev, idx) => (
-                      <div key={idx} className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2 dark:border-slate-800 dark:bg-surface-elevated">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-slate-900 dark:text-white">{rev.name}</span>
-                          <span className="text-[11px] text-slate-400 dark:text-slate-400">{rev.date}</span>
-                        </div>
-                        <div className="flex items-center gap-0.5">
-                          {[...Array(rev.rating)].map((_, i) => (
-                            <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  {/* Write Review Form */}
+                  {showReviewForm && (
+                    <form onSubmit={handleSubmitReview} className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4 dark:border-slate-800 dark:bg-surface-elevated">
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">Submit Your Verified Course Review</h4>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          Rating (1 to 5 Stars)
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setReviewRating(star)}
+                              className="p-1 cursor-pointer transition-transform hover:scale-110"
+                            >
+                              <Star
+                                className={`h-6 w-6 ${
+                                  star <= reviewRating
+                                    ? "fill-amber-400 text-amber-400"
+                                    : "fill-slate-200 text-slate-300 dark:fill-slate-700 dark:text-slate-600"
+                                }`}
+                              />
+                            </button>
                           ))}
+                          <span className="text-xs font-bold text-amber-600 ml-2">{reviewRating} out of 5 Stars</span>
                         </div>
-                        <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-300">{rev.text}</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          Review Headline
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={reviewTitle}
+                          onChange={(e) => setReviewTitle(e.target.value)}
+                          placeholder="e.g. Excellent practical curriculum with real enterprise projects"
+                          className="w-full rounded-xl border border-slate-200 p-2.5 text-xs text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700 dark:bg-input-bg dark:text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          Detailed Feedback
+                        </label>
+                        <textarea
+                          rows={3}
+                          required
+                          value={reviewComment}
+                          onChange={(e) => setReviewComment(e.target.value)}
+                          placeholder="What did you like most about the video lectures, milestones, and hands-on coding challenges?"
+                          className="w-full rounded-xl border border-slate-200 p-2.5 text-xs text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700 dark:bg-input-bg dark:text-white"
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <button
+                          type="button"
+                          onClick={() => setShowReviewForm(false)}
+                          className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-surface-hover"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSubmittingReview}
+                          className="rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white hover:bg-emerald-700 shadow-xs cursor-pointer"
+                        >
+                          {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* Student Testimonials List */}
+                  <div className="space-y-3">
+                    {reviewsList.map((rev) => (
+                      <div
+                        key={rev.id}
+                        className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 space-y-2 dark:border-slate-800 dark:bg-surface-elevated"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 text-white font-bold text-xs shadow-xs">
+                              {rev.studentName.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                                {rev.studentName}
+                              </span>
+                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                Verified Enrolled Student
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-[11px] text-slate-400 dark:text-slate-400">{rev.formattedDate}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1 pt-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3 w-3 ${
+                                i < rev.rating
+                                  ? "fill-amber-400 text-amber-400"
+                                  : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"
+                              }`}
+                            />
+                          ))}
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 ml-1.5">
+                            {rev.title}
+                          </span>
+                        </div>
+
+                        <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-300 pt-0.5">
+                          {rev.reviewText}
+                        </p>
                       </div>
                     ))}
+
+                    {reviewsList.length === 0 && (
+                      <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center space-y-3">
+                        <Star className="h-8 w-8 text-amber-400 fill-amber-400 mx-auto" />
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-white">No reviews yet for this course</h4>
+                        <p className="text-xs text-slate-500 max-w-sm mx-auto dark:text-slate-400">
+                          Be the first enrolled student to share your feedback and experience with this curriculum.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setShowReviewForm(true)}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700"
+                        >
+                          <Star className="h-3.5 w-3.5 fill-white" /> Write the First Review
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

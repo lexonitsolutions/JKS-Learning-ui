@@ -341,24 +341,25 @@ export default function AdminLeaderboardPage() {
               </button>
             </div>
 
-            {/* 3D Podium Layout */}
-            <div className="relative z-10 pt-4 sm:pt-6 pb-2">
-              <div className="flex items-end justify-center gap-1.5 sm:gap-6 md:gap-8 max-w-2xl mx-auto">
+            {/* 3D Championship Podium Layout */}
+            <div className="relative z-10 pt-3 sm:pt-6 pb-2">
+              <div className="flex items-end justify-center gap-1.5 sm:gap-5 md:gap-7 max-w-xl mx-auto">
                 {/* 2nd Place: Left (Silver) */}
                 {secondPlace ? (
-                  <div className="flex flex-col items-center flex-1 min-w-0 max-w-[190px]">
-                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center min-h-[94px] sm:min-h-[116px] justify-end w-full">
+                  <div className="flex flex-col items-center flex-1 min-w-0 max-w-[170px] sm:max-w-[190px]">
+                    {/* Student Identity Block */}
+                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center min-h-[102px] sm:min-h-[128px] justify-end w-full px-1">
                       <div className="relative">
-                        <div className="flex h-11 w-11 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 text-slate-800 font-black text-sm sm:text-lg shadow-md ring-2 sm:ring-4 ring-slate-200/80 dark:ring-slate-700/80 border border-white">
+                        <div className="flex h-11 w-11 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-slate-400 via-slate-300 to-slate-100 text-slate-800 font-black text-xs sm:text-base shadow-lg ring-2 sm:ring-4 ring-slate-300/90 dark:ring-slate-600 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 border border-white">
                           {secondPlace.initials}
                         </div>
-                        <div className="absolute -bottom-1 -right-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-slate-300 dark:bg-slate-600 text-slate-900 dark:text-white text-[9px] sm:text-[11px] font-black border border-white shadow-xs">
+                        <div className="absolute -bottom-1 -right-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-gradient-to-b from-slate-100 to-slate-300 text-slate-800 text-[9px] sm:text-[11px] font-black border-2 border-white shadow-xs">
                           2
                         </div>
                       </div>
 
                       <div className="text-center mt-1.5 sm:mt-2.5 w-full">
-                        <div className="font-bold text-[11px] sm:text-sm text-slate-900 dark:text-white truncate max-w-[90px] sm:max-w-[150px] mx-auto">
+                        <div className="font-bold text-[11px] sm:text-sm text-slate-900 dark:text-white truncate max-w-[85px] sm:max-w-[150px] mx-auto">
                           {secondPlace.name}
                         </div>
                         <div className="mt-0.5 sm:mt-1">
@@ -374,55 +375,41 @@ export default function AdminLeaderboardPage() {
                     </div>
 
                     {/* Silver Podium Pillar */}
-                    <div className="w-full h-24 sm:h-36 rounded-t-xl sm:rounded-t-2xl bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 shadow-md flex flex-col items-center justify-center p-2 sm:p-3 text-center border-t-2 border-white/60">
-                      <span className="text-lg sm:text-2xl font-black text-slate-700 dark:text-slate-200 tracking-tight">
+                    <div className="w-full h-24 sm:h-36 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 dark:from-slate-600 dark:via-slate-700 dark:to-slate-800 shadow-[0_8px_20px_rgba(0,0,0,0.12)] flex flex-col items-center justify-center p-2 sm:p-3 text-center border-t-2 border-white/80 dark:border-slate-400/50 relative overflow-hidden">
+                      <div className="absolute inset-x-0 top-0 h-1 bg-white/40" />
+                      <span className="text-base sm:text-2xl font-black text-slate-700 dark:text-slate-100 tracking-tight drop-shadow-2xs">
                         2nd
                       </span>
-                      <span className="text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 font-mono mt-0.5">
-                        {secondPlace.points.toLocaleString()} pts
-                      </span>
+                      <div className="mt-1 sm:mt-1.5 rounded-full bg-slate-900/10 dark:bg-black/20 px-2 sm:px-2.5 py-0.5 border border-white/40">
+                        <span className="text-[9px] sm:text-xs font-extrabold text-slate-800 dark:text-slate-200 font-mono">
+                          {secondPlace.points.toLocaleString()} pts
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex-1 max-w-[190px]" />
+                  <div className="flex-1 max-w-[170px]" />
                 )}
 
-                {/* 1st Place: Center (Gold, Elevated Highest) */}
+                {/* 1st Place: Center (Gold, Champion Tier) */}
                 {firstPlace && (
-                  <div className="flex flex-col items-center flex-1 min-w-0 max-w-[210px] -mt-4 sm:-mt-6">
-                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center min-h-[110px] sm:min-h-[136px] justify-end w-full">
+                  <div className="flex flex-col items-center flex-1 min-w-0 max-w-[190px] sm:max-w-[220px] -mt-3 sm:-mt-6">
+                    {/* Student Identity Block */}
+                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center min-h-[114px] sm:min-h-[142px] justify-end w-full px-1">
                       <Crown className="h-4 w-4 sm:h-6 sm:w-6 text-amber-400 fill-amber-400 mb-0.5 sm:mb-1 animate-bounce" />
 
-                      {/* Avatar surrounded by golden wreath SVG */}
                       <div className="relative inline-flex items-center justify-center">
-                        <svg
-                          className="pointer-events-none absolute -inset-2 sm:-inset-3 h-[calc(100%+16px)] sm:h-[calc(100%+24px)] w-[calc(100%+16px)] sm:w-[calc(100%+24px)] text-amber-400/90"
-                          viewBox="0 0 100 100"
-                          fill="currentColor"
-                        >
-                          {/* Left Laurel Branch */}
-                          <path d="M 28 75 C 20 60 20 40 28 25 C 22 28 18 36 18 46 C 18 58 22 68 28 75 Z" opacity="0.9" />
-                          <circle cx="21" cy="35" r="3" />
-                          <circle cx="18" cy="48" r="3.2" />
-                          <circle cx="21" cy="62" r="3" />
-                          {/* Right Laurel Branch */}
-                          <path d="M 72 75 C 80 60 80 40 72 25 C 78 28 82 36 82 46 C 82 58 78 68 72 75 Z" opacity="0.9" />
-                          <circle cx="79" cy="35" r="3" />
-                          <circle cx="82" cy="48" r="3.2" />
-                          <circle cx="79" cy="62" r="3" />
-                        </svg>
-
-                        <div className="flex h-13 w-13 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-amber-950 font-black text-base sm:text-2xl shadow-xl ring-2 sm:ring-4 ring-amber-300/80 border-2 border-white">
+                        <div className="flex h-13 w-13 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-amber-950 font-black text-sm sm:text-2xl shadow-xl ring-2 sm:ring-4 ring-amber-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 border-2 border-white">
                           {firstPlace.initials}
                         </div>
 
-                        <div className="absolute -bottom-1 -right-1 flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-amber-400 text-amber-950 text-[10px] sm:text-xs font-black border-2 border-white shadow-md">
+                        <div className="absolute -bottom-1 -right-1 flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-gradient-to-b from-amber-300 to-amber-500 text-amber-950 text-[10px] sm:text-xs font-black border-2 border-white shadow-md">
                           1
                         </div>
                       </div>
 
                       <div className="text-center mt-1.5 sm:mt-2.5 w-full">
-                        <div className="font-black text-xs sm:text-base text-slate-900 dark:text-white truncate max-w-[95px] sm:max-w-[170px] mx-auto">
+                        <div className="font-black text-xs sm:text-base text-slate-900 dark:text-white truncate max-w-[90px] sm:max-w-[170px] mx-auto">
                           {firstPlace.name}
                         </div>
                         <div className="mt-0.5 sm:mt-1">
@@ -438,38 +425,36 @@ export default function AdminLeaderboardPage() {
                     </div>
 
                     {/* Gold Podium Pillar */}
-                    <div className="w-full h-32 sm:h-48 rounded-t-xl sm:rounded-t-2xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 shadow-xl flex flex-col items-center justify-center p-2.5 sm:p-4 text-center border-t-2 border-yellow-100">
+                    <div className="w-full h-34 sm:h-50 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 shadow-[0_12px_30px_rgba(245,158,11,0.25)] flex flex-col items-center justify-center p-2.5 sm:p-4 text-center border-t-2 border-yellow-100 relative overflow-hidden">
+                      <div className="absolute inset-x-0 top-0 h-1 bg-white/60" />
                       <div className="flex items-center gap-1 text-amber-950">
-                        <svg className="h-4 w-2.5 sm:h-5 sm:w-3 text-amber-900/60" viewBox="0 0 20 30" fill="currentColor">
-                          <path d="M18,2 C10,10 5,20 18,28 C10,24 6,16 18,2 Z" />
-                        </svg>
-                        <span className="text-xl sm:text-3xl font-black tracking-tight">1st</span>
-                        <svg className="h-4 w-2.5 sm:h-5 sm:w-3 text-amber-900/60 -scale-x-100" viewBox="0 0 20 30" fill="currentColor">
-                          <path d="M18,2 C10,10 5,20 18,28 C10,24 6,16 18,2 Z" />
-                        </svg>
+                        <span className="text-xl sm:text-3xl font-black tracking-tight drop-shadow-xs">1st</span>
                       </div>
-                      <span className="text-[10px] sm:text-sm font-black text-amber-950/90 font-mono mt-0.5">
-                        {firstPlace.points.toLocaleString()} pts
-                      </span>
+                      <div className="mt-1 sm:mt-1.5 rounded-full bg-amber-950/15 backdrop-blur-xs px-2.5 sm:px-3 py-0.5 border border-amber-950/20">
+                        <span className="text-[10px] sm:text-sm font-black text-amber-950 dark:text-amber-950 font-mono">
+                          {firstPlace.points.toLocaleString()} pts
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
 
                 {/* 3rd Place: Right (Bronze) */}
                 {thirdPlace ? (
-                  <div className="flex flex-col items-center flex-1 min-w-0 max-w-[190px]">
-                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center min-h-[94px] sm:min-h-[116px] justify-end w-full">
+                  <div className="flex flex-col items-center flex-1 min-w-0 max-w-[170px] sm:max-w-[190px]">
+                    {/* Student Identity Block */}
+                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center min-h-[102px] sm:min-h-[128px] justify-end w-full px-1">
                       <div className="relative">
-                        <div className="flex h-11 w-11 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-amber-700 to-orange-400 text-white font-black text-sm sm:text-lg shadow-md ring-2 sm:ring-4 ring-orange-200/80 dark:ring-orange-900/50 border border-white">
+                        <div className="flex h-11 w-11 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-amber-700 via-orange-500 to-amber-300 text-white font-black text-xs sm:text-base shadow-lg ring-2 sm:ring-4 ring-orange-400/90 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 border border-white">
                           {thirdPlace.initials}
                         </div>
-                        <div className="absolute -bottom-1 -right-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-orange-400 text-amber-950 text-[9px] sm:text-[11px] font-black border border-white shadow-xs">
+                        <div className="absolute -bottom-1 -right-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-gradient-to-b from-orange-300 to-orange-500 text-amber-950 text-[9px] sm:text-[11px] font-black border-2 border-white shadow-xs">
                           3
                         </div>
                       </div>
 
                       <div className="text-center mt-1.5 sm:mt-2.5 w-full">
-                        <div className="font-bold text-[11px] sm:text-sm text-slate-900 dark:text-white truncate max-w-[90px] sm:max-w-[150px] mx-auto">
+                        <div className="font-bold text-[11px] sm:text-sm text-slate-900 dark:text-white truncate max-w-[85px] sm:max-w-[150px] mx-auto">
                           {thirdPlace.name}
                         </div>
                         <div className="mt-0.5 sm:mt-1">
@@ -485,19 +470,25 @@ export default function AdminLeaderboardPage() {
                     </div>
 
                     {/* Bronze Podium Pillar */}
-                    <div className="w-full h-20 sm:h-30 rounded-t-xl sm:rounded-t-2xl bg-gradient-to-b from-amber-200 via-orange-300 to-orange-400 dark:from-amber-900/60 dark:via-orange-950 dark:to-orange-900 shadow-md flex flex-col items-center justify-center p-2 sm:p-3 text-center border-t-2 border-white/40">
-                      <span className="text-lg sm:text-2xl font-black text-amber-900 dark:text-amber-200 tracking-tight">
+                    <div className="w-full h-20 sm:h-30 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-orange-300 via-amber-500 to-amber-700 dark:from-amber-700 dark:via-orange-800 dark:to-amber-900 shadow-[0_8px_20px_rgba(0,0,0,0.12)] flex flex-col items-center justify-center p-2 sm:p-3 text-center border-t-2 border-white/60 dark:border-amber-400/40 relative overflow-hidden">
+                      <div className="absolute inset-x-0 top-0 h-1 bg-white/40" />
+                      <span className="text-base sm:text-2xl font-black text-amber-950 dark:text-amber-100 tracking-tight drop-shadow-2xs">
                         3rd
                       </span>
-                      <span className="text-[10px] sm:text-xs font-bold text-amber-800 dark:text-amber-300/90 font-mono mt-0.5">
-                        {thirdPlace.points.toLocaleString()} pts
-                      </span>
+                      <div className="mt-1 sm:mt-1.5 rounded-full bg-amber-950/15 dark:bg-black/20 px-2 sm:px-2.5 py-0.5 border border-white/30">
+                        <span className="text-[9px] sm:text-xs font-extrabold text-amber-950 dark:text-amber-200 font-mono">
+                          {thirdPlace.points.toLocaleString()} pts
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex-1 max-w-[190px]" />
+                  <div className="flex-1 max-w-[170px]" />
                 )}
               </div>
+
+              {/* Connected Championship Pedestal Stage Ground Bar */}
+              <div className="h-2.5 sm:h-3 w-full max-w-xl mx-auto rounded-b-xl bg-gradient-to-r from-slate-300 via-slate-200 to-slate-300 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 shadow-sm border-t border-white/40" />
             </div>
           </div>
         </Reveal>

@@ -31,17 +31,21 @@ import {
   Shield,
   Sparkles,
   Megaphone,
+  MessageSquare,
+  Star,
   type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMockSession, logoutMockSession, performLogout } from "@/lib/auth/use-mock-auth";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { ThemeToggle } from "@/components/common/theme-toggle";
+import { useNotifications } from "@/lib/data/notifications-store";
 
 interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
+  badge?: string;
 }
 
 const STUDENT_NAV: NavItem[] = [
@@ -49,7 +53,7 @@ const STUDENT_NAV: NavItem[] = [
   { href: "/dashboard/my-courses", label: "My Courses", icon: BookOpen },
   { href: "/dashboard/resume-builder", label: "Resume Maker", icon: FileText },
   { href: "/dashboard/assessments", label: "Assessments", icon: ClipboardCheck },
-  { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit },
+  { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit, badge: "Soon" },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
   { href: "/dashboard/payments", label: "Invoices & Billing", icon: CreditCard },
   { href: "/dashboard/profile", label: "Profile", icon: User },
@@ -57,13 +61,13 @@ const STUDENT_NAV: NavItem[] = [
 
 const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone },
+  { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone, badge: "Soon" },
   { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/instructors", label: "Instructors", icon: GraduationCap },
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
   { href: "/admin/assessments/questions", label: "Question Bank", icon: ClipboardCheck },
-  { href: "/admin/ai-interviews", label: "AI Interviews", icon: BrainCircuit },
+  { href: "/admin/ai-interviews", label: "AI Interviews", icon: BrainCircuit, badge: "Soon" },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
   { href: "/admin/payments", label: "Invoices & Billing", icon: CreditCard },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
@@ -147,8 +151,10 @@ export function DashboardTopbar({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [exploreOpen, setExploreOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const exploreRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
   const session = useMockSession();
   const { signOut } = useAuth();
   const { user: clerkUser } = useUser();
@@ -216,8 +222,12 @@ export function DashboardTopbar({
       ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || userEmail)}&background=2563eb&color=fff&bold=true&size=128`
       : undefined);
 
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(
+    isAdmin ? "admin" : "student",
+    userEmail
+  );
 
-  // Close explore and profile dropdowns on outside click
+  // Close explore, profile, and notification dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (exploreRef.current && !exploreRef.current.contains(e.target as Node)) {
@@ -225,6 +235,9 @@ export function DashboardTopbar({
       }
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
+        setNotificationsOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -236,6 +249,7 @@ export function DashboardTopbar({
     setMobileMenuOpen(false);
     setExploreOpen(false);
     setProfileOpen(false);
+    setNotificationsOpen(false);
   }, [pathname]);
 
   // Lock body scroll when mobile drawer is open
@@ -346,17 +360,119 @@ export function DashboardTopbar({
             </AnimatePresence>
           </div>
 
-          {/* Notification Button */}
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full border border-white/70 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 shadow-[0_4px_12px_rgba(20,50,100,0.06)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all hover:bg-white dark:hover:bg-surface-hover hover:shadow-md cursor-pointer"
-          >
-            <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2]" />
-            {badgeNotification && (
-              <span className="absolute top-1.5 right-2 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
-            )}
-          </button>
+          {/* Notification Button & Popover */}
+          <div ref={notificationsRef} className="relative shrink-0">
+            <button
+              type="button"
+              aria-label="Notifications"
+              aria-expanded={notificationsOpen}
+              onClick={() => setNotificationsOpen(!notificationsOpen)}
+              className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full border border-white/70 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 shadow-[0_4px_12px_rgba(20,50,100,0.06)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all hover:bg-white dark:hover:bg-surface-hover hover:shadow-md cursor-pointer"
+            >
+              <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2]" />
+              {unreadCount > 0 ? (
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white ring-2 ring-white dark:ring-slate-900 animate-in zoom-in-50">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              ) : badgeNotification ? (
+                <span className="absolute top-1.5 right-2 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-white dark:ring-slate-900" />
+              ) : null}
+            </button>
+
+            {/* Notification Dropdown Popover */}
+            <AnimatePresence>
+              {notificationsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                  transition={{ duration: 0.16, ease: "easeOut" }}
+                  className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-w-[calc(100vw-24px)] z-50 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated shadow-[0_16px_45px_rgba(15,23,42,0.18)] dark:shadow-[0_16px_45px_rgba(0,0,0,0.6)] backdrop-blur-xl font-sans overflow-hidden"
+                >
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 py-3 bg-slate-50/70 dark:bg-slate-900/60">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Notifications</span>
+                      {unreadCount > 0 && (
+                        <span className="rounded-full bg-rose-100 dark:bg-rose-950/60 px-2 py-0.5 text-[10px] font-extrabold text-rose-600 dark:text-rose-400">
+                          {unreadCount} new
+                        </span>
+                      )}
+                    </div>
+                    {unreadCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => markAllAsRead()}
+                        className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+                    {notifications.length === 0 ? (
+                      <div className="p-6 text-center text-xs text-slate-400 dark:text-slate-500">
+                        No notifications yet. You're all caught up!
+                      </div>
+                    ) : (
+                      notifications.slice(0, 5).map((notif) => {
+                        return (
+                          <div
+                            key={notif.id}
+                            onClick={() => {
+                              markAsRead(notif.id);
+                              setNotificationsOpen(false);
+                            }}
+                            className={`flex items-start gap-3 p-3.5 transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover ${
+                              !notif.read ? "bg-blue-50/40 dark:bg-blue-950/20" : ""
+                            }`}
+                          >
+                            <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
+                              {notif.type === "review" ? (
+                                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+                              ) : notif.type === "qa" ? (
+                                <MessageSquare className="h-3.5 w-3.5" />
+                              ) : notif.type === "assessment" ? (
+                                <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                              ) : (
+                                <Bell className="h-3.5 w-3.5" />
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between gap-1">
+                                <p className={`text-xs truncate ${!notif.read ? "font-bold text-slate-900 dark:text-white" : "font-medium text-slate-700 dark:text-slate-300"}`}>
+                                  {notif.title}
+                                </p>
+                                {!notif.read && (
+                                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                                )}
+                              </div>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
+                                {notif.body}
+                              </p>
+                              <span className="text-[10px] text-slate-400 font-mono mt-1 block">
+                                {notif.formattedDate}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  <div className="border-t border-slate-100 dark:border-slate-800 p-2 bg-slate-50/50 dark:bg-slate-900/40 text-center">
+                    <Link
+                      href={isAdmin ? "/admin/notifications" : "/dashboard/notifications"}
+                      onClick={() => setNotificationsOpen(false)}
+                      className="inline-block w-full py-1.5 text-center text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      View All Notifications &rarr;
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Custom JKS Learning Profile Popover */}
           <div ref={profileRef} className="relative shrink-0">
@@ -459,14 +575,18 @@ export function DashboardTopbar({
                       </Link>
                     )}
 
-                    <Link
-                      href={isAdmin ? "/admin/ai-interviews" : "/dashboard/ai-interview"}
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-surface-hover hover:text-primary-blue dark:hover:text-white transition-colors"
+                    <div
+                      className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-55 select-none"
+                      title="AI Mock Interview (Feature Coming Soon — Disabled)"
                     >
-                      <BrainCircuit className="h-4 w-4 text-purple-600" />
-                      <span>AI Mock Interview</span>
-                    </Link>
+                      <div className="flex items-center gap-2.5">
+                        <BrainCircuit className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                        <span>AI Mock Interview</span>
+                      </div>
+                      <span className="rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-400/15 dark:text-amber-200 dark:border-amber-400/30 px-1.5 py-0.5 text-[9px] font-bold leading-none">
+                        Soon
+                      </span>
+                    </div>
 
                     <Link
                       href={isAdmin ? "/admin/payments" : "/dashboard/payments"}
@@ -557,6 +677,26 @@ export function DashboardTopbar({
                     item.href === pathname ||
                     (item.href !== rootHref && pathname.startsWith(item.href));
                   const Icon = item.icon;
+                  const isSoon = item.badge === "Soon";
+
+                  if (isSoon) {
+                    return (
+                      <div
+                        key={item.href}
+                        className="flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-55 select-none"
+                        title={`${item.label} (Feature Coming Soon)`}
+                      >
+                        <div className="flex items-center gap-3.5">
+                          <Icon className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                          <span>{item.label}</span>
+                        </div>
+                        <span className="rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-400/15 dark:text-amber-200 dark:border-amber-400/30 px-1.5 py-0.5 text-[10px] font-bold leading-none">
+                          Soon
+                        </span>
+                      </div>
+                    );
+                  }
+
                   return (
                     <Link
                       key={item.href}
