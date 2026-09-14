@@ -90,6 +90,14 @@ function getThemeForCourse(title: string, track: string = "") {
   };
 }
 
+function getFallbackImage(title: string = "", track: string = ""): string {
+  const t = (title + " " + track).toLowerCase();
+  if (t.includes("java") || t.includes("spring")) {
+    return "/images/student-3d-developer.webp";
+  }
+  return "/images/fullstack-developer-3d.jpg";
+}
+
 export function CourseThumbnail({
   src,
   title,
@@ -109,15 +117,17 @@ export function CourseThumbnail({
       src.includes("course-sap.png") ||
       src.includes("course-dotnet.png"));
 
-  const isValidSrc = Boolean(src && src.trim() && !hasError && !isObsoleteLocalFallback);
+  const hasProvidedValidSrc = Boolean(src && src.trim() && !isObsoleteLocalFallback);
+  const resolvedSrc = hasProvidedValidSrc && !hasError ? src! : getFallbackImage(title, track);
+
   const theme = getThemeForCourse(title, track);
   const Icon = theme.icon;
 
-  if (isValidSrc && src) {
+  if (!hasError && resolvedSrc) {
     return (
       <div className={`relative overflow-hidden ${className}`}>
         <Image
-          src={src}
+          src={resolvedSrc}
           alt={title}
           fill
           unoptimized
@@ -132,13 +142,12 @@ export function CourseThumbnail({
     );
   }
 
-  // Dynamic Branded Fallback Graphic
+  // Fallback circuit graphic if image fails to load
   return (
     <div
       className={`relative flex flex-col justify-between p-4 sm:p-5 overflow-hidden bg-gradient-to-br ${theme.gradient} ${className}`}
       style={{ aspectRatio }}
     >
-      {/* High-Tech Background Circuit & Dot Grid Pattern */}
       <div
         className="absolute inset-0 opacity-20 pointer-events-none"
         style={{
@@ -147,13 +156,9 @@ export function CourseThumbnail({
           backgroundSize: "16px 16px",
         }}
       />
-
-      {/* Ambient Radial Color Glow */}
       <div
         className={`absolute -top-10 -right-10 w-44 h-44 rounded-full ${theme.glow} blur-3xl pointer-events-none`}
       />
-
-      {/* Top Track Pill & Icon */}
       <div className="relative z-10 flex items-center justify-between">
         <span
           className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${theme.accent}`}
@@ -161,24 +166,10 @@ export function CourseThumbnail({
           <Sparkles className="h-3 w-3" />
           <span>{theme.trackLabel}</span>
         </span>
-
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-white/90 backdrop-blur-md border border-white/15 shadow-xs">
           <Icon className="h-4 w-4" />
         </div>
       </div>
-
-      {/* Center / Bottom Course Title */}
-      <div className="relative z-10 mt-auto pt-4">
-        <h3 className="text-sm sm:text-base font-extrabold text-white leading-snug line-clamp-2 drop-shadow-sm">
-          {title}
-        </h3>
-        <div className="mt-1.5 flex items-center gap-2 text-[11px] font-medium text-slate-300/80">
-          <BookOpen className="h-3 w-3 text-blue-400" />
-          <span>JKS Professional Curriculum</span>
-        </div>
-      </div>
-
-      {/* Subtle Bottom Accent Glow Line */}
       <div
         className="absolute bottom-0 left-0 right-0 h-1 opacity-70"
         style={{ backgroundColor: theme.badgeColor }}
