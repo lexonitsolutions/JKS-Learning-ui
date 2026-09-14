@@ -13,11 +13,9 @@ import { cn } from "@/lib/utils";
 import {
   loginWithApi,
   registerWithApi,
-  loginWithMockCredentials,
   performLogout,
-  getApprovedInstructors,
 } from "@/lib/auth/use-mock-auth";
-import { MOCK_USERS, type MockRole } from "@/lib/auth/mock-users";
+import type { MockRole } from "@/lib/auth/mock-users";
 
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { JksLogo } from "@/components/common/jks-logo";

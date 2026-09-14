@@ -261,3 +261,60 @@ export async function fetchLeaderboardData(): Promise<LeaderboardResponse> {
   };
 }
 
+export interface AdminSubmissionItem {
+  id: string;
+  assessmentId: string;
+  userId: string;
+  score: number | null;
+  status: "PENDING_REVIEW" | "GRADED" | string;
+  submittedAt: string;
+  answers: any;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role?: string;
+  };
+  assessment: {
+    id: string;
+    title: string;
+    type?: string;
+    course?: {
+      id: string;
+      title: string;
+      slug: string;
+      track: string;
+    } | null;
+  };
+}
+
+export async function fetchAdminSubmissions(): Promise<AdminSubmissionItem[]> {
+  try {
+    const res = await apiFetch("/admin/submissions", {
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) return data;
+    }
+  } catch (err) {
+    console.warn("Backend /admin/submissions unavailable:", (err as Error)?.message || err);
+  }
+  return [];
+}
+
+export async function gradeAdminSubmission(submissionId: string, score: number): Promise<boolean> {
+  try {
+    const res = await apiFetch(`/admin/submissions/${encodeURIComponent(submissionId)}/grade`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ score }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn("Failed to grade submission:", err);
+    return false;
+  }
+}
+

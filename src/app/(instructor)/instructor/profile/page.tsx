@@ -14,7 +14,7 @@ import {
   Globe,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
-import { useMockSession, getApprovedInstructors } from "@/lib/auth/use-mock-auth";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
 
 export default function InstructorProfilePage() {
   const session = useMockSession();
@@ -33,11 +33,6 @@ export default function InstructorProfilePage() {
       if (session.name) setName(session.name);
       if (session.email) setEmail(session.email);
 
-      const approved = getApprovedInstructors();
-      const matched = approved.find((i) => i.email.toLowerCase() === session.email?.toLowerCase());
-      if (matched && matched.role) {
-        setTitle(matched.role);
-      }
     }
   }, [session]);
 

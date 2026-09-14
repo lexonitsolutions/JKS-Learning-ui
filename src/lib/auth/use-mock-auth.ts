@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { MOCK_USERS, type MockRole } from "./mock-users";
+import type { MockRole } from "./mock-users";
 import { SESSION_COOKIE_NAME, encodeSession, decodeSession, type MockSession } from "./session";
 import { apiFetch } from "@/lib/api/base-url";
 
@@ -50,9 +50,20 @@ export function useMockSession(): MockSession | null {
 
 export type LoginResult = { ok: true; session: MockSession } | { ok: false; error: string };
 
-export const INSTRUCTORS_STORAGE_KEY = "jks_admin_instructors_v1";
-
+/**
+ * Lecturer accounts.
+ *
+ * These lived in localStorage under `jks_admin_instructors_v1`, with the
+ * lecturer's password in clear text, and nothing ever reached the database. Two
+ * consequences: the account the admin "created" did not exist as far as the API
+ * was concerned (so signing in with it fell through to the old auto-provisioning
+ * login and produced a STUDENT), and the browser-local list was itself the
+ * authorization check for the lecturer workspace — editable from devtools.
+ *
+ * They are real INSTRUCTOR users now, behind /admin/instructors.
+ */
 export interface StoredInstructor {
+  id: string;
   name: string;
   email: string;
   initials: string;
@@ -60,102 +71,170 @@ export interface StoredInstructor {
   assignedCourses?: number;
   students?: number;
   status?: "Active" | "Inactive";
-  password?: string;
 }
 
-export function getApprovedInstructors(): StoredInstructor[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const stored = localStorage.getItem(INSTRUCTORS_STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) {
-        return parsed;
-      }
-    }
-  } catch {
-    // ignore
-  }
-  return [];
+interface ApiInstructor {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  createdAt: string;
+  assignedCourseIds?: string[];
 }
 
-export function saveApprovedInstructors(instructors: StoredInstructor[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(INSTRUCTORS_STORAGE_KEY, JSON.stringify(instructors));
-  } catch {
-    // ignore
-  }
-}
-
-export function deleteApprovedInstructor(email: string): StoredInstructor[] {
-  const current = getApprovedInstructors();
-  const normalized = email.trim().toLowerCase();
-  const updated = current.filter((inst) => inst.email.trim().toLowerCase() !== normalized);
-  saveApprovedInstructors(updated);
-  return updated;
-}
-
-export function isEmailApprovedInstructor(email: string): boolean {
-  if (!email) return false;
-  const normalized = email.trim().toLowerCase();
-  const approved = getApprovedInstructors();
-  return approved.some((inst) => inst.email?.trim().toLowerCase() === normalized);
-}
-
-export function loginWithMockCredentials(email: string, password: string): LoginResult {
-  const normalizedEmail = email.trim().toLowerCase();
-
-  // 1. Check static MOCK_USERS (Admin & Students)
-  const staticUser = MOCK_USERS.find(
-    (u) => u.email.toLowerCase() === normalizedEmail && u.password === password
-  );
-
-  if (staticUser) {
-    const session: MockSession = {
-      email: staticUser.email,
-      name: staticUser.name,
-      initials: staticUser.initials,
-      role: staticUser.role,
-    };
-    document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
-    window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
-    return { ok: true, session };
-  }
-
-  // 2. Check dynamically admin-added lecturers in localStorage
-  const dynamicInstructors = getApprovedInstructors();
-  const matchedInstructor = dynamicInstructors.find(
-    (inst) => inst.email?.toLowerCase() === normalizedEmail
-  );
-
-  if (matchedInstructor) {
-    // Match instructor password if set, or accept default password 'lecturer123' / 'admin123' or length >= 6
-    const validPassword = matchedInstructor.password
-      ? password === matchedInstructor.password
-      : password === "lecturer123" || password === "instructor123" || password === "admin123" || password.length >= 6;
-
-    if (validPassword) {
-      const session: MockSession = {
-        email: matchedInstructor.email,
-        name: matchedInstructor.name,
-        initials: matchedInstructor.initials || "LE",
-        role: "instructor",
-      };
-      document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
-      window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
-      return { ok: true, session };
-    }
-    return { ok: false, error: "Incorrect password for this lecturer account." };
-  }
-
-  // If user attempted an email that looks like an instructor or unapproved account
+function toStoredInstructor(row: ApiInstructor): StoredInstructor {
   return {
-    ok: false,
-    error: "Invalid email or password. Note: Only lecturers registered by an Administrator can access the Lecturer workspace.",
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    initials: initialsFor(row.name, "LE"),
+    role: "Lecturer",
+    assignedCourses: row.assignedCourseIds?.length ?? 0,
+    students: 0,
+    status: "Active",
   };
 }
 
+export async function fetchInstructors(): Promise<StoredInstructor[]> {
+  try {
+    const res = await apiFetch("/admin/instructors", {
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data.map(toStoredInstructor) : [];
+  } catch {
+    return [];
+  }
+}
+
+export type InstructorMutationResult =
+  | { ok: true; instructor: StoredInstructor }
+  | { ok: false; error: string };
+
+export async function createInstructor(input: {
+  name: string;
+  email: string;
+  password: string;
+  title?: string;
+  phone?: string;
+}): Promise<InstructorMutationResult> {
+  try {
+    const res = await apiFetch("/admin/instructors", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: input.name.trim(),
+        email: input.email.trim().toLowerCase(),
+        password: input.password,
+        title: input.title?.trim() || undefined,
+        phone: input.phone?.trim() || undefined,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg =
+        data?.message ||
+        (res.status === 403
+          ? "Only an administrator can add lecturers."
+          : "Could not create the lecturer account.");
+      return { ok: false, error: Array.isArray(msg) ? msg.join(", ") : msg };
+    }
+    return { ok: true, instructor: toStoredInstructor(data) };
+  } catch {
+    return { ok: false, error: "Could not reach the server. Please try again." };
+  }
+}
+
+export async function deleteInstructor(
+  id: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const res = await apiFetch(`/admin/instructors/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const msg = data?.message || "Could not revoke lecturer access.";
+      return { ok: false, error: Array.isArray(msg) ? msg.join(", ") : msg };
+    }
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Could not reach the server. Please try again." };
+  }
+}
+
+/** Map the API's Role enum onto the workspace this session may open. */
+export function roleFromApi(apiRole: string | undefined): MockRole {
+  if (apiRole === "SUPER_ADMIN" || apiRole === "ADMIN") return "admin";
+  if (apiRole === "INSTRUCTOR") return "instructor";
+  return "student";
+}
+
+function initialsFor(name: string, fallback = "JK"): string {
+  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return fallback;
+  return parts
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function writeSession(session: MockSession) {
+  document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+  try {
+    localStorage.setItem(
+      "jks_auth_user",
+      JSON.stringify({ email: session.email, name: session.name, role: session.role }),
+    );
+  } catch {}
+  window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+}
+
+/**
+ * Re-read the signed-in user from the API.
+ *
+ * The `jks_mock_session` cookie is written by this file in plain JavaScript, so
+ * anyone can edit it in devtools and hand themselves `role: "admin"`. It is a
+ * convenience for rendering (avatar, which nav to draw) and must never be the
+ * thing that decides access. `/auth/me` reads the role straight off the user
+ * row behind the httpOnly JWT, so that is what authorization checks use.
+ */
+export async function fetchSessionUser(): Promise<
+  { email: string; name: string; role: MockRole } | null
+> {
+  try {
+    const res = await apiFetch("/auth/me", { headers: { "Content-Type": "application/json" } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const u = data?.user;
+    if (!u?.email) return null;
+    return { email: u.email, name: u.name, role: roleFromApi(u.role) };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Sign in against the API. There is no client-side fallback.
+ *
+ * Two offline "demo" paths used to sit behind this call and both were ways in
+ * without the API agreeing:
+ *
+ *  - a hardcoded MOCK_USERS list containing an *admin* credential
+ *    (lexonitservices@gmail.com / admin123), and
+ *  - admin-added lecturers read out of the localStorage key
+ *    `jks_admin_instructors_v1`, which accepted the stored plain-text password
+ *    or, if none was set, literally any password of six characters or more.
+ *
+ * Because localStorage is writable from devtools, the second one let anyone
+ * mint themselves a lecturer session. If the backend is unreachable we now
+ * report that instead of signing someone in.
+ */
 export async function loginWithApi(email: string, password: string): Promise<LoginResult> {
   const normalizedEmail = email.trim().toLowerCase();
   try {
@@ -168,39 +247,28 @@ export async function loginWithApi(email: string, password: string): Promise<Log
     if (res.ok) {
       const data = await res.json();
       const u = data.user;
-      let role: MockRole = "student";
-      if (u.role === "SUPER_ADMIN" || u.role === "ADMIN") {
-        role = "admin";
-      } else if (u.role === "INSTRUCTOR") {
-        role = "instructor";
-      }
-
       const session: MockSession = {
         email: u.email,
         name: u.name,
-        initials: u.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2) || "JK",
-        role,
+        initials: initialsFor(u.name),
+        role: roleFromApi(u.role),
       };
-      document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
-      try {
-        localStorage.setItem("jks_auth_user", JSON.stringify({ email: u.email, name: u.name, role }));
-      } catch {}
-      window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+      writeSession(session);
       return { ok: true, session };
     }
 
-    // If backend returned error, check demo accounts first (for offline/demo support)
-    const mockRes = loginWithMockCredentials(email, password);
-    if (mockRes.ok) return mockRes;
-
     const errData = await res.json().catch(() => ({}));
-    const msg = errData?.message || (res.status === 401 ? "Invalid email or password." : "Login failed. Please check your credentials.");
+    const msg =
+      errData?.message ||
+      (res.status === 401
+        ? "Invalid email or password."
+        : "Login failed. Please check your credentials.");
     return { ok: false, error: Array.isArray(msg) ? msg.join(", ") : msg };
   } catch {
-    // If network or backend unreachable, try demo accounts
-    const mockRes = loginWithMockCredentials(email, password);
-    if (mockRes.ok) return mockRes;
-    return { ok: false, error: "Could not connect to authentication server. Please check your internet connection." };
+    return {
+      ok: false,
+      error: "Could not reach the authentication server. Please try again.",
+    };
   }
 }
 
@@ -219,14 +287,10 @@ export async function registerWithApi(name: string, email: string, password: str
       const session: MockSession = {
         email: u.email,
         name: u.name,
-        initials: u.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2) || "ST",
-        role: "student",
+        initials: initialsFor(u.name, "ST"),
+        role: roleFromApi(u.role),
       };
-      document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(session)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
-      try {
-        localStorage.setItem("jks_auth_user", JSON.stringify({ email: u.email, name: u.name, role: "student" }));
-      } catch {}
-      window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+      writeSession(session);
       return { ok: true, session };
     }
 

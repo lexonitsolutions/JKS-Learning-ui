@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ClipboardCheck,
   Search,
@@ -17,6 +17,12 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
+import {
+  fetchAdminSubmissions,
+  gradeAdminSubmission,
+  type AdminSubmissionItem,
+} from "@/lib/data/students-api";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
 
 interface SubmissionItem {
   id: string;
@@ -32,86 +38,12 @@ interface SubmissionItem {
   feedback?: string;
 }
 
-const INITIAL_SUBMISSIONS: SubmissionItem[] = [
-  {
-    id: "sub-101",
-    studentName: "Priya Nair",
-    studentInitials: "PN",
-    courseTitle: "Java Full Stack Developer Mastery",
-    assignmentTitle: "Transactional Outbox Pattern with Kafka CDC",
-    type: "Coding Challenge",
-    submittedDate: "Today at 2:10 PM",
-    status: "Pending Review",
-    studentCodeSnippet: `@Transactional
-public void createOrder(OrderRequest request) {
-    Order order = orderRepository.save(new Order(request));
-    OutboxEvent event = new OutboxEvent("ORDER_CREATED", order.getId(), json(order));
-    outboxRepository.save(event);
-}`,
-  },
-  {
-    id: "sub-102",
-    studentName: "Arjun Mehta",
-    studentInitials: "AM",
-    courseTitle: "Java Full Stack Developer Mastery",
-    assignmentTitle: "Idempotent Kafka Consumer Implementation",
-    type: "Coding Challenge",
-    submittedDate: "Today at 11:30 AM",
-    status: "Pending Review",
-    studentCodeSnippet: `@KafkaListener(topics = "orders")
-public void handleOrderEvent(@Payload OrderEvent event, Acknowledgment ack) {
-    if (processedEventRepo.existsById(event.getEventId())) {
-        ack.acknowledge();
-        return;
-    }
-    processOrder(event);
-    processedEventRepo.save(new ProcessedEvent(event.getEventId()));
-    ack.acknowledge();
-}`,
-  },
-  {
-    id: "sub-103",
-    studentName: "Sneha Kulkarni",
-    studentInitials: "SK",
-    courseTitle: ".NET Full Stack Developer Enterprise Edition",
-    assignmentTitle: "Clean Architecture CQRS Command Handler",
-    type: "Project Submission",
-    submittedDate: "Yesterday at 6:40 PM",
-    status: "Pending Review",
-    studentCodeSnippet: `public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand, Result<Guid>>
-{
-    private readonly IInvoiceRepository _repository;
-    public async Task<Result<Guid>> Handle(CreateInvoiceCommand cmd, CancellationToken ct) { ... }
-}`,
-  },
-  {
-    id: "sub-104",
-    studentName: "Rahul Verma",
-    studentInitials: "RV",
-    courseTitle: "Java Full Stack Developer Mastery",
-    assignmentTitle: "Spring Cloud Gateway Rate Limiting Filter",
-    type: "Coding Challenge",
-    submittedDate: "Aug 28, 2026",
-    status: "Graded",
-    score: 88,
-    feedback: "Solid implementation of Redis token bucket algorithm.",
-  },
-  {
-    id: "sub-105",
-    studentName: "Karthik Reddy",
-    studentInitials: "KR",
-    courseTitle: "Java Full Stack Developer Mastery",
-    assignmentTitle: "Kafka Distributed Event Consumer",
-    type: "Coding Challenge",
-    submittedDate: "Aug 27, 2026",
-    status: "Graded",
-    score: 95,
-    feedback: "Exceptional code organization and error handling with Dead Letter Queues.",
-  },
-];
-
 export default function InstructorAssessmentsPage() {
-  const [submissions, setSubmissions] = useState<SubmissionItem[]>(INITIAL_SUBMISSIONS);
+  const session = useMockSession();
+  const lecturerInitials = session?.initials || "LE";
+
+  const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"Pending" | "Graded">("Pending");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionItem | null>(null);
@@ -120,6 +52,58 @@ export default function InstructorAssessmentsPage() {
   const [scoreInput, setScoreInput] = useState(85);
   const [feedbackInput, setFeedbackInput] = useState("Well-structured solution with clean abstraction.");
   const [isSubmittingGrade, setIsSubmittingGrade] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadSubmissions() {
+      setIsLoading(true);
+      try {
+        const raw = await fetchAdminSubmissions();
+        if (isMounted) {
+          const mapped: SubmissionItem[] = raw.map((sub) => {
+            const code =
+              typeof sub.answers === "string"
+                ? sub.answers
+                : typeof sub.answers?.code === "string"
+                ? sub.answers.code
+                : JSON.stringify(sub.answers || {}, null, 2);
+
+            return {
+              id: sub.id,
+              studentName: sub.user?.name || "Student",
+              studentInitials: sub.user?.name
+                ? sub.user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+                : "ST",
+              courseTitle: sub.assessment?.course?.title || "Full Stack Development",
+              assignmentTitle: sub.assessment?.title || "Stage Assessment",
+              type: "Coding Challenge",
+              submittedDate: sub.submittedAt
+                ? new Date(sub.submittedAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "Recently",
+              status: sub.status === "GRADED" ? "Graded" : "Pending Review",
+              score: typeof sub.score === "number" ? sub.score : undefined,
+              studentCodeSnippet: code,
+              feedback: "Evaluated by course faculty.",
+            };
+          });
+          setSubmissions(mapped);
+        }
+      } catch (err) {
+        console.warn("Failed to load live submissions:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadSubmissions();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const pendingList = submissions.filter((s) => s.status === "Pending Review");
   const gradedList = submissions.filter((s) => s.status === "Graded");
@@ -139,12 +123,13 @@ export default function InstructorAssessmentsPage() {
     setFeedbackInput(sub.feedback || "Well-structured solution with clean abstraction.");
   };
 
-  const handleSaveGrade = (e: React.FormEvent) => {
+  const handleSaveGrade = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSubmission) return;
 
     setIsSubmittingGrade(true);
-    setTimeout(() => {
+    try {
+      await gradeAdminSubmission(selectedSubmission.id, Number(scoreInput));
       const updated = submissions.map((s) =>
         s.id === selectedSubmission.id
           ? {
@@ -156,17 +141,24 @@ export default function InstructorAssessmentsPage() {
           : s
       );
       setSubmissions(updated);
+    } catch (err) {
+      console.warn("Grading error:", err);
+    } finally {
       setIsSubmittingGrade(false);
       setSelectedSubmission(null);
-    }, 800);
+    }
   };
 
   return (
     <>
       <DashboardTopbar
         title="Assessments & Submission Grading"
-        subtitle="Review student code solutions, assign scores, and deliver faculty mentorship."
-        userInitials="RK"
+        subtitle={
+          isLoading
+            ? "Connecting to database records..."
+            : `${submissions.length} real student submissions retrieved live from database.`
+        }
+        userInitials={lecturerInitials}
       />
 
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">

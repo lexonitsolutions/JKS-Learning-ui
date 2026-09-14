@@ -1,7 +1,7 @@
 import Script from "next/script";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Inter, Homemade_Apple } from "next/font/google";
 import "./globals.css";
 import { ChunkErrorHandler } from "@/components/common/chunk-error-handler";
 import { PageTransitionProvider } from "@/components/common/page-transition-provider";
@@ -9,9 +9,17 @@ import { WebsiteChatbot } from "@/components/common/website-chatbot";
 import { ClerkSessionSync } from "@/components/common/clerk-session-sync";
 import { ThemeProvider } from "@/lib/theme/theme-context";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const homemadeApple = Homemade_Apple({
+  weight: "400",
+  variable: "--font-homemade-apple",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -57,8 +65,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${manrope.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${homemadeApple.variable} font-sans h-full antialiased`}
+    >
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Homemade+Apple&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+          rel="stylesheet"
+        />
         <Script
           id="theme-init"
           strategy="beforeInteractive"

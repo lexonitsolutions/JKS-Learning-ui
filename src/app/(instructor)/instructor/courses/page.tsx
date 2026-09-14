@@ -20,10 +20,12 @@ import {
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { useAllCourses, type FullCourse } from "@/lib/data/courses-store";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { Reveal } from "@/lib/motion/reveal";
 import { TiltCard } from "@/components/interactions/tilt-card";
 
 export default function InstructorCoursesPage() {
+  const session = useMockSession();
   const courses = useAllCourses();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTrack, setSelectedTrack] = useState<string>("All");
@@ -42,7 +44,7 @@ export default function InstructorCoursesPage() {
       <DashboardTopbar
         title="My Courses & Curriculum"
         subtitle="Manage lectures, upload multi-section videos, configure anti-skip settings, and review syllabus."
-        userInitials="RK"
+        userInitials={session?.initials || "LE"}
       />
 
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">

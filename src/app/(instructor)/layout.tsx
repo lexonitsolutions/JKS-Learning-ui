@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { AmbientPageBackground } from "@/components/ui/ambient-page-background";
-import { useMockSession, isEmailApprovedInstructor, logoutMockSession } from "@/lib/auth/use-mock-auth";
+import { useMockSession, fetchSessionUser, logoutMockSession } from "@/lib/auth/use-mock-auth";
 import { ShieldAlert, LogOut } from "lucide-react";
 
 export default function InstructorLayout({ children }: { children: React.ReactNode }) {
@@ -12,32 +12,33 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
+  /**
+   * Authorize from the server, not from the browser.
+   *
+   * This used to gate on isEmailApprovedInstructor(), which read the admin's
+   * localStorage list — a value the visitor controls, so anyone could grant
+   * themselves the lecturer workspace from devtools. /auth/me resolves the role
+   * from the user row behind the httpOnly JWT instead.
+   */
   useEffect(() => {
-    // If no session found yet, wait briefly for cookie hydration
-    if (!session) {
-      const timeout = setTimeout(() => {
-        if (!session) {
+    let cancelled = false;
+
+    const timeout = setTimeout(() => {
+      void fetchSessionUser().then((me) => {
+        if (cancelled) return;
+        if (!me) {
           router.replace("/login?from=/instructor");
+          return;
         }
-      }, 250);
-      return () => clearTimeout(timeout);
-    }
+        // Admins may supervise the lecturer workspace.
+        setIsAuthorized(me.role === "instructor" || me.role === "admin");
+      });
+    }, session ? 0 : 250);
 
-    // Admins always have access to supervise instructor space
-    if (session.role === "admin") {
-      setIsAuthorized(true);
-      return;
-    }
-
-    // Instructors must be in the approved list onboarded by Admin
-    if (session.role === "instructor") {
-      const authorized = isEmailApprovedInstructor(session.email);
-      setIsAuthorized(authorized);
-      return;
-    }
-
-    // Any other role (e.g. students) is unauthorized
-    setIsAuthorized(false);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [session, router]);
 
   const handleLogout = () => {
@@ -87,7 +88,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <div className="relative flex min-h-screen text-slate-800 dark:text-slate-100 antialiased selection:bg-[#2563EB]/15 selection:text-[#2563EB]">
+    <div className="relative flex min-h-screen font-sans font-apple text-slate-800 dark:text-slate-100 antialiased selection:bg-[#2563EB]/15 selection:text-[#2563EB]">
       <AmbientPageBackground />
       <DashboardSidebar role="instructor" />
       <main className="relative flex flex-1 flex-col min-w-0">{children}</main>

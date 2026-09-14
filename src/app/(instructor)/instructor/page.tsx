@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -18,6 +18,12 @@ import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useAllCourses } from "@/lib/data/courses-store";
+import {
+  fetchAdminStudents,
+  fetchAdminSubmissions,
+  type AdminStudentRecord,
+  type AdminSubmissionItem,
+} from "@/lib/data/students-api";
 
 /**
  * 3D Interactive Isometric Workstation Animation
@@ -217,6 +223,48 @@ export default function InstructorDashboardPage() {
   const lecturerInitials = session?.initials || "LE";
   const liveCourses = useAllCourses();
 
+  const [students, setStudents] = useState<AdminStudentRecord[]>([]);
+  const [submissions, setSubmissions] = useState<AdminSubmissionItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadLiveData() {
+      setIsLoading(true);
+      try {
+        const [studentList, subList] = await Promise.all([
+          fetchAdminStudents(),
+          fetchAdminSubmissions(),
+        ]);
+        if (isMounted) {
+          setStudents(studentList);
+          setSubmissions(subList);
+        }
+      } catch (err) {
+        console.warn("Error loading instructor live data:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadLiveData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const totalStudents = students.length;
+  const activeStudents = students.filter((s) => (s.enrollments || []).length > 0);
+  const pendingSubmissions = submissions.filter((s) => s.status === "PENDING_REVIEW");
+  const tracksSet = new Set(liveCourses.map((c) => c.track));
+  const trackCount = tracksSet.size || 1;
+
+  // Real average rating across published courses
+  const avgRating = useMemo(() => {
+    if (!liveCourses.length) return "4.9";
+    const sum = liveCourses.reduce((acc, c) => acc + (c.rating || 4.9), 0);
+    return (sum / liveCourses.length).toFixed(1);
+  }, [liveCourses]);
+
   return (
     <>
       <DashboardTopbar
@@ -243,19 +291,21 @@ export default function InstructorDashboardPage() {
                 </h1>
 
                 <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-normal pt-1">
-                  You are guiding 3,520 active students across 3 curriculum tracks with 14 pending assignments awaiting evaluation today.
+                  {isLoading
+                    ? "Connecting to live database roster..."
+                    : `You are guiding ${totalStudents} registered students across ${trackCount} curriculum track${trackCount > 1 ? "s" : ""} with ${pendingSubmissions.length} pending review${pendingSubmissions.length !== 1 ? "s" : ""} awaiting evaluation.`}
                 </p>
 
                 {/* Status Badges */}
                 <div className="flex flex-wrap items-center gap-3 pt-2 sm:pt-3">
                   <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white backdrop-blur-md border border-white/20 shadow-xs">
                     <span>🔥</span>
-                    <span>24-Day Teaching Streak</span>
+                    <span>Database Synchronized</span>
                   </div>
 
                   <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white backdrop-blur-md border border-white/20 shadow-xs">
                     <ShieldCheck className="h-4 w-4 text-emerald-300" />
-                    <span>100% Anti-Skip Verifications Active</span>
+                    <span>Live LMS Evaluation Engine</span>
                   </div>
                 </div>
               </div>
@@ -280,11 +330,11 @@ export default function InstructorDashboardPage() {
               </div>
               <div className="space-y-0.5 min-w-0">
                 <div className="text-2xl sm:text-[28px] font-black text-slate-900 dark:text-white leading-tight">
-                  3,520
+                  {isLoading ? "..." : totalStudents}
                 </div>
-                <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Enrolled Students</div>
+                <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Registered Students</div>
                 <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 pt-0.5">
-                  <span>↗ +18.4% this semester</span>
+                  <span>{activeStudents.length} active in course cohorts</span>
                 </div>
               </div>
             </div>
@@ -302,7 +352,7 @@ export default function InstructorDashboardPage() {
                 </div>
                 <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Active Courses</div>
                 <div className="text-xs font-medium text-slate-400 dark:text-slate-400 pt-0.5 truncate">
-                  {liveCourses.length > 0 ? `${liveCourses.length} Published in DB` : "0 Courses in DB"}
+                  {liveCourses.length > 0 ? `${liveCourses.length} Live in Database` : "0 Courses in DB"}
                 </div>
               </div>
             </div>
@@ -316,12 +366,12 @@ export default function InstructorDashboardPage() {
               </div>
               <div className="space-y-0.5 min-w-0">
                 <div className="text-2xl sm:text-[28px] font-black text-slate-900 dark:text-white leading-tight">
-                  14
+                  {isLoading ? "..." : pendingSubmissions.length}
                 </div>
                 <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Pending Reviews</div>
                 <div className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 pt-0.5">
                   <Clock className="h-3.5 w-3.5 shrink-0" />
-                  <span>4 Urgent Coding Tests</span>
+                  <span>{submissions.length} Total Submissions in DB</span>
                 </div>
               </div>
             </div>
@@ -335,11 +385,11 @@ export default function InstructorDashboardPage() {
               </div>
               <div className="space-y-0.5 min-w-0">
                 <div className="text-2xl sm:text-[28px] font-black text-slate-900 dark:text-white leading-tight">
-                  4.9 / 5.0
+                  {avgRating} / 5.0
                 </div>
                 <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Faculty Rating</div>
                 <div className="text-xs font-medium text-slate-400 dark:text-slate-400 pt-0.5 truncate">
-                  98.6% Student Satisfaction
+                  Across {liveCourses.length} Curated Courses
                 </div>
               </div>
             </div>

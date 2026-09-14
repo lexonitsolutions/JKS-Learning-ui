@@ -12,12 +12,12 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { AdminInstructor } from "@/lib/data/admin";
+import { createInstructor, type StoredInstructor } from "@/lib/auth/use-mock-auth";
 
 interface AddInstructorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (instructor: AdminInstructor) => void;
+  onSave: (instructor: StoredInstructor) => void;
 }
 
 export function AddInstructorModal({
@@ -27,12 +27,14 @@ export function AddInstructorModal({
 }: AddInstructorModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("lecturer123");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState("Lead Trainer, Java Full Stack");
   const [track, setTrack] = useState("Full Stack");
   const [assignedCourses, setAssignedCourses] = useState(1);
   const [bio, setBio] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const getInitials = (fullName: string) => {
     const parts = fullName.trim().split(" ");
@@ -42,28 +44,42 @@ export function AddInstructorModal({
     return (fullName.slice(0, 2) || "LE").toUpperCase();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Creates a real INSTRUCTOR account through the API. Previously this only
+  // pushed an object (password included, in clear text) into the admin's own
+  // localStorage, so the lecturer had no account to actually sign in to.
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim()) return;
+    if (!name.trim() || !email.trim() || isSaving) return;
 
-    const newInst: AdminInstructor = {
+    if (password.trim().length < 8) {
+      setError("The initial password must be at least 8 characters.");
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+
+    const res = await createInstructor({
       name: name.trim(),
       email: email.trim().toLowerCase(),
-      initials: getInitials(name),
-      role: role.trim() || `${track} Specialist`,
-      assignedCourses: Number(assignedCourses) || 1,
-      students: 0,
-      status: "Active",
-      password: password.trim() || "lecturer123",
-    };
+      password: password.trim(),
+      title: role.trim() || `${track} Specialist`,
+    });
+
+    setIsSaving(false);
+
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
 
     setIsSuccess(true);
     setTimeout(() => {
-      onSave(newInst);
+      onSave(res.instructor);
       setIsSuccess(false);
       setName("");
       setEmail("");
-      setPassword("lecturer123");
+      setPassword("");
       setBio("");
       onClose();
     }, 800);
@@ -160,17 +176,27 @@ export function AddInstructorModal({
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                   Lecturer Login Password *
                 </label>
-                <span className="text-[11px] text-slate-400">Used by lecturer to access workspace</span>
+                <span className="text-[11px] text-slate-400">Min 8 characters — share it with the lecturer</span>
               </div>
               <input
                 type="text"
                 required
+                minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Initial login password"
                 className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
               />
+              <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                This is the only time the password is shown. It is hashed on the server and cannot be read back.
+              </p>
             </div>
+
+            {error && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-[11px] font-semibold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
+                {error}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -246,15 +272,20 @@ export function AddInstructorModal({
 
               <button
                 type="submit"
-                className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-all cursor-pointer"
+                disabled={isSaving}
+                className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isSuccess ? (
                   <>
                     <CheckCircle2 className="h-4 w-4 animate-bounce" /> Added Successfully!
                   </>
+                ) : isSaving ? (
+                  <>
+                    <Sparkles className="h-4 w-4 animate-pulse" /> Creating account…
+                  </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4" /> Save & Invite Instructor
+                    <Sparkles className="h-4 w-4" /> Save &amp; Invite Instructor
                   </>
                 )}
               </button>

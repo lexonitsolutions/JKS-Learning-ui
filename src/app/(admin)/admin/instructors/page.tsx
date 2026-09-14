@@ -3,37 +3,46 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Users, BookOpen, Star, Search, Mail, Trash2, KeyRound, ShieldCheck } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
-import type { AdminInstructor } from "@/lib/data/admin";
 import { AddInstructorModal } from "@/components/admin/add-instructor-modal";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import {
-  getApprovedInstructors,
-  saveApprovedInstructors,
-  deleteApprovedInstructor,
+  fetchInstructors,
+  deleteInstructor,
+  type StoredInstructor,
 } from "@/lib/auth/use-mock-auth";
 
 export default function AdminInstructorsPage() {
-  const [instructors, setInstructors] = useState<AdminInstructor[]>([]);
+  const [instructors, setInstructors] = useState<StoredInstructor[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  // Load dynamic approved instructors from storage
+  // Lecturers are INSTRUCTOR rows in the database, not browser-local state, so
+  // the directory is whatever the API reports.
   useEffect(() => {
-    const list = getApprovedInstructors();
-    setInstructors(list as AdminInstructor[]);
+    void fetchInstructors().then(setInstructors);
   }, []);
 
-  const handleAddInstructor = (newInst: AdminInstructor) => {
-    const updated = [newInst, ...instructors];
-    setInstructors(updated);
-    saveApprovedInstructors(updated);
+  const handleAddInstructor = (newInst: StoredInstructor) => {
+    setInstructors((prev) => [newInst, ...prev]);
+    setError(null);
   };
 
-  const handleDeleteInstructor = (email: string, name: string) => {
-    if (confirm(`Are you sure you want to revoke lecturer access for ${name} (${email})? They will no longer be able to access the Lecturer workspace.`)) {
-      const updated = deleteApprovedInstructor(email);
-      setInstructors(updated as AdminInstructor[]);
+  const handleDeleteInstructor = async (id: string, email: string, name: string) => {
+    if (
+      !confirm(
+        `Revoke lecturer access for ${name} (${email})? Their account is deleted and they will no longer be able to sign in.`,
+      )
+    ) {
+      return;
+    }
+    const res = await deleteInstructor(id);
+    if (res.ok) {
+      setInstructors((prev) => prev.filter((i) => i.id !== id));
+      setError(null);
+    } else {
+      setError(res.error);
     }
   };
 
@@ -83,6 +92,12 @@ export default function AdminInstructorsPage() {
           </div>
         </div>
 
+        {error && (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
+            {error}
+          </div>
+        )}
+
         {/* Security / Access Notice Banner */}
         <div className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900/40 dark:bg-blue-950/20 text-xs text-blue-900 dark:text-blue-200">
           <ShieldCheck className="h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
@@ -122,7 +137,7 @@ export default function AdminInstructorsPage() {
         {filteredInstructors.length > 0 && (
           <Reveal variant="stagger" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredInstructors.map((inst) => (
-              <TiltCard key={`${inst.email}-${inst.name}`}>
+              <TiltCard key={inst.id}>
                 <div className="flex h-full flex-col justify-between rounded-[20px] border border-white/70 bg-white/85 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none dark:hover:border-border-strong">
                   <div>
                     <div className="flex items-start justify-between">
@@ -135,7 +150,7 @@ export default function AdminInstructorsPage() {
                         </span>
                         <button
                           type="button"
-                          onClick={() => handleDeleteInstructor(inst.email, inst.name)}
+                          onClick={() => void handleDeleteInstructor(inst.id, inst.email, inst.name)}
                           title="Revoke access"
                           className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-colors cursor-pointer"
                         >
@@ -159,9 +174,11 @@ export default function AdminInstructorsPage() {
                         <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                         <span className="font-semibold truncate">{inst.email}</span>
                       </div>
+                      {/* The password is argon2-hashed on the server and never
+                          sent back, so it cannot be displayed here any more. */}
                       <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 truncate">
                         <KeyRound className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                        <span>Pass: <code className="font-mono text-slate-700 dark:text-slate-200">{inst.password || "lecturer123"}</code></span>
+                        <span>Password set at onboarding — not recoverable</span>
                       </div>
                     </div>
                   </div>
