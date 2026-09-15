@@ -246,6 +246,11 @@ export async function loginWithApi(email: string, password: string): Promise<Log
 
     if (res.ok) {
       const data = await res.json();
+      if (data.accessToken && typeof window !== "undefined") {
+        try {
+          localStorage.setItem("jks_access_token", data.accessToken);
+        } catch {}
+      }
       const u = data.user;
       const session: MockSession = {
         email: u.email,
@@ -283,6 +288,11 @@ export async function registerWithApi(name: string, email: string, password: str
 
     if (res.ok) {
       const data = await res.json();
+      if (data.accessToken && typeof window !== "undefined") {
+        try {
+          localStorage.setItem("jks_access_token", data.accessToken);
+        } catch {}
+      }
       const u = data.user;
       const session: MockSession = {
         email: u.email,
@@ -327,6 +337,7 @@ export function logoutMockSession() {
 
   if (typeof window !== "undefined") {
     try {
+      localStorage.removeItem("jks_access_token");
       localStorage.removeItem("jks_auth_user");
       localStorage.removeItem("jks_student_avatar_v2");
       sessionStorage.removeItem("jks_auth_user");

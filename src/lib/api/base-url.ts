@@ -71,9 +71,27 @@ export class ApiError extends Error {
  * here were missing it.
  */
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(init.headers || {});
+
+  // Attach Bearer token if present in localStorage and not explicitly provided
+  if (!headers.has("Authorization") && typeof window !== "undefined") {
+    try {
+      let token = localStorage.getItem("jks_access_token");
+      if (!token && (window as any).Clerk?.session) {
+        try {
+          token = await (window as any).Clerk.session.getToken();
+        } catch {}
+      }
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+    } catch {}
+  }
+
   try {
     return await fetch(apiUrl(path), {
       ...init,
+      headers,
       credentials: "include",
       signal: init.signal ?? AbortSignal.timeout(API_TIMEOUT_MS),
     });

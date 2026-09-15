@@ -91,11 +91,16 @@ export function ClerkSessionSync() {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
             credentials: "include",
-            signal: AbortSignal.timeout(3000),
+            signal: AbortSignal.timeout(10000),
           });
 
           if (res.ok) {
             const data = await res.json().catch(() => ({}));
+            if (data?.accessToken && typeof window !== "undefined") {
+              try {
+                localStorage.setItem("jks_access_token", data.accessToken);
+              } catch {}
+            }
             const backendUser = data?.user;
             if (
               backendUser &&

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore, useEffect } from "react";
-import { apiUrl } from "@/lib/api/base-url";
+import { apiUrl, apiFetch } from "@/lib/api/base-url";
 import type { Track } from "./courses";
 import { mapBackendTrack } from "./courses-api";
 import { fetchStudentEnrollments, getClientSessionEmail } from "./enrollments-api";
@@ -320,16 +320,30 @@ function getEnrollmentsSnapshot(): string[] {
 export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
   if (typeof window === "undefined") return getStoredCourses();
   try {
-    // Attempt /courses/all first so admins and instructors see both Draft & Published
     let res: Response | null = null;
+
+    // Only staff accounts (Admin / Instructor) need to query /courses/all for drafts
+    let isStaff = false;
     try {
-      res = await fetch(apiUrl("/courses/all"), {
-        cache: "no-store",
-        headers: { Accept: "application/json" },
-        signal: AbortSignal.timeout(3000),
-      });
-    } catch {
-      // ignore
+      const authUserRaw = localStorage.getItem("jks_auth_user");
+      if (authUserRaw) {
+        const authUser = JSON.parse(authUserRaw);
+        if (authUser?.role === "admin" || authUser?.role === "instructor") {
+          isStaff = true;
+        }
+      }
+    } catch {}
+
+    if (isStaff) {
+      try {
+        res = await apiFetch("/courses/all", {
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+          signal: AbortSignal.timeout(3000),
+        });
+      } catch {
+        // ignore
+      }
     }
 
     if (!res || !res.ok) {
