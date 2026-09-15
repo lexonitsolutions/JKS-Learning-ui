@@ -21,6 +21,7 @@ export interface Testimonial {
   highlightText?: string;
   verified: boolean;
   hiredYear: string;
+  avatar?: string;
 }
 
 export const TESTIMONIALS: Testimonial[] = [
@@ -44,6 +45,7 @@ export const TESTIMONIALS: Testimonial[] = [
     highlightText: "Mastered end-to-end P2P cycle & real-time inventory management.",
     verified: true,
     hiredYear: "2026",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&h=256&q=80",
   },
   {
     id: "arjun-mehta",
@@ -65,6 +67,7 @@ export const TESTIMONIALS: Testimonial[] = [
     highlightText: "Built resilient microservices with Spring Cloud & Kafka.",
     verified: true,
     hiredYear: "2026",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&h=256&q=80",
   },
   {
     id: "sneha-kulkarni",
@@ -86,6 +89,7 @@ export const TESTIMONIALS: Testimonial[] = [
     highlightText: "Zero coding background to cracking a tier-1 fintech frontend loop.",
     verified: true,
     hiredYear: "2026",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&h=256&q=80",
   },
   {
     id: "rahul-verma",
@@ -107,6 +111,7 @@ export const TESTIMONIALS: Testimonial[] = [
     highlightText: "Escaped support desk into core enterprise cloud engineering.",
     verified: true,
     hiredYear: "2026",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&h=256&q=80",
   },
   {
     id: "ananya-iyer",
@@ -128,6 +133,7 @@ export const TESTIMONIALS: Testimonial[] = [
     highlightText: "Demonstrated advanced RESTful Application Programming in S/4HANA.",
     verified: true,
     hiredYear: "2026",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80",
   },
   {
     id: "karthik-reddy",
@@ -149,6 +155,7 @@ export const TESTIMONIALS: Testimonial[] = [
     highlightText: "Turned ad-hoc freelancing into a Tier-1 senior product engineer offer.",
     verified: true,
     hiredYear: "2026",
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&h=256&q=80",
   },
   {
     id: "divya-menon",
@@ -170,6 +177,7 @@ export const TESTIMONIALS: Testimonial[] = [
     highlightText: "Direct domain transition from operations to SAP consulting.",
     verified: true,
     hiredYear: "2026",
+    avatar: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=256&h=256&q=80",
   },
   {
     id: "vikram-shah",
@@ -191,6 +199,7 @@ export const TESTIMONIALS: Testimonial[] = [
     highlightText: "Mastered distributed locks, idempotency, and high-concurrency Java.",
     verified: true,
     hiredYear: "2026",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&h=256&q=80",
   },
   {
     id: "neha-kapoor",
@@ -212,6 +221,7 @@ export const TESTIMONIALS: Testimonial[] = [
     highlightText: "Transformed from Tier-1 support into a core UI platform engineer.",
     verified: true,
     hiredYear: "2026",
+    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=256&h=256&q=80",
   },
 ];
 

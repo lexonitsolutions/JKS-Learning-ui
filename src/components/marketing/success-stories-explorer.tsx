@@ -170,8 +170,21 @@ export function SuccessStoriesExplorer() {
             {/* Left: Candidate Info & Journey */}
             <div className="lg:col-span-7 flex flex-col gap-4 sm:gap-5">
               <div className="flex items-start sm:items-center gap-3 sm:gap-4">
-                <div className="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-fill to-indigo-600 text-lg sm:text-xl font-bold text-white shadow-md">
-                  {getInitials(spotlightStory.name)}
+                <div className="relative flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-fill to-indigo-600 text-lg sm:text-xl font-bold text-white shadow-md overflow-hidden ring-2 ring-primary-blue/30">
+                  {spotlightStory.avatar ? (
+                    <img
+                      src={spotlightStory.avatar}
+                      alt={spotlightStory.name}
+                      className="h-full w-full object-cover"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : null}
+                  <span className={spotlightStory.avatar ? "sr-only" : ""}>
+                    {getInitials(spotlightStory.name)}
+                  </span>
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -318,8 +331,20 @@ export function SuccessStoriesExplorer() {
 
                         {/* Candidate Bio Header */}
                         <div className="mt-5 flex items-center gap-3">
-                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-blue/10 to-blue-600/10 dark:from-blue-950/60 dark:to-blue-900/40 font-bold text-primary-blue dark:text-blue-400 border border-primary-blue/20 dark:border-blue-800/60">
-                            {getInitials(story.name)}
+                          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-blue/10 to-blue-600/10 dark:from-blue-950/60 dark:to-blue-900/40 font-bold text-primary-blue dark:text-blue-400 border border-primary-blue/20 dark:border-blue-800/60 overflow-hidden ring-1 ring-primary-blue/20">
+                            {story.avatar ? (
+                              <img
+                                src={story.avatar}
+                                alt={story.name}
+                                className="h-full w-full object-cover"
+                                referrerPolicy="no-referrer"
+                                loading="lazy"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                                }}
+                              />
+                            ) : null}
+                            <span className={story.avatar ? "sr-only" : ""}>{getInitials(story.name)}</span>
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">

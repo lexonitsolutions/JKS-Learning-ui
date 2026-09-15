@@ -24,8 +24,20 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
         &ldquo;{testimonial.quote}&rdquo;
       </blockquote>
       <figcaption className="mt-4 flex items-center gap-3 border-t border-border dark:border-slate-800 pt-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-fill text-body-sm font-semibold text-white">
-          {initials(testimonial.name)}
+        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-fill text-body-sm font-semibold text-white overflow-hidden ring-2 ring-blue-500/20 shadow-xs">
+          {testimonial.avatar ? (
+            <img
+              src={testimonial.avatar}
+              alt={testimonial.name}
+              className="h-full w-full object-cover"
+              referrerPolicy="no-referrer"
+              loading="lazy"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
+            />
+          ) : null}
+          <span className={testimonial.avatar ? "sr-only" : ""}>{initials(testimonial.name)}</span>
         </div>
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold text-text-heading">

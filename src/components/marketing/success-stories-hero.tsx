@@ -258,8 +258,17 @@ export function SuccessStoriesHero() {
                     className="flex items-center justify-between rounded-2xl bg-white dark:bg-surface-elevated p-4 shadow-sm ring-1 ring-slate-900/[0.04] dark:ring-slate-700/40 transition-shadow hover:shadow-md dark:hover:ring-border-strong"
                   >
                     <div className="flex items-center gap-3.5">
-                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-fill to-cyan-500 text-white font-bold text-sm shadow-md">
-                        PN
+                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-fill to-cyan-500 text-white font-bold text-sm shadow-md overflow-hidden ring-2 ring-primary-blue/30">
+                        <img
+                          src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&h=256&q=80"
+                          alt="Priya Nair"
+                          className="h-full w-full object-cover"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                        <span className="sr-only">PN</span>
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
