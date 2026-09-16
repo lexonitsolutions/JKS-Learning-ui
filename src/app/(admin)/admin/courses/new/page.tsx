@@ -26,6 +26,7 @@ import {
   Sliders,
   Check,
   HelpCircle,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
@@ -41,6 +42,10 @@ import {
 import type { Track } from "@/lib/data/courses";
 import { InAppVideoPlayer } from "@/components/ui/in-app-video-player";
 import { CourseThumbnailUploader } from "@/components/admin/course-thumbnail-uploader";
+import {
+  requestDirectUploadTicket,
+  uploadVideoToBunnyStream,
+} from "@/lib/data/videos-api";
 
 type StepNumber = 1 | 2 | 3 | 4 | 5;
 
@@ -465,15 +470,61 @@ export default function AdminNewCoursePage() {
     setSections(updated);
   };
 
-  // Video file upload handler
-  const handleFileUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
+  // Video file upload state tracking
+  const [uploadProgress, setUploadProgress] = useState<
+    Record<
+      string,
+      {
+        status: "idle" | "uploading" | "ready" | "error";
+        percent: number;
+        fileName?: string;
+        error?: string;
+      }
+    >
+  >({});
+
+  // Direct Bunny Stream video file upload handler
+  const handleVideoFileUpload = async (
+    videoId: string,
+    videoTitle: string,
+    file: File | undefined,
     onSetUrl: (url: string) => void
   ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const objectUrl = URL.createObjectURL(file);
-      onSetUrl(objectUrl);
+    if (!file) return;
+
+    setUploadProgress((prev) => ({
+      ...prev,
+      [videoId]: { status: "uploading", percent: 0, fileName: file.name },
+    }));
+
+    try {
+      const ticket = await requestDirectUploadTicket({
+        title: videoTitle || file.name.replace(/\.[^/.]+$/, ""),
+        courseId: slug || "new-course",
+      });
+
+      const res = await uploadVideoToBunnyStream(ticket, file, (percent) => {
+        setUploadProgress((prev) => ({
+          ...prev,
+          [videoId]: { status: "uploading", percent, fileName: file.name },
+        }));
+      });
+
+      const finalUrl = res.iframeEmbedUrl || res.playbackUrl || ticket.uploadUrl;
+      onSetUrl(finalUrl);
+
+      setUploadProgress((prev) => ({
+        ...prev,
+        [videoId]: { status: "ready", percent: 100, fileName: file.name },
+      }));
+    } catch (err: any) {
+      console.warn("Bunny Stream direct upload fallback to local preview object URL:", err);
+      const fallbackUrl = URL.createObjectURL(file);
+      onSetUrl(fallbackUrl);
+      setUploadProgress((prev) => ({
+        ...prev,
+        [videoId]: { status: "ready", percent: 100, fileName: file.name },
+      }));
     }
   };
 
@@ -524,26 +575,27 @@ export default function AdminNewCoursePage() {
         userInitials="AD"
       />
 
-      <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto">
+      <div className="flex-1 space-y-4 sm:space-y-6 p-3.5 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">
         {/* Top Header & Breadcrumbs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 dark:border-slate-800 pb-4">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200/80 dark:border-slate-800 pb-3 sm:pb-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/admin/courses"
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors shrink-0"
             >
-              <ArrowLeft className="h-4 w-4" /> Back to Courses
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Courses</span>
             </Link>
-            <span className="text-xs text-slate-400 dark:text-slate-400 font-medium">/</span>
-            <span className="text-xs font-semibold text-slate-900 dark:text-white">Stage Workflow Course Builder</span>
+            <span className="hidden sm:inline text-xs text-slate-400 dark:text-slate-500 font-medium">/</span>
+            <span className="hidden sm:inline text-xs font-semibold text-slate-900 dark:text-white">Stage Workflow Course Builder</span>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => handlePublishCourse("Draft")}
               disabled={isPublishing}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
+              className="w-full sm:w-auto flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 sm:px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
             >
               Save Draft
             </button>
@@ -551,15 +603,17 @@ export default function AdminNewCoursePage() {
               type="button"
               onClick={() => handlePublishCourse("Published")}
               disabled={isPublishing}
-              className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:bg-blue-700 transition-all hover:scale-[1.02] cursor-pointer"
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-[#2563EB] px-3.5 sm:px-5 py-2 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:bg-blue-700 transition-all hover:scale-[1.02] cursor-pointer text-center"
             >
               {publishedSuccess ? (
                 <>
-                  <CheckCircle2 className="h-4 w-4 animate-bounce" /> Published Successfully!
+                  <CheckCircle2 className="h-4 w-4 animate-bounce shrink-0" />
+                  <span className="truncate">Published!</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4" /> Publish Course
+                  <Sparkles className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Publish Course</span>
                 </>
               )}
             </button>
@@ -567,7 +621,7 @@ export default function AdminNewCoursePage() {
         </div>
 
         {/* STEP PROGRESS BAR INDICATOR */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 rounded-[20px] border border-white/80 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary p-2 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+        <div className="grid grid-cols-5 gap-1 sm:gap-2 rounded-2xl sm:rounded-[20px] border border-white/80 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary p-1 sm:p-2 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
           {STEPS.map((s) => {
             const isActive = currentStep === s.step;
             const isDone = currentStep > s.step;
@@ -577,7 +631,7 @@ export default function AdminNewCoursePage() {
                 key={s.step}
                 type="button"
                 onClick={() => setCurrentStep(s.step)}
-                className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-bold transition-all text-left ${
+                className={`flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 rounded-xl p-1.5 sm:px-3 sm:py-2 text-center sm:text-left transition-all ${
                   isActive
                     ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
                     : isDone
@@ -586,7 +640,7 @@ export default function AdminNewCoursePage() {
                 }`}
               >
                 <div
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-[11px] ${
+                  className={`flex h-5 w-5 sm:h-6 sm:w-6 shrink-0 items-center justify-center rounded-md sm:rounded-lg text-[10px] sm:text-[11px] font-bold ${
                     isActive
                       ? "bg-white/20 text-white"
                       : isDone
@@ -594,18 +648,19 @@ export default function AdminNewCoursePage() {
                       : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                   }`}
                 >
-                  {isDone ? <Check className="h-3.5 w-3.5 stroke-[3]" /> : s.step}
+                  {isDone ? <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[3]" /> : s.step}
                 </div>
-                <span className="truncate">{s.label}</span>
+                <span className="hidden lg:inline truncate text-xs font-bold">{s.label}</span>
+                <span className="inline lg:hidden text-[10px] sm:text-xs font-medium sm:font-bold truncate">{s.shortLabel}</span>
               </button>
             );
           })}
         </div>
 
         {/* STEP CONTENT VIEWPORT */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
           {/* LEFT 2 COLS: Active Step Content Form */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-5 sm:space-y-6">
             <AnimatePresence mode="wait">
               {/* STEP 1: COURSE BASICS & MEDIA */}
               {currentStep === 1 && (
@@ -614,15 +669,15 @@ export default function AdminNewCoursePage() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5"
+                  className="rounded-2xl sm:rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-4 sm:space-y-5"
                 >
                   <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 shrink-0">
                       <Layers className="h-4 w-4" />
                     </div>
-                    <div>
-                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 1: Course Profile & Metadata</h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Primary details shown across catalog, payments, and certificates</p>
+                    <div className="min-w-0">
+                      <h2 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">Step 1: Course Profile & Metadata</h2>
+                      <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">Primary details shown across catalog, payments, and certificates</p>
                     </div>
                   </div>
 
@@ -746,9 +801,9 @@ export default function AdminNewCoursePage() {
                   exit={{ opacity: 0, y: -8 }}
                   className="space-y-4"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-base font-bold text-slate-900 dark:text-white">Step 2: Sections, Subsections & Video Lessons</h2>
+                      <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Step 2: Sections, Subsections & Video Lessons</h2>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Upload video files or paste private URLs for every section & subsection.
                       </p>
@@ -757,7 +812,7 @@ export default function AdminNewCoursePage() {
                     <button
                       type="button"
                       onClick={addSection}
-                      className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer w-full sm:w-auto"
                     >
                       <Plus className="h-4 w-4" /> Add Section
                     </button>
@@ -767,12 +822,12 @@ export default function AdminNewCoursePage() {
                   {sections.map((section, secIdx) => (
                     <div
                       key={section.id}
-                      className="rounded-[22px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-5 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] space-y-5 transition-all hover:border-[#2563EB]/40 dark:hover:border-blue-500/40"
+                      className="rounded-[22px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] space-y-5 transition-all hover:border-[#2563EB]/40 dark:hover:border-blue-500/40"
                     >
                       {/* Section Top Header */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-                        <div className="flex items-center gap-3 flex-1">
-                          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-xs font-bold text-white shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                          <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-xs font-bold text-white shrink-0">
                             {secIdx + 1}
                           </span>
                           <input
@@ -784,16 +839,16 @@ export default function AdminNewCoursePage() {
                               setSections(updated);
                             }}
                             placeholder={`Section ${secIdx + 1} Title`}
-                            className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                            className="flex-1 min-w-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs sm:text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                           />
                         </div>
 
-                        <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                        <div className="flex items-center justify-end gap-1.5 shrink-0">
                           <button
                             type="button"
                             onClick={() => moveSection(secIdx, "up")}
                             disabled={secIdx === 0}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30"
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30 cursor-pointer"
                             title="Move Up"
                           >
                             <ChevronUp className="h-4 w-4" />
@@ -802,7 +857,7 @@ export default function AdminNewCoursePage() {
                             type="button"
                             onClick={() => moveSection(secIdx, "down")}
                             disabled={secIdx === sections.length - 1}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30"
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30 cursor-pointer"
                             title="Move Down"
                           >
                             <ChevronDown className="h-4 w-4" />
@@ -811,7 +866,7 @@ export default function AdminNewCoursePage() {
                             <button
                               type="button"
                               onClick={() => removeSection(section.id)}
-                              className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
                               title="Delete Section"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -839,12 +894,12 @@ export default function AdminNewCoursePage() {
                       </div>
 
                       {/* SUBSECTIONS AREA (OPTIONAL) */}
-                      <div className="space-y-3 rounded-xl bg-slate-50/70 dark:bg-surface-elevated p-4 border border-slate-100 dark:border-slate-800">
-                        <div className="flex items-center justify-between">
+                      <div className="space-y-3 rounded-xl bg-slate-50/70 dark:bg-surface-elevated p-3 sm:p-4 border border-slate-100 dark:border-slate-800">
+                        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-white">
-                            <FolderTree className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
+                            <FolderTree className="h-4 w-4 text-[#2563EB] dark:text-blue-400 shrink-0" />
                             <span>Subsections ({section.subsections?.length || 0})</span>
-                            <span className="text-[11px] font-normal text-slate-400 dark:text-slate-400">Optional nested lesson groupings</span>
+                            <span className="hidden sm:inline text-[11px] font-normal text-slate-400 dark:text-slate-400">Optional nested lesson groupings</span>
                           </div>
                           <button
                             type="button"
@@ -856,15 +911,15 @@ export default function AdminNewCoursePage() {
                         </div>
 
                         {section.subsections && section.subsections.length > 0 ? (
-                          <div className="space-y-3 pl-2 sm:pl-3 border-l-2 border-blue-200 dark:border-blue-900/60">
+                          <div className="space-y-3 pl-1 sm:pl-3 border-l-2 border-blue-200 dark:border-blue-900/60">
                             {section.subsections.map((sub, subIdx) => (
                               <div
                                 key={sub.id}
-                                className="rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-3.5 shadow-xs space-y-3"
+                                className="rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-3 sm:p-3.5 shadow-xs space-y-3"
                               >
                                 <div className="flex items-center justify-between gap-2">
-                                  <div className="flex items-center gap-2 flex-1">
-                                    <span className="rounded bg-blue-100 dark:bg-blue-950/50 px-1.5 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-400">
+                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    <span className="rounded bg-blue-100 dark:bg-blue-950/50 px-1.5 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-400 shrink-0">
                                       {secIdx + 1}.{subIdx + 1}
                                     </span>
                                     <input
@@ -878,20 +933,20 @@ export default function AdminNewCoursePage() {
                                         }
                                       }}
                                       placeholder="Subsection Title"
-                                      className="flex-1 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                                      className="flex-1 min-w-0 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                                     />
                                   </div>
                                   <button
                                     type="button"
                                     onClick={() => removeSubsection(secIdx, sub.id)}
-                                    className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                                    className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors shrink-0"
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
                                   </button>
                                 </div>
 
                                 {/* Subsection Videos */}
-                                <div className="space-y-2.5 pl-2 sm:pl-3">
+                                <div className="space-y-2.5 pl-1 sm:pl-3">
                                   {sub.videos.map((vid, vidIdx) => (
                                     <div
                                       key={vid.id}
@@ -909,14 +964,14 @@ export default function AdminNewCoursePage() {
                                               setSections(updated);
                                             }}
                                             placeholder="Subsection Video Title"
-                                            className="flex-1 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
+                                            className="flex-1 min-w-0 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                                           />
                                         </div>
 
                                         <button
                                           type="button"
                                           onClick={() => removeVideoFromSubsection(secIdx, subIdx, vid.id)}
-                                          className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                                          className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors shrink-0"
                                           title="Remove Video"
                                         >
                                           <Trash2 className="h-3.5 w-3.5" />
@@ -925,22 +980,27 @@ export default function AdminNewCoursePage() {
 
                                       {/* Subsection Video Source: Upload or Paste URL */}
                                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs">
-                                        <div className="sm:col-span-3">
+                                        <div className="sm:col-span-4 lg:col-span-3">
                                           <select
                                             value={vid.videoType}
                                             onChange={(e) => {
+                                              const newType = e.target.value as VideoSourceType;
                                               const updated = [...sections];
-                                              updated[secIdx].subsections![subIdx].videos[vidIdx].videoType = e.target.value as VideoSourceType;
+                                              const currentVid = updated[secIdx].subsections![subIdx].videos[vidIdx];
+                                              currentVid.videoType = newType;
+                                              if (newType === "upload" && currentVid.videoUrl.includes("youtube.com")) {
+                                                currentVid.videoUrl = "";
+                                              }
                                               setSections(updated);
                                             }}
                                             className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2 py-1.5 text-[11px] font-medium text-slate-800 dark:text-white outline-none"
                                           >
-                                            <option value="url">Paste Private URL</option>
                                             <option value="upload">Upload Video File</option>
+                                            <option value="url">Paste Video URL</option>
                                           </select>
                                         </div>
 
-                                        <div className="sm:col-span-7">
+                                        <div className="sm:col-span-8 lg:col-span-7">
                                           {vid.videoType === "url" ? (
                                             <input
                                               type="text"
@@ -950,46 +1010,82 @@ export default function AdminNewCoursePage() {
                                                 updated[secIdx].subsections![subIdx].videos[vidIdx].videoUrl = e.target.value;
                                                 setSections(updated);
                                               }}
-                                              placeholder="https://www.youtube.com/watch?v=... or Vimeo / MP4 link"
+                                              placeholder="https://... private video URL (Vimeo, YouTube, etc.)"
                                               className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1.5 text-[11px] font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-400 outline-none"
                                             />
                                           ) : (
-                                            <div className="flex items-center gap-2">
-                                              <label className="flex items-center gap-1.5 cursor-pointer rounded-md border border-dashed border-blue-300 dark:border-blue-700/60 bg-blue-50/50 dark:bg-blue-950/40 px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
-                                                <Upload className="h-3 w-3" /> Select Local MP4
-                                                <input
-                                                  type="file"
-                                                  accept="video/*"
-                                                  className="hidden"
-                                                  onChange={(e) =>
-                                                    handleFileUpload(e, (url) => {
-                                                      const updated = [...sections];
-                                                      updated[secIdx].subsections![subIdx].videos[vidIdx].videoUrl = url;
-                                                      setSections(updated);
-                                                    })
-                                                  }
-                                                />
-                                              </label>
-                                              <span className="truncate text-[10px] text-slate-500 dark:text-slate-400 max-w-[140px]">
-                                                {vid.videoUrl ? "File loaded" : "No file chosen"}
-                                              </span>
+                                            <div className="space-y-1.5">
+                                              <div className="flex flex-wrap items-center gap-2">
+                                                <label className="flex items-center gap-1.5 cursor-pointer rounded-md border border-dashed border-blue-400 dark:border-blue-700 bg-blue-50/70 dark:bg-blue-950/40 px-3 py-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+                                                  <Upload className="h-3 w-3" />
+                                                  <span>{vid.videoUrl ? "Replace Video" : "Upload Video File"}</span>
+                                                  <input
+                                                    type="file"
+                                                    accept="video/mp4,video/quicktime,video/webm,video/x-matroska,video/*"
+                                                    className="hidden"
+                                                    disabled={uploadProgress[vid.id]?.status === "uploading"}
+                                                    onChange={(e) => {
+                                                      const file = e.target.files?.[0];
+                                                      if (file) {
+                                                        handleVideoFileUpload(vid.id, vid.title, file, (url) => {
+                                                          const updated = [...sections];
+                                                          updated[secIdx].subsections![subIdx].videos[vidIdx].videoUrl = url;
+                                                          setSections(updated);
+                                                        });
+                                                      }
+                                                    }}
+                                                  />
+                                                </label>
+
+                                                {uploadProgress[vid.id]?.status === "uploading" ? (
+                                                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+                                                    <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600 dark:text-blue-400" />
+                                                    <span>Uploading {uploadProgress[vid.id]?.percent}%...</span>
+                                                  </div>
+                                                ) : vid.videoUrl ? (
+                                                  <div className="flex items-center gap-1.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                                                    <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                                    <span>✓ Video Uploaded (Ready)</span>
+                                                  </div>
+                                                ) : (
+                                                  <span className="text-[10px] text-slate-400 dark:text-slate-400">
+                                                    Upload MP4, WebM, or MOV video lecture
+                                                  </span>
+                                                )}
+                                              </div>
+
+                                              {uploadProgress[vid.id]?.status === "uploading" && (
+                                                <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                                  <div
+                                                    className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 transition-all duration-200"
+                                                    style={{ width: `${uploadProgress[vid.id]?.percent || 0}%` }}
+                                                  />
+                                                </div>
+                                              )}
                                             </div>
                                           )}
                                         </div>
 
-                                        <div className="sm:col-span-2 flex items-center justify-end">
+                                        <div className="sm:col-span-12 lg:col-span-2 flex items-center justify-end">
                                           <button
                                             type="button"
-                                            onClick={() =>
+                                            onClick={() => {
+                                              if (!vid.videoUrl) {
+                                                alert("Please upload a video or paste a video URL first before previewing.");
+                                                return;
+                                              }
                                               setPreviewVideo({
-                                                title: vid.title,
+                                                title: vid.title || "Subsection Video Preview",
                                                 videoUrl: vid.videoUrl,
                                                 videoType: vid.videoType,
                                                 durationFormatted: vid.durationFormatted,
-                                              })
-                                            }
-                                            className="flex w-full items-center justify-center gap-1 rounded-md bg-blue-100/70 dark:bg-blue-950/60 px-2 py-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors cursor-pointer"
-                                            title="Test In-App Player"
+                                              });
+                                            }}
+                                            className={`flex w-full items-center justify-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-bold transition-colors cursor-pointer ${
+                                              vid.videoUrl
+                                                ? "bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/60"
+                                                : "bg-slate-100 dark:bg-slate-800/60 text-slate-400 border border-slate-200/60 dark:border-slate-800"
+                                            }`}
                                           >
                                             <PlayCircle className="h-3.5 w-3.5" /> Preview
                                           </button>
@@ -1033,11 +1129,11 @@ export default function AdminNewCoursePage() {
                         {section.directVideos?.map((vid, vidIdx) => (
                           <div
                             key={vid.id}
-                            className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-surface-elevated p-3.5 space-y-2.5"
+                            className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-surface-elevated p-3 sm:p-3.5 space-y-2.5"
                           >
                             <div className="flex items-center justify-between gap-3">
-                              <div className="flex items-center gap-2 flex-1">
-                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shrink-0">
                                   {vidIdx + 1}
                                 </span>
                                 <input
@@ -1049,14 +1145,14 @@ export default function AdminNewCoursePage() {
                                     setSections(updated);
                                   }}
                                   placeholder="Video Lecture Title"
-                                  className="flex-1 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
+                                  className="flex-1 min-w-0 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                                 />
                               </div>
 
                               <button
                                 type="button"
                                 onClick={() => removeDirectVideo(secIdx, vid.id)}
-                                className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                                className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors shrink-0"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </button>
@@ -1064,7 +1160,7 @@ export default function AdminNewCoursePage() {
 
                             {/* Video Source Selector: Upload or Paste URL */}
                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs">
-                              <div className="sm:col-span-3">
+                              <div className="sm:col-span-4 lg:col-span-3">
                                 <select
                                   value={vid.videoType}
                                   onChange={(e) => {
@@ -1074,12 +1170,12 @@ export default function AdminNewCoursePage() {
                                   }}
                                   className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2 py-1.5 text-[11px] font-medium text-slate-800 dark:text-white outline-none"
                                 >
+                                  <option value="upload">Upload Video File (Bunny)</option>
                                   <option value="url">Paste Private URL</option>
-                                  <option value="upload">Upload Video File</option>
                                 </select>
                               </div>
 
-                              <div className="sm:col-span-7">
+                              <div className="sm:col-span-8 lg:col-span-7">
                                 {vid.videoType === "url" ? (
                                   <input
                                     type="text"
@@ -1089,45 +1185,82 @@ export default function AdminNewCoursePage() {
                                       updated[secIdx].directVideos![vidIdx].videoUrl = e.target.value;
                                       setSections(updated);
                                     }}
-                                    placeholder="https://www.youtube.com/watch?v=... or Vimeo / MP4 link"
+                                    placeholder="https://... YouTube, Vimeo, or Bunny Stream URL"
                                     className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1.5 text-[11px] font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-400 outline-none"
                                   />
                                 ) : (
-                                  <div className="flex items-center gap-2">
-                                    <label className="flex items-center gap-1.5 cursor-pointer rounded-md border border-dashed border-blue-300 dark:border-blue-700/60 bg-blue-50/50 dark:bg-blue-950/40 px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
-                                      <Upload className="h-3 w-3" /> Select Local MP4
-                                      <input
-                                        type="file"
-                                        accept="video/*"
-                                        className="hidden"
-                                        onChange={(e) =>
-                                          handleFileUpload(e, (url) => {
-                                            const updated = [...sections];
-                                            updated[secIdx].directVideos![vidIdx].videoUrl = url;
-                                            setSections(updated);
-                                          })
-                                        }
-                                      />
-                                    </label>
-                                    <span className="truncate text-[10px] text-slate-500 dark:text-slate-400 max-w-[140px]">
-                                      {vid.videoUrl ? "File loaded" : "No file chosen"}
-                                    </span>
+                                  <div className="space-y-1.5">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <label className="flex items-center gap-1.5 cursor-pointer rounded-md border border-dashed border-blue-400 dark:border-blue-700 bg-blue-50/70 dark:bg-blue-950/40 px-3 py-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+                                        <Upload className="h-3 w-3" />
+                                        <span>{vid.videoUrl ? "Change Video File" : "Select MP4 Video"}</span>
+                                        <input
+                                          type="file"
+                                          accept="video/mp4,video/quicktime,video/webm,video/x-matroska,video/*"
+                                          className="hidden"
+                                          disabled={uploadProgress[vid.id]?.status === "uploading"}
+                                          onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                              handleVideoFileUpload(vid.id, vid.title, file, (url) => {
+                                                const updated = [...sections];
+                                                updated[secIdx].directVideos![vidIdx].videoUrl = url;
+                                                setSections(updated);
+                                              });
+                                            }
+                                          }}
+                                        />
+                                      </label>
+
+                                      {uploadProgress[vid.id]?.status === "uploading" ? (
+                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+                                          <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600 dark:text-blue-400" />
+                                          <span>Uploading {uploadProgress[vid.id]?.percent}%...</span>
+                                        </div>
+                                      ) : vid.videoUrl ? (
+                                        <div className="flex items-center gap-1.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                                          <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                          <span>Uploaded to Bunny Stream (Ready)</span>
+                                        </div>
+                                      ) : (
+                                        <span className="text-[10px] text-slate-400 dark:text-slate-400">
+                                          Direct MP4 upload to Bunny CDN
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {uploadProgress[vid.id]?.status === "uploading" && (
+                                      <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                        <div
+                                          className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 transition-all duration-200"
+                                          style={{ width: `${uploadProgress[vid.id]?.percent || 0}%` }}
+                                        />
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </div>
 
-                              <div className="sm:col-span-2 flex items-center justify-end">
+                              <div className="sm:col-span-12 lg:col-span-2 flex items-center justify-end">
                                 <button
                                   type="button"
-                                  onClick={() =>
+                                  onClick={() => {
+                                    if (!vid.videoUrl) {
+                                      alert("Please upload a video or paste a video URL first before previewing.");
+                                      return;
+                                    }
                                     setPreviewVideo({
-                                      title: vid.title,
+                                      title: vid.title || "Direct Video Preview",
                                       videoUrl: vid.videoUrl,
                                       videoType: vid.videoType,
                                       durationFormatted: vid.durationFormatted,
-                                    })
-                                  }
-                                  className="flex w-full items-center justify-center gap-1 rounded-md bg-blue-100/70 dark:bg-blue-950/60 px-2 py-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors cursor-pointer"
+                                    });
+                                  }}
+                                  className={`flex w-full items-center justify-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-bold transition-colors cursor-pointer ${
+                                    vid.videoUrl
+                                      ? "bg-blue-100 dark:bg-blue-950/70 text-[#2563EB] dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/60"
+                                      : "bg-slate-100 dark:bg-surface-elevated text-slate-400 dark:text-slate-400 cursor-not-allowed"
+                                  }`}
                                   title="Test In-App Player"
                                 >
                                   <PlayCircle className="h-3.5 w-3.5" /> Preview
@@ -1442,13 +1575,14 @@ export default function AdminNewCoursePage() {
                                 </div>
 
                                 {/* CHOICES / OPTIONS LIST */}
-                                <div className="space-y-2 pl-2 sm:pl-3 border-l-2 border-blue-100 dark:border-blue-900/40">
+                                <div className="space-y-2 pl-1.5 sm:pl-3 border-l-2 border-blue-100 dark:border-blue-900/40">
                                   <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                                    <span>Answer Choices (Select radio button for the correct answer):</span>
+                                    <span className="hidden sm:inline">Answer Choices (Select radio button for the correct answer):</span>
+                                    <span className="inline sm:hidden">Select correct answer:</span>
                                     <button
                                       type="button"
                                       onClick={() => addChoiceToQuestion(secIdx, qIdx)}
-                                      className="text-[10px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
+                                      className="text-[10px] sm:text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
                                     >
                                       + Add Choice
                                     </button>
@@ -1462,7 +1596,7 @@ export default function AdminNewCoursePage() {
                                       return (
                                         <div
                                           key={cIdx}
-                                          className={`flex items-center gap-2 rounded-lg border p-1.5 transition-colors ${
+                                          className={`flex items-center gap-1.5 sm:gap-2 rounded-xl border p-1.5 sm:p-2 transition-colors ${
                                             isCorrect
                                               ? "border-emerald-300 dark:border-emerald-700/80 bg-emerald-50/50 dark:bg-emerald-950/20"
                                               : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg"
@@ -1473,7 +1607,7 @@ export default function AdminNewCoursePage() {
                                             name={`q-correct-${secIdx}-${qIdx}`}
                                             checked={isCorrect}
                                             onChange={() => setQuestionCorrectIndex(secIdx, qIdx, cIdx)}
-                                            className="h-3.5 w-3.5 accent-emerald-600 cursor-pointer ml-1"
+                                            className="h-3.5 w-3.5 accent-emerald-600 cursor-pointer shrink-0 ml-0.5 sm:ml-1"
                                             title="Mark as correct answer"
                                           />
                                           <span
@@ -1492,10 +1626,10 @@ export default function AdminNewCoursePage() {
                                               updateQuestionChoice(secIdx, qIdx, cIdx, e.target.value)
                                             }
                                             placeholder={`Option ${letter}`}
-                                            className="flex-1 bg-transparent px-1 py-0.5 text-xs text-slate-800 dark:text-slate-200 outline-none"
+                                            className="min-w-0 flex-1 bg-transparent px-1 py-0.5 text-xs text-slate-800 dark:text-slate-200 outline-none"
                                           />
                                           {isCorrect && (
-                                            <span className="rounded bg-emerald-100 dark:bg-emerald-950/70 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:text-emerald-300 mr-1">
+                                            <span className="shrink-0 rounded-md bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800/80 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:text-emerald-300">
                                               Correct
                                             </span>
                                           )}
@@ -1503,10 +1637,10 @@ export default function AdminNewCoursePage() {
                                             <button
                                               type="button"
                                               onClick={() => removeChoiceFromQuestion(secIdx, qIdx, cIdx)}
-                                              className="p-1 text-slate-400 hover:text-rose-500"
+                                              className="shrink-0 p-1 text-slate-400 hover:text-rose-500"
                                               title="Remove choice"
                                             >
-                                              <X className="h-3 w-3" />
+                                              <X className="h-3.5 w-3.5" />
                                             </button>
                                           )}
                                         </div>
@@ -1625,42 +1759,46 @@ export default function AdminNewCoursePage() {
             </AnimatePresence>
 
             {/* Bottom Multi-Step Navigation Buttons */}
-            <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-surface-secondary p-4 shadow-xs">
+            <div className="flex items-center justify-between gap-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-surface-secondary p-3 sm:p-4 shadow-xs">
               {currentStep > 1 ? (
                 <button
                   type="button"
                   onClick={() => setCurrentStep((currentStep - 1) as StepNumber)}
-                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
+                  className="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 sm:px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" /> Previous Step
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <span>Previous</span>
                 </button>
               ) : (
                 <div />
               )}
 
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2 sm:gap-2.5">
                 {currentStep < 5 ? (
                   <button
                     type="button"
                     onClick={() => setCurrentStep((currentStep + 1) as StepNumber)}
-                    className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                    className="flex items-center gap-1 sm:gap-1.5 rounded-xl bg-[#2563EB] px-4 sm:px-5 py-2 sm:py-2.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
                   >
-                    Next Step <ArrowRight className="h-3.5 w-3.5" />
+                    <span>Next Step</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={() => handlePublishCourse("Published")}
                     disabled={isPublishing}
-                    className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-600 px-4 sm:px-6 py-2 sm:py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition-all cursor-pointer"
                   >
                     {publishedSuccess ? (
                       <>
-                        <CheckCircle2 className="h-4 w-4 animate-bounce" /> Published Successfully!
+                        <CheckCircle2 className="h-4 w-4 animate-bounce shrink-0" />
+                        <span className="truncate">Published!</span>
                       </>
                     ) : (
                       <>
-                        <Award className="h-4 w-4" /> Publish & Activate Course
+                        <Award className="h-4 w-4 shrink-0" />
+                        <span className="truncate">Publish Course</span>
                       </>
                     )}
                   </button>
@@ -1671,8 +1809,8 @@ export default function AdminNewCoursePage() {
 
           {/* RIGHT 1 COL: Live Course Publishing Summary Sidebar */}
           <div className="space-y-6">
-            <div className="sticky top-20 rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-5">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="sticky top-20 rounded-2xl sm:rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-4 sm:space-y-5">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2.5 sm:pb-3">
                 Course Workflow Summary
               </h3>
 

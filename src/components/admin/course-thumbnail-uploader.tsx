@@ -301,45 +301,45 @@ export function CourseThumbnailUploader({
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent pointer-events-none" />
 
             {/* Track & Status Badges */}
-            <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
-              <span className="rounded-lg bg-emerald-500/90 backdrop-blur-md px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-xs">
+            <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex items-center gap-1.5 sm:gap-2 z-10">
+              <span className="rounded-md sm:rounded-lg bg-emerald-500/90 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-white shadow-xs">
                 Active Thumbnail
               </span>
               {track && (
-                <span className="rounded-lg bg-blue-600/90 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold text-white shadow-xs">
+                <span className="rounded-md sm:rounded-lg bg-blue-600/90 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
                   {track}
                 </span>
               )}
             </div>
 
             {/* Overlaid Title & Meta */}
-            <div className="absolute bottom-3 left-3 right-3 z-10">
-              <div className="text-sm font-black text-white drop-shadow-md line-clamp-1">
+            <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-3 sm:left-3 sm:right-3 z-10">
+              <div className="text-xs sm:text-sm font-black text-white drop-shadow-md line-clamp-1">
                 {title || "Course Title Preview"}
               </div>
-              <div className="text-[11px] font-medium text-slate-300 mt-0.5">
-                {level || "All Levels"} · 16:9 High-Definition Banner
+              <div className="text-[10px] sm:text-[11px] font-medium text-slate-300 mt-0.5">
+                {level || "All Levels"} · 16:9 Banner
               </div>
             </div>
 
             {/* Hover Actions Bar */}
-            <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
+            <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-1.5 sm:gap-2 z-20">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-white shadow-md hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer"
+                className="flex items-center gap-1 rounded-lg sm:rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 text-[11px] sm:text-xs font-bold text-slate-800 dark:text-white shadow-md hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer"
                 title="Change Image File"
               >
-                <Upload className="h-3.5 w-3.5 text-[#2563EB]" />
+                <Upload className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#2563EB]" />
                 <span>Replace</span>
               </button>
               <button
                 type="button"
                 onClick={() => onThumbnailChange("")}
-                className="flex items-center justify-center rounded-xl bg-rose-600/90 backdrop-blur-md p-1.5 text-white shadow-md hover:bg-rose-700 transition-all cursor-pointer"
+                className="flex items-center justify-center rounded-lg sm:rounded-xl bg-rose-600/90 backdrop-blur-md p-1 sm:p-1.5 text-white shadow-md hover:bg-rose-700 transition-all cursor-pointer"
                 title="Remove Image"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </button>
             </div>
           </div>
@@ -351,7 +351,7 @@ export function CourseThumbnailUploader({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 sm:p-8 text-center transition-all cursor-pointer select-none ${
+          className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-4 sm:p-7 text-center transition-all cursor-pointer select-none ${
             isDragging
               ? "border-[#2563EB] bg-blue-50/80 dark:bg-blue-950/40 scale-[1.01]"
               : "border-slate-300 dark:border-slate-700 bg-slate-50/70 dark:bg-surface-elevated hover:border-[#2563EB]/70 hover:bg-slate-50 dark:hover:bg-surface-hover"
@@ -359,24 +359,24 @@ export function CourseThumbnailUploader({
         >
           {isProcessing ? (
             <div className="flex flex-col items-center gap-2 py-2">
-              <div className="h-8 w-8 animate-spin rounded-full border-3 border-blue-500 border-t-transparent" />
+              <div className="h-7 w-7 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
               <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                 Optimizing & Processing Image...
               </span>
             </div>
           ) : (
             <>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EFF6FF] dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 shadow-xs mb-2">
-                <Upload className="h-6 w-6" />
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-[#EFF6FF] dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 shadow-xs mb-1.5 sm:mb-2">
+                <Upload className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div className="text-xs font-bold text-slate-900 dark:text-white">
                 {isDragging ? "Drop image to upload" : "Click to upload or drag and drop"}
               </div>
-              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400">
                 16:9 banner recommended · PNG, JPG, WebP, SVG up to 10MB
               </p>
-              <div className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3.5 py-1.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-2xs hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors">
-                <ImageIcon className="h-3.5 w-3.5" />
+              <div className="mt-2.5 sm:mt-3 inline-flex items-center gap-1.5 rounded-lg sm:rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 sm:px-3.5 sm:py-1.5 text-[11px] sm:text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-2xs hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors">
+                <ImageIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span>Browse Files</span>
               </div>
             </>
@@ -392,7 +392,7 @@ export function CourseThumbnailUploader({
             <span>Or Choose a Curated JKS Preset:</span>
           </span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2">
           {PRESET_THUMBNAILS.map((preset) => {
             const isSelected = thumbnailUrl === preset.previewUrl;
             return (
@@ -403,13 +403,13 @@ export function CourseThumbnailUploader({
                   onThumbnailChange(preset.previewUrl);
                   setErrorMessage(null);
                 }}
-                className={`group relative overflow-hidden rounded-xl border p-2 text-left transition-all cursor-pointer ${
+                className={`group relative overflow-hidden rounded-xl border p-1.5 sm:p-2 text-left transition-all cursor-pointer ${
                   isSelected
                     ? "border-blue-500 ring-2 ring-blue-500/30 bg-blue-50/50 dark:bg-blue-950/30"
                     : "border-slate-200 dark:border-slate-700/80 bg-white dark:bg-surface-elevated hover:border-slate-300 dark:hover:border-slate-600"
                 }`}
               >
-                <div className="relative h-14 w-full overflow-hidden rounded-lg bg-slate-900">
+                <div className="relative h-12 sm:h-14 w-full overflow-hidden rounded-lg bg-slate-900">
                   <img
                     src={preset.previewUrl}
                     alt={preset.label}
@@ -422,10 +422,10 @@ export function CourseThumbnailUploader({
                     </div>
                   )}
                 </div>
-                <div className="mt-1.5 text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate">
+                <div className="mt-1 text-[10px] sm:text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate">
                   {preset.label}
                 </div>
-                <div className="text-[10px] text-slate-400 dark:text-slate-400 truncate">
+                <div className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-400 truncate">
                   {preset.track}
                 </div>
               </button>

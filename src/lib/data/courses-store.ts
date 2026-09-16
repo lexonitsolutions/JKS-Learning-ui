@@ -196,7 +196,7 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
   };
 
   try {
-    const res = await fetch(apiUrl("/courses"), {
+    const res = await apiFetch("/courses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -241,7 +241,7 @@ export function deleteCourse(courseIdOrSlug: string) {
   safeLocalStorageSet(STORAGE_KEYS.COURSES, updated);
 
   const deleteId = target?.id || courseIdOrSlug;
-  fetch(apiUrl(`/courses/${encodeURIComponent(deleteId)}`), {
+  apiFetch(`/courses/${encodeURIComponent(deleteId)}`, {
     method: "DELETE",
   }).catch((err) => {
     console.warn("[courses-store] Failed to delete course from DB:", err);
@@ -348,7 +348,7 @@ export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
 
     if (!res || !res.ok) {
       try {
-        res = await fetch(apiUrl("/courses"), {
+        res = await apiFetch("/courses", {
           cache: "no-store",
           headers: { Accept: "application/json" },
           signal: AbortSignal.timeout(3000),

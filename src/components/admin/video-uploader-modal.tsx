@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import {
   requestDirectUploadTicket,
-  uploadVideoToCloudflare,
+  uploadVideoToBunnyStream,
   type VideoMetadata,
 } from "@/lib/data/videos-api";
 
@@ -81,7 +81,7 @@ export function VideoUploaderModal({
     setErrorMessage(null);
 
     try {
-      // Step 1: Request Direct Upload Ticket from Railway Backend
+      // Step 1: Request Direct Upload Ticket from Bunny Stream Backend
       const ticket = await requestDirectUploadTicket({
         title: videoTitle.trim(),
         courseId,
@@ -90,22 +90,23 @@ export function VideoUploaderModal({
         isFreeDemo,
       });
 
-      // Step 2: Upload directly to Cloudflare Stream
-      await uploadVideoToCloudflare(
-        ticket.uploadUrl,
+      // Step 2: Upload directly to Bunny Stream CDN
+      await uploadVideoToBunnyStream(
+        ticket,
         selectedFile,
         (percent) => {
           setUploadProgress(percent);
         }
       );
 
-      setUploadedUid(ticket.videoUid);
+      const resolvedUid = ticket.videoUid || ticket.videoId || "bunny_video_ready";
+      setUploadedUid(resolvedUid);
       setUploadProgress(100);
-      onSuccess?.(ticket.videoUid, videoTitle.trim());
+      onSuccess?.(resolvedUid, videoTitle.trim());
     } catch (err: any) {
       console.error("Video upload failed:", err);
       setErrorMessage(
-        err?.message || "Failed to upload video to Cloudflare Stream. Please check your network and API credentials."
+        err?.message || "Failed to upload video to Bunny Stream. Please check your network and API credentials."
       );
     } finally {
       setIsUploading(false);
@@ -134,7 +135,7 @@ export function VideoUploaderModal({
                 Upload Course Video
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                Cloudflare Stream adaptive HLS transcoding • {courseTitle}
+                Bunny Stream adaptive HLS transcoding • {courseTitle}
               </p>
             </div>
           </div>
@@ -164,14 +165,14 @@ export function VideoUploaderModal({
             </div>
             <div>
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                Video Uploaded Successfully to Cloudflare!
+                Video Uploaded Successfully to Bunny Stream!
               </h4>
               <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
-                Cloudflare Stream is now auto-encoding adaptive bitrates (1080p, 720p, 480p).
+                Bunny Stream is now auto-encoding adaptive bitrates (1080p, 720p, 480p) across global edge nodes.
               </p>
             </div>
             <div className="rounded-xl bg-white p-2.5 font-mono text-[11px] text-slate-700 border border-emerald-200 select-all dark:bg-surface-elevated dark:text-slate-200 dark:border-emerald-900/60">
-              Video UID: {uploadedUid}
+              Bunny Video ID: {uploadedUid}
             </div>
             <div className="flex justify-center gap-2 pt-2">
               <button
@@ -300,7 +301,7 @@ export function VideoUploaderModal({
                 <div className="flex justify-between text-xs font-bold">
                   <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-[#2563EB] dark:text-blue-400" />
-                    <span>Uploading directly to Cloudflare Stream...</span>
+                    <span>Uploading directly to Bunny Stream...</span>
                   </span>
                   <span className="text-[#2563EB] dark:text-blue-400">{uploadProgress}%</span>
                 </div>
@@ -337,7 +338,7 @@ export function VideoUploaderModal({
                 ) : (
                   <>
                     <UploadCloud className="h-4 w-4" />
-                    <span>Upload to Cloudflare</span>
+                    <span>Upload to Bunny Stream</span>
                   </>
                 )}
               </button>

@@ -824,6 +824,23 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
           return;
         }
 
+        // If Clerk fails due to network error, ad-blocker or domain restriction, fallback to API register
+        const errMsg = err instanceof Error ? err.message : String(err || "");
+        const isNetworkErr =
+          errMsg.toLowerCase().includes("failed to fetch") ||
+          errMsg.toLowerCase().includes("network error") ||
+          errMsg.includes("clerk.accounts.dev");
+
+        if (isNetworkErr) {
+          const apiResult = await registerWithApi(values.name, values.email, values.password);
+          if (apiResult.ok) {
+            redirectAfterLogin("student", from);
+            return;
+          }
+          setFormError(apiResult.error);
+          return;
+        }
+
         // For other unexpected errors, format a clean message
         const msg = isClerkAPIResponseError(err)
           ? err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "Registration failed"

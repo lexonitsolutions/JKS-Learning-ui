@@ -33,7 +33,6 @@ function getYouTubeEmbedUrl(rawUrl: string): string | null {
   const match = rawUrl.match(regExp);
   if (match && match[2].length === 11) {
     const videoId = match[2];
-    // Use youtube-nocookie and clean embed parameters to keep playback in-app
     return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1&playsinline=1`;
   }
   return null;
@@ -72,12 +71,17 @@ export function InAppVideoPlayer({
   const [isCompleted, setIsCompleted] = useState(false);
   const [simulationTimerActive, setSimulationTimerActive] = useState(false);
 
-  // Check if URL is an external embed (YouTube / Vimeo)
+  // Check external embeds (YouTube, Vimeo, or Bunny Stream iframe)
   const isYouTube = videoType === "url" && (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be"));
   const isVimeo = videoType === "url" && videoUrl.includes("vimeo.com");
+  const isBunnyIframe =
+    videoUrl.includes("iframe.mediadelivery.net") ||
+    videoUrl.includes("video.bunnycdn.com/play");
+
   const youTubeEmbedSrc = isYouTube ? getYouTubeEmbedUrl(videoUrl) : null;
   const vimeoEmbedSrc = isVimeo ? getVimeoEmbedUrl(videoUrl) : null;
-  const isExternalEmbed = Boolean(youTubeEmbedSrc || vimeoEmbedSrc);
+  const bunnyEmbedSrc = isBunnyIframe ? videoUrl : null;
+  const isExternalEmbed = Boolean(youTubeEmbedSrc || vimeoEmbedSrc || bunnyEmbedSrc);
 
   // Reset when videoUrl or title changes
   useEffect(() => {
@@ -87,7 +91,7 @@ export function InAppVideoPlayer({
     setIsCompleted(false);
   }, [videoUrl, title, autoPlay]);
 
-  // Simulation progress timer for external embedded frames (since iframes cannot emit cross-origin timeupdate directly without complex postMessage setup)
+  // Simulation progress timer for external embedded frames
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
     if (isExternalEmbed && simulationTimerActive && progressPercent < 100) {
@@ -121,7 +125,7 @@ export function InAppVideoPlayer({
     setProgressPercent(pct);
     onProgressChange?.(pct);
 
-    if (pct >= 98 && !isCompleted) {
+    if (pct >= 95 && !isCompleted) {
       setIsCompleted(true);
       onVideoCompleted?.();
     }
@@ -182,7 +186,7 @@ export function InAppVideoPlayer({
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
-  // When it's an external embed (YouTube / Vimeo), render the native iframe cleanly without duplicate template controls
+  // When it's an external embed (YouTube / Vimeo / Bunny Stream), render clean embedded iframe
   if (isExternalEmbed) {
     return (
       <div
@@ -205,6 +209,14 @@ export function InAppVideoPlayer({
             allowFullScreen
             className="h-full w-full border-0"
           />
+        ) : bunnyEmbedSrc ? (
+          <iframe
+            src={bunnyEmbedSrc}
+            title={title}
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+            allowFullScreen
+            className="h-full w-full border-0"
+          />
         ) : null}
       </div>
     );
@@ -221,7 +233,7 @@ export function InAppVideoPlayer({
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           <span className="flex items-center gap-1 rounded-lg bg-blue-600/90 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-[11px] font-bold text-white shadow-xs backdrop-blur-md shrink-0">
             <Tv className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-            <span>Protected Player</span>
+            <span>Bunny Stream Player</span>
           </span>
           <span className="truncate text-[11px] sm:text-xs font-semibold text-slate-300 max-w-[140px] sm:max-w-md hidden sm:inline-block">
             {title}
@@ -349,4 +361,3 @@ export function InAppVideoPlayer({
     </div>
   );
 }
-
