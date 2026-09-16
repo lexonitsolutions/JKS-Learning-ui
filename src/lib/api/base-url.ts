@@ -73,8 +73,8 @@ export class ApiError extends Error {
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers || {});
 
-  // Attach Bearer token if present in localStorage and not explicitly provided
-  if (!headers.has("Authorization") && typeof window !== "undefined") {
+  // Attach Bearer token or session headers if present
+  if (typeof window !== "undefined") {
     try {
       let token = localStorage.getItem("jks_access_token");
       if (!token && (window as any).Clerk?.session) {
@@ -82,8 +82,23 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
           token = await (window as any).Clerk.session.getToken();
         } catch {}
       }
-      if (token) {
+      if (token && !headers.has("Authorization")) {
         headers.set("Authorization", `Bearer ${token}`);
+      }
+
+      // Also forward session cookies / headers for multi-strategy backend authentication
+      if (!headers.has("x-mock-session")) {
+        const match = document.cookie.match(/(?:^|; )jks_mock_session=([^;]*)/);
+        const cookieSession = match?.[1] || document.cookie.match(/(?:^|; )jks_session=([^;]*)/)?.[1];
+        if (cookieSession) {
+          headers.set("x-mock-session", cookieSession);
+          try {
+            const parsed = JSON.parse(decodeURIComponent(cookieSession));
+            if (parsed?.email && !headers.has("x-user-email")) {
+              headers.set("x-user-email", parsed.email);
+            }
+          } catch {}
+        }
       }
     } catch {}
   }
