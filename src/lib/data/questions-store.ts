@@ -1,13 +1,6 @@
 export interface Question {
   id: string;
-  category:
-    | "Java Full Stack"
-    | "React 19 & Next.js"
-    | "Spring Boot Microservices"
-    | "Data Structures & Algorithms"
-    | "System Design"
-    | "SAP S/4HANA"
-    | ".NET 9";
+  category: string;
   difficulty: "Easy" | "Medium" | "Hard";
   type: "MCQ" | "Multi-Select" | "Code Snippet";
   questionText: string;

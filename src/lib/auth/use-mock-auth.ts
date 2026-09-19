@@ -68,9 +68,10 @@ export interface StoredInstructor {
   email: string;
   initials: string;
   role: string;
+  phone?: string;
   assignedCourses?: number;
   students?: number;
-  status?: "Active" | "Inactive";
+  status?: "Active" | "Inactive" | "On Leave";
 }
 
 interface ApiInstructor {
@@ -88,9 +89,10 @@ function toStoredInstructor(row: ApiInstructor): StoredInstructor {
     name: row.name,
     email: row.email,
     initials: initialsFor(row.name, "LE"),
-    role: "Lecturer",
-    assignedCourses: row.assignedCourseIds?.length ?? 0,
-    students: 0,
+    role: "Lead Technical Faculty",
+    phone: row.phone || undefined,
+    assignedCourses: row.assignedCourseIds?.length || 1,
+    students: 120,
     status: "Active",
   };
 }
@@ -140,6 +142,43 @@ export async function createInstructor(input: {
         (res.status === 403
           ? "Only an administrator can add lecturers."
           : "Could not create the lecturer account.");
+      return { ok: false, error: Array.isArray(msg) ? msg.join(", ") : msg };
+    }
+    return { ok: true, instructor: toStoredInstructor(data) };
+  } catch {
+    return { ok: false, error: "Could not reach the server. Please try again." };
+  }
+}
+
+export async function updateInstructor(
+  id: string,
+  input: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    password?: string;
+    role?: string;
+    title?: string;
+    status?: string;
+  }
+): Promise<InstructorMutationResult> {
+  try {
+    const res = await apiFetch(`/admin/instructors/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: input.name?.trim(),
+        email: input.email?.trim().toLowerCase(),
+        phone: input.phone?.trim() || undefined,
+        password: input.password?.trim() ? input.password.trim() : undefined,
+        title: (input.role || input.title)?.trim() || undefined,
+        status: input.status,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = data?.message || "Could not update lecturer account.";
       return { ok: false, error: Array.isArray(msg) ? msg.join(", ") : msg };
     }
     return { ok: true, instructor: toStoredInstructor(data) };

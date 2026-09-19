@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Users, BookOpen, Star, Search, Mail, Trash2, KeyRound, ShieldCheck } from "lucide-react";
+import { Plus, Users, BookOpen, Star, Search, Mail, Trash2, KeyRound, ShieldCheck, Pencil } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { AddInstructorModal } from "@/components/admin/add-instructor-modal";
+import { EditInstructorModal } from "@/components/admin/edit-instructor-modal";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import {
@@ -15,6 +16,7 @@ import {
 export default function AdminInstructorsPage() {
   const [instructors, setInstructors] = useState<StoredInstructor[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingInstructor, setEditingInstructor] = useState<StoredInstructor | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -26,6 +28,11 @@ export default function AdminInstructorsPage() {
 
   const handleAddInstructor = (newInst: StoredInstructor) => {
     setInstructors((prev) => [newInst, ...prev]);
+    setError(null);
+  };
+
+  const handleUpdateInstructor = (updated: StoredInstructor) => {
+    setInstructors((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
     setError(null);
   };
 
@@ -144,10 +151,18 @@ export default function AdminInstructorsPage() {
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EFF6FF] text-sm font-bold text-[#2563EB] shadow-xs dark:bg-blue-950/50 dark:text-blue-400">
                         {inst.initials}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
                           {inst.status || "Active"}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => setEditingInstructor(inst)}
+                          title="Edit lecturer profile"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-blue-50 hover:text-[#2563EB] dark:hover:bg-blue-950/40 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
                         <button
                           type="button"
                           onClick={() => void handleDeleteInstructor(inst.id, inst.email, inst.name)}
@@ -217,6 +232,14 @@ export default function AdminInstructorsPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleAddInstructor}
+      />
+
+      {/* Edit Instructor Modal */}
+      <EditInstructorModal
+        isOpen={!!editingInstructor}
+        instructor={editingInstructor}
+        onClose={() => setEditingInstructor(null)}
+        onSave={handleUpdateInstructor}
       />
     </>
   );

@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Award, Download, ShieldCheck, Eye, X, CheckCircle2, Lock, BookOpen, ArrowRight } from "lucide-react";
+import { Award, Download, ShieldCheck, Eye, X, CheckCircle2, Lock, BookOpen, ArrowRight, RefreshCw, Sparkles } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
 import { CertificateModal } from "@/components/common/certificate-modal";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 import { fetchStudentEnrollments, getClientSessionEmail, getExactStudentCourseProgress, type EnrolledCourseItem } from "@/lib/data/enrollments-api";
+import { apiFetch } from "@/lib/api/base-url";
 
 interface EarnedCertificate {
   id: string;
@@ -17,6 +18,7 @@ interface EarnedCertificate {
   issuedOn: string;
   grade: string;
   status: string;
+  verificationId?: string;
 }
 
 export default function StudentCertificatesPage() {
@@ -27,12 +29,36 @@ export default function StudentCertificatesPage() {
   const studentName = clerkUser?.fullName || session?.name || "Student Learner";
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [enrollments, setEnrollments] = useState<EnrolledCourseItem[]>([]);
+  const [dbCertificates, setDbCertificates] = useState<any[]>([]);
   const [selectedCert, setSelectedCert] = useState<EarnedCertificate | null>(null);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
+      // 1. Fetch real DB certificates for this student
+      let certList: any[] = [];
+      try {
+        const meRes = await apiFetch("/certificates/me", { credentials: "include" });
+        if (meRes.ok) {
+          const list = await meRes.json();
+          if (Array.isArray(list)) certList = list;
+        }
+      } catch {}
+
+      if (certList.length === 0 && effectiveEmail) {
+        try {
+          const emailRes = await apiFetch(`/certificates/student/${encodeURIComponent(effectiveEmail)}`, { cache: "no-store" });
+          if (emailRes.ok) {
+            const list = await emailRes.json();
+            if (Array.isArray(list)) certList = list;
+          }
+        } catch {}
+      }
+      setDbCertificates(certList);
+
+      // 2. Fetch student enrollments and resolve exact real-time milestone progress
       const data = await fetchStudentEnrollments(effectiveEmail);
       const enriched = data.map((c) => {
         const exact = getExactStudentCourseProgress(c.slug, effectiveEmail);
@@ -46,10 +72,32 @@ export default function StudentCertificatesPage() {
         };
       });
       setEnrollments(enriched);
+
+      // 3. If any enrollment is 100% completed, auto-claim certificate to MongoDB
+      const completedCourses = enriched.filter((e) => e.progress >= 100 || e.isCompleted);
+      for (const comp of completedCourses) {
+        const alreadyInDb = certList.some(
+          (c) => c.courseSlug === comp.slug || c.courseId === comp.courseId || c.courseTitle === comp.title
+        );
+        if (!alreadyInDb && effectiveEmail) {
+          try {
+            await apiFetch("/certificates/claim", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                courseSlugOrId: comp.slug || comp.courseId,
+                studentEmailOrId: effectiveEmail,
+              }),
+            });
+          } catch {}
+        }
+      }
     } catch {
       setEnrollments([]);
+      setDbCertificates([]);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   }, [effectiveEmail]);
 
@@ -57,16 +105,47 @@ export default function StudentCertificatesPage() {
     loadData();
   }, [loadData]);
 
-  const earnedCertificates: EarnedCertificate[] = enrollments
-    .filter((e) => e.progress >= 100 || e.isCompleted)
-    .map((e) => ({
-      id: `JKS-CERT-${e.courseId ? e.courseId.slice(-6).toUpperCase() : "VERIFIED"}`,
-      course: e.title,
-      courseSlug: e.slug,
-      issuedOn: e.lastAccessedAt ? e.lastAccessedAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
-      grade: "Mastery (100%)",
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    loadData();
+  };
+
+  // Reconcile certificates: combine database certificates with completed enrollments
+  const earnedCertificates: EarnedCertificate[] = [];
+  const handledKeys = new Set<string>();
+
+  // Add all DB certificates first
+  dbCertificates.forEach((c) => {
+    const key = c.courseSlug || c.courseTitle || c.id;
+    handledKeys.add(key);
+    earnedCertificates.push({
+      id: c.verificationId || c.id,
+      course: c.courseTitle || "Certified Enterprise Track",
+      courseSlug: c.courseSlug || "",
+      issuedOn: c.issuedAt ? c.issuedAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
+      grade: c.grade || "Mastery & Stage Completion (100%)",
       status: "Verified",
-    }));
+      verificationId: c.verificationId,
+    });
+  });
+
+  // Add any completed courses that might not yet be in dbCertificates state
+  enrollments
+    .filter((e) => e.progress >= 100 || e.isCompleted)
+    .forEach((e) => {
+      const key = e.slug || e.title;
+      if (!handledKeys.has(key)) {
+        handledKeys.add(key);
+        earnedCertificates.push({
+          id: `JKS-CERT-${e.courseId ? e.courseId.slice(-8).toUpperCase() : "VERIFIED"}`,
+          course: e.title,
+          courseSlug: e.slug,
+          issuedOn: e.lastAccessedAt ? e.lastAccessedAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
+          grade: "Mastery (100%)",
+          status: "Verified",
+        });
+      }
+    });
 
   const inProgressCourses = enrollments.filter((e) => e.progress < 100 && !e.isCompleted);
 
@@ -90,6 +169,29 @@ export default function StudentCertificatesPage() {
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
+        {/* Actions Bar */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              Official Credentials
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {earnedCertificates.length > 0
+                ? `${earnedCertificates.length} verified credentials issued to your account.`
+                : "Complete courses to earn shareable verified certificates."}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover cursor-pointer transition-colors"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-[#2563EB]" : ""}`} />
+            <span>{isRefreshing ? "Syncing..." : "Sync Credentials"}</span>
+          </button>
+        </div>
+
         {/* Metric Cards */}
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-[20px] border border-slate-100 bg-white p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.04)] dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
