@@ -274,6 +274,9 @@ export function getExactStudentCourseProgress(
   completedVideoIds: string[];
   completedAssignmentIds: string[];
   assignmentScores: Record<string, number>;
+  totalVideos: number;
+  totalAssignments: number;
+  totalSections: number;
   totalMilestones: number;
   completedMilestones: number;
   overallPercent: number;
@@ -348,16 +351,98 @@ export function getExactStudentCourseProgress(
     } catch {}
   }
 
-  // Determine total milestones based on course definition
-  // Full stack development / Java mastery default has 7 videos + 4 assignments = 11 milestones
-  let totalMilestones = 11;
-  const isFrontend = courseSlug.includes("frontend");
-  const isSap = courseSlug.includes("sap");
-  const isDotnet = courseSlug.includes("dotnet");
+  // Determine total milestones and lessons based on real course curriculum
+  let totalVideos = 0;
+  let totalAssignments = 0;
+  let totalSections = 0;
+  let totalMilestones = 0;
+  let customCourseFound = false;
 
-  if (isFrontend) totalMilestones = 9; // 6 videos + 3 assignments
-  else if (isSap) totalMilestones = 12; // 8 videos + 4 assignments
-  else if (isDotnet) totalMilestones = 10; // 7 videos + 3 assignments
+  if (typeof window !== "undefined") {
+    try {
+      const catalogKeys = [
+        "jks_courses_catalog_v4",
+        "jks_courses_catalog_v3",
+        "jks_courses_catalog_v2",
+        "jks_courses_catalog",
+      ];
+      let parsedCatalog: any[] = [];
+      for (const k of catalogKeys) {
+        const raw = localStorage.getItem(k);
+        if (raw) {
+          try {
+            const arr = JSON.parse(raw);
+            if (Array.isArray(arr) && arr.length > 0) {
+              parsedCatalog = arr;
+              break;
+            }
+          } catch {}
+        }
+      }
+
+      if (parsedCatalog.length > 0) {
+        const normalizedTarget = courseSlug.toLowerCase().trim();
+        const matchedCourse = parsedCatalog.find(
+          (c: any) =>
+            (c.slug && c.slug.toLowerCase().trim() === normalizedTarget) ||
+            (c.id && (normalizedTarget.includes(c.id.toLowerCase()) || c.id.toLowerCase() === normalizedTarget)) ||
+            (c.title && c.title.toLowerCase().trim() === normalizedTarget)
+        );
+
+        if (matchedCourse && Array.isArray(matchedCourse.sections)) {
+          let videoCount = 0;
+          let assignmentCount = 0;
+          matchedCourse.sections.forEach((sec: any) => {
+            if (Array.isArray(sec.directVideos)) videoCount += sec.directVideos.length;
+            if (Array.isArray(sec.subsections)) {
+              sec.subsections.forEach((sub: any) => {
+                if (Array.isArray(sub.videos)) videoCount += sub.videos.length;
+              });
+            }
+            if (sec.assignment && (sec.assignment.title || sec.assignment.id)) {
+              assignmentCount += 1;
+            }
+          });
+
+          totalVideos = videoCount;
+          totalAssignments = assignmentCount;
+          totalSections = matchedCourse.sections.length;
+          totalMilestones = videoCount + assignmentCount;
+          if (totalMilestones > 0) {
+            customCourseFound = true;
+          }
+        }
+      }
+    } catch {}
+  }
+
+  if (!customCourseFound) {
+    const isFrontend = courseSlug.includes("frontend");
+    const isSap = courseSlug.includes("sap");
+    const isDotnet = courseSlug.includes("dotnet");
+
+    if (isFrontend) {
+      totalVideos = 6;
+      totalAssignments = 3;
+      totalSections = 3;
+      totalMilestones = 9;
+    } else if (isSap) {
+      totalVideos = 8;
+      totalAssignments = 4;
+      totalSections = 4;
+      totalMilestones = 12;
+    } else if (isDotnet) {
+      totalVideos = 7;
+      totalAssignments = 3;
+      totalSections = 3;
+      totalMilestones = 10;
+    } else {
+      totalVideos = 1;
+      totalAssignments = 1;
+      totalSections = 1;
+      totalMilestones = 2;
+    }
+  }
 
   const completedMilestones = completedVideoIds.length + completedAssignmentIds.length;
   const overallPercent = totalMilestones > 0
@@ -368,6 +453,9 @@ export function getExactStudentCourseProgress(
     completedVideoIds,
     completedAssignmentIds,
     assignmentScores,
+    totalVideos,
+    totalAssignments,
+    totalSections,
     totalMilestones,
     completedMilestones,
     overallPercent,

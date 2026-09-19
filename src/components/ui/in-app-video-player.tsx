@@ -23,6 +23,7 @@ interface InAppVideoPlayerProps {
   onVideoCompleted?: () => void;
   onProgressChange?: (percent: number) => void;
   autoPlay?: boolean;
+  isPaused?: boolean;
   className?: string;
 }
 
@@ -58,6 +59,7 @@ export function InAppVideoPlayer({
   onVideoCompleted,
   onProgressChange,
   autoPlay = false,
+  isPaused = false,
   className = "",
 }: InAppVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -83,13 +85,42 @@ export function InAppVideoPlayer({
   const bunnyEmbedSrc = isBunnyIframe ? videoUrl : null;
   const isExternalEmbed = Boolean(youTubeEmbedSrc || vimeoEmbedSrc || bunnyEmbedSrc);
 
+  // Pause playback immediately if isPaused is true (e.g., student opens quiz/assessment)
+  useEffect(() => {
+    if (isPaused) {
+      if (videoRef.current && !videoRef.current.paused) {
+        videoRef.current.pause();
+      }
+      setIsPlaying(false);
+      setSimulationTimerActive(false);
+
+      if (containerRef.current) {
+        const iframes = containerRef.current.querySelectorAll("iframe");
+        iframes.forEach((iframe) => {
+          try {
+            iframe.contentWindow?.postMessage(
+              JSON.stringify({ event: "command", func: "pauseVideo", args: "" }),
+              "*"
+            );
+            iframe.contentWindow?.postMessage(
+              JSON.stringify({ method: "pause" }),
+              "*"
+            );
+          } catch {}
+        });
+      }
+    }
+  }, [isPaused]);
+
   // Reset when videoUrl or title changes
   useEffect(() => {
-    setIsPlaying(autoPlay);
+    if (!isPaused) {
+      setIsPlaying(autoPlay);
+    }
     setProgressPercent(0);
     setCurrentTime(0);
     setIsCompleted(false);
-  }, [videoUrl, title, autoPlay]);
+  }, [videoUrl, title, autoPlay, isPaused]);
 
   // Simulation progress timer for external embedded frames
   useEffect(() => {

@@ -619,5 +619,28 @@ textarea {
     background: #ffffff !important;
     z-index: 9999999 !important;
   }
+
+  /* Isolate Resume Printing */
+  body:has(#printable-resume-sheet) {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body:has(#printable-resume-sheet) > *:not(:has(#printable-resume-sheet)) {
+    display: none !important;
+  }
+
+  #printable-resume-sheet {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+  }
 }
 

@@ -15,13 +15,13 @@
  */
 const DEFAULT_API_URL =
   process.env.NODE_ENV === "production"
-    ? "https://jks-learning-backend-production.up.railway.app"
+    ? "https://jks-learning-backend-production-d0d4.up.railway.app"
     : "http://localhost:4000";
 
 function resolveBaseUrl(): string {
   let raw = process.env.NEXT_PUBLIC_API_URL?.trim();
   if (!raw) return DEFAULT_API_URL;
-  // If the protocol was omitted (e.g. "jks-learning-backend-production.up.railway.app"),
+  // If the protocol was omitted (e.g. "jks-learning-backend-production-d0d4.up.railway.app"),
   // automatically prepend "https://" so fetch() receives a valid absolute URL.
   if (!/^https?:\/\//i.test(raw)) {
     raw = `https://${raw}`;

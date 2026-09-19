@@ -35,55 +35,52 @@ import {
 
 export type AuthMode = "login" | "register";
 
-type RoutePoint = { x: number; y: number; delay: number };
+type RelativeRoute = {
+  start: { xRatio: number; yRatio: number; delay: number };
+  end: { xRatio: number; yRatio: number; delay: number };
+  color: string;
+};
 
-function DotMap() {
+function DotMap({ reducedMotion = false }: { reducedMotion?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-  const routes: { start: RoutePoint; end: RoutePoint; color: string }[] = [
-    { start: { x: 100, y: 150, delay: 0 }, end: { x: 200, y: 80, delay: 2 }, color: "#2563eb" },
-    { start: { x: 200, y: 80, delay: 2 }, end: { x: 260, y: 120, delay: 4 }, color: "#2563eb" },
-    { start: { x: 50, y: 50, delay: 1 }, end: { x: 150, y: 180, delay: 3 }, color: "#2563eb" },
-    { start: { x: 280, y: 60, delay: 0.5 }, end: { x: 180, y: 180, delay: 2.5 }, color: "#2563eb" },
+  const routes: RelativeRoute[] = [
+    { start: { xRatio: 0.2, yRatio: 0.25, delay: 0 }, end: { xRatio: 0.55, yRatio: 0.2, delay: 2 }, color: "#3b82f6" },
+    { start: { xRatio: 0.55, yRatio: 0.2, delay: 2 }, end: { xRatio: 0.78, yRatio: 0.45, delay: 4 }, color: "#6366f1" },
+    { start: { xRatio: 0.15, yRatio: 0.6, delay: 1 }, end: { xRatio: 0.45, yRatio: 0.75, delay: 3 }, color: "#2563eb" },
+    { start: { xRatio: 0.8, yRatio: 0.3, delay: 0.5 }, end: { xRatio: 0.5, yRatio: 0.65, delay: 2.5 }, color: "#4f46e5" },
+    { start: { xRatio: 0.35, yRatio: 0.8, delay: 1.5 }, end: { xRatio: 0.82, yRatio: 0.7, delay: 3.5 }, color: "#38bdf8" },
   ];
 
-  function generateDots(width: number, height: number) {
-    const dots: { x: number; y: number; radius: number; opacity: number }[] = [];
-    const gap = 12;
-    const dotRadius = 1;
-
-    for (let x = 0; x < width; x += gap) {
-      for (let y = 0; y < height; y += gap) {
-        const isInMapShape =
-          (x < width * 0.25 && x > width * 0.05 && y < height * 0.4 && y > height * 0.1) ||
-          (x < width * 0.25 && x > width * 0.15 && y < height * 0.8 && y > height * 0.4) ||
-          (x < width * 0.45 && x > width * 0.3 && y < height * 0.35 && y > height * 0.15) ||
-          (x < width * 0.5 && x > width * 0.35 && y < height * 0.65 && y > height * 0.35) ||
-          (x < width * 0.7 && x > width * 0.45 && y < height * 0.5 && y > height * 0.1) ||
-          (x < width * 0.8 && x > width * 0.65 && y < height * 0.8 && y > height * 0.6);
-
-        if (isInMapShape && Math.random() > 0.3) {
-          dots.push({ x, y, radius: dotRadius, opacity: Math.random() * 0.5 + 0.2 });
+  // Measure container dimensions immediately on mount
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          setDimensions({ width: Math.floor(rect.width), height: Math.floor(rect.height) });
         }
       }
+    };
+
+    updateSize();
+
+    if (typeof ResizeObserver !== "undefined" && containerRef.current) {
+      const resizeObserver = new ResizeObserver((entries) => {
+        if (!entries[0]) return;
+        const { width, height } = entries[0].contentRect;
+        if (width > 0 && height > 0) {
+          setDimensions({ width: Math.floor(width), height: Math.floor(height) });
+        }
+      });
+      resizeObserver.observe(containerRef.current);
+      return () => resizeObserver.disconnect();
+    } else {
+      window.addEventListener("resize", updateSize);
+      return () => window.removeEventListener("resize", updateSize);
     }
-    return dots;
-  }
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !canvas.parentElement) return;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      setDimensions({ width, height });
-      canvas.width = width;
-      canvas.height = height;
-    });
-
-    resizeObserver.observe(canvas.parentElement);
-    return () => resizeObserver.disconnect();
   }, []);
 
   useEffect(() => {
@@ -93,78 +90,157 @@ function DotMap() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const dots = generateDots(dimensions.width, dimensions.height);
+    const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+    canvas.width = Math.floor(dimensions.width * dpr);
+    canvas.height = Math.floor(dimensions.height * dpr);
+
+    // Generate dots grid
+    const dots: { x: number; y: number; radius: number; opacity: number }[] = [];
+    const gap = 16;
+    const dotRadius = 1.2;
+
+    for (let x = gap; x < dimensions.width; x += gap) {
+      for (let y = gap; y < dimensions.height; y += gap) {
+        const nx = x / dimensions.width;
+        const ny = y / dimensions.height;
+        // World / constellation clusters
+        const isInCluster =
+          (nx > 0.08 && nx < 0.32 && ny > 0.12 && ny < 0.45) ||
+          (nx > 0.15 && nx < 0.38 && ny > 0.48 && ny < 0.88) ||
+          (nx > 0.42 && nx < 0.65 && ny > 0.15 && ny < 0.48) ||
+          (nx > 0.48 && nx < 0.72 && ny > 0.52 && ny < 0.82) ||
+          (nx > 0.68 && nx < 0.92 && ny > 0.18 && ny < 0.55) ||
+          (nx > 0.75 && nx < 0.94 && ny > 0.62 && ny < 0.85);
+
+        if (isInCluster && Math.random() > 0.35) {
+          dots.push({ x, y, radius: dotRadius, opacity: Math.random() * 0.4 + 0.2 });
+        } else if (Math.random() > 0.85) {
+          dots.push({ x, y, radius: dotRadius * 0.8, opacity: Math.random() * 0.15 + 0.05 });
+        }
+      }
+    }
+
     let animationFrameId: number;
     let startTime = Date.now();
 
-    function drawDots() {
-      ctx!.clearRect(0, 0, dimensions.width, dimensions.height);
+    function drawStatic() {
+      if (!ctx) return;
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, dimensions.width, dimensions.height);
       dots.forEach((dot) => {
-        ctx!.beginPath();
-        ctx!.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(37, 99, 235, ${dot.opacity})`;
-        ctx!.fill();
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(59, 130, 246, ${dot.opacity})`;
+        ctx.fill();
       });
+      ctx.restore();
     }
 
-    function drawRoutes() {
-      const currentTime = (Date.now() - startTime) / 1000;
-      routes.forEach((route) => {
-        const elapsed = currentTime - route.start.delay;
-        if (elapsed <= 0) return;
-
-        const duration = 3;
-        const progress = Math.min(elapsed / duration, 1);
-        const x = route.start.x + (route.end.x - route.start.x) * progress;
-        const y = route.start.y + (route.end.y - route.start.y) * progress;
-
-        ctx!.beginPath();
-        ctx!.moveTo(route.start.x, route.start.y);
-        ctx!.lineTo(x, y);
-        ctx!.strokeStyle = route.color;
-        ctx!.lineWidth = 1.5;
-        ctx!.stroke();
-
-        ctx!.beginPath();
-        ctx!.arc(route.start.x, route.start.y, 3, 0, Math.PI * 2);
-        ctx!.fillStyle = route.color;
-        ctx!.fill();
-
-        ctx!.beginPath();
-        ctx!.arc(x, y, 3, 0, Math.PI * 2);
-        ctx!.fillStyle = "#3b82f6";
-        ctx!.fill();
-
-        ctx!.beginPath();
-        ctx!.arc(x, y, 6, 0, Math.PI * 2);
-        ctx!.fillStyle = "rgba(59, 130, 246, 0.4)";
-        ctx!.fill();
-
-        if (progress === 1) {
-          ctx!.beginPath();
-          ctx!.arc(route.end.x, route.end.y, 3, 0, Math.PI * 2);
-          ctx!.fillStyle = route.color;
-          ctx!.fill();
-        }
-      });
+    if (reducedMotion) {
+      drawStatic();
+      return;
     }
 
-    function animate() {
-      drawDots();
-      drawRoutes();
-      const currentTime = (Date.now() - startTime) / 1000;
-      if (currentTime > 15) startTime = Date.now();
-      animationFrameId = requestAnimationFrame(animate);
-    }
-    animate();
+    function draw() {
+      if (!ctx) return;
+      try {
+        ctx.save();
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
-    return () => cancelAnimationFrame(animationFrameId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dimensions]);
+        // Draw dots
+        dots.forEach((dot) => {
+          ctx.beginPath();
+          ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(59, 130, 246, ${dot.opacity})`;
+          ctx.fill();
+        });
+
+        // Draw dynamic glowing routes
+        const currentTime = (Date.now() - startTime) / 1000;
+        routes.forEach((route) => {
+          const startX = route.start.xRatio * dimensions.width;
+          const startY = route.start.yRatio * dimensions.height;
+          const endX = route.end.xRatio * dimensions.width;
+          const endY = route.end.yRatio * dimensions.height;
+
+          const elapsed = currentTime - route.start.delay;
+          if (elapsed <= 0) return;
+
+          const duration = 3.2;
+          const loopTime = 6;
+          const cycle = elapsed % loopTime;
+          const progress = Math.min(Math.max(cycle / duration, 0), 1);
+
+          // Route path line (subtle trail)
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(endX, endY);
+          ctx.strokeStyle = "rgba(59, 130, 246, 0.12)";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Active animated connecting line
+          const currX = startX + (endX - startX) * progress;
+          const currY = startY + (endY - startY) * progress;
+
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(currX, currY);
+          ctx.strokeStyle = route.color;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          // Start node
+          ctx.beginPath();
+          ctx.arc(startX, startY, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = route.color;
+          ctx.fill();
+
+          // Traveling beam head
+          ctx.beginPath();
+          ctx.arc(currX, currY, 3, 0, Math.PI * 2);
+          ctx.fillStyle = "#60a5fa";
+          ctx.fill();
+
+          // Outer pulse glow
+          ctx.beginPath();
+          ctx.arc(currX, currY, 6, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(96, 165, 250, 0.35)";
+          ctx.fill();
+
+          // Target node when reached
+          if (progress >= 0.98) {
+            ctx.beginPath();
+            ctx.arc(endX, endY, 3, 0, Math.PI * 2);
+            ctx.fillStyle = route.color;
+            ctx.fill();
+          }
+        });
+
+        ctx.restore();
+      } catch {
+        // Safe drawing error boundary
+      }
+
+      animationFrameId = requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    return () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
+  }, [dimensions, reducedMotion]);
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
-      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+    <div ref={containerRef} className="relative h-full w-full overflow-hidden">
+      <canvas
+        ref={canvasRef}
+        style={{ width: dimensions.width || "100%", height: dimensions.height || "100%" }}
+        className="absolute inset-0 block pointer-events-none"
+      />
     </div>
   );
 }
@@ -360,7 +436,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
       {/* Desktop Left side — animated dot map + brand */}
       <div className="relative hidden h-[620px] w-1/2 overflow-hidden border-r border-slate-100 dark:border-slate-800/80 md:block">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/70 dark:from-background dark:via-surface-secondary dark:to-surface-elevated">
-          {!reducedMotion && <DotMap />}
+          <DotMap reducedMotion={reducedMotion} />
 
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8 text-center">
             <FadeIn reducedMotion={reducedMotion} delay={0.6} className="mb-6">
@@ -393,7 +469,11 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
         <FadeIn reducedMotion={reducedMotion} delay={0} y={20}>
           <div className="mb-6 flex items-center justify-between">
             <JksLogo size="md" />
-            <span className="rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-800/60 px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-800/60 px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              </span>
               {isVerifyingEmail
                 ? "Security Check"
                 : mode === "login"

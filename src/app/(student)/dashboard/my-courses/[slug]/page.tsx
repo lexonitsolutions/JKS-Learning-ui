@@ -179,6 +179,31 @@ export default function CourseLearningHubPage({
     return () => clearInterval(timer);
   }, []);
 
+  // Pause all playing audio/video and iframes when an assessment is open
+  useEffect(() => {
+    if (activeAssignmentSection && typeof document !== "undefined") {
+      const mediaElements = document.querySelectorAll<HTMLMediaElement>("video, audio");
+      mediaElements.forEach((el) => {
+        try {
+          el.pause();
+        } catch {}
+      });
+      const iframes = document.querySelectorAll("iframe");
+      iframes.forEach((iframe) => {
+        try {
+          iframe.contentWindow?.postMessage(
+            JSON.stringify({ event: "command", func: "pauseVideo", args: "" }),
+            "*"
+          );
+          iframe.contentWindow?.postMessage(
+            JSON.stringify({ method: "pause" }),
+            "*"
+          );
+        } catch {}
+      });
+    }
+  }, [activeAssignmentSection]);
+
   // Load course & real-time progress on mount or slug change
   useEffect(() => {
     const loadData = async () => {
@@ -589,6 +614,7 @@ export default function CourseLearningHubPage({
                 videoType={activeVideo.videoType}
                 durationFormatted={activeVideo.durationFormatted}
                 antiSkip={true}
+                isPaused={Boolean(activeAssignmentSection)}
                 onVideoCompleted={() => handleVideoCompleted(activeVideo.id)}
               />
 

@@ -20,6 +20,7 @@ import {
 import { getStoredCourses, type FullCourse } from "@/lib/data/courses-store";
 
 interface AssessmentRow {
+  uniqueKey: string;
   id: string;
   title: string;
   course: string;
@@ -51,10 +52,20 @@ export default function AssessmentsPage() {
       const enrollments = await fetchStudentEnrollments(effectiveEmail);
       const allCourses: FullCourse[] = getStoredCourses();
 
+      // Deduplicate enrollments by slug / courseId
+      const uniqueEnrollments = enrollments.filter(
+        (e, idx, arr) =>
+          arr.findIndex(
+            (x) =>
+              (x.slug && x.slug === e.slug) ||
+              (x.courseId && x.courseId === e.courseId)
+          ) === idx
+      );
+
       const rows: AssessmentRow[] = [];
 
       await Promise.all(
-        enrollments.map(async (e) => {
+        uniqueEnrollments.map(async (e) => {
           const fullCourse = allCourses.find((c) => c.slug === e.slug || c.id === e.courseId);
           let progress = await fetchCourseProgress(e.slug, effectiveEmail);
 
@@ -63,16 +74,20 @@ export default function AssessmentsPage() {
               const assignmentId = sec.assignment?.id || `assign-${e.slug}-${sIdx + 1}`;
               const isCompleted = progress.completedAssignmentIds?.includes(assignmentId);
               const score = progress.assignmentScores?.[assignmentId] || (isCompleted ? 88 : 0);
+              const rowKey = `${e.slug || e.courseId || "course"}-${assignmentId}-${sIdx}`;
 
-              rows.push({
-                id: assignmentId,
-                title: sec.assignment?.title || `${sec.title} — Module Test`,
-                course: e.title,
-                courseSlug: e.slug,
-                score,
-                status: isCompleted ? (score >= 70 ? "Passed" : "Failed") : "Pending",
-                date: isCompleted ? (e.lastAccessedAt ? e.lastAccessedAt.slice(0, 10) : new Date().toISOString().slice(0, 10)) : "—",
-              });
+              if (!rows.some((r) => r.uniqueKey === rowKey)) {
+                rows.push({
+                  uniqueKey: rowKey,
+                  id: assignmentId,
+                  title: sec.assignment?.title || `${sec.title} — Module Test`,
+                  course: e.title,
+                  courseSlug: e.slug,
+                  score,
+                  status: isCompleted ? (score >= 70 ? "Passed" : "Failed") : "Pending",
+                  date: isCompleted ? (e.lastAccessedAt ? e.lastAccessedAt.slice(0, 10) : new Date().toISOString().slice(0, 10)) : "—",
+                });
+              }
             });
           }
         })
@@ -228,7 +243,7 @@ export default function AssessmentsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                   {assessments.map((a, idx) => (
-                    <tr key={a.id || a.title} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-elevated/60">
+                    <tr key={a.uniqueKey || `${a.courseSlug}-${a.id}-${idx}`} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-elevated/60">
                       <td className="py-4 pr-4 pl-0 font-bold text-slate-900 dark:text-white whitespace-nowrap">{a.title}</td>
                       <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">{a.course}</td>
                       <td className="px-4 py-4 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">

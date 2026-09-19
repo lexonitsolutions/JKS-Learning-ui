@@ -17,6 +17,9 @@ import {
   ArrowRight,
   Target,
   User,
+  Award,
+  BookOpen,
+  PlayCircle,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
@@ -36,6 +39,7 @@ export default function LeaderboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [timeRange, setTimeRange] = useState<"week" | "month" | "all">("week");
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
+  const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
 
   const rankingsTableRef = useRef<HTMLDivElement | null>(null);
 
@@ -594,75 +598,130 @@ export default function LeaderboardPage() {
                         );
                       }
 
-                      return (
-                        <tr
-                          key={student.id}
-                          className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors ${
-                            isMe ? "bg-blue-50/30 dark:bg-blue-950/20" : ""
-                          }`}
-                        >
-                          {/* Rank */}
-                          <td className="py-3.5 px-4 text-center">{rankBadge}</td>
+                      const isExpanded = expandedStudentId === student.id;
 
-                          {/* Student */}
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-xs">
-                                {student.initials}
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
-                                  <span>{student.name}</span>
-                                  {isMe && (
-                                    <span className="rounded-md bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 px-1.5 py-0.2 text-[10px] font-black">
-                                      You
-                                    </span>
-                                  )}
-                                  {student.isRealUser && (
-                                    <span title="Verified Active Student">
-                                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 inline" />
-                                    </span>
-                                  )}
+                      return (
+                        <React.Fragment key={student.id}>
+                          <tr
+                            onClick={() => setExpandedStudentId((prev) => (prev === student.id ? null : student.id))}
+                            className={`cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors ${
+                              isMe ? "bg-blue-50/30 dark:bg-blue-950/20" : ""
+                            } ${isExpanded ? "border-b-0 bg-slate-50/50 dark:bg-slate-800/20" : ""}`}
+                          >
+                            {/* Rank */}
+                            <td className="py-3.5 px-4 text-center">{rankBadge}</td>
+
+                            {/* Student */}
+                            <td className="py-3.5 px-4">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-xs">
+                                  {student.initials}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
+                                    <span>{student.name}</span>
+                                    {isMe && (
+                                      <span className="rounded-md bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 px-1.5 py-0.2 text-[10px] font-black">
+                                        You
+                                      </span>
+                                    )}
+                                    {student.isRealUser && (
+                                      <span title="Verified Active Student">
+                                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 inline" />
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </td>
+                            </td>
 
-                          {/* Track */}
-                          <td className="py-3.5 px-4">
-                            <span className="text-blue-600 dark:text-blue-400 font-semibold">
-                              {student.track}
-                            </span>
-                          </td>
+                            {/* Track */}
+                            <td className="py-3.5 px-4">
+                              <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                                {student.track}
+                              </span>
+                            </td>
 
-                          {/* Streak */}
-                          <td className="py-3.5 px-4">
-                            <div className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-bold">
-                              <Flame className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-                              <span>{student.streakDays}</span>
-                            </div>
-                          </td>
+                            {/* Streak */}
+                            <td className="py-3.5 px-4">
+                              <div className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-bold">
+                                <Flame className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                                <span>{student.streakDays}</span>
+                              </div>
+                            </td>
 
-                          {/* Total XP */}
-                          <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100 font-mono">
-                            {student.points.toLocaleString()}
-                          </td>
+                            {/* Total XP */}
+                            <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100 font-mono">
+                              {student.points.toLocaleString()}
+                            </td>
 
-                          {/* Solved Tasks */}
-                          <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-semibold font-mono">
-                            {student.solvedAssignments}
-                          </td>
+                            {/* Solved Tasks */}
+                            <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-semibold font-mono">
+                              {student.solvedAssignments}
+                            </td>
 
-                          {/* Accuracy */}
-                          <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300 font-semibold font-mono">
-                            {student.accuracy}%
-                          </td>
+                            {/* Accuracy */}
+                            <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300 font-semibold font-mono">
+                              {student.accuracy}%
+                            </td>
 
-                          {/* Chevron Action */}
-                          <td className="py-3.5 px-4 text-right">
-                            <ChevronRight className="h-4 w-4 text-slate-400 hover:text-blue-600 transition-colors inline" />
-                          </td>
-                        </tr>
+                            {/* Chevron Action */}
+                            <td className="py-3.5 px-4 text-right">
+                              <button
+                                type="button"
+                                aria-label="Toggle student details"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedStudentId((prev) => (prev === student.id ? null : student.id));
+                                }}
+                                className="inline-flex items-center justify-center p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                              >
+                                <ChevronRight
+                                  className={`h-4 w-4 transition-transform duration-200 ${
+                                    isExpanded ? "rotate-90 text-blue-600" : ""
+                                  }`}
+                                />
+                              </button>
+                            </td>
+                          </tr>
+
+                          {isExpanded && (
+                            <tr className="bg-slate-50/60 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800/60 transition-all">
+                              <td colSpan={8} className="p-3.5 sm:p-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+                                  <div className="space-y-1">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Track Mastery</span>
+                                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                      <BookOpen className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                                      <span className="truncate">{student.track}</span>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Videos Completed</span>
+                                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                      <PlayCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                                      <span>{student.completedVideos || 0} Lessons</span>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Assessments Mastered</span>
+                                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                      <CheckCircle2 className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                                      <span>{student.solvedAssignments} Solved ({student.accuracy}%)</span>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Current Badge & Rank</span>
+                                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                      <Award className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                                      <span className="truncate">{student.badge || "Tech Explorer"} · #{student.displayRank}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
                       );
                     })
                   )}

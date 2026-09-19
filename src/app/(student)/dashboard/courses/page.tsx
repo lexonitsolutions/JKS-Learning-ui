@@ -33,6 +33,7 @@ import {
   unenrollStudentCourse,
   type FullCourse,
 } from "@/lib/data/courses-store";
+import { getExactStudentCourseProgress } from "@/lib/data/enrollments-api";
 import { CourseCheckoutModal } from "@/components/dashboard/course-checkout-modal";
 
 export interface CatalogCourse {
@@ -172,17 +173,17 @@ export default function StudentAllCoursesPage() {
     return list;
   }, [allCourses]);
 
-  // Set default bundle courses once catalog is loaded
+  // Set default bundle courses once catalog is loaded (exclude already owned courses)
   useEffect(() => {
     if (selectedBundleCourses.length === 0 && catalogCourses.length > 0) {
-      const realCourses = catalogCourses.filter((c) => !c.isBundle);
-      if (realCourses.length >= 2) {
-        setSelectedBundleCourses([realCourses[0].slug, realCourses[1].slug]);
-      } else if (realCourses.length === 1) {
-        setSelectedBundleCourses([realCourses[0].slug]);
+      const availableCourses = catalogCourses.filter((c) => !c.isBundle && !ownedSlugs.includes(c.slug));
+      if (availableCourses.length >= 2) {
+        setSelectedBundleCourses([availableCourses[0].slug, availableCourses[1].slug]);
+      } else if (availableCourses.length === 1) {
+        setSelectedBundleCourses([availableCourses[0].slug]);
       }
     }
-  }, [catalogCourses, selectedBundleCourses.length]);
+  }, [catalogCourses, selectedBundleCourses.length, ownedSlugs]);
 
   // Filter Catalog based on active category pill and search query
   const filteredCourses = useMemo(() => {
@@ -420,15 +421,32 @@ export default function StudentAllCoursesPage() {
                           <span className="truncate">Build Bundle</span>
                           <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                         </button>
-                      ) : isOwned ? (
-                        <Link
-                          href={`/dashboard/my-courses/${course.slug}`}
-                          className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-slate-900 hover:bg-slate-800 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-xs transition-all duration-200 hover:scale-[1.02] dark:bg-slate-800 dark:hover:bg-slate-700"
-                        >
-                          <BookOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
-                          <span className="truncate">Continue</span>
-                        </Link>
-                      ) : (
+                      ) : isOwned ? (() => {
+                        const exact = getExactStudentCourseProgress(course.slug, email);
+                        const isCompleted = exact.completedMilestones > 0 && exact.overallPercent >= 100;
+                        return (
+                          <Link
+                            href={`/dashboard/my-courses/${course.slug}`}
+                            className={`w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-xs transition-all duration-200 hover:scale-[1.02] text-white ${
+                              isCompleted
+                                ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20"
+                                : "bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700"
+                            }`}
+                          >
+                            {isCompleted ? (
+                              <>
+                                <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                                <span className="truncate">Completed</span>
+                              </>
+                            ) : (
+                              <>
+                                <BookOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                                <span className="truncate">Continue</span>
+                              </>
+                            )}
+                          </Link>
+                        );
+                      })() : (
                         <Link
                           href={`/courses/${course.slug}`}
                           className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
@@ -507,42 +525,55 @@ export default function StudentAllCoursesPage() {
 
             <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
               {catalogCourses.filter((c) => !c.isBundle && c.price > 0).map((c) => {
+                const isOwned = ownedSlugs.includes(c.slug);
                 const isSelected = selectedBundleCourses.includes(c.slug);
 
                 return (
                   <div
                     key={c.id}
                     onClick={() => {
+                      if (isOwned) return;
                       setSelectedBundleCourses((prev) =>
                         isSelected ? prev.filter((s) => s !== c.slug) : [...prev, c.slug]
                       );
                     }}
-                    className={`flex cursor-pointer items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all ${
-                      isSelected
-                        ? "border-[#2563EB] bg-blue-50/50 shadow-xs dark:border-blue-500 dark:bg-blue-950/30"
-                        : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-surface-elevated dark:hover:border-slate-700"
+                    className={`flex items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all ${
+                      isOwned
+                        ? "border-emerald-200 bg-emerald-50/40 dark:border-emerald-900/40 dark:bg-emerald-950/20 cursor-not-allowed opacity-80"
+                        : isSelected
+                        ? "border-[#2563EB] bg-blue-50/50 shadow-xs dark:border-blue-500 dark:bg-blue-950/30 cursor-pointer"
+                        : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-surface-elevated dark:hover:border-slate-700 cursor-pointer"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-white transition-colors ${
-                          isSelected
+                          isOwned
+                            ? "border-emerald-500 bg-emerald-600"
+                            : isSelected
                             ? "border-[#2563EB] bg-[#2563EB]"
                             : "border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800"
                         }`}
                       >
-                        {isSelected && <CheckCircle2 className="h-4 w-4" />}
+                        {(isOwned || isSelected) && <CheckCircle2 className="h-4 w-4" />}
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900 dark:text-white">{c.title}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white">{c.title}</span>
+                          {isOwned && (
+                            <span className="rounded-md bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                              Already Enrolled
+                            </span>
+                          )}
+                        </div>
                         <div className="text-[11px] text-slate-500 dark:text-slate-400">
                           ₹{c.price.toLocaleString("en-IN")} · {c.rating} ⭐ ({c.reviewsCount})
                         </div>
                       </div>
                     </div>
 
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      ₹{c.price.toLocaleString("en-IN")}
+                    <span className={`text-xs font-bold ${isOwned ? "text-emerald-700 dark:text-emerald-400" : "text-slate-800 dark:text-slate-200"}`}>
+                      {isOwned ? "Enrolled" : `₹${c.price.toLocaleString("en-IN")}`}
                     </span>
                   </div>
                 );
@@ -596,7 +627,7 @@ export default function StudentAllCoursesPage() {
                       setIsBundleModalOpen(false);
                       setCheckoutCourse({
                         id: "cat-bundle-pro",
-                        slug: selectedBundleCourses[0] || "custom-bundle",
+                        slug: "custom-bundle",
                         title: `Custom Career Bundle (${selectedBundleCourses.length} Tracks)`,
                         tagline: "Customized multi-track bundle with progressive tuition savings.",
                         category: "bundle",

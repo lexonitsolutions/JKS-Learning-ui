@@ -344,7 +344,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
   return (
     <aside
-      className={`hidden shrink-0 flex-col p-3.5 md:flex transition-all duration-300 ease-in-out ${
+      className={`hidden shrink-0 flex-col p-3.5 md:flex transition-all duration-300 ease-in-out print:hidden ${
         isCollapsed ? "w-[78px]" : "w-[260px]"
       }`}
     >

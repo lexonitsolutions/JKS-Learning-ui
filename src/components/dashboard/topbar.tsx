@@ -271,7 +271,7 @@ export function DashboardTopbar({
 
   return (
     <>
-      <header className="flex items-center justify-between gap-2 sm:gap-4 px-3.5 pt-3.5 pb-2 sm:px-6 sm:pt-6 lg:px-8">
+      <header className="flex items-center justify-between gap-2 sm:gap-4 px-3.5 pt-3.5 pb-2 sm:px-6 sm:pt-6 lg:px-8 print:hidden">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           {/* Mobile Hamburger Toggle Button */}
           <button
@@ -318,39 +318,59 @@ export function DashboardTopbar({
                   : "border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover shadow-xs"
               }`}
             >
-              <LayoutGrid className="h-4 w-4" />
+              <LayoutGrid className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" />
               <span className="hidden sm:inline">Explore</span>
               {exploreOpen ? (
-                <ChevronUp className="h-3.5 w-3.5 hidden sm:block" />
+                <ChevronUp className="h-3.5 w-3.5 text-slate-400" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-slate-400 hidden sm:block" />
+                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
               )}
             </button>
 
-            {/* Explore Dropdown Menu */}
+            {/* Explore Mega Menu Dropdown */}
             <AnimatePresence>
               {exploreOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.95 }}
                   transition={{ duration: 0.16, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2 w-56 sm:w-60 z-50 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated p-2 shadow-[0_12px_35px_rgba(20,50,100,0.12)] dark:shadow-[0_12px_35px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                  className="absolute right-0 top-full mt-2 w-72 z-50 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated shadow-[0_16px_45px_rgba(15,23,42,0.18)] dark:shadow-[0_16px_45px_rgba(0,0,0,0.6)] backdrop-blur-xl p-2.5 font-sans overflow-hidden"
                 >
-                  <div className="space-y-1">
-                    {exploreSections.map((item) => {
-                      const Icon = item.icon;
+                  <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/60 mb-1.5">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                      {isAdmin ? "Admin Modules" : "Learning Hub"}
+                    </div>
+                    <div className="text-[11px] text-slate-400 dark:text-slate-400">
+                      Quick navigation &amp; tools
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-1">
+                    {exploreSections.map((sec) => {
+                      const Icon = sec.icon;
+                      const isActive = pathname === sec.href;
                       return (
                         <Link
-                          key={item.label}
-                          href={item.href}
+                          key={sec.href}
+                          href={sec.href}
                           onClick={() => setExploreOpen(false)}
-                          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors hover:bg-slate-50 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white group"
+                          className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
+                            isActive
+                              ? "bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-400"
+                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-surface-hover dark:hover:text-white"
+                          }`}
                         >
-                          <div className="flex h-6 w-6 items-center justify-center rounded-lg text-amber-500 group-hover:scale-110 transition-transform">
-                            <Icon className="h-4 w-4 stroke-[2]" />
+                          <div
+                            className={`flex h-7 w-7 items-center justify-center rounded-lg ${
+                              isActive
+                                ? "bg-blue-600 text-white"
+                                : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                            }`}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
                           </div>
-                          <span>{item.label}</span>
+                          <span>{sec.label}</span>
                         </Link>
                       );
                     })}
@@ -374,8 +394,6 @@ export function DashboardTopbar({
                 <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white ring-2 ring-white dark:ring-slate-900 animate-in zoom-in-50">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
-              ) : badgeNotification ? (
-                <span className="absolute top-1.5 right-2 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-white dark:ring-slate-900" />
               ) : null}
             </button>
 

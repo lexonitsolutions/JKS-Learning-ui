@@ -52,7 +52,8 @@ export default function MyCoursesPage() {
           ...c,
           progress: prog,
           completedVideosCount: exact.completedVideoIds.length,
-          totalLessons: exact.totalMilestones,
+          totalLessons: exact.totalVideos > 0 ? exact.totalVideos : (c.totalLessons || exact.totalMilestones || 1),
+          totalSections: exact.totalSections > 0 ? exact.totalSections : (c.totalSections || 1),
           isCompleted: prog >= 100,
         };
       });
@@ -370,14 +371,25 @@ export default function MyCoursesPage() {
 
                   {/* Card Footer: Direct Link to Course Learning Player */}
                   <div className="border-t border-slate-100 p-5 bg-slate-50/50 dark:border-slate-800 dark:bg-surface-elevated/50">
-                    <Link
-                      href={`/dashboard/my-courses/${course.slug}`}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] py-3 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:scale-[1.01]"
-                    >
-                      <PlayCircle className="h-4 w-4" />
-                      <span>Continue Learning</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
+                    {course.isCompleted || (course.progress || 0) >= 100 ? (
+                      <Link
+                        href={`/dashboard/my-courses/${course.slug}`}
+                        className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-md shadow-emerald-500/20 transition-all hover:scale-[1.01]"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Completed · Review</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/dashboard/my-courses/${course.slug}`}
+                        className="flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] py-3 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:scale-[1.01]"
+                      >
+                        <PlayCircle className="h-4 w-4" />
+                        <span>Continue Learning</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    )}
                   </div>
                 </div>
               </TiltCard>

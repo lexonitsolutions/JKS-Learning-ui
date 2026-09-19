@@ -321,7 +321,9 @@ export function logoutMockSession() {
     "__session",
     "__client_uat",
     "__clerk_db_jwt",
+    "__clerk_session",
     "jks-session",
+    "jks_mock_session",
   ];
 
   if (typeof document !== "undefined") {
@@ -340,6 +342,7 @@ export function logoutMockSession() {
       localStorage.removeItem("jks_access_token");
       localStorage.removeItem("jks_auth_user");
       localStorage.removeItem("jks_student_avatar_v2");
+      localStorage.removeItem("jks_mock_session");
       sessionStorage.removeItem("jks_auth_user");
     } catch {}
   }
@@ -352,15 +355,20 @@ export function logoutMockSession() {
 }
 
 export async function performLogout(clerkSignOut?: () => Promise<unknown>) {
+  // Clear local mock session first so that UI immediately drops authenticated state
+  logoutMockSession();
+
   try {
     if (clerkSignOut) {
-      await clerkSignOut();
+      // Allow max 2.5s for Clerk remote session invalidation before proceeding
+      await Promise.race([
+        clerkSignOut(),
+        new Promise((resolve) => setTimeout(resolve, 2500)),
+      ]);
     }
   } catch (err) {
     console.warn("[Logout] Clerk signOut caught error:", err);
   }
-
-  logoutMockSession();
 
   if (typeof window !== "undefined") {
     window.location.replace("/login");

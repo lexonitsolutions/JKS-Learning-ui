@@ -57,51 +57,29 @@ export function CourseWorkflowModal({
   const [currentStep, setCurrentStep] = useState<StepNumber>(1);
 
   // Step 1: Basics
-  const [title, setTitle] = useState("Enterprise Cloud & Microservices Mastery");
+  const [title, setTitle] = useState("");
   const [track, setTrack] = useState("Full Stack");
   const [level, setLevel] = useState("Intermediate");
-  const [price, setPrice] = useState("24,999");
+  const [price, setPrice] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
 
   // Step 2 & 3: Sequential Stages
   const [stages, setStages] = useState<StageConfig[]>([
     {
-      id: "stage-1",
+      id: `stage-${Date.now()}`,
       stageNumber: 1,
-      stageTitle: "Core Fundamentals & Architecture",
-      videoTitle: "01. Introduction to Microservices & Event Architecture",
-      videoDuration: "42 mins",
-      assignmentTitle: "Stage 1 Quiz: Architecture & Protocols",
+      stageTitle: "",
+      videoTitle: "",
+      videoDuration: "",
+      assignmentTitle: "",
       assignmentType: "MCQ",
-      minPassingScore: 75,
-      antiSkipEnabled: true,
-    },
-    {
-      id: "stage-2",
-      stageNumber: 2,
-      stageTitle: "Backend Service Implementation",
-      videoTitle: "02. Building Scalable APIs with Spring Boot & Docker",
-      videoDuration: "58 mins",
-      assignmentTitle: "Stage 2 Coding Test: Build a Resilient Microservice",
-      assignmentType: "Coding Challenge",
       minPassingScore: 70,
-      antiSkipEnabled: true,
-    },
-    {
-      id: "stage-3",
-      stageNumber: 3,
-      stageTitle: "Capstone & Deployment",
-      videoTitle: "03. Kubernetes Orchestration & Production CI/CD",
-      videoDuration: "65 mins",
-      assignmentTitle: "Final Capstone Project: End-to-End Enterprise App",
-      assignmentType: "Project Submission",
-      minPassingScore: 80,
       antiSkipEnabled: true,
     },
   ]);
 
   // Step 4: Certificate
-  const [certificateTitle, setCertificateTitle] = useState("Certified Enterprise Microservices Architect");
+  const [certificateTitle, setCertificateTitle] = useState("");
   const [requireFullVideoWatch, setRequireFullVideoWatch] = useState(true);
   const [requireAllAssignmentsPassed, setRequireAllAssignmentsPassed] = useState(true);
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
@@ -113,12 +91,12 @@ export function CourseWorkflowModal({
       {
         id: `stage-${Date.now()}`,
         stageNumber: newNum,
-        stageTitle: `Stage ${newNum}: Advanced Module`,
-        videoTitle: `0${newNum}. Module Deep Dive`,
-        videoDuration: "45 mins",
-        assignmentTitle: `Stage ${newNum} Assignment`,
+        stageTitle: "",
+        videoTitle: "",
+        videoDuration: "",
+        assignmentTitle: "",
         assignmentType: "MCQ",
-        minPassingScore: 75,
+        minPassingScore: 70,
         antiSkipEnabled: true,
       },
     ]);
@@ -276,7 +254,8 @@ export function CourseWorkflowModal({
                     type="text"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                    placeholder="e.g. 24,999"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 dark:placeholder-slate-400 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                   />
                 </div>
               </div>
@@ -312,19 +291,27 @@ export function CourseWorkflowModal({
                     className="relative rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800 dark:bg-surface-elevated p-5 shadow-xs transition-all hover:border-[#2563EB]/40 dark:hover:border-blue-500/40"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2563EB] text-xs font-bold text-white">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0 mr-3">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2563EB] text-xs font-bold text-white shrink-0">
                           {idx + 1}
                         </span>
-                        <span className="text-sm font-bold text-slate-900 dark:text-white">
-                          {stage.stageTitle}
-                        </span>
+                        <input
+                          type="text"
+                          value={stage.stageTitle}
+                          onChange={(e) => {
+                            const updated = [...stages];
+                            updated[idx].stageTitle = e.target.value;
+                            setStages(updated);
+                          }}
+                          placeholder={`Stage ${idx + 1}: e.g. Core Fundamentals & Architecture`}
+                          className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3 py-1.5 text-sm font-bold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
+                        />
                       </div>
                       {stages.length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeStage(stage.id)}
-                          className="text-slate-400 hover:text-rose-500 transition-colors cursor-pointer"
+                          className="text-slate-400 hover:text-rose-500 transition-colors cursor-pointer shrink-0"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -344,7 +331,8 @@ export function CourseWorkflowModal({
                             updated[idx].videoTitle = e.target.value;
                             setStages(updated);
                           }}
-                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700/80 dark:bg-input-bg dark:text-white px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                          placeholder="e.g. 01. Introduction to Microservices & Architecture"
+                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700/80 dark:bg-input-bg dark:text-white px-3 py-2 text-xs font-medium text-slate-900 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                         />
                       </div>
                       <div>
@@ -359,7 +347,8 @@ export function CourseWorkflowModal({
                             updated[idx].videoDuration = e.target.value;
                             setStages(updated);
                           }}
-                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700/80 dark:bg-input-bg dark:text-white px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                          placeholder="e.g. 45 mins"
+                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700/80 dark:bg-input-bg dark:text-white px-3 py-2 text-xs font-medium text-slate-900 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                         />
                       </div>
                     </div>
@@ -421,7 +410,7 @@ export function CourseWorkflowModal({
                         {idx + 1}
                       </span>
                       <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide">
-                        Assignment for: {stage.stageTitle}
+                        Assignment for Stage {idx + 1} {stage.stageTitle ? `(${stage.stageTitle})` : ""}
                       </span>
                     </div>
 
@@ -438,7 +427,8 @@ export function CourseWorkflowModal({
                             updated[idx].assignmentTitle = e.target.value;
                             setStages(updated);
                           }}
-                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700/80 dark:bg-input-bg dark:text-white px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
+                          placeholder="e.g. Stage 1 Quiz: Architecture & Protocols"
+                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700/80 dark:bg-input-bg dark:text-white px-3 py-2 text-xs font-medium text-slate-900 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                         />
                       </div>
 
@@ -499,7 +489,8 @@ export function CourseWorkflowModal({
                   type="text"
                   value={certificateTitle}
                   onChange={(e) => setCertificateTitle(e.target.value)}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                  placeholder="e.g. Certified Enterprise Microservices Architect"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 dark:placeholder-slate-400 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                 />
               </div>
 

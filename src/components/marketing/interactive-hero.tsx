@@ -5,9 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, BrainCircuit, Users, Award, ShieldCheck, CheckCircle2 } from "lucide-react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "@studio-freight/lenis";
+import { getGsap } from "@/lib/motion/gsap";
+import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 
 export function InteractiveHero() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -15,31 +14,21 @@ export function InteractiveHero() {
   const badgeLeftRef = useRef<HTMLDivElement>(null);
   const badgeRightRef = useRef<HTMLDivElement>(null);
   const badgeBottomRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
+    if (reducedMotion) return;
 
-    // Initialize smooth scrolling with Lenis
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
-
-    lenis.on("scroll", ScrollTrigger.update);
-    const ticker = (time: number) => {
-      lenis.raf(time * 1000);
-    };
-    gsap.ticker.add(ticker);
-    gsap.ticker.lagSmoothing(0);
+    const { gsap } = getGsap();
+    const mm = gsap.matchMedia();
 
     const ctx = gsap.context(() => {
-      // 1. Initial Landing entrance: character slides up from bottom
+      // 1. Initial Landing entrance: character slides up from bottom smoothly
       if (characterRef.current) {
         gsap.fromTo(
           characterRef.current,
-          { y: 90, opacity: 0, scale: 0.95 },
-          { y: 0, opacity: 1, scale: 1, duration: 1.1, ease: "power3.out", delay: 0.2 }
+          { y: 50, opacity: 0, scale: 0.96 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.9, ease: "power3.out", delay: 0.15 }
         );
       }
 
@@ -47,55 +36,91 @@ export function InteractiveHero() {
       if (badgeLeftRef.current && badgeRightRef.current && badgeBottomRef.current) {
         gsap.fromTo(
           [badgeLeftRef.current, badgeRightRef.current, badgeBottomRef.current],
-          { y: 40, opacity: 0, scale: 0.88 },
-          { y: 0, opacity: 1, scale: 1, duration: 0.9, stagger: 0.15, ease: "back.out(1.4)", delay: 0.5 }
+          { y: 30, opacity: 0, scale: 0.9 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.8, stagger: 0.12, ease: "back.out(1.4)", delay: 0.35 }
         );
       }
 
-      // 2. Scroll-linked motion: Character shifts towards the right and downward
-      if (containerRef.current && characterRef.current) {
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top top",
-            end: "bottom 20%",
-            scrub: 1.2,
-          },
-        });
+      // 2. Responsive Scroll-linked motion (Desktop vs Mobile)
+      mm.add("(min-width: 768px)", () => {
+        // Desktop: dynamic diagonal drift and badge dispersion
+        if (containerRef.current && characterRef.current) {
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top top",
+              end: "bottom 20%",
+              scrub: 1,
+            },
+          });
 
-        // Move character to bottom-right smoothly on scroll
-        tl.to(
-          characterRef.current,
-          {
-            xPercent: 28,
-            yPercent: 36,
-            scale: 0.92,
-            rotate: 2,
-            ease: "power1.inOut",
-          },
-          0
-        );
+          tl.to(
+            characterRef.current,
+            {
+              xPercent: 24,
+              yPercent: 32,
+              scale: 0.94,
+              rotate: 1.5,
+              ease: "power1.inOut",
+            },
+            0
+          );
 
-        // Parallax badges dispersion
-        if (badgeLeftRef.current) {
-          tl.to(badgeLeftRef.current, { x: -35, y: 50, opacity: 0.4, ease: "none" }, 0);
+          if (badgeLeftRef.current) {
+            tl.to(badgeLeftRef.current, { x: -30, y: 40, opacity: 0.35, ease: "none" }, 0);
+          }
+          if (badgeRightRef.current) {
+            tl.to(badgeRightRef.current, { x: 40, y: 60, opacity: 0.35, ease: "none" }, 0);
+          }
+          if (badgeBottomRef.current) {
+            tl.to(badgeBottomRef.current, { x: -15, y: 50, opacity: 0.3, ease: "none" }, 0);
+          }
         }
-        if (badgeRightRef.current) {
-          tl.to(badgeRightRef.current, { x: 50, y: 70, opacity: 0.4, ease: "none" }, 0);
+      });
+
+      mm.add("(max-width: 767px)", () => {
+        // Mobile: Snappy, pure vertical motion without horizontal skewing or 1.2s lag delay
+        if (containerRef.current && characterRef.current) {
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top top",
+              end: "bottom 30%",
+              scrub: 0.2, // Snappy 1:1 touch response that eliminates swipe lag
+            },
+          });
+
+          // Stay centered! Move vertically without horizontal drift or rotation that overflows mobile screen
+          tl.to(
+            characterRef.current,
+            {
+              yPercent: 12,
+              scale: 0.96,
+              opacity: 0.85,
+              ease: "none",
+            },
+            0
+          );
+
+          // Mobile badges: fade out gracefully without crossing viewport edges
+          if (badgeLeftRef.current) {
+            tl.to(badgeLeftRef.current, { y: -18, opacity: 0, ease: "none" }, 0);
+          }
+          if (badgeRightRef.current) {
+            tl.to(badgeRightRef.current, { y: -18, opacity: 0, ease: "none" }, 0);
+          }
+          if (badgeBottomRef.current) {
+            tl.to(badgeBottomRef.current, { y: -12, opacity: 0, ease: "none" }, 0);
+          }
         }
-        if (badgeBottomRef.current) {
-          tl.to(badgeBottomRef.current, { x: -20, y: 60, opacity: 0.3, ease: "none" }, 0);
-        }
-      }
+      });
     }, containerRef);
 
     return () => {
+      mm.revert();
       ctx.revert();
-      ScrollTrigger.getAll().forEach((st) => st.kill());
-      gsap.ticker.remove(ticker);
-      lenis.destroy();
     };
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <section
@@ -185,7 +210,7 @@ export function InteractiveHero() {
       <div className="relative z-10 mx-auto mt-6 sm:mt-8 w-full max-w-5xl flex-1 flex flex-col items-center justify-end px-4 overflow-visible">
         {/* 3D Perspective Grid Plane */}
         <div
-          className="pointer-events-none absolute bottom-0 left-1/2 h-[340px] sm:h-[460px] w-[130%] -translate-x-1/2 opacity-70"
+          className="pointer-events-none absolute bottom-0 left-1/2 h-[340px] sm:h-[460px] w-full sm:w-[130%] -translate-x-1/2 opacity-70 contain-paint"
           style={{
             transform: "perspective(600px) rotateX(60deg)",
             transformOrigin: "bottom center",
@@ -204,12 +229,12 @@ export function InteractiveHero() {
           {/* Main Floating Character */}
           <div
             ref={characterRef}
-            className="relative z-20 flex items-end justify-center will-change-transform"
+            className="relative z-20 flex items-end justify-center will-change-transform transform-gpu [backface-visibility:hidden] [transform:translateZ(0)]"
           >
             <motion.div
-              animate={{ y: [0, -6, 0] }}
+              animate={reducedMotion ? undefined : { y: [0, -6, 0] }}
               transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
-              className="relative"
+              className="relative transform-gpu will-change-transform [backface-visibility:hidden]"
             >
               <Image
                 src="/images/hero-developer.png"
@@ -217,13 +242,13 @@ export function InteractiveHero() {
                 width={480}
                 height={520}
                 priority
-                unoptimized
-                className="relative z-20 h-auto max-h-[380px] sm:max-h-[460px] w-auto object-contain drop-shadow-[0_20px_35px_rgba(15,23,42,0.18)]"
+                sizes="(max-width: 640px) 320px, (max-width: 1024px) 440px, 480px"
+                className="relative z-20 h-auto max-h-[380px] sm:max-h-[460px] w-auto object-contain sm:drop-shadow-[0_20px_35px_rgba(15,23,42,0.18)]"
               />
 
               {/* Ground Shadow */}
               <div
-                className="absolute -bottom-2 left-1/2 h-6 w-3/4 -translate-x-1/2 rounded-full opacity-40 blur-md"
+                className="pointer-events-none absolute -bottom-2 left-1/2 h-6 w-3/4 -translate-x-1/2 rounded-full opacity-40 blur-md"
                 style={{ background: "radial-gradient(ellipse, rgba(15,23,42,0.6), transparent 70%)" }}
               />
             </motion.div>
@@ -232,7 +257,7 @@ export function InteractiveHero() {
           {/* Floating Badge 1: Top-Left */}
           <div
             ref={badgeLeftRef}
-            className="absolute top-12 sm:top-20 -left-2 sm:left-4 z-30 max-w-[190px] sm:max-w-[220px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
+            className="absolute top-12 sm:top-20 left-1 sm:left-4 z-30 max-w-[185px] sm:max-w-[220px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] sm:backdrop-blur-xl transition-transform hover:scale-105"
           >
             <div className="flex items-center justify-between text-[11px] font-bold text-slate-800 dark:text-slate-100">
               <span className="flex items-center gap-1.5">
@@ -249,7 +274,7 @@ export function InteractiveHero() {
           {/* Floating Badge 2: Right */}
           <div
             ref={badgeRightRef}
-            className="absolute top-28 sm:top-36 -right-2 sm:right-2 z-30 max-w-[210px] sm:max-w-[250px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
+            className="absolute top-28 sm:top-36 right-1 sm:right-2 z-30 max-w-[200px] sm:max-w-[250px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] sm:backdrop-blur-xl transition-transform hover:scale-105"
           >
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/60 font-bold text-[10px] text-[#1E5EFF] dark:text-blue-400">
@@ -270,7 +295,7 @@ export function InteractiveHero() {
           {/* Floating Badge 3: Bottom-Left */}
           <div
             ref={badgeBottomRef}
-            className="absolute bottom-16 sm:bottom-24 -left-4 sm:left-0 z-30 rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 px-3.5 py-2.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105 hidden sm:block"
+            className="absolute bottom-16 sm:bottom-24 left-1 sm:left-0 z-30 rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 px-3.5 py-2.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] sm:backdrop-blur-xl transition-transform hover:scale-105 hidden sm:block"
           >
             <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
               <span className="relative flex h-2 w-2">

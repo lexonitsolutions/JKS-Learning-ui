@@ -74,110 +74,31 @@ export default function AdminNewCoursePage() {
   }, [currentStep]);
 
   // Step 1: Basic Info State
-  const [title, setTitle] = useState("Enterprise Distributed Systems & Cloud Architecture");
-  const [slug, setSlug] = useState("enterprise-distributed-systems");
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
   const [track, setTrack] = useState<Track>("Full Stack");
   const [level, setLevel] = useState<"Beginner" | "Intermediate" | "Advanced">("Intermediate");
-  const [durationWeeks, setDurationWeeks] = useState(14);
-  const [price, setPrice] = useState(26999);
-  const [summary, setSummary] = useState(
-    "Deep dive into cloud-native microservices, event-driven architectures with Kafka, Kubernetes orchestration, and resilient backend design."
-  );
+  const [durationWeeks, setDurationWeeks] = useState<number | string>("");
+  const [price, setPrice] = useState<number | string>("");
+  const [summary, setSummary] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
 
   // Step 2 & Step 3 & Step 4: Sections Builder State
   const [sections, setSections] = useState<Section[]>([
     {
-      id: "sec-1",
-      title: "Section 1: Microservices Foundations & Event-Driven Patterns",
+      id: `sec-${Date.now()}`,
+      title: "",
       order: 1,
-      description: "Core principles of decoupled system design, event streaming, and domain-driven design.",
-      subsections: [
-        {
-          id: "sub-1-1",
-          title: "Subsection 1.1: Event Streaming & Apache Kafka Internals",
-          order: 1,
-          videos: [
-            {
-              id: "v-1",
-              title: "01. Introduction to Event-Driven Topologies & Kafka Brokers",
-              durationSeconds: 240,
-              durationFormatted: "4:00",
-              videoType: "url",
-              videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-              order: 1,
-              isFreeDemo: true,
-            },
-            {
-              id: "v-2",
-              title: "02. Partitioning, Consumer Groups & Offsets Management",
-              durationSeconds: 310,
-              durationFormatted: "5:10",
-              videoType: "url",
-              videoUrl: "https://www.youtube.com/watch?v=k1BneeJTDcU",
-              order: 2,
-            },
-          ],
-        },
-      ],
-      directVideos: [
-        {
-          id: "v-3",
-          title: "03. Idempotent Consumer & Transactional Outbox Pattern",
-          durationSeconds: 280,
-          durationFormatted: "4:40",
-          videoType: "url",
-          videoUrl: "https://www.youtube.com/watch?v=28aEWu_yV_c",
-          order: 1,
-        },
-      ],
+      description: "",
+      subsections: [],
+      directVideos: [],
       assignment: {
-        id: "asg-1",
-        title: "Section 1 Practical Challenge: Resilient Outbox Architecture",
-        description: "Implement a reliable outbox relay service that publishes domain events to Kafka with zero message loss.",
+        id: `asg-${Date.now()}`,
+        title: "",
+        description: "",
         type: "Coding Challenge",
-        minPassingScore: 75,
-        questions: [
-          {
-            prompt: "What is the primary benefit of the Transactional Outbox pattern?",
-            choices: [
-              "Guarantees database update and message publishing succeed atomically",
-              "Increases Kafka broker throughput by bypassing TCP sockets",
-              "Eliminates the need for consumer idempotency",
-              "Compresses JSON payloads into Protocol Buffers automatically",
-            ],
-            correctIndex: 0,
-          },
-        ],
-      },
-    },
-    {
-      id: "sec-2",
-      title: "Section 2: Kubernetes Orchestration & Production Resilience",
-      order: 2,
-      description: "Container deployment, Helm charts, ingress controllers, and auto-scaling policies.",
-      directVideos: [
-        {
-          id: "v-4",
-          title: "04. Multi-Cluster Kubernetes Deployment & Service Mesh",
-          durationSeconds: 350,
-          durationFormatted: "5:50",
-          videoType: "url",
-          videoUrl: "https://www.youtube.com/watch?v=9SGDpanrc8U",
-          order: 1,
-        },
-      ],
-      assignment: {
-        id: "asg-2",
-        title: "Section 2 Capstone: Kubernetes Production Deployment",
-        description: "Deploy a multi-tier microservice workload with Horizontal Pod Autoscaling and TLS ingress.",
-        type: "Project Submission",
-        minPassingScore: 80,
-        submissionCriteria: [
-          "Deployable Helm chart with values.yaml",
-          "HPA configuration based on CPU and custom metrics",
-          "Ingress controller TLS configuration",
-        ],
+        minPassingScore: 70,
+        questions: [],
       },
     },
   ]);
@@ -189,7 +110,7 @@ export default function AdminNewCoursePage() {
   const [playbackSpeedCap, setPlaybackSpeedCap] = useState("1.5x");
 
   // Step 5: Certificate Settings State
-  const [certificateTitle, setCertificateTitle] = useState("Certified Distributed Cloud Architect");
+  const [certificateTitle, setCertificateTitle] = useState("");
   const [requireAllVideosComplete, setRequireAllVideosComplete] = useState(true);
   const [requireAllAssignmentsPassed, setRequireAllAssignmentsPassed] = useState(true);
 
@@ -221,33 +142,18 @@ export default function AdminNewCoursePage() {
     const newOrder = sections.length + 1;
     const newSec: Section = {
       id: `sec-${Date.now()}`,
-      title: `Section ${newOrder}: Advanced Module & Architecture`,
+      title: "",
       order: newOrder,
-      description: "Detailed curriculum objectives and implementation milestones.",
-      directVideos: [
-        {
-          id: `v-${Date.now()}-1`,
-          title: `0${newOrder}. Module Deep Dive & Implementation`,
-          durationSeconds: 240,
-          durationFormatted: "4:00",
-          videoType: "url",
-          videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-          order: 1,
-        },
-      ],
+      description: "",
+      subsections: [],
+      directVideos: [],
       assignment: {
         id: `asg-${Date.now()}`,
-        title: `Section ${newOrder} Assessment`,
-        description: `Complete practical evaluation for Section ${newOrder}.`,
+        title: "",
+        description: "",
         type: "Coding Challenge",
-        minPassingScore: 75,
-        questions: [
-          {
-            prompt: "What is the primary architectural principle of this section?",
-            choices: ["Loose coupling & High cohesion", "Shared database monolith", "Synchronous blocking RPC", "Manual deployments"],
-            correctIndex: 0,
-          },
-        ],
+        minPassingScore: 70,
+        questions: [],
       },
     };
     setSections([...sections, newSec]);
@@ -281,19 +187,9 @@ export default function AdminNewCoursePage() {
     const newSubOrder = currentSubs.length + 1;
     const newSub: SubSection = {
       id: `sub-${Date.now()}`,
-      title: `Subsection ${sec.order}.${newSubOrder}: Specialized Sub-Topic`,
+      title: "",
       order: newSubOrder,
-      videos: [
-        {
-          id: `v-${Date.now()}`,
-          title: `0${sec.order}.${newSubOrder}. Sub-Module Lecture`,
-          durationSeconds: 180,
-          durationFormatted: "3:00",
-          videoType: "url",
-          videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-          order: 1,
-        },
-      ],
+      videos: [],
     };
     sec.subsections = [...currentSubs, newSub];
     setSections(updated);
@@ -318,11 +214,11 @@ export default function AdminNewCoursePage() {
     const newOrder = currentVideos.length + 1;
     const newVid: VideoItem = {
       id: `v-${Date.now()}`,
-      title: `0${sec.order}.${newOrder}. Video Lecture`,
-      durationSeconds: 240,
-      durationFormatted: "4:00",
-      videoType: "url",
-      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      title: "",
+      durationSeconds: 0,
+      durationFormatted: "0:00",
+      videoType: "upload",
+      videoUrl: "",
       order: newOrder,
     };
     sec.directVideos = [...currentVideos, newVid];
@@ -347,11 +243,11 @@ export default function AdminNewCoursePage() {
     const newOrder = sub.videos.length + 1;
     const newVid: VideoItem = {
       id: `v-${Date.now()}`,
-      title: `Sub-Video ${sub.order}.${newOrder}: Topic Breakdown`,
-      durationSeconds: 200,
-      durationFormatted: "3:20",
-      videoType: "url",
-      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      title: "",
+      durationSeconds: 0,
+      durationFormatted: "0:00",
+      videoType: "upload",
+      videoUrl: "",
       order: newOrder,
     };
     sub.videos = [...sub.videos, newVid];
@@ -380,13 +276,8 @@ export default function AdminNewCoursePage() {
     asg.questions = [
       ...currentQuestions,
       {
-        prompt: `Question ${currentQuestions.length + 1}: `,
-        choices: [
-          "Option A",
-          "Option B",
-          "Option C",
-          "Option D",
-        ],
+        prompt: "",
+        choices: ["", "", "", ""],
         correctIndex: 0,
       },
     ];
@@ -445,7 +336,7 @@ export default function AdminNewCoursePage() {
     const asg = updated[sectionIndex].assignment;
     if (asg.questions && asg.questions[questionIndex]) {
       const choices = [...(asg.questions[questionIndex].choices || [])];
-      choices.push(`Option ${String.fromCharCode(65 + choices.length)}`);
+      choices.push("");
       asg.questions[questionIndex].choices = choices;
     }
     setSections(updated);
@@ -538,7 +429,7 @@ export default function AdminNewCoursePage() {
       title,
       track,
       level,
-      durationWeeks,
+      durationWeeks: Number(durationWeeks) || 12,
       price: Number(price) || 19999,
       rating: 5.0,
       studentsEnrolled: 0,
@@ -703,7 +594,8 @@ export default function AdminNewCoursePage() {
                         type="text"
                         value={slug}
                         onChange={(e) => setSlug(e.target.value)}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-surface-elevated px-3.5 py-2 text-xs font-mono text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
+                        placeholder="e.g. enterprise-distributed-systems"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-surface-elevated px-3.5 py-2 text-xs font-mono text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                       />
                     </div>
 
@@ -748,8 +640,9 @@ export default function AdminNewCoursePage() {
                         min="1"
                         max="52"
                         value={durationWeeks}
-                        onChange={(e) => setDurationWeeks(Number(e.target.value))}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
+                        onChange={(e) => setDurationWeeks(e.target.value === "" ? "" : Number(e.target.value))}
+                        placeholder="e.g. 12"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                       />
                     </div>
 
@@ -762,8 +655,9 @@ export default function AdminNewCoursePage() {
                         min="0"
                         step="500"
                         value={price}
-                        onChange={(e) => setPrice(Number(e.target.value))}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
+                        onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                        placeholder="e.g. 19999"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                       />
                     </div>
                   </div>
@@ -776,7 +670,7 @@ export default function AdminNewCoursePage() {
                       rows={2}
                       value={summary}
                       onChange={(e) => setSummary(e.target.value)}
-                      placeholder="Overview of the course..."
+                      placeholder="e.g. Deep dive into cloud-native microservices, event-driven architectures with Kafka, and resilient backend design..."
                       className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-3 text-xs font-medium text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                     />
                   </div>
@@ -1470,6 +1364,7 @@ export default function AdminNewCoursePage() {
                             updated[secIdx].assignment.description = e.target.value;
                             setSections(updated);
                           }}
+                          placeholder="e.g. Detailed problem statement and submission guidelines..."
                           className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                         />
                       </div>
@@ -1560,7 +1455,7 @@ export default function AdminNewCoursePage() {
                                         value={q.prompt}
                                         onChange={(e) => updateQuestionPrompt(secIdx, qIdx, e.target.value)}
                                         placeholder={`Question ${qIdx + 1} prompt or scenario...`}
-                                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                                       />
                                     </div>
                                   </div>
@@ -1626,7 +1521,7 @@ export default function AdminNewCoursePage() {
                                               updateQuestionChoice(secIdx, qIdx, cIdx, e.target.value)
                                             }
                                             placeholder={`Option ${letter}`}
-                                            className="min-w-0 flex-1 bg-transparent px-1 py-0.5 text-xs text-slate-800 dark:text-slate-200 outline-none"
+                                            className="min-w-0 flex-1 bg-transparent px-1 py-0.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none"
                                           />
                                           {isCorrect && (
                                             <span className="shrink-0 rounded-md bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800/80 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:text-emerald-300">
@@ -1687,7 +1582,7 @@ export default function AdminNewCoursePage() {
                       type="text"
                       value={certificateTitle}
                       onChange={(e) => setCertificateTitle(e.target.value)}
-                      placeholder="e.g. Certified Enterprise Cloud Architect"
+                      placeholder="e.g. Certified Distributed Cloud Architect"
                       className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                     />
                   </div>
@@ -1735,7 +1630,7 @@ export default function AdminNewCoursePage() {
                             JKS Learning Institute of Technology
                           </div>
                           <div className="mt-1 text-base font-extrabold text-white">
-                            {certificateTitle || title}
+                            {certificateTitle || title || "Certified Professional Graduate"}
                           </div>
                         </div>
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400/20 text-amber-300">
@@ -1841,9 +1736,13 @@ export default function AdminNewCoursePage() {
                     {title || "Untitled Course"}
                   </div>
                   <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100 dark:border-slate-800">
-                    <span className="text-slate-500 dark:text-slate-400">{durationWeeks} Weeks</span>
+                    <span className="text-slate-500 dark:text-slate-400">
+                      {durationWeeks ? `${durationWeeks} Weeks` : "—"}
+                    </span>
                     <span className="font-extrabold text-[#2563EB] dark:text-blue-400">
-                      ₹{price.toLocaleString("en-IN")}
+                      {price !== "" && Number(price) >= 0
+                        ? `₹${Number(price).toLocaleString("en-IN")}`
+                        : "₹0"}
                     </span>
                   </div>
                 </div>
@@ -1883,7 +1782,7 @@ export default function AdminNewCoursePage() {
                   <span className="text-slate-500 dark:text-slate-400 font-medium">Avg Pass Mark:</span>
                   <span className="font-bold text-slate-900 dark:text-white">
                     {Math.round(
-                      sections.reduce((acc, s) => acc + s.assignment.minPassingScore, 0) /
+                      sections.reduce((acc, s) => acc + (s.assignment.minPassingScore || 0), 0) /
                         (sections.length || 1)
                     )}
                     %
@@ -1891,7 +1790,11 @@ export default function AdminNewCoursePage() {
                 </div>
                 <div className="flex justify-between border-t border-slate-200/80 dark:border-slate-800 pt-2 text-sm font-extrabold">
                   <span className="text-slate-700 dark:text-slate-300">Course Price:</span>
-                  <span className="text-[#2563EB] dark:text-blue-400">₹{price.toLocaleString("en-IN")}</span>
+                  <span className="text-[#2563EB] dark:text-blue-400">
+                    {price !== "" && Number(price) >= 0
+                      ? `₹${Number(price).toLocaleString("en-IN")}`
+                      : "₹0"}
+                  </span>
                 </div>
               </div>
 
