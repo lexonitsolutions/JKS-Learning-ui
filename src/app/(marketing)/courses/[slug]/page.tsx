@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation";
 import { fetchDbCourseBySlug } from "@/lib/data/courses";
-import { CourseDetailView } from "./course-detail-view";
+import { CourseDetailResolver } from "./course-detail-resolver";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -12,7 +11,6 @@ export default async function CourseDetailPage({
 }) {
   const { slug } = await params;
   const course = await fetchDbCourseBySlug(slug);
-  if (!course) notFound();
 
-  return <CourseDetailView course={course} />;
+  return <CourseDetailResolver slug={slug} initialCourse={course} />;
 }

@@ -168,23 +168,84 @@ export function SiteHeader() {
               >
                 Register
               </Link>
+              {/* Desktop Enroll Button (hidden on mobile) */}
               <Link
                 href="/register-course"
-                className="group inline-flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 rounded-xl bg-primary-fill px-2.5 py-1.5 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-primary-blue/25 transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-primary-blue/30"
+                className="hidden md:inline-flex group items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 rounded-xl bg-primary-fill px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-primary-blue/25 transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-primary-blue/30"
               >
                 <span>Enroll Now</span>
                 <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
               </Link>
+
+              {/* Mobile: Clean login button */}
+              <Link
+                href="/login"
+                className="md:hidden text-xs font-semibold text-primary-blue dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 px-2.5 py-1.5 rounded-lg transition-colors"
+              >
+                Log in
+              </Link>
+
+              {/* Mobile 3-line Menu Toggle for logged-out visitors */}
+              <button
+                type="button"
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((v) => !v)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border dark:border-slate-800 text-text-heading dark:text-slate-200 transition-colors hover:bg-bg-light dark:hover:bg-surface-hover md:hidden cursor-pointer"
+              >
+                {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </button>
             </>
           ) : (
             <>
-              {/* Public Header User Avatar linking directly to Dashboard */}
-              <Link
-                href={dashboardHref}
-                className="flex items-center rounded-full p-0.5 transition-transform hover:scale-105 shrink-0 focus:outline-none"
-                aria-label="Open My Dashboard"
+              {/* Desktop View: Public Header User Avatar & Dashboard CTA */}
+              <div className="hidden md:flex items-center gap-3">
+                <Link
+                  href={dashboardHref}
+                  className="flex items-center rounded-full p-0.5 transition-transform hover:scale-105 shrink-0 focus:outline-none"
+                  aria-label="Open My Dashboard"
+                >
+                  <div className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-md ring-2 ring-blue-500/30 overflow-hidden">
+                    {userAvatar ? (
+                      <img
+                        src={userAvatar}
+                        alt={userName}
+                        className="h-full w-full object-cover"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : null}
+                    <span className={userAvatar ? "sr-only" : ""}>{userInitials}</span>
+                  </div>
+                </Link>
+
+                <Link
+                  href={dashboardHref}
+                  className="group inline-flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-blue-500/25 transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-blue-500/30 cursor-pointer"
+                >
+                  <LayoutDashboard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span>Dashboard</span>
+                  <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                </Link>
+              </div>
+
+              {/* Mobile View: Profile Icon in place of 3-line menu icon! Tapping opens the section menu */}
+              <button
+                type="button"
+                aria-label={menuOpen ? "Close user menu" : "Open user menu"}
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((v) => !v)}
+                className="md:hidden relative flex items-center justify-center p-0.5 rounded-full transition-transform active:scale-95 focus:outline-none cursor-pointer"
               >
-                <div className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-md ring-2 ring-blue-500/30 overflow-hidden">
+                <div
+                  className={`relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-md overflow-hidden ring-2 transition-all ${
+                    menuOpen
+                      ? "ring-primary-blue ring-offset-2 ring-offset-white dark:ring-offset-slate-900"
+                      : "ring-blue-500/40"
+                  }`}
+                >
                   {userAvatar ? (
                     <img
                       src={userAvatar}
@@ -197,31 +258,16 @@ export function SiteHeader() {
                     />
                   ) : null}
                   <span className={userAvatar ? "sr-only" : ""}>{userInitials}</span>
-                </div>
-              </Link>
 
-              {/* Dynamic Dashboard CTA Button */}
-              <Link
-                href={dashboardHref}
-                className="group inline-flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-2.5 py-1.5 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-blue-500/25 transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-blue-500/30 cursor-pointer"
-              >
-                <LayoutDashboard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden xs:inline sm:inline">Dashboard</span>
-                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-              </Link>
+                  {menuOpen && (
+                    <div className="absolute inset-0 bg-black/45 flex items-center justify-center">
+                      <X className="h-4 w-4 text-white" />
+                    </div>
+                  )}
+                </div>
+              </button>
             </>
           )}
-
-          {/* Mobile Menu Toggle Button */}
-          <button
-            type="button"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((v) => !v)}
-            className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg border border-border dark:border-slate-800 text-text-heading dark:text-slate-200 transition-colors hover:bg-bg-light dark:hover:bg-surface-hover md:hidden cursor-pointer"
-          >
-            {menuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
-          </button>
         </div>
       </div>
 
@@ -235,71 +281,130 @@ export function SiteHeader() {
             transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
             className="overflow-hidden border-t border-border dark:border-slate-800 bg-white/95 dark:bg-background/95 backdrop-blur-xl md:hidden"
           >
-            <div className="flex flex-col gap-1 px-6 py-4">
-              {navLinks.map((link, i) => {
-                const active = pathname.startsWith(link.href) && link.href !== "/";
-                return (
-                  <motion.div
-                    key={link.href}
-                    initial={reducedMotion ? undefined : { opacity: 0, x: -12 }}
-                    animate={reducedMotion ? undefined : { opacity: 1, x: 0 }}
-                    transition={{ duration: 0.25, delay: 0.05 + i * 0.05 }}
-                  >
-                    <Link
-                      href={link.href}
-                      className={`block rounded-lg px-3 py-3 text-base font-medium transition-colors ${
-                        active
-                          ? "bg-primary-blue/10 dark:bg-blue-950/60 text-primary-blue dark:text-blue-400 font-bold"
-                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
-                      }`}
+            <div className="flex flex-col gap-1 px-5 py-4">
+              {/* Authenticated user profile card in mobile drawer */}
+              {isUserAuthenticated && (
+                <div className="mb-2 flex items-center gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 p-3">
+                  <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white overflow-hidden">
+                    {userAvatar ? (
+                      <img
+                        src={userAvatar}
+                        alt={userName}
+                        className="h-full w-full object-cover"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : null}
+                    <span className={userAvatar ? "sr-only" : ""}>{userInitials}</span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{userName}</p>
+                      {userRole === "admin" && (
+                        <span className="rounded bg-rose-500/10 px-1.5 py-0.2 text-[9px] font-bold text-rose-600 dark:text-rose-400">
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{userEmail}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation sections */}
+              <div className="space-y-1">
+                <p className="px-3 pt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Navigation
+                </p>
+                {navLinks.map((link, i) => {
+                  const active = pathname.startsWith(link.href) && link.href !== "/";
+                  return (
+                    <motion.div
+                      key={link.href}
+                      initial={reducedMotion ? undefined : { opacity: 0, x: -12 }}
+                      animate={reducedMotion ? undefined : { opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2, delay: 0.03 + i * 0.04 }}
                     >
-                      {link.label}
-                    </Link>
-                  </motion.div>
-                );
-              })}
+                      <Link
+                        href={link.href}
+                        onClick={() => setMenuOpen(false)}
+                        className={`block rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors ${
+                          active
+                            ? "bg-primary-blue/10 dark:bg-blue-950/60 text-primary-blue dark:text-blue-400 font-bold"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </div>
 
               {!isUserAuthenticated ? (
-                <motion.div
-                  initial={reducedMotion ? undefined : { opacity: 0, x: -12 }}
-                  animate={reducedMotion ? undefined : { opacity: 1, x: 0 }}
-                  transition={{ duration: 0.25, delay: 0.05 + navLinks.length * 0.05 }}
-                  className="mt-2 border-t border-slate-200 dark:border-slate-800 pt-3 flex flex-col gap-2"
-                >
-                  <Link
-                    href="/login"
-                    className="block rounded-lg px-3 py-2.5 text-base font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
+                <>
+                  {/* Auth links for logged out visitors */}
+                  <motion.div
+                    initial={reducedMotion ? undefined : { opacity: 0, x: -12 }}
+                    animate={reducedMotion ? undefined : { opacity: 1, x: 0 }}
+                    transition={{ duration: 0.25, delay: 0.2 }}
+                    className="mt-2 border-t border-slate-200 dark:border-slate-800 pt-3 flex flex-col gap-2"
                   >
-                    Log in
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="block text-center rounded-xl bg-primary-fill py-2.5 text-sm font-bold text-white shadow-xs hover:bg-blue-600"
-                  >
-                    Register
-                  </Link>
-                </motion.div>
+                    <Link
+                      href="/login"
+                      onClick={() => setMenuOpen(false)}
+                      className="block rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
+                    >
+                      Log in to account
+                    </Link>
+                    <Link
+                      href="/register"
+                      onClick={() => setMenuOpen(false)}
+                      className="block text-center rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 py-2.5 text-sm font-bold text-primary-blue dark:text-blue-400 hover:bg-blue-100"
+                    >
+                      Create Free Account
+                    </Link>
+                  </motion.div>
+
+                  {/* Enroll Option shown at menu section at bottom separately */}
+                  <div className="mt-3 border-t border-slate-200 dark:border-slate-800 pt-3">
+                    <Link
+                      href="/register-course"
+                      onClick={() => setMenuOpen(false)}
+                      className="group flex w-full items-center justify-center gap-2 rounded-xl bg-primary-fill py-3 text-sm font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 active:scale-[0.98] transition-all"
+                    >
+                      <span>Enroll Now</span>
+                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </Link>
+                  </div>
+                </>
               ) : (
                 <motion.div
                   initial={reducedMotion ? undefined : { opacity: 0, x: -12 }}
                   animate={reducedMotion ? undefined : { opacity: 1, x: 0 }}
-                  transition={{ duration: 0.25, delay: 0.05 + navLinks.length * 0.05 }}
-                  className="mt-2 border-t border-border dark:border-slate-800 pt-3 flex flex-col gap-1.5"
+                  transition={{ duration: 0.25, delay: 0.2 }}
+                  className="mt-3 border-t border-border dark:border-slate-800 pt-3 flex flex-col gap-2"
                 >
-                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl mb-1">
-                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{userName}</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{userEmail}</p>
-                  </div>
                   <Link
                     href={dashboardHref}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-primary-blue"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center justify-between rounded-xl bg-primary-blue/10 dark:bg-blue-950/40 border border-primary-blue/20 dark:border-blue-800/50 px-3.5 py-2.5 text-sm font-bold text-primary-blue dark:text-blue-400"
                   >
-                    <LayoutDashboard className="h-4 w-4" /> Go to Dashboard
+                    <span className="flex items-center gap-2">
+                      <LayoutDashboard className="h-4 w-4" /> Go to Dashboard
+                    </span>
+                    <ArrowRight className="h-4 w-4" />
                   </Link>
+
                   <button
                     type="button"
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-rose-600 dark:text-rose-400 text-left cursor-pointer"
+                    onClick={async () => {
+                      setMenuOpen(false);
+                      await handleLogout();
+                    }}
+                    className="flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left cursor-pointer transition-colors"
                   >
                     <LogOut className="h-4 w-4" /> Sign out
                   </button>

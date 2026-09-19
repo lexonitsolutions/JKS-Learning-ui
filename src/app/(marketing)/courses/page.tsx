@@ -3,6 +3,8 @@ import { CourseCard } from "@/components/marketing/course-card";
 import { Reveal } from "@/lib/motion/reveal";
 import { fetchDbCourses, TRACKS } from "@/lib/data/courses";
 
+import { CourseCatalogGrid } from "./course-catalog-grid";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -13,7 +15,6 @@ export default async function CoursesPage({
 }) {
   const { track } = await searchParams;
   const courses = await fetchDbCourses();
-  const filtered = track ? courses.filter((c) => c.track === track) : courses;
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 py-16 lg:px-16">
@@ -52,24 +53,7 @@ export default async function CoursesPage({
         ))}
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="mt-12 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 p-12 text-center">
-          <p className="text-base font-bold text-slate-800 dark:text-white">No courses currently published</p>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Courses published in the database will appear here in real-time.</p>
-        </div>
-      ) : (
-        <Reveal
-          key={track ?? "all"}
-          variant="stagger"
-          className="mt-10 grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {filtered.map((course) => (
-            <div key={course.slug}>
-              <CourseCard course={course} />
-            </div>
-          ))}
-        </Reveal>
-      )}
+      <CourseCatalogGrid initialCourses={courses} track={track} />
     </div>
   );
 }

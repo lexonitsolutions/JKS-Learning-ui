@@ -339,7 +339,7 @@ export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
         res = await apiFetch("/courses/all", {
           cache: "no-store",
           headers: { Accept: "application/json" },
-          signal: AbortSignal.timeout(3000),
+          signal: AbortSignal.timeout(12000),
         });
       } catch {
         // ignore
@@ -351,7 +351,7 @@ export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
         res = await apiFetch("/courses", {
           cache: "no-store",
           headers: { Accept: "application/json" },
-          signal: AbortSignal.timeout(3000),
+          signal: AbortSignal.timeout(12000),
         });
       } catch {
         // ignore

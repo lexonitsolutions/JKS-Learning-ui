@@ -47,128 +47,21 @@ export function mapBackendTrack(track: string): Track {
 }
 
 /**
- * 4 Real Enterprise Courses matching the exact MongoDB Atlas database schema
+ * Real DB courses catalog type and empty default
  */
-export const REAL_DB_COURSES: Course[] = [
-  {
-    slug: "java-full-stack-mastery",
-    title: "Java Full Stack Developer Mastery",
-    track: "Full Stack",
-    level: "Intermediate",
-    durationWeeks: 16,
-    price: 29999,
-    rating: 4.9,
-    studentsEnrolled: 2140,
-    summary:
-      "Enterprise Spring Boot 3, Microservices, Kafka, Docker & React 19 architecture built around real enterprise project work.",
-    modules: [
-      {
-        title: "Core Java & Advanced Concurrency",
-        topics: ["JVM Memory Model & Garbage Collection Tuning", "Java Concurrency & Virtual Threads", "OOP Principles & Design Patterns"],
-      },
-      {
-        title: "Spring Boot 3 & Microservices Architecture",
-        topics: ["Distributed Transaction Management (Saga Pattern)", "Orchestration vs Choreography with Apache Kafka", "Spring Security & OAuth2"],
-      },
-      {
-        title: "Frontend with React & Next.js",
-        topics: ["React 19 Architecture", "State Management & Server Actions", "Full Stack API Integration"],
-      },
-      {
-        title: "CI/CD & Cloud Deployment",
-        topics: ["Docker & Kubernetes Orchestration", "Cloud CI/CD Pipelines", "Production Monitoring"],
-      },
-    ],
-  },
-  {
-    slug: "modern-frontend-engineering",
-    title: "Modern Frontend Engineering (React 19 & Next.js)",
-    track: "Frontend",
-    level: "Beginner",
-    durationWeeks: 10,
-    price: 24999,
-    rating: 4.9,
-    studentsEnrolled: 3020,
-    summary:
-      "React 19, Next.js App Router, Tailwind CSS, TypeScript & Three.js 3D WebGL for enterprise frontend architects.",
-    modules: [
-      {
-        title: "Modern Web & TypeScript Fundamentals",
-        topics: ["Semantic Architecture & Modern Layouts", "Advanced TypeScript in Practice", "Core Web Vitals & Browser APIs"],
-      },
-      {
-        title: "React 19 & Next.js App Router",
-        topics: ["Server Components & Streaming SSR", "Custom Hooks & High-performance State", "Framer Motion & Micro-interactions"],
-      },
-      {
-        title: "3D Visuals & Performance Engineering",
-        topics: ["Three.js & React Three Fiber (R3F)", "Bundle Optimization & Code Splitting", "Automated Testing with Playwright"],
-      },
-    ],
-  },
-  {
-    slug: "sap-s4hana-enterprise-systems",
-    title: "SAP S/4HANA Enterprise Systems",
-    track: "SAP",
-    level: "Intermediate",
-    durationWeeks: 12,
-    price: 34999,
-    rating: 4.8,
-    studentsEnrolled: 1500,
-    summary:
-      "SAP S/4HANA FI/CO, MM, SD configuration, ABAP Cloud on BTP & Clean Core architecture for enterprise consultants.",
-    modules: [
-      {
-        title: "SAP S/4HANA Architecture & Business Suite",
-        topics: ["S/4HANA Core & In-Memory Database Architecture", "Enterprise Structure & Organization Setup", "Fiori UX & Launchpad Configuration"],
-      },
-      {
-        title: "Functional Configuration (MM & FI/CO)",
-        topics: ["Procure-to-Pay End-to-End Cycle", "General Ledger & Financial Accounting", "Material Master & Inventory Management"],
-      },
-      {
-        title: "ABAP Cloud & Clean Core on BTP",
-        topics: ["ABAP RESTful Application Programming (RAP)", "Core Data Services (CDS Views)", "Side-by-Side Extensibility on SAP BTP"],
-      },
-    ],
-  },
-  {
-    slug: "dotnet-full-stack-developer",
-    title: ".NET 9 Enterprise Microservices & Cloud",
-    track: "Full Stack",
-    level: "Intermediate",
-    durationWeeks: 14,
-    price: 27999,
-    rating: 4.8,
-    studentsEnrolled: 1380,
-    summary:
-      "C# 13, ASP.NET Core Web API, Entity Framework Core 9, Azure & Blazor WebAssembly for high-scale enterprise applications.",
-    modules: [
-      {
-        title: "C# 13 & Advanced Object-Oriented Architecture",
-        topics: ["Modern C# Features & Pattern Matching", "Asynchronous Programming & Channels", "Clean Architecture Principles"],
-      },
-      {
-        title: "ASP.NET Core Web APIs & Microservices",
-        topics: ["High-throughput REST & gRPC Services", "Entity Framework Core 9 & Performance Tuning", "Identity & JWT Token Security"],
-      },
-      {
-        title: "Cloud Deployment & Azure Integration",
-        topics: ["Azure Container Apps & Kubernetes", "Event-Driven Messaging with Azure Service Bus", "CI/CD Deployment Pipelines"],
-      },
-    ],
-  },
-];
+export const REAL_DB_COURSES: Course[] = [];
 
 export function transformBackendCourse(bc: BackendCourse): Course {
-  const fallback = REAL_DB_COURSES.find((c) => c.slug === bc.slug);
   const track = mapBackendTrack(bc.track);
 
-  let modules = fallback?.modules || [];
+  let modules: { title: string; topics: string[] }[] = [];
   if (Array.isArray(bc.sectionsJson) && bc.sectionsJson.length > 0) {
     modules = bc.sectionsJson.map((s: any) => ({
-      title: s.title,
-      topics: s.subsections?.map((sub: any) => sub.title) || s.directVideos?.map((v: any) => v.title) || ["Module Lecture Topics"],
+      title: s.title || "Module",
+      topics:
+        s.subsections?.map((sub: any) => sub.title) ||
+        s.directVideos?.map((v: any) => v.title) ||
+        ["Curriculum Lecture Topics"],
     }));
   } else if (bc.modules && bc.modules.length > 0) {
     modules = bc.modules.map((m) => ({
@@ -180,24 +73,19 @@ export function transformBackendCourse(bc: BackendCourse): Course {
     }));
   }
 
+  // Extract first available video from sectionsJson or modules if demo video exists
   let demoVideoUrl = "";
   let demoVideoTitle = "";
-  if (Array.isArray(bc.sectionsJson) && bc.sectionsJson.length > 0) {
-    for (const s of bc.sectionsJson) {
-      if (s.subsections && s.subsections.length > 0) {
-        for (const sub of s.subsections) {
-          if (sub.videos && sub.videos.length > 0 && sub.videos[0].videoUrl) {
-            demoVideoUrl = sub.videos[0].videoUrl;
-            demoVideoTitle = sub.videos[0].title || s.title;
-            break;
-          }
+  if (Array.isArray(bc.sectionsJson)) {
+    for (const sec of bc.sectionsJson) {
+      if (Array.isArray(sec.directVideos) && sec.directVideos.length > 0) {
+        const firstVid = sec.directVideos[0];
+        if (firstVid.videoUrl || firstVid.bunnyVideoId) {
+          demoVideoUrl = firstVid.videoUrl || `https://iframe.mediadelivery.net/embed/754986/${firstVid.bunnyVideoId}`;
+          demoVideoTitle = firstVid.title || `${bc.title} Demo`;
+          break;
         }
       }
-      if (!demoVideoUrl && s.directVideos && s.directVideos.length > 0 && s.directVideos[0].videoUrl) {
-        demoVideoUrl = s.directVideos[0].videoUrl;
-        demoVideoTitle = s.directVideos[0].title || s.title;
-      }
-      if (demoVideoUrl) break;
     }
   }
 
@@ -217,12 +105,12 @@ export function transformBackendCourse(bc: BackendCourse): Course {
     slug: bc.slug,
     title: bc.title,
     track,
-    level: (bc.level as any) || fallback?.level || "Intermediate",
-    durationWeeks: bc.durationWeeks || fallback?.durationWeeks || (track === "Frontend" ? 10 : track === "SAP" ? 12 : 16),
-    price: bc.priceCents ? Math.round(bc.priceCents / 100) : fallback?.price || 24999,
-    rating: typeof bc.rating === "number" ? bc.rating : fallback?.rating || 4.9,
-    studentsEnrolled: typeof bc.studentsEnrolled === "number" ? bc.studentsEnrolled : fallback?.studentsEnrolled || 0,
-    summary: bc.summary || fallback?.summary || "",
+    level: (bc.level as any) || "Intermediate",
+    durationWeeks: bc.durationWeeks || (track === "Frontend" ? 10 : track === "SAP" ? 12 : 16),
+    price: bc.priceCents ? Math.round(bc.priceCents / 100) : 24999,
+    rating: typeof bc.rating === "number" ? bc.rating : 4.9,
+    studentsEnrolled: typeof bc.studentsEnrolled === "number" ? bc.studentsEnrolled : 0,
+    summary: bc.summary || "",
     demoVideoUrl,
     demoVideoTitle,
     modules,
@@ -231,51 +119,79 @@ export function transformBackendCourse(bc: BackendCourse): Course {
 
 /**
  * Fetch published courses directly from backend MongoDB database.
- * Falls back to REAL_DB_COURSES if backend is unreachable or booting up.
+ * Never returns mock/fake data. Returns empty array if no courses are found.
  */
 export async function fetchDbCourses(): Promise<Course[]> {
-  try {
-    const res = await fetch(apiUrl("/courses"), {
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(3000),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        return data.map((item: BackendCourse) => transformBackendCourse(item));
-      }
-    }
-  } catch (_err) {
-    // Gracefully fallback to real course data if backend is offline or starting up
+  const urlsToTry: string[] = [apiUrl("/courses")];
+  if (typeof window === "undefined" && !urlsToTry[0].includes("localhost:4000")) {
+    urlsToTry.push("http://localhost:4000/courses");
   }
 
-  return REAL_DB_COURSES;
+  for (const url of urlsToTry) {
+    try {
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(12000),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          return data.map((item: BackendCourse) => transformBackendCourse(item));
+        }
+      }
+    } catch {
+      // Try next url if available
+    }
+  }
+
+  return [];
 }
 
 /**
  * Fetch a single published course by slug directly from backend MongoDB database.
- * Falls back to REAL_DB_COURSES if backend is unreachable.
+ * Supports exact match and slug resolution across live DB courses.
  */
 export async function fetchDbCourseBySlug(slug: string): Promise<Course | undefined> {
-  try {
-    const res = await fetch(apiUrl(`/courses/${encodeURIComponent(slug)}`), {
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(3000),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.slug) {
-        return transformBackendCourse(data);
-      }
-    }
-  } catch (_err) {
-    // Gracefully fallback
+  const cleanSlug = decodeURIComponent(slug).trim();
+  const urlsToTry: string[] = [apiUrl(`/courses/${encodeURIComponent(cleanSlug)}`)];
+  if (typeof window === "undefined" && !urlsToTry[0].includes("localhost:4000")) {
+    urlsToTry.push(`http://localhost:4000/courses/${encodeURIComponent(cleanSlug)}`);
   }
 
-  return REAL_DB_COURSES.find((c) => c.slug === slug);
-}
+  for (const url of urlsToTry) {
+    try {
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(12000),
+      });
 
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.slug) {
+          return transformBackendCourse(data);
+        }
+      }
+    } catch {
+      // Try next url
+    }
+  }
+
+  // If direct slug query failed, try fetching all courses to match by case-insensitive slug or ID
+  try {
+    const allCourses = await fetchDbCourses();
+    const found = allCourses.find(
+      (c) =>
+        c.slug.toLowerCase() === cleanSlug.toLowerCase() ||
+        c.slug.toLowerCase() === slug.toLowerCase() ||
+        (c as any).id === cleanSlug
+    );
+    if (found) return found;
+  } catch {
+    // ignore
+  }
+
+  return undefined;
+}

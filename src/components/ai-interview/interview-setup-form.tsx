@@ -15,7 +15,6 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { COURSES } from "@/lib/data/courses";
 
 const EXPERIENCE_LEVELS = [
   { id: "Fresher", label: "Fresher", sub: "0–1 years" },
@@ -51,9 +50,16 @@ const INTERVIEW_TYPES = [
   },
 ] as const;
 
+const INTERVIEW_TRACKS = [
+  { slug: "full-stack-development", title: "Full Stack Development (React & Node.js)", level: "Intermediate", durationWeeks: 14 },
+  { slug: "java-enterprise", title: "Java Full Stack (Spring Boot & Microservices)", level: "Advanced", durationWeeks: 16 },
+  { slug: "frontend-engineering", title: "Modern Frontend Engineering (React 19 & Next.js)", level: "Intermediate", durationWeeks: 12 },
+  { slug: "sap-s4hana", title: "SAP S/4HANA & ABAP Cloud Architecture", level: "Advanced", durationWeeks: 14 },
+] as const;
+
 export function InterviewSetupForm() {
   const router = useRouter();
-  const [technology, setTechnology] = useState(COURSES[0].slug);
+  const [technology, setTechnology] = useState<string>(INTERVIEW_TRACKS[0].slug);
   const [experience, setExperience] = useState<string>(EXPERIENCE_LEVELS[0].id);
   const [type, setType] = useState<string>("technical");
   const [isLoading, setIsLoading] = useState(false);
@@ -90,7 +96,7 @@ export function InterviewSetupForm() {
           1. Select Technology Track
         </label>
         <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-          {COURSES.map((c) => {
+          {INTERVIEW_TRACKS.map((c) => {
             const isSelected = technology === c.slug;
             return (
               <button
