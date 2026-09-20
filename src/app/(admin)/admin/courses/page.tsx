@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Plus, BookOpen, Search, Award, Star, TrendingUp, Sparkles, Video, Layers } from "lucide-react";
+import { Plus, BookOpen, Search, Award, Star, TrendingUp, Sparkles, Video, Layers, Pencil } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { CourseWorkflowModal, type CourseWorkflowData } from "@/components/admin/course-workflow-modal";
+import { EditCourseModal } from "@/components/admin/edit-course-modal";
 import { useAllCourses, saveCourse, saveCourseAsync, type FullCourse } from "@/lib/data/courses-store";
 import type { Track } from "@/lib/data/courses";
 import { TiltCard } from "@/components/interactions/tilt-card";
@@ -12,6 +13,8 @@ import { Reveal } from "@/lib/motion/reveal";
 
 export default function AdminCoursesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [courseToEdit, setCourseToEdit] = useState<FullCourse | null>(null);
   const courses = useAllCourses();
   const [selectedTrack, setSelectedTrack] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -270,12 +273,27 @@ export default function AdminCoursesPage() {
                         </span>
                       </td>
                       <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
-                        <Link
-                          href={`/dashboard/my-courses/${c.slug}`}
-                          className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3 py-1.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-xs hover:bg-[#EFF6FF] dark:hover:bg-surface-hover transition-colors inline-block"
-                        >
-                          View Learning UI
-                        </Link>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCourseToEdit(c);
+                              setIsEditModalOpen(true);
+                            }}
+                            className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover hover:border-blue-400 transition-colors cursor-pointer"
+                            title="Edit course details and video lectures"
+                          >
+                            <Pencil className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                            <span>Edit Course</span>
+                          </button>
+
+                          <Link
+                            href={`/dashboard/my-courses/${c.slug}`}
+                            className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3 py-1.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-xs hover:bg-[#EFF6FF] dark:hover:bg-surface-hover transition-colors inline-block"
+                          >
+                            View Learning UI
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -291,6 +309,16 @@ export default function AdminCoursesPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleCreateCourseFromModal}
+      />
+
+      {/* Edit Course & Videos Modal */}
+      <EditCourseModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setCourseToEdit(null);
+        }}
+        course={courseToEdit}
       />
     </>
   );

@@ -369,8 +369,8 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                   <PanelLeftClose className="h-4 w-4 stroke-[2]" />
                 </button>
 
-                {/* Logo without long overlapping subtitle */}
-                <JksLogo size="sm" href={rootHref} />
+                {/* Logo without long overlapping subtitle - redirects to home page */}
+                <JksLogo size="sm" href="/" />
               </div>
 
               {/* Compact Role Badge on the right */}

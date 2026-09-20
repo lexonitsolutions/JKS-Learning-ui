@@ -21,7 +21,10 @@ import { CertificateModal, type CertificateData } from "@/components/common/cert
 import {
   fetchAdminCertificates,
   issueCertificateByAdmin,
+  fetchPendingCompletions,
+  approveCourseCompletion,
   type AdminCertificateItem,
+  type PendingCompletionItem,
 } from "@/lib/data/certificates-api";
 import { fetchAdminStudents, type AdminStudentRecord } from "@/lib/data/students-api";
 import { fetchDbCourses } from "@/lib/data/courses-api";
@@ -29,10 +32,14 @@ import type { Course } from "@/lib/data/courses";
 
 export default function AdminCertificatesPage() {
   const [certificates, setCertificates] = useState<AdminCertificateItem[]>([]);
+  const [pendingCompletions, setPendingCompletions] = useState<PendingCompletionItem[]>([]);
   const [students, setStudents] = useState<AdminStudentRecord[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<"issued" | "pending">("issued");
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const [selectedCert, setSelectedCert] = useState<CertificateData | null>(null);
   const [isIssueModalOpen, setIsIssueModalOpen] = useState<boolean>(false);
@@ -43,13 +50,15 @@ export default function AdminCertificatesPage() {
 
   const loadAllData = useCallback(async () => {
     try {
-      const [certsData, studentsData, coursesData] = await Promise.all([
+      const [certsData, pendingData, studentsData, coursesData] = await Promise.all([
         fetchAdminCertificates(),
+        fetchPendingCompletions(),
         fetchAdminStudents(),
         fetchDbCourses(),
       ]);
 
       setCertificates(certsData);
+      setPendingCompletions(pendingData);
       setStudents(studentsData);
       setCourses(coursesData);
 
@@ -73,7 +82,27 @@ export default function AdminCertificatesPage() {
 
   const handleRefresh = () => {
     setRefreshing(true);
+    setActionMessage(null);
     loadAllData();
+  };
+
+  const handleApproveCompletion = async (enrollmentId: string, studentName: string, courseTitle: string) => {
+    setApprovingId(enrollmentId);
+    setActionMessage(null);
+    const res = await approveCourseCompletion(enrollmentId);
+    if (res.success) {
+      setActionMessage({
+        type: "success",
+        text: `Successfully approved 100% course completion and issued certificate for ${studentName} (${courseTitle})!`,
+      });
+      await loadAllData();
+    } else {
+      setActionMessage({
+        type: "error",
+        text: res.error || "Failed to approve course completion.",
+      });
+    }
+    setApprovingId(null);
   };
 
   const handleIssueCertificate = async (e: React.FormEvent) => {
@@ -212,7 +241,58 @@ export default function AdminCertificatesPage() {
           </TiltCard>
         </Reveal>
 
-        {/* Real-Time Certificates Table */}
+        {/* Tab Switcher & Feedback */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab("issued")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                activeTab === "issued"
+                  ? "bg-[#2563EB] text-white shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-800"
+              }`}
+            >
+              Issued Credentials ({certificates.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("pending")}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                activeTab === "pending"
+                  ? "bg-[#2563EB] text-white shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-800"
+              }`}
+            >
+              <span>Pending Completions</span>
+              {pendingCompletions.length > 0 && (
+                <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-extrabold text-white animate-pulse">
+                  {pendingCompletions.length}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Action Feedback Banner */}
+        {actionMessage && (
+          <div
+            className={`flex items-center gap-2 rounded-xl p-3 text-xs font-semibold ${
+              actionMessage.type === "success"
+                ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                : "bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800"
+            }`}
+          >
+            {actionMessage.type === "success" ? (
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+            ) : (
+              <X className="h-4 w-4 shrink-0" />
+            )}
+            <span>{actionMessage.text}</span>
+          </div>
+        )}
+
+        {/* Real-Time Certificates / Pending Completions Table */}
         <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
           {loading ? (
             <div className="py-12 flex flex-col items-center justify-center space-y-3">
@@ -221,6 +301,98 @@ export default function AdminCertificatesPage() {
                 Loading database certificates...
               </p>
             </div>
+          ) : activeTab === "pending" ? (
+            /* Pending Course Completions Tab */
+            pendingCompletions.length === 0 ? (
+              <div className="py-12 flex flex-col items-center justify-center text-center max-w-md mx-auto space-y-3">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center">
+                  <CheckCircle2 className="h-6 w-6" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  No Pending Course Completions
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  When enrolled students reach 100% video lectures and pass all milestone assessments, their completion requests will appear here for admin review and approval before certificate issuance.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs min-w-[700px]">
+                  <thead>
+                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
+                      <th className="pb-3 pr-4 pl-0">Student</th>
+                      <th className="px-4 pb-3">Course &amp; Track</th>
+                      <th className="px-4 pb-3">Completed Lectures</th>
+                      <th className="px-4 pb-3">Requested At</th>
+                      <th className="px-4 pb-3 text-center">Status</th>
+                      <th className="pr-0 pb-3 pl-4 text-right">Approval Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                    {pendingCompletions.map((p) => (
+                      <tr
+                        key={p.enrollmentId}
+                        className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-hover"
+                      >
+                        <td className="py-4 pr-4 pl-0 font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          <div>
+                            <p className="font-bold text-slate-900 dark:text-white">{p.studentName}</p>
+                            <p className="text-[10px] text-slate-400 font-normal">{p.studentEmail}</p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                          <div>
+                            <p className="font-semibold text-slate-800 dark:text-white">{p.courseTitle}</p>
+                            <span className="inline-block mt-0.5 rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.2 text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                              {p.track}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 text-xs font-bold text-[#2563EB] dark:text-blue-400">
+                            {p.completedLectures} Lectures Done
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                          {p.requestedAt
+                            ? new Date(p.requestedAt).toLocaleDateString("en-IN", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })
+                            : "Recent"}
+                        </td>
+                        <td className="px-4 py-4 text-center whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">
+                            Pending Admin Approval
+                          </span>
+                        </td>
+                        <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => handleApproveCompletion(p.enrollmentId, p.studentName, p.courseTitle)}
+                            disabled={approvingId === p.enrollmentId}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 disabled:opacity-50 transition-all cursor-pointer"
+                          >
+                            {approvingId === p.enrollmentId ? (
+                              <>
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                <span>Approving...</span>
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                <span>Approve &amp; Issue Certificate</span>
+                              </>
+                            )}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
           ) : certificates.length === 0 ? (
             <div className="py-12 flex flex-col items-center justify-center text-center max-w-sm mx-auto space-y-3">
               <div className="h-12 w-12 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-primary-blue flex items-center justify-center">

@@ -114,6 +114,7 @@ export default function CourseLearningHubPage({
   const effectiveEmail = (clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress || session?.email || getClientSessionEmail() || "").toLowerCase().trim();
 
   const [course, setCourse] = useState<FullCourse | null>(null);
+  const [enrollmentStatus, setEnrollmentStatus] = useState<string>("ACTIVE");
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string>("");
   const [completedVideoIds, setCompletedVideoIds] = useState<string[]>([]);
@@ -214,6 +215,9 @@ export default function CourseLearningHubPage({
         // Fetch persisted video & assignment progress
         try {
           const prog = await fetchCourseProgress(slug, effectiveEmail);
+          if (prog.status) {
+            setEnrollmentStatus(prog.status);
+          }
           let initialVideos = prog.completedVideoIds || [];
           let initialAssignments = prog.completedAssignmentIds || [];
           let scores: Record<string, number> = { ...(prog.assignmentScores || {}) };
@@ -604,8 +608,28 @@ export default function CourseLearningHubPage({
       <div className="flex flex-1 min-w-0 flex-col lg:flex-row overflow-x-hidden">
         {/* LEFT COLUMN: In-App Video Viewport & Udemy Bottom Sections */}
         <div className="flex flex-1 min-w-0 flex-col p-3 sm:p-5 lg:p-6 space-y-5">
-          {/* IN-APP VIDEO PLAYER */}
-          {activeVideo ? (
+          {/* IN-APP VIDEO PLAYER OR PAUSED OVERLAY */}
+          {enrollmentStatus === "PAUSED" ? (
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-amber-300 dark:border-amber-800 bg-amber-50/90 dark:bg-amber-950/40 p-12 text-center space-y-4 shadow-sm">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 shadow-xs">
+                <Lock className="h-8 w-8" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                  Course Access Paused by Administrator
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-md">
+                  Your access to this course has been paused by the administrator. Video lectures and milestone submissions are temporarily disabled. Please contact support to resume your learning.
+                </p>
+              </div>
+              <Link
+                href="/dashboard/my-courses"
+                className="rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-colors"
+              >
+                Return to My Courses
+              </Link>
+            </div>
+          ) : activeVideo ? (
             <div className="space-y-3">
               <InAppVideoPlayer
                 key={activeVideo.id}

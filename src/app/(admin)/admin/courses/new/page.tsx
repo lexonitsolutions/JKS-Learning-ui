@@ -76,7 +76,17 @@ export default function AdminNewCoursePage() {
   // Step 1: Basic Info State
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
-  const [track, setTrack] = useState<Track>("Full Stack");
+  const [track, setTrack] = useState<string>("Full Stack");
+  const [availableTracks, setAvailableTracks] = useState<string[]>([
+    "Full Stack",
+    "Frontend",
+    "SAP",
+    "DotNet",
+    "Cloud & DevOps",
+    "Data Science & AI",
+  ]);
+  const [customTrackInput, setCustomTrackInput] = useState("");
+  const [showCustomTrackInput, setShowCustomTrackInput] = useState(false);
   const [level, setLevel] = useState<"Beginner" | "Intermediate" | "Advanced">("Intermediate");
   const [durationWeeks, setDurationWeeks] = useState<number | string>("");
   const [price, setPrice] = useState<number | string>("");
@@ -96,7 +106,7 @@ export default function AdminNewCoursePage() {
         id: `asg-${Date.now()}`,
         title: "",
         description: "",
-        type: "Coding Challenge",
+        type: "MCQ",
         minPassingScore: 70,
         questions: [],
       },
@@ -427,7 +437,7 @@ export default function AdminNewCoursePage() {
       id: `crs-${Date.now()}`,
       slug: slug || `course-${Date.now()}`,
       title,
-      track,
+      track: track as Track,
       level,
       durationWeeks: Number(durationWeeks) || 12,
       price: Number(price) || 19999,
@@ -600,18 +610,76 @@ export default function AdminNewCoursePage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                        Academic Track
-                      </label>
-                      <select
-                        value={track}
-                        onChange={(e) => setTrack(e.target.value as Track)}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                      >
-                        <option value="Full Stack">Full Stack</option>
-                        <option value="Frontend">Frontend</option>
-                        <option value="SAP">SAP</option>
-                      </select>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                          Academic Track
+                        </label>
+                        {!showCustomTrackInput && (
+                          <button
+                            type="button"
+                            onClick={() => setShowCustomTrackInput(true)}
+                            className="text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
+                          >
+                            + Add Custom Track
+                          </button>
+                        )}
+                      </div>
+
+                      {!showCustomTrackInput ? (
+                        <select
+                          value={track}
+                          onChange={(e) => {
+                            if (e.target.value === "__ADD_CUSTOM__") {
+                              setShowCustomTrackInput(true);
+                            } else {
+                              setTrack(e.target.value);
+                            }
+                          }}
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
+                        >
+                          {availableTracks.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                          <option value="__ADD_CUSTOM__">+ Add Custom Track...</option>
+                        </select>
+                      ) : (
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={customTrackInput}
+                            onChange={(e) => setCustomTrackInput(e.target.value)}
+                            placeholder="Enter custom academic track name (e.g. Cybersecurity)"
+                            className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const trimmed = customTrackInput.trim();
+                              if (trimmed) {
+                                if (!availableTracks.includes(trimmed)) {
+                                  setAvailableTracks((prev) => [...prev, trimmed]);
+                                }
+                                setTrack(trimmed);
+                                setCustomTrackInput("");
+                                setShowCustomTrackInput(false);
+                              }
+                            }}
+                            className="rounded-xl bg-[#2563EB] px-3 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowCustomTrackInput(false)}
+                            className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-surface-elevated px-2.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1339,15 +1407,15 @@ export default function AdminNewCoursePage() {
                             value={section.assignment.type}
                             onChange={(e) => {
                               const updated = [...sections];
-                              updated[secIdx].assignment.type = e.target.value as "MCQ" | "Coding Challenge" | "Project Submission" | "Architectural Design";
+                              updated[secIdx].assignment.type = e.target.value;
                               setSections(updated);
                             }}
                             className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                           >
-                            <option value="MCQ">MCQ Test</option>
-                            <option value="Coding Challenge">Coding Challenge</option>
-                            <option value="Project Submission">Project Submission</option>
-                            <option value="Architectural Design">Architectural Review</option>
+                            <option value="MCQ">MCQs</option>
+                            <option value="Short Answer">Short Answer Question</option>
+                            <option value="Long Answer">Long Answer Question</option>
+                            <option value="File Upload">File / Project Upload</option>
                           </select>
                         </div>
                       </div>
@@ -1368,6 +1436,25 @@ export default function AdminNewCoursePage() {
                           className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                         />
                       </div>
+
+                      {(section.assignment.type === "Short Answer" || section.assignment.type === "Long Answer") && (
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase">
+                            Admin Model / Expected Answer (For Automatic Evaluation & Validation)
+                          </label>
+                          <textarea
+                            rows={section.assignment.type === "Long Answer" ? 4 : 2}
+                            value={section.assignment.modelAnswer || ""}
+                            onChange={(e) => {
+                              const updated = [...sections];
+                              updated[secIdx].assignment.modelAnswer = e.target.value;
+                              setSections(updated);
+                            }}
+                            placeholder="Enter the official model answer or key concepts. When students submit, their response is evaluated against this text."
+                            className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
+                          />
+                        </div>
+                      )}
 
                       {/* PASSING OUT MARK THRESHOLD */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-slate-50 dark:bg-surface-elevated p-3.5 border border-slate-100 dark:border-slate-800">

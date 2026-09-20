@@ -32,6 +32,7 @@ import {
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { useUser } from "@clerk/nextjs";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { fetchStudentEnrollments } from "@/lib/data/enrollments-api";
 
 interface ExperienceItem {
   id: string;
@@ -303,6 +304,91 @@ export default function ResumeBuilderPage() {
     } catch {}
   };
 
+  // Auto-fill from student profile and real enrolled courses
+  const handleAutoFillFromProfile = useCallback(async () => {
+    const realName = clerkUser?.fullName || mockSession?.name || "";
+    const realEmail = clerkUser?.primaryEmailAddress?.emailAddress || mockSession?.email || "";
+    let realPhone = "";
+    if (clerkUser?.primaryPhoneNumber?.phoneNumber) {
+      realPhone = clerkUser.primaryPhoneNumber.phoneNumber;
+    } else if ((mockSession as any)?.phone) {
+      realPhone = (mockSession as any).phone;
+    } else {
+      try {
+        const rawAuth = localStorage.getItem("jks_auth_user");
+        if (rawAuth) {
+          const u = JSON.parse(rawAuth);
+          if (u.phone) realPhone = u.phone;
+        }
+      } catch {}
+    }
+
+    let enrollments: any[] = [];
+    try {
+      if (realEmail) {
+        enrollments = await fetchStudentEnrollments(realEmail);
+      }
+    } catch {}
+
+    const courseTitles = enrollments.map((e) => e.title);
+    const tracks = Array.from(new Set(enrollments.map((e) => e.track)));
+
+    const autoHeadline = tracks.length > 0
+      ? `${tracks[0]} Software Developer | Full Stack & Distributed Systems`
+      : "Software Engineer | Full Stack & Cloud Developer";
+
+    const autoSummary = courseTitles.length > 0
+      ? `Dedicated Software Engineer specializing in ${tracks.join(", ") || "Full Stack Software Engineering"}. Successfully completed comprehensive curriculum and real-world milestones in ${courseTitles.slice(0, 2).join(" and ")} through JKS Learning.`
+      : "Results-driven Software Engineer with a solid background in designing and building scalable web applications, RESTful microservices, and modern cloud architectures. Passionate about engineering high-quality, production-ready software solutions.";
+
+    let autoLangs = "TypeScript, JavaScript (ES6+), Java 21, SQL, Python, Go";
+    let autoFrameworks = "React 19, Next.js 15, Node.js, Express, Tailwind CSS";
+    let autoDatabases = "PostgreSQL, MongoDB, Redis, Prisma";
+    let autoCloud = "Docker, AWS (S3, EC2), GitHub Actions CI/CD, Git";
+    let autoCore = "Data Structures & Algorithms, RESTful APIs, Microservices Architecture, Agile";
+
+    if (tracks.some((t) => typeof t === "string" && t.toLowerCase().includes("sap"))) {
+      autoLangs = "ABAP, SQL, JavaScript, Core Data Services (CDS)";
+      autoFrameworks = "SAP Fiori, SAP UI5, SAP BTP, OData Services";
+      autoDatabases = "SAP HANA, Oracle, PostgreSQL";
+      autoCloud = "SAP Business Technology Platform, Git, Jenkins";
+      autoCore = "ERP Architecture, BAPI, IDocs, Enhancements & BADIs";
+    }
+
+    const autoCertifications = enrollments.map((e, idx) => ({
+      id: `cert-auto-${idx}-${Date.now()}`,
+      title: `${e.title} Specialization`,
+      issuer: `JKS Learning (${e.track || "Verified Track"})`,
+      year: new Date(e.enrolledAt || Date.now()).getFullYear().toString(),
+    }));
+
+    setResumeData((prev) => {
+      const updated: ResumeData = {
+        ...prev,
+        personal: {
+          ...prev.personal,
+          fullName: realName || prev.personal.fullName || "Student Name",
+          email: realEmail || prev.personal.email || "student@example.com",
+          phone: realPhone || prev.personal.phone || "+91 98765 43210",
+          headline: prev.personal.headline || autoHeadline,
+          summary: prev.personal.summary || autoSummary,
+        },
+        skills: {
+          languages: prev.skills.languages || autoLangs,
+          frameworks: prev.skills.frameworks || autoFrameworks,
+          databases: prev.skills.databases || autoDatabases,
+          cloudDevOps: prev.skills.cloudDevOps || autoCloud,
+          coreCS: prev.skills.coreCS || autoCore,
+        },
+        certifications: prev.certifications.length > 0 ? prev.certifications : autoCertifications,
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  }, [clerkUser, mockSession]);
+
   // Load initial data from localStorage, or prefill with current user's details
   useEffect(() => {
     try {
@@ -318,20 +404,9 @@ export default function ResumeBuilderPage() {
       // ignore
     }
 
-    // Default to student's real user profile details without mock names
-    const realName = clerkUser?.fullName || mockSession?.name || "";
-    const realEmail = clerkUser?.primaryEmailAddress?.emailAddress || mockSession?.email || "";
-    if (realName || realEmail) {
-      setResumeData((prev) => ({
-        ...prev,
-        personal: {
-          ...prev.personal,
-          fullName: realName,
-          email: realEmail,
-        },
-      }));
-    }
-  }, [clerkUser, mockSession]);
+    // Default to student's real user profile details and enrolled courses
+    handleAutoFillFromProfile();
+  }, [handleAutoFillFromProfile]);
 
   // Auto-save to localStorage
   const saveToStorage = useCallback((data: ResumeData) => {
@@ -1105,11 +1180,13 @@ export default function ResumeBuilderPage() {
             @media print {
               @page {
                 size: A4 portrait;
-                margin: 8mm 10mm !important;
+                margin: 5mm 8mm !important;
               }
               html, body {
                 margin: 0 !important;
                 padding: 0 !important;
+                height: auto !important;
+                min-height: 0 !important;
                 background: #ffffff !important;
                 background-color: #ffffff !important;
                 color: #0f172a !important;
@@ -1127,12 +1204,13 @@ export default function ResumeBuilderPage() {
                 display: none !important;
                 visibility: hidden !important;
               }
-              /* Ensure the sheet and its contents print cleanly with exact colors */
+              /* Ensure the sheet and its contents print cleanly with exact colors and NO trailing blank page */
               #printable-resume-sheet,
               #printable-resume-sheet * {
                 color-scheme: light !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+                box-sizing: border-box !important;
               }
               #printable-resume-sheet {
                 display: block !important;
@@ -1140,6 +1218,8 @@ export default function ResumeBuilderPage() {
                 position: relative !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                min-height: 0 !important;
+                height: auto !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 box-shadow: none !important;
@@ -1148,6 +1228,19 @@ export default function ResumeBuilderPage() {
                 background: #ffffff !important;
                 background-color: #ffffff !important;
                 color: #0f172a !important;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+              }
+              #printable-resume-sheet > div {
+                min-height: 0 !important;
+                height: auto !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
               }
               /* Unclutter any wrapper padding or boundaries in print */
               .resume-print-wrapper {
@@ -1156,6 +1249,9 @@ export default function ResumeBuilderPage() {
                 padding: 0 !important;
                 margin: 0 !important;
                 overflow: visible !important;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+                break-inside: avoid !important;
               }
             }
           `,
@@ -1202,6 +1298,15 @@ export default function ResumeBuilderPage() {
             {/* Quick Actions & Print Button */}
             <div className="flex items-center justify-between sm:justify-end gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleAutoFillFromProfile}
+                  title="Auto-fill with your real profile, enrolled courses, and verified certificates"
+                  className="flex items-center gap-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Sync Profile &amp; Courses</span>
+                </button>
                 <button
                   type="button"
                   onClick={handleLoadSample}
@@ -2056,7 +2161,7 @@ export default function ResumeBuilderPage() {
                 {/* TEMPLATE 1: MODERN TECH                                            */}
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {template === "modern" && (
-                  <div className="w-full min-h-[1080px] bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-[#1E5EFF] border border-slate-200 text-slate-800 space-y-5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans">
+                  <div className="w-full min-h-[1080px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-[#1E5EFF] border border-slate-200 text-slate-800 space-y-5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans">
                     {/* Header */}
                     <div className="border-b border-slate-200 pb-4 space-y-2">
                       <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
@@ -2117,7 +2222,7 @@ export default function ResumeBuilderPage() {
                 {/* TEMPLATE 2: ATS MINIMALIST (Strict Classic Monochrome)              */}
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {template === "minimalist" && (
-                  <div className="w-full min-h-[1080px] bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border border-slate-200 text-black space-y-4 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans">
+                  <div className="w-full min-h-[1080px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border border-slate-200 text-black space-y-4 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans">
                     {/* Centered Traditional ATS Header */}
                     <div className="text-center pb-2 border-b border-black">
                       <h1 className="text-2xl sm:text-3xl font-black uppercase text-black tracking-tight">
@@ -2153,7 +2258,7 @@ export default function ResumeBuilderPage() {
                 {/* TEMPLATE 3: EXECUTIVE PRO (Serif Two-Column Sidebar Layout)         */}
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {template === "executive" && (
-                  <div className="w-full min-h-[1080px] bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-slate-900 border border-slate-200 text-slate-900 space-y-5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-serif">
+                  <div className="w-full min-h-[1080px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-slate-900 border border-slate-200 text-slate-900 space-y-5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-serif">
                     {/* Editorial Serif Header */}
                     <div className="border-b-2 border-slate-900 pb-4">
                       <h1 className="text-3xl sm:text-4xl font-normal tracking-wide text-slate-900">

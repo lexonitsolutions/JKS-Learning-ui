@@ -45,12 +45,14 @@ export default function MyCoursesPage() {
     const userEmail = (clerkEmail || session?.email || getClientSessionEmail() || "").toLowerCase().trim();
     try {
       const data = await fetchStudentEnrollments(userEmail);
-      const enriched = data.map((c) => {
+      const activeEnrollments = data.filter((c: any) => c.status !== "REMOVED");
+      const enriched = activeEnrollments.map((c) => {
         const exact = getExactStudentCourseProgress(c.slug, userEmail);
         const prog = exact.completedMilestones > 0 ? exact.overallPercent : (c.progress || 0);
         return {
           ...c,
           progress: prog,
+          status: c.status || "ACTIVE",
           completedVideosCount: exact.completedVideoIds.length,
           totalLessons: exact.totalVideos > 0 ? exact.totalVideos : (c.totalLessons || exact.totalMilestones || 1),
           totalSections: exact.totalSections > 0 ? exact.totalSections : (c.totalSections || 1),
@@ -275,10 +277,15 @@ export default function MyCoursesPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
 
-                    <div className="absolute top-3 left-4 z-10">
+                    <div className="absolute top-3 left-4 z-10 flex items-center gap-1.5 flex-wrap">
                       <span className="rounded-md bg-blue-500/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-300 border border-blue-400/30 backdrop-blur-md">
                         {course.track}
                       </span>
+                      {course.status === "PAUSED" && (
+                        <span className="rounded-md bg-amber-500/90 text-white px-2 py-0.5 text-[10px] font-bold shadow-xs">
+                          Paused by Admin
+                        </span>
+                      )}
                     </div>
 
                     <div className="absolute top-3 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-md shadow-xs border border-white/20">
@@ -371,7 +378,12 @@ export default function MyCoursesPage() {
 
                   {/* Card Footer: Direct Link to Course Learning Player */}
                   <div className="border-t border-slate-100 p-5 bg-slate-50/50 dark:border-slate-800 dark:bg-surface-elevated/50">
-                    {course.isCompleted || (course.progress || 0) >= 100 ? (
+                    {course.status === "PAUSED" ? (
+                      <div className="flex items-center justify-center gap-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 py-3 text-xs font-bold text-amber-800 dark:text-amber-300">
+                        <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        <span>Access Paused by Administrator</span>
+                      </div>
+                    ) : course.isCompleted || (course.progress || 0) >= 100 ? (
                       <Link
                         href={`/dashboard/my-courses/${course.slug}`}
                         className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-md shadow-emerald-500/20 transition-all hover:scale-[1.01]"

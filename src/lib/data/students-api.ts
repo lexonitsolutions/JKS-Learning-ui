@@ -9,6 +9,8 @@ export interface StudentEnrollment {
   batchTiming: string;
   progress: number;
   completedVideosCount?: number;
+  status?: string;
+  completionApproved?: boolean;
   enrolledAt: string;
 }
 
@@ -18,6 +20,7 @@ export interface AdminStudentRecord {
   email: string;
   phone: string;
   role: string;
+  status?: string;
   registeredAt: string;
   createdAt: string;
   enrollments: StudentEnrollment[];
@@ -36,6 +39,7 @@ export interface StudentCourseDetail {
   durationWeeks: number;
   batchTiming: string;
   progress: number;
+  status?: string;
   completedVideosCount?: number;
   completedVideoIds?: string[];
   completedAssignmentIds?: string[];
@@ -317,4 +321,54 @@ export async function gradeAdminSubmission(submissionId: string, score: number):
     return false;
   }
 }
+
+export async function updateAdminStudent(
+  id: string,
+  payload: { name?: string; email?: string; phone?: string; status?: string }
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const res = await apiFetch(`/admin/students/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, data };
+    }
+    const errData = await res.json().catch(() => ({}));
+    return { success: false, error: errData.message || "Failed to update student" };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Network error updating student" };
+  }
+}
+
+export async function deleteAdminStudent(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await apiFetch(`/admin/students/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    return { success: res.ok };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to delete student" };
+  }
+}
+
+export async function updateEnrollmentStatus(
+  enrollmentId: string,
+  status: "ACTIVE" | "PAUSED" | "REMOVED"
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await apiFetch(`/admin/enrollments/${encodeURIComponent(enrollmentId)}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    return { success: res.ok };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to update enrollment status" };
+  }
+}
+
 

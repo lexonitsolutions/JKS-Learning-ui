@@ -33,12 +33,15 @@ export interface SectionAssignment {
   id: string;
   title: string;
   description: string;
-  type: "MCQ" | "Coding Challenge" | "Project Submission" | "Architectural Design";
+  type: "MCQ" | "Short Answer" | "Long Answer" | "File Upload" | string;
   minPassingScore: number;
+  modelAnswer?: string;
   questions?: {
     prompt: string;
     choices?: string[];
     correctIndex?: number;
+    modelAnswer?: string;
+    type?: "mcq" | "short_answer" | "long_answer" | "file_upload" | string;
   }[];
   submissionCriteria?: string[];
   completed?: boolean;

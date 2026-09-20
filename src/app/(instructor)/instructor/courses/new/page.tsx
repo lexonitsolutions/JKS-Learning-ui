@@ -72,7 +72,17 @@ export default function InstructorNewCoursePage() {
   // Step 1: Basic Info State
   const [title, setTitle] = useState("Enterprise Spring Boot & Microservices Masterclass");
   const [slug, setSlug] = useState("spring-boot-microservices-masterclass");
-  const [track, setTrack] = useState<Track>("Full Stack");
+  const [track, setTrack] = useState<string>("Full Stack");
+  const [availableTracks, setAvailableTracks] = useState<string[]>([
+    "Full Stack",
+    "Frontend",
+    "SAP",
+    "DotNet",
+    "Cloud & DevOps",
+    "Data Science & AI",
+  ]);
+  const [customTrackInput, setCustomTrackInput] = useState("");
+  const [showCustomTrackInput, setShowCustomTrackInput] = useState(false);
   const [level, setLevel] = useState<"Beginner" | "Intermediate" | "Advanced">("Advanced");
   const [durationWeeks, setDurationWeeks] = useState(12);
   const [price, setPrice] = useState(24999);
@@ -374,7 +384,7 @@ export default function InstructorNewCoursePage() {
       id: `crs-${Date.now()}`,
       slug: slug || `course-${Date.now()}`,
       title,
-      track,
+      track: track as Track,
       level,
       durationWeeks,
       price: Number(price) || 19999,
@@ -536,18 +546,76 @@ export default function InstructorNewCoursePage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                        Academic Track
-                      </label>
-                      <select
-                        value={track}
-                        onChange={(e) => setTrack(e.target.value as Track)}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
-                      >
-                        <option value="Full Stack">Full Stack</option>
-                        <option value="Frontend">Frontend</option>
-                        <option value="SAP">SAP</option>
-                      </select>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                          Academic Track
+                        </label>
+                        {!showCustomTrackInput && (
+                          <button
+                            type="button"
+                            onClick={() => setShowCustomTrackInput(true)}
+                            className="text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
+                          >
+                            + Add Custom Track
+                          </button>
+                        )}
+                      </div>
+
+                      {!showCustomTrackInput ? (
+                        <select
+                          value={track}
+                          onChange={(e) => {
+                            if (e.target.value === "__ADD_CUSTOM__") {
+                              setShowCustomTrackInput(true);
+                            } else {
+                              setTrack(e.target.value);
+                            }
+                          }}
+                          className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                        >
+                          {availableTracks.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                          <option value="__ADD_CUSTOM__">+ Add Custom Track...</option>
+                        </select>
+                      ) : (
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={customTrackInput}
+                            onChange={(e) => setCustomTrackInput(e.target.value)}
+                            placeholder="Enter custom academic track (e.g. AI & ML)"
+                            className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const trimmed = customTrackInput.trim();
+                              if (trimmed) {
+                                if (!availableTracks.includes(trimmed)) {
+                                  setAvailableTracks((prev) => [...prev, trimmed]);
+                                }
+                                setTrack(trimmed);
+                                setCustomTrackInput("");
+                                setShowCustomTrackInput(false);
+                              }
+                            }}
+                            className="rounded-xl bg-[#2563EB] px-3 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowCustomTrackInput(false)}
+                            className="rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-100 dark:bg-surface-elevated px-2.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 

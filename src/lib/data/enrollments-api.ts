@@ -21,6 +21,9 @@ export interface EnrolledCourseItem {
   totalLessons: number;
   totalSections: number;
   isCompleted?: boolean;
+  status?: string;
+  completionApproved?: boolean;
+  completionPending?: boolean;
 }
 
 export interface ProgressResult {
@@ -469,6 +472,9 @@ export async function fetchCourseProgress(
   courseSlug: string,
   studentEmailOrId?: string
 ): Promise<{
+  status?: string;
+  completionApproved?: boolean;
+  completionPending?: boolean;
   completedVideoIds: string[];
   completedAssignmentIds: string[];
   assignmentScores?: Record<string, number>;
@@ -513,6 +519,9 @@ export async function fetchCourseProgress(
       );
 
       return {
+        status: data.status,
+        completionApproved: data.completionApproved,
+        completionPending: data.completionPending,
         completedVideoIds: combinedVideos,
         completedAssignmentIds: combinedAssignments,
         assignmentScores: combinedScores,

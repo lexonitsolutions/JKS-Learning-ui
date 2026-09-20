@@ -18,6 +18,7 @@ import {
   Bot,
   User,
   ShieldCheck,
+  ShieldAlert,
   TrendingUp,
   Download,
   Share2,
@@ -58,15 +59,23 @@ import {
   Bell,
   Plus,
   ThumbsUp,
+  MoreVertical,
+  Pause,
+  Play,
+  Trash2,
+  Edit3,
+  PauseCircle,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import {
   fetchStudentDetail,
+  updateEnrollmentStatus,
   type AdminStudentDetail,
   type StudentCourseDetail,
   type StudentInvoiceItem,
+  type AdminStudentRecord,
 } from "@/lib/data/students-api";
 import {
   getFullCourseBySlug,
@@ -84,6 +93,7 @@ import {
 } from "@/lib/data/enrollments-api";
 import { CourseThumbnail } from "@/components/common/course-thumbnail";
 import { MessageStudentModal } from "@/components/admin/message-student-modal";
+import { EditStudentModal } from "@/components/admin/edit-student-modal";
 
 type HubTabType = "overview" | "qa" | "notes" | "announcements" | "reviews" | "tools";
 
@@ -101,6 +111,8 @@ export default function AdminStudentDetailsPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [openCourseDropdownId, setOpenCourseDropdownId] = useState<string | null>(null);
 
   // Full Screen Student Course Learning & Assignment Inspector View State
   const [inspectingCourse, setInspectingCourse] = useState<StudentCourseDetail | null>(null);
@@ -117,6 +129,34 @@ export default function AdminStudentDetailsPage() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleUpdateCourseStatus = async (
+    enrollmentId: string,
+    newStatus: "ACTIVE" | "PAUSED" | "REMOVED"
+  ) => {
+    const res = await updateEnrollmentStatus(enrollmentId, newStatus);
+    if (res.success) {
+      setStudent((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          enrollments: prev.enrollments.map((e) =>
+            e.enrollmentId === enrollmentId ? { ...e, status: newStatus } : e
+          ),
+        };
+      });
+      showToast(
+        newStatus === "PAUSED"
+          ? "Course access paused for student."
+          : newStatus === "REMOVED"
+          ? "Student removed from course."
+          : "Course access resumed."
+      );
+    } else {
+      showToast(res.error || "Failed to update course enrollment status.");
+    }
+    setOpenCourseDropdownId(null);
   };
 
   const loadData = useCallback(async () => {
@@ -943,9 +983,19 @@ export default function AdminStudentDetailsPage() {
                         <span className="rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800/40 px-2.5 py-0.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
                           {student.role}
                         </span>
-                        <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/40 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
-                          Active Learner
-                        </span>
+                        {student.status === "BLOCKED" ? (
+                          <span className="rounded-full bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/40 px-2.5 py-0.5 text-[11px] font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1">
+                            <ShieldAlert className="h-3.5 w-3.5" /> Blocked (Login Denied)
+                          </span>
+                        ) : student.status === "ON_HOLD" ? (
+                          <span className="rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/40 px-2.5 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                            <PauseCircle className="h-3.5 w-3.5" /> On Hold
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/40 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                            Active Learner
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -976,6 +1026,15 @@ export default function AdminStudentDetailsPage() {
                   <div className="flex flex-wrap items-center gap-2.5">
                     <button
                       type="button"
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="flex items-center gap-1.5 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 px-3.5 py-2 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-xs hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors cursor-pointer"
+                    >
+                      <Edit3 className="h-3.5 w-3.5" />
+                      <span>Edit Profile</span>
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={handleCopyId}
                       className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
                       title="Copy Student UUID"
@@ -994,6 +1053,20 @@ export default function AdminStudentDetailsPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* Account Standing Alert Banner */}
+                {student.status === "BLOCKED" && (
+                  <div className="mt-4 flex items-center gap-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 p-3.5 text-xs font-semibold text-rose-700 dark:text-rose-300">
+                    <ShieldAlert className="h-4 w-4 shrink-0 text-rose-600" />
+                    <span>This student account is currently blocked. Login attempts with this email will be rejected.</span>
+                  </div>
+                )}
+                {student.status === "ON_HOLD" && (
+                  <div className="mt-4 flex items-center gap-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 p-3.5 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                    <PauseCircle className="h-4 w-4 shrink-0 text-amber-600" />
+                    <span>This student account is currently on temporary hold.</span>
+                  </div>
+                )}
               </div>
             </Reveal>
 
@@ -1103,10 +1176,20 @@ export default function AdminStudentDetailsPage() {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
 
-                            <div className="absolute top-4 left-4 z-10">
+                            <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 flex-wrap">
                               <span className="inline-flex self-start rounded-md bg-blue-500/30 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-300 border border-blue-400/30 backdrop-blur-md">
                                 {course.track}
                               </span>
+                              {course.status === "PAUSED" && (
+                                <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/90 text-white px-2 py-0.5 text-[10px] font-bold shadow-xs">
+                                  <Pause className="h-3 w-3" /> Paused
+                                </span>
+                              )}
+                              {course.status === "REMOVED" && (
+                                <span className="inline-flex items-center gap-1 rounded-md bg-rose-600/90 text-white px-2 py-0.5 text-[10px] font-bold shadow-xs">
+                                  <Trash2 className="h-3 w-3" /> Removed
+                                </span>
+                              )}
                             </div>
 
                             <div className="absolute bottom-3 left-4 z-10 text-xs text-slate-200 font-semibold flex items-center gap-1.5 drop-shadow-md">
@@ -1114,17 +1197,88 @@ export default function AdminStudentDetailsPage() {
                               <span>24 Weeks · Cohort Enrolled</span>
                             </div>
 
-                            <div className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-md shadow-xs border border-white/20">
-                              <BookOpen className="h-4 w-4 text-blue-400" />
+                            <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5">
+                              {/* Three Dots Menu for Course Actions */}
+                              <div className="relative">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenCourseDropdownId(
+                                      openCourseDropdownId === course.enrollmentId
+                                        ? null
+                                        : course.enrollmentId
+                                    );
+                                  }}
+                                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 text-white hover:bg-black/80 backdrop-blur-md shadow-xs border border-white/20 cursor-pointer transition-colors"
+                                  title="Course Enrollment Controls"
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                </button>
+
+                                {openCourseDropdownId === course.enrollmentId && (
+                                  <div
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 top-10 z-30 w-48 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-1.5 shadow-2xl space-y-0.5 text-left animate-in fade-in zoom-in-95"
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleUpdateCourseStatus(
+                                          course.enrollmentId,
+                                          course.status === "PAUSED" ? "ACTIVE" : "PAUSED"
+                                        )
+                                      }
+                                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
+                                    >
+                                      {course.status === "PAUSED" ? (
+                                        <>
+                                          <Play className="h-3.5 w-3.5 text-emerald-600" />
+                                          <span>Resume Course</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Pause className="h-3.5 w-3.5" />
+                                          <span>Pause Course Access</span>
+                                        </>
+                                      )}
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (
+                                          window.confirm(
+                                            `Are you sure you want to remove student from "${course.courseTitle}"?`
+                                          )
+                                        ) {
+                                          handleUpdateCourseStatus(course.enrollmentId, "REMOVED");
+                                        }
+                                      }}
+                                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                      <span>Remove from Course</span>
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
 
                           {/* Card Body */}
                           <div className="p-5 space-y-3.5 flex-1">
                             <div>
-                              <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
-                                {course.courseTitle}
-                              </h3>
+                              <div className="flex items-center justify-between gap-2">
+                                <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                                  {course.courseTitle}
+                                </h3>
+                                {course.status === "PAUSED" && (
+                                  <span className="rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 shrink-0">
+                                    Access Paused
+                                  </span>
+                                )}
+                              </div>
                               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
                                 {course.summary}
                               </p>
@@ -1537,6 +1691,41 @@ export default function AdminStudentDetailsPage() {
             : null
         }
         onMessageSent={(summary) => showToast(summary)}
+      />
+
+      {/* EDIT STUDENT PROFILE MODAL */}
+      <EditStudentModal
+        isOpen={isEditModalOpen}
+        student={
+          student
+            ? {
+                id: student.id,
+                name: student.name,
+                email: student.email,
+                phone: student.phone,
+                role: student.role,
+                status: student.status,
+                registeredAt: student.registeredAt,
+                createdAt: student.createdAt,
+                enrollments: student.enrollments as any,
+                totalEnrolled: student.totalEnrolled,
+              }
+            : null
+        }
+        onClose={() => setIsEditModalOpen(false)}
+        onSaved={(updated) => {
+          setStudent((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              name: updated.name,
+              email: updated.email,
+              phone: updated.phone,
+              status: updated.status || prev.status,
+            };
+          });
+          showToast(`Student profile updated successfully.`);
+        }}
       />
     </>
   );
