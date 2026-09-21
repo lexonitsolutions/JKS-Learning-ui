@@ -228,7 +228,12 @@ function writeSession(session: MockSession) {
   try {
     localStorage.setItem(
       "jks_auth_user",
-      JSON.stringify({ email: session.email, name: session.name, role: session.role }),
+      JSON.stringify({
+        email: session.email,
+        name: session.name,
+        role: session.role,
+        status: session.status || "ACTIVE",
+      }),
     );
   } catch {}
   window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
@@ -244,7 +249,7 @@ function writeSession(session: MockSession) {
  * row behind the httpOnly JWT, so that is what authorization checks use.
  */
 export async function fetchSessionUser(): Promise<
-  { email: string; name: string; role: MockRole } | null
+  { email: string; name: string; role: MockRole; status?: string } | null
 > {
   try {
     const res = await apiFetch("/auth/me", { headers: { "Content-Type": "application/json" } });
@@ -252,7 +257,7 @@ export async function fetchSessionUser(): Promise<
     const data = await res.json();
     const u = data?.user;
     if (!u?.email) return null;
-    return { email: u.email, name: u.name, role: roleFromApi(u.role) };
+    return { email: u.email, name: u.name, role: roleFromApi(u.role), status: u.status || "ACTIVE" };
   } catch {
     return null;
   }
@@ -296,6 +301,7 @@ export async function loginWithApi(email: string, password: string): Promise<Log
         name: u.name,
         initials: initialsFor(u.name),
         role: roleFromApi(u.role),
+        status: u.status || "ACTIVE",
       };
       writeSession(session);
       return { ok: true, session };
@@ -316,13 +322,23 @@ export async function loginWithApi(email: string, password: string): Promise<Log
   }
 }
 
-export async function registerWithApi(name: string, email: string, password: string): Promise<LoginResult> {
+export async function registerWithApi(
+  name: string,
+  email: string,
+  password: string,
+  phone?: string
+): Promise<LoginResult> {
   const normalizedEmail = email.trim().toLowerCase();
   try {
     const res = await apiFetch("/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email: normalizedEmail, password }),
+      body: JSON.stringify({
+        name,
+        email: normalizedEmail,
+        password,
+        phone: phone ? phone.trim() : "",
+      }),
     });
 
     if (res.ok) {
@@ -338,6 +354,7 @@ export async function registerWithApi(name: string, email: string, password: str
         name: u.name,
         initials: initialsFor(u.name, "ST"),
         role: roleFromApi(u.role),
+        status: u.status || "ACTIVE",
       };
       writeSession(session);
       return { ok: true, session };
@@ -345,6 +362,79 @@ export async function registerWithApi(name: string, email: string, password: str
 
     const errData = await res.json().catch(() => ({}));
     const msg = errData?.message || (res.status === 409 ? "An account with this email address already exists." : "Registration failed. Please try again.");
+    return { ok: false, error: Array.isArray(msg) ? msg.join(", ") : msg };
+  } catch {
+    return { ok: false, error: "Could not reach the authentication server. Please check your internet connection." };
+  }
+}
+
+export async function sendRegistrationOtpWithApi(
+  email: string,
+  name?: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await apiFetch("/auth/send-registration-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim().toLowerCase(), name: name?.trim() }),
+    });
+    if (res.ok) {
+      return { ok: true };
+    }
+    const errData = await res.json().catch(() => ({}));
+    const msg =
+      errData?.message ||
+      (res.status === 409
+        ? "An account with this email address already exists. Please sign in."
+        : "Failed to send verification code. Please try again.");
+    return { ok: false, error: Array.isArray(msg) ? msg.join(", ") : msg };
+  } catch {
+    return { ok: false, error: "Could not reach the authentication server. Please check your internet connection." };
+  }
+}
+
+export async function verifyRegistrationOtpWithApi(payload: {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  otp: string;
+}): Promise<LoginResult> {
+  const normalizedEmail = payload.email.trim().toLowerCase();
+  try {
+    const res = await apiFetch("/auth/verify-registration-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: payload.name,
+        email: normalizedEmail,
+        phone: payload.phone?.trim() || "",
+        password: payload.password,
+        otp: payload.otp.trim(),
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.accessToken && typeof window !== "undefined") {
+        try {
+          localStorage.setItem("jks_access_token", data.accessToken);
+        } catch {}
+      }
+      const u = data.user;
+      const session: MockSession = {
+        email: u.email,
+        name: u.name,
+        initials: initialsFor(u.name, "ST"),
+        role: roleFromApi(u.role),
+        status: u.status || "ACTIVE",
+      };
+      writeSession(session);
+      return { ok: true, session };
+    }
+
+    const errData = await res.json().catch(() => ({}));
+    const msg = errData?.message || "Invalid or expired verification code. Please try again.";
     return { ok: false, error: Array.isArray(msg) ? msg.join(", ") : msg };
   } catch {
     return { ok: false, error: "Could not reach the authentication server. Please check your internet connection." };

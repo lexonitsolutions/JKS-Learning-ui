@@ -1,9 +1,12 @@
-import { SignUp } from "@clerk/nextjs";
+import { Suspense } from "react";
+import { TravelConnectSignIn } from "@/components/ui/travel-connect-signin-1";
+import { AuthCardSkeleton } from "@/components/ui/auth-card-skeleton";
 
 export default function SignUpPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <SignUp />
-    </div>
+    <Suspense fallback={<AuthCardSkeleton mode="register" />}>
+      <TravelConnectSignIn mode="register" />
+    </Suspense>
   );
 }
+

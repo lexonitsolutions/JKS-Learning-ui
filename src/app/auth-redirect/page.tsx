@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
-import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { useUser, useClerk } from "@clerk/nextjs";
+import { useMockSession, performLogout, fetchSessionUser } from "@/lib/auth/use-mock-auth";
 import { JksLogo } from "@/components/common/jks-logo";
 import {
   ShieldCheck,
@@ -17,6 +17,7 @@ import Link from "next/link";
 
 export default function AuthRedirectPage() {
   const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const session = useMockSession();
   const [showFallback, setShowFallback] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -38,6 +39,12 @@ export default function AuthRedirectPage() {
   useEffect(() => {
     if (!isLoaded && !session) return;
 
+    if (session?.status === "BLOCKED") {
+      void performLogout(signOut);
+      window.location.replace("/login?blocked=1");
+      return;
+    }
+
     const email = (
       user?.primaryEmailAddress?.emailAddress ||
       user?.emailAddresses?.[0]?.emailAddress ||
@@ -47,6 +54,21 @@ export default function AuthRedirectPage() {
 
     if (!email) return;
 
+    let isCancelled = false;
+
+    // Verify against API
+    void (async () => {
+      try {
+        const u = await fetchSessionUser();
+        if (isCancelled) return;
+        if (u?.status === "BLOCKED") {
+          await performLogout(signOut);
+          window.location.replace("/login?blocked=1");
+          return;
+        }
+      } catch {}
+    })();
+
     const isSuperAdmin = email === "lexonitservices@gmail.com";
     const isAdmin = isSuperAdmin || session?.role === "admin";
     const isInstructor = session?.role === "instructor";
@@ -55,11 +77,16 @@ export default function AuthRedirectPage() {
 
     // Slight delay so the user gets a smooth, satisfying pro-developer verification transition
     const redirectTimer = setTimeout(() => {
-      window.location.replace(targetUrl);
+      if (!isCancelled) {
+        window.location.replace(targetUrl);
+      }
     }, 900);
 
-    return () => clearTimeout(redirectTimer);
-  }, [user, isLoaded, session]);
+    return () => {
+      isCancelled = true;
+      clearTimeout(redirectTimer);
+    };
+  }, [user, isLoaded, session, signOut]);
 
   const userEmail =
     user?.primaryEmailAddress?.emailAddress ||

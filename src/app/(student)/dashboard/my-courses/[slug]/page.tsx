@@ -46,10 +46,14 @@ import {
   AlertCircle,
   XCircle,
   Loader2,
+  Upload,
 } from "lucide-react";
 import {
   getFullCourseBySlug,
   getStoredCourses,
+  fetchLiveCourseBySlug,
+  resolveAssessmentKind,
+  assessmentKindLabel,
   type FullCourse,
   type VideoItem,
   type Section,
@@ -115,13 +119,18 @@ export default function CourseLearningHubPage({
 
   const [course, setCourse] = useState<FullCourse | null>(null);
   const [enrollmentStatus, setEnrollmentStatus] = useState<string>("ACTIVE");
+  // Completing every lecture and assignment only *requests* completion.
+  // An admin has to approve it before the certificate is released.
+  const [completionApproved, setCompletionApproved] = useState(false);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string>("");
   const [completedVideoIds, setCompletedVideoIds] = useState<string[]>([]);
   const [completedAssignmentIds, setCompletedAssignmentIds] = useState<string[]>([]);
   const [assignmentScores, setAssignmentScores] = useState<Record<string, number>>({});
   const [assignmentCooldowns, setAssignmentCooldowns] = useState<Record<string, number>>({});
-  const [activeQuizAnswers, setActiveQuizAnswers] = useState<Record<number, number>>({});
+  // Answers are keyed by question index. MCQs store the chosen option index,
+  // every other question kind stores the text (or file name) the student entered.
+  const [activeQuizAnswers, setActiveQuizAnswers] = useState<Record<number, number | string>>({});
   const [isSubmittingAssessment, setIsSubmittingAssessment] = useState(false);
   const [now, setNow] = useState<number>(Date.now());
 
@@ -208,9 +217,29 @@ export default function CourseLearningHubPage({
   // Load course & real-time progress on mount or slug change
   useEffect(() => {
     const loadData = async () => {
-      const loadedCourse = getFullCourseBySlug(slug) || getStoredCourses()[0];
+      // 1. Immediate local cache preview
+      const cached = getFullCourseBySlug(slug);
+      if (cached) {
+        setCourse(cached);
+      }
+
+      let loadedCourse: FullCourse | null = cached || null;
+
+      // 2. Always re-read the course from the database. The cached copy above
+      // is only a first paint: an assignment the admin edited after this
+      // student enrolled lives in the DB, not in their localStorage catalog.
+      const live = await fetchLiveCourseBySlug(slug);
+      if (live) {
+        loadedCourse = live;
+        setCourse(live);
+      }
+
+      if (!loadedCourse) {
+        loadedCourse = getStoredCourses()[0] || null;
+        if (loadedCourse) setCourse(loadedCourse);
+      }
+
       if (loadedCourse) {
-        setCourse(loadedCourse);
 
         // Fetch persisted video & assignment progress
         try {
@@ -218,6 +247,7 @@ export default function CourseLearningHubPage({
           if (prog.status) {
             setEnrollmentStatus(prog.status);
           }
+          setCompletionApproved(prog.completionApproved === true);
           let initialVideos = prog.completedVideoIds || [];
           let initialAssignments = prog.completedAssignmentIds || [];
           let scores: Record<string, number> = { ...(prog.assignmentScores || {}) };
@@ -298,6 +328,22 @@ export default function CourseLearningHubPage({
     loadData();
   }, [slug, effectiveEmail]);
 
+  // Pick up curriculum and assignment edits made by an admin while this tab
+  // was open, without disturbing the progress state loaded above.
+  useEffect(() => {
+    const refreshCourse = async () => {
+      if (document.visibilityState !== "visible") return;
+      const live = await fetchLiveCourseBySlug(slug);
+      if (live) setCourse(live);
+    };
+    window.addEventListener("focus", refreshCourse);
+    document.addEventListener("visibilitychange", refreshCourse);
+    return () => {
+      window.removeEventListener("focus", refreshCourse);
+      document.removeEventListener("visibilitychange", refreshCourse);
+    };
+  }, [slug]);
+
   if (!course) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-background">
@@ -335,8 +381,13 @@ export default function CourseLearningHubPage({
   const passedAssignmentsCount = passedAssignments.length;
   const allAssignmentsPassed = totalAssignments > 0 && passedAssignmentsCount >= totalAssignments;
 
-  // Certificate access is ONLY unlocked when 100% of videos are watched AND 100% of assignments scored >= pass mark
-  const isCertificateUnlocked = allVideosCompleted && allAssignmentsPassed;
+  // Finishing the material is necessary but not sufficient: the certificate
+  // is released only after an admin approves the completion. Students could
+  // previously download it the moment the last assignment passed.
+  const hasMetCertificateRequirements = allVideosCompleted && allAssignmentsPassed;
+  const isCertificateUnlocked = hasMetCertificateRequirements && completionApproved;
+  const isAwaitingCompletionApproval =
+    hasMetCertificateRequirements && !completionApproved;
 
   const totalMilestones = totalVideos + totalAssignments;
   const completedMilestones = completedVideosCount + passedAssignmentsCount;
@@ -388,29 +439,73 @@ export default function CourseLearningHubPage({
     setActiveQuizAnswers({});
   };
 
+  const countWords = (text: string) =>
+    text.trim() ? text.trim().split(/\s+/).length : 0;
+
+  /**
+   * Has this question been answered?
+   *
+   * MCQs need a selected option; everything else needs non-empty text (a long
+   * answer must also clear its configured word minimum).
+   */
+  const isQuestionAnswered = (
+    q: any,
+    answer: number | string | undefined,
+    assignmentType?: string
+  ): boolean => {
+    const kind = resolveAssessmentKind(q?.type, assignmentType);
+    if (kind === "MCQ") return typeof answer === "number";
+    const text = typeof answer === "string" ? answer.trim() : "";
+    if (!text) return false;
+    if (kind === "LONG_ANSWER" && typeof q?.minWords === "number" && q.minWords > 0) {
+      return countWords(text) >= q.minWords;
+    }
+    return true;
+  };
+
   const handleSelectQuizAnswer = (qIdx: number, choiceIdx: number) => {
     setActiveQuizAnswers((prev) => ({ ...prev, [qIdx]: choiceIdx }));
   };
 
+  const handleWriteQuizAnswer = (qIdx: number, text: string) => {
+    setActiveQuizAnswers((prev) => ({ ...prev, [qIdx]: text }));
+  };
+
   const handleSubmitAssignment = async (sec: Section) => {
-    if (isSubmittingAssessment) return;
+    if (isSubmittingAssessment || enrollmentStatus === "ON_HOLD") return;
+
+    // Belt and braces: the button is disabled, but never grade a partial
+    // attempt if something else manages to call this.
+    const pending = (sec.assignment.questions || []).filter(
+      (q, i) => !isQuestionAnswered(q, activeQuizAnswers[i], sec.assignment.type)
+    ).length;
+    if (pending > 0) return;
+
     setIsSubmittingAssessment(true);
     try {
       const asgId = sec.assignment.id;
       const questions = sec.assignment.questions || [];
       const minPass = sec.assignment.minPassingScore || 70;
 
+      // Every question carries equal weight. MCQs are graded against the
+      // admin's answer key; written, coding and file questions cannot be
+      // auto-graded, so a genuine submission earns the credit and an empty one
+      // earns nothing. Previously every kind was compared to `correctIndex`,
+      // which meant a typed answer never matched and always scored zero.
       let calculatedScore = 0;
       if (questions.length > 0) {
-        let correct = 0;
+        let earned = 0;
         questions.forEach((q, idx) => {
-          const selected = activeQuizAnswers[idx];
-          const correctIdx = typeof q.correctIndex === "number" ? q.correctIndex : 0;
-          if (selected === correctIdx) {
-            correct++;
+          const answer = activeQuizAnswers[idx];
+          const kind = resolveAssessmentKind(q.type, sec.assignment.type);
+          if (kind === "MCQ") {
+            const correctIdx = typeof q.correctIndex === "number" ? q.correctIndex : 0;
+            if (answer === correctIdx) earned++;
+          } else if (isQuestionAnswered(q, answer, sec.assignment.type)) {
+            earned++;
           }
         });
-        calculatedScore = Math.round((correct / questions.length) * 100);
+        calculatedScore = Math.round((earned / questions.length) * 100);
       } else {
         // Default challenge / practical submission score
         calculatedScore = 85;
@@ -570,10 +665,21 @@ export default function CourseLearningHubPage({
       <header className="sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-slate-200 bg-white/95 px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md dark:border-slate-800/80 dark:bg-surface-secondary/95">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <Link
-            href="/dashboard/my-courses"
+            href={
+              session?.role === "admin" || session?.email?.toLowerCase() === "lexonitservices@gmail.com"
+                ? "/admin/courses"
+                : session?.role === "instructor"
+                ? "/instructor/courses"
+                : "/dashboard/my-courses"
+            }
             className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors shrink-0 dark:border-slate-700/80 dark:bg-surface-elevated dark:text-slate-200 dark:hover:bg-surface-hover"
           >
-            <ArrowLeft className="h-4 w-4" /> My Courses
+            <ArrowLeft className="h-4 w-4" />{" "}
+            {session?.role === "admin" || session?.email?.toLowerCase() === "lexonitservices@gmail.com"
+              ? "Admin Courses"
+              : session?.role === "instructor"
+              ? "Instructor Courses"
+              : "My Courses"}
           </Link>
           <div className="h-4 w-[1px] bg-slate-200 hidden sm:block dark:bg-slate-800" />
           <div className="min-w-0">
@@ -608,18 +714,34 @@ export default function CourseLearningHubPage({
       <div className="flex flex-1 min-w-0 flex-col lg:flex-row overflow-x-hidden">
         {/* LEFT COLUMN: In-App Video Viewport & Udemy Bottom Sections */}
         <div className="flex flex-1 min-w-0 flex-col p-3 sm:p-5 lg:p-6 space-y-5">
-          {/* IN-APP VIDEO PLAYER OR PAUSED OVERLAY */}
-          {enrollmentStatus === "PAUSED" ? (
-            <div className="flex flex-col items-center justify-center rounded-3xl border border-amber-300 dark:border-amber-800 bg-amber-50/90 dark:bg-amber-950/40 p-12 text-center space-y-4 shadow-sm">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 shadow-xs">
-                <Lock className="h-8 w-8" />
+          {/* IN-APP VIDEO PLAYER OR ENROLLMENT-ACCESS OVERLAY */}
+          {enrollmentStatus === "ON_HOLD" || enrollmentStatus === "PAUSED" || enrollmentStatus === "REMOVED" ? (
+            <div className={`flex flex-col items-center justify-center rounded-3xl border p-12 text-center space-y-4 shadow-sm ${
+              enrollmentStatus === "REMOVED"
+                ? "border-rose-300 dark:border-rose-800 bg-rose-50/90 dark:bg-rose-950/40"
+                : "border-amber-300 dark:border-amber-800 bg-amber-50/90 dark:bg-amber-950/40"
+            }`}>
+              <div className={`flex h-16 w-16 items-center justify-center rounded-2xl shadow-xs ${
+                enrollmentStatus === "REMOVED"
+                  ? "bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300"
+                  : "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+              }`}>
+                {enrollmentStatus === "ON_HOLD" ? <Clock className="h-8 w-8" /> : <Lock className="h-8 w-8" />}
               </div>
               <div className="space-y-1">
                 <h3 className="text-lg font-black text-slate-900 dark:text-white">
-                  Course Access Paused by Administrator
+                  {enrollmentStatus === "REMOVED"
+                    ? "Course Access Removed by Administrator"
+                    : enrollmentStatus === "ON_HOLD"
+                    ? "Student Account & Course On Hold"
+                    : "Course Access Paused by Administrator"}
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 max-w-md">
-                  Your access to this course has been paused by the administrator. Video lectures and milestone submissions are temporarily disabled. Please contact support to resume your learning.
+                  {enrollmentStatus === "REMOVED"
+                    ? "You are no longer enrolled in this course. Contact support if you believe this was changed in error."
+                    : enrollmentStatus === "ON_HOLD"
+                    ? "Your student account is currently on hold. Video lectures, code assignments, and milestone submissions are temporarily suspended. Please contact your student advisor or administrator to reactivate your access."
+                    : "Your access to this course has been paused by the administrator. Video lectures and milestone submissions are temporarily disabled. Please contact support to resume your learning."}
                 </p>
               </div>
               <Link
@@ -742,6 +864,14 @@ export default function CourseLearningHubPage({
                           className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs cursor-pointer"
                         >
                           <Award className="h-4 w-4" /> Certificate
+                        </button>
+                      ) : isAwaitingCompletionApproval ? (
+                        <button
+                          type="button"
+                          onClick={() => setShowLockedRequirementsModal(true)}
+                          className="flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 shadow-xs cursor-pointer dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300"
+                        >
+                          <Clock className="h-4 w-4" /> Awaiting Approval
                         </button>
                       ) : (
                         <button
@@ -1066,7 +1196,7 @@ export default function CourseLearningHubPage({
                   <div className="border-t border-slate-100 pt-6 dark:border-slate-800">
                     <h3 className="text-sm font-extrabold text-slate-900 mb-2 dark:text-white">Accredited Certificate</h3>
                     <p className="text-xs text-slate-600 mb-3 dark:text-slate-400">
-                      Unlock official JKS Learning certificate by completing 100% of video lectures and passing all section assignments (&ge; 70%).
+                      Unlock official JKS Learning certificate by completing 100% of video lectures, passing all section assignments (&ge; 70%), and receiving admin approval of your course completion.
                     </p>
                     {isCertificateUnlocked ? (
                       <button
@@ -1076,6 +1206,15 @@ export default function CourseLearningHubPage({
                       >
                         <Award className="h-4 w-4" />
                         <span>View Verified Certificate</span>
+                      </button>
+                    ) : isAwaitingCompletionApproval ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowLockedRequirementsModal(true)}
+                        className="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-bold text-amber-800 shadow-2xs cursor-pointer dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300"
+                      >
+                        <Clock className="h-4 w-4" />
+                        <span>Completion Sent for Admin Approval</span>
                       </button>
                     ) : (
                       <button
@@ -1945,7 +2084,9 @@ export default function CourseLearningHubPage({
                 </h4>
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                   {isCertificateUnlocked
-                    ? "Congratulations! 100% of video lectures and all section assignments passed."
+                    ? "Congratulations! Your course completion has been approved by an admin."
+                    : isAwaitingCompletionApproval
+                    ? "All milestones complete. Your completion has been sent to an admin for approval — the certificate unlocks once it is approved."
                     : "Certificate is locked. Complete 100% video lectures and pass all section assignments (≥ 70%) to unlock."}
                 </p>
               </div>
@@ -1980,6 +2121,24 @@ export default function CourseLearningHubPage({
                   {passedAssignmentsCount}/{totalAssignments}
                 </span>
               </div>
+
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                  {completionApproved ? (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  ) : (
+                    <Lock className="h-3.5 w-3.5 text-amber-500" />
+                  )}
+                  Admin Approval
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {completionApproved
+                    ? "Approved"
+                    : isAwaitingCompletionApproval
+                    ? "Pending"
+                    : "Not requested"}
+                </span>
+              </div>
             </div>
 
             <div className="mt-4">
@@ -1991,6 +2150,11 @@ export default function CourseLearningHubPage({
                 >
                   <Award className="h-4 w-4" /> Download Verified Certificate
                 </button>
+              ) : isAwaitingCompletionApproval ? (
+                <div className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 py-2.5 text-xs font-bold text-amber-800 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300">
+                  <Clock className="h-4 w-4" />
+                  <span>Awaiting Admin Approval</span>
+                </div>
               ) : (
                 <button
                   type="button"
@@ -2136,6 +2300,13 @@ export default function CourseLearningHubPage({
         const secondsRemaining = Math.max(0, Math.ceil((cooldownExpiry - now) / 1000));
         const minPass = activeAssignmentSection.assignment.minPassingScore || 70;
         const questions = activeAssignmentSection.assignment.questions || [];
+        // Submission is only offered once every question has a real answer —
+        // a partially filled assignment used to be submittable and scored the
+        // blanks as wrong.
+        const answeredCount = questions.filter((q, i) =>
+          isQuestionAnswered(q, activeQuizAnswers[i], activeAssignmentSection.assignment.type)
+        ).length;
+        const allQuestionsAnswered = questions.length === 0 || answeredCount === questions.length;
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
@@ -2191,42 +2362,142 @@ export default function CourseLearningHubPage({
                     <div className="text-xs font-bold text-slate-900 uppercase tracking-wider dark:text-white">
                       Assessment Questions ({questions.length})
                     </div>
-                    {questions.map((q, qIdx) => (
+                    {questions.map((q, qIdx) => {
+                      const kind = resolveAssessmentKind(q.type, activeAssignmentSection.assignment.type);
+                      const answer = activeQuizAnswers[qIdx];
+                      const textAnswer = typeof answer === "string" ? answer : "";
+                      return (
                       <div key={qIdx} className="space-y-2.5 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-surface-elevated/60">
-                        <div className="font-bold text-slate-900 text-xs sm:text-sm dark:text-white">
-                          <span className="text-[#2563EB] dark:text-blue-400 mr-1.5">Q{qIdx + 1}.</span> {q.prompt}
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="font-bold text-slate-900 text-xs sm:text-sm dark:text-white">
+                            <span className="text-[#2563EB] dark:text-blue-400 mr-1.5">Q{qIdx + 1}.</span>
+                            {q.prompt?.trim() || `Question ${qIdx + 1}`}
+                          </div>
+                          <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-300">
+                            {assessmentKindLabel(kind)}
+                          </span>
                         </div>
-                        <div className="space-y-2 pt-1">
-                          {q.choices?.map((choice, cIdx) => {
-                            const isSelected = activeQuizAnswers[qIdx] === cIdx;
-                            return (
-                              <button
-                                key={cIdx}
-                                type="button"
-                                disabled={isCooldownActive}
-                                onClick={() => handleSelectQuizAnswer(qIdx, cIdx)}
-                                className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left text-xs transition-all cursor-pointer ${
-                                  isCooldownActive
-                                    ? "opacity-60 cursor-not-allowed bg-slate-50 border-slate-200 dark:bg-slate-900 dark:border-slate-800"
-                                    : isSelected
-                                    ? "border-[#2563EB] bg-blue-50/70 font-semibold text-[#2563EB] shadow-xs dark:bg-blue-950/40 dark:border-blue-500 dark:text-blue-300"
-                                    : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-surface-secondary dark:text-slate-300 dark:hover:bg-surface-hover"
-                                }`}
-                              >
-                                <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
-                                  isSelected
-                                    ? "border-[#2563EB] bg-[#2563EB] text-white dark:border-blue-400 dark:bg-blue-500"
-                                    : "border-slate-300 text-slate-500 dark:border-slate-600 dark:text-slate-400"
-                                }`}>
-                                  {String.fromCharCode(65 + cIdx)}
-                                </div>
-                                <span className="flex-1">{choice}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
+
+                        {q.guidance && (
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">{q.guidance}</p>
+                        )}
+
+                        {/* MULTIPLE CHOICE */}
+                        {kind === "MCQ" && (
+                          <div className="space-y-2 pt-1">
+                            {(q.choices || []).map((choice, cIdx) => {
+                              const isSelected = answer === cIdx;
+                              return (
+                                <button
+                                  key={cIdx}
+                                  type="button"
+                                  disabled={isCooldownActive}
+                                  onClick={() => handleSelectQuizAnswer(qIdx, cIdx)}
+                                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left text-xs transition-all cursor-pointer ${
+                                    isCooldownActive
+                                      ? "opacity-60 cursor-not-allowed bg-slate-50 border-slate-200 dark:bg-slate-900 dark:border-slate-800"
+                                      : isSelected
+                                      ? "border-[#2563EB] bg-blue-50/70 font-semibold text-[#2563EB] shadow-xs dark:bg-blue-950/40 dark:border-blue-500 dark:text-blue-300"
+                                      : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-surface-secondary dark:text-slate-300 dark:hover:bg-surface-hover"
+                                  }`}
+                                >
+                                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
+                                    isSelected
+                                      ? "border-[#2563EB] bg-[#2563EB] text-white dark:border-blue-400 dark:bg-blue-500"
+                                      : "border-slate-300 text-slate-500 dark:border-slate-600 dark:text-slate-400"
+                                  }`}>
+                                    {String.fromCharCode(65 + cIdx)}
+                                  </div>
+                                  <span className="flex-1">{choice}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* SHORT ANSWER */}
+                        {kind === "SHORT_ANSWER" && (
+                          <input
+                            type="text"
+                            value={textAnswer}
+                            disabled={isCooldownActive}
+                            onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.value)}
+                            placeholder="Type your answer…"
+                            className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-60 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                          />
+                        )}
+
+                        {/* LONG ANSWER */}
+                        {kind === "LONG_ANSWER" && (
+                          <div className="space-y-1.5">
+                            <textarea
+                              rows={5}
+                              value={textAnswer}
+                              disabled={isCooldownActive}
+                              onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.value)}
+                              placeholder="Write a detailed response…"
+                              className="w-full rounded-xl border border-slate-200 p-3 text-xs leading-relaxed text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-60 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                            />
+                            {typeof q.minWords === "number" && q.minWords > 0 && (
+                              <div className="text-[10px] font-medium text-slate-400">
+                                {countWords(textAnswer)} / {q.minWords} words minimum
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* CODING CHALLENGE */}
+                        {kind === "CODING" && (
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                              <Code2 className="h-3.5 w-3.5" />
+                              <span>{q.language || "Code"}</span>
+                            </div>
+                            <textarea
+                              rows={8}
+                              spellCheck={false}
+                              value={textAnswer || q.starterCode || ""}
+                              disabled={isCooldownActive}
+                              onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.value)}
+                              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-[11px] leading-relaxed text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-60 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                            />
+                            {q.testCases && (
+                              <div className="rounded-lg bg-slate-50 p-2.5 font-mono text-[10px] text-slate-500 dark:bg-surface-elevated dark:text-slate-400">
+                                Test cases: {q.testCases}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* FILE UPLOAD */}
+                        {kind === "FILE_UPLOAD" && (
+                          <div className="rounded-xl border border-dashed border-slate-300 p-4 text-center dark:border-slate-700">
+                            <input
+                              type="file"
+                              id={`asg-file-${qIdx}`}
+                              disabled={isCooldownActive}
+                              accept={q.fileTypes || undefined}
+                              onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.files?.[0]?.name || "")}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor={`asg-file-${qIdx}`}
+                              className="flex cursor-pointer flex-col items-center gap-1.5"
+                            >
+                              <Upload className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
+                              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                                {textAnswer ? `Attached: ${textAnswer}` : "Click to attach your solution file"}
+                              </span>
+                              <span className="text-[10px] text-slate-400">
+                                Accepted: {q.fileTypes || ".pdf, .zip, .docx"}
+                                {typeof q.maxFileSizeMb === "number" ? ` · max ${q.maxFileSizeMb} MB` : ""}
+                              </span>
+                            </label>
+                          </div>
+                        )}
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -2243,10 +2514,20 @@ export default function CourseLearningHubPage({
                 )}
               </div>
 
+              {!allQuestionsAnswered && !isCooldownActive && (
+                <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[11px] font-semibold text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>
+                    Answer all {questions.length} questions to enable submission — {questions.length - answeredCount} still
+                    {questions.length - answeredCount === 1 ? " needs" : " need"} a response.
+                  </span>
+                </div>
+              )}
+
               <div className="flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
                 <div className="text-[11px] text-slate-400">
                   {questions.length > 0
-                    ? `${Object.keys(activeQuizAnswers).length} of ${questions.length} answered`
+                    ? `${answeredCount} of ${questions.length} answered`
                     : "Ready for evaluation"}
                 </div>
                 <div className="flex gap-2">
@@ -2259,10 +2540,15 @@ export default function CourseLearningHubPage({
                   </button>
                   <button
                     type="button"
-                    disabled={isCooldownActive || isSubmittingAssessment}
+                    disabled={isCooldownActive || isSubmittingAssessment || !allQuestionsAnswered}
+                    title={
+                      !allQuestionsAnswered
+                        ? "Answer every question before submitting."
+                        : undefined
+                    }
                     onClick={() => handleSubmitAssignment(activeAssignmentSection)}
                     className={`flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all ${
-                      isCooldownActive || isSubmittingAssessment
+                      isCooldownActive || isSubmittingAssessment || !allQuestionsAnswered
                         ? "bg-slate-400 cursor-not-allowed opacity-60 dark:bg-slate-700"
                         : "bg-emerald-600 hover:bg-emerald-700 cursor-pointer hover:scale-105"
                     }`}
@@ -2275,7 +2561,13 @@ export default function CourseLearningHubPage({
                     ) : (
                       <>
                         <FileCheck className="h-4 w-4" />
-                        <span>{isCooldownActive ? `Cooldown (${formatCooldown(secondsRemaining)})` : "Submit & Evaluate Score"}</span>
+                        <span>
+                          {isCooldownActive
+                            ? `Cooldown (${formatCooldown(secondsRemaining)})`
+                            : !allQuestionsAnswered
+                            ? `Answer all ${questions.length} questions`
+                            : "Submit & Evaluate Score"}
+                        </span>
                       </>
                     )}
                   </button>
@@ -2361,7 +2653,7 @@ export default function CourseLearningHubPage({
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">Certificate Requirements</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Both criteria must be 100% completed to unlock</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">All three criteria must be met to unlock</p>
               </div>
             </div>
 
@@ -2407,10 +2699,37 @@ export default function CourseLearningHubPage({
                   {passedAssignmentsCount}/{totalAssignments}
                 </div>
               </div>
+
+              <div className={`flex items-center justify-between p-3 rounded-2xl border ${
+                completionApproved
+                  ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800"
+                  : "bg-slate-50 border-slate-200 dark:bg-surface-elevated dark:border-slate-700"
+              }`}>
+                <div className="flex items-center gap-2.5">
+                  {completionApproved ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  ) : (
+                    <ShieldCheck className="h-4 w-4 text-amber-500" />
+                  )}
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 dark:text-white">Admin Completion Approval</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {completionApproved
+                        ? "Your course completion has been approved"
+                        : isAwaitingCompletionApproval
+                        ? "Sent to an admin — awaiting review"
+                        : "Requested automatically once the milestones above are complete"}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs font-extrabold text-slate-900 dark:text-white">
+                  {completionApproved ? "Approved" : isAwaitingCompletionApproval ? "Pending" : "—"}
+                </div>
+              </div>
             </div>
 
             <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-              If an assignment is failed, please wait for the retake timelimit to expire and retake it. Once all milestones are achieved, your official verified certificate will be immediately accessible.
+              If an assignment is failed, please wait for the retake timelimit to expire and retake it. Once every milestone is achieved, your completion goes to an admin for approval, and the verified certificate is released as soon as it is approved.
             </p>
 
             <div className="pt-2">

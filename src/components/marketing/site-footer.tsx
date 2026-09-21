@@ -13,6 +13,7 @@ const COLUMNS = [
   {
     title: "Product",
     links: [
+      { href: "/events", label: "Events & Masterclasses" },
       { href: "/ai-mock-interview", label: "AI Mock Interview" },
       { href: "/success-stories", label: "Success Stories" },
       { href: "/certificate/verify", label: "Verify Certificate" },

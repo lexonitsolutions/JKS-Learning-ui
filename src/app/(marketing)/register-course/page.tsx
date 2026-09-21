@@ -28,6 +28,7 @@ import {
   Users,
   Lock,
   X,
+  AlertCircle,
 } from "lucide-react";
 import { JksLogo } from "@/components/common/jks-logo";
 import { registerCourseOnline, createInvoice, type Invoice } from "@/lib/data/invoices-store";
@@ -184,6 +185,7 @@ function CourseRegistrationContent() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [generatedInvoice, setGeneratedInvoice] = useState<Invoice | null>(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [enrollError, setEnrollError] = useState<string | null>(null);
 
   // Recalculate discount
   const finalDiscount = couponApplied ? selectedCourse.discount : 0;
@@ -221,6 +223,7 @@ function CourseRegistrationContent() {
       return;
     }
     setIsProcessing(true);
+    setEnrollError(null);
 
     try {
       const invoice = await registerCourseOnline({
@@ -240,8 +243,9 @@ function CourseRegistrationContent() {
       setGeneratedInvoice(invoice);
       setShowInvoiceModal(true);
       setStep(4);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Enrollment failed:", err);
+      setEnrollError(err?.message || "Enrollment failed. Please check your account status or contact support.");
     } finally {
       setIsProcessing(false);
     }
@@ -728,6 +732,16 @@ function CourseRegistrationContent() {
                 <span className="font-mono text-primary-blue dark:text-blue-400 text-base">₹{netPayable.toLocaleString("en-IN")}</span>
               </div>
             </div>
+
+            {enrollError && (
+              <div className="flex items-center gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-900 shadow-sm dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                <div>
+                  <p className="font-bold text-amber-950 dark:text-amber-100">Enrollment Notice</p>
+                  <p className="mt-0.5 text-amber-800 dark:text-amber-300">{enrollError}</p>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
               <button

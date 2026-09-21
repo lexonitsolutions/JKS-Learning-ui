@@ -6,7 +6,7 @@ import type { Track } from "./courses";
 import { mapBackendTrack } from "./courses-api";
 import { fetchStudentEnrollments, getClientSessionEmail } from "./enrollments-api";
 
-export type VideoSourceType = "upload" | "url";
+export type VideoSourceType = "upload" | "url" | "gdrive" | "onedrive";
 
 export interface VideoItem {
   id: string;
@@ -33,20 +33,94 @@ export interface SectionAssignment {
   id: string;
   title: string;
   description: string;
-  type: "MCQ" | "Short Answer" | "Long Answer" | "File Upload" | string;
+  type: "MCQ" | "Short Answer" | "Long Answer" | "Coding Challenge" | "File Upload" | string;
   minPassingScore: number;
   modelAnswer?: string;
   questions?: {
+    id?: string;
     prompt: string;
     choices?: string[];
     correctIndex?: number;
     modelAnswer?: string;
-    type?: "mcq" | "short_answer" | "long_answer" | "file_upload" | string;
+    keywords?: string;
+    type?: "MCQ" | "Short Answer" | "Long Answer" | "Coding Challenge" | "File Upload" | string;
+    language?: string;
+    starterCode?: string;
+    testCases?: string;
+    structuredTestCases?: { input: string; output: string; isHidden?: boolean }[];
+    solutionCode?: string;
+    fileTypes?: string;
+    maxFileSizeMb?: number;
+    checklist?: string;
+    rubric?: string;
+    minWords?: number;
+    maxPoints?: number;
+    explanation?: string;
+    guidance?: string;
   }[];
   submissionCriteria?: string[];
   completed?: boolean;
   score?: number;
   submittedAt?: string;
+}
+
+export function canonicalizeAssessmentType(raw?: string): string {
+  if (!raw) return "Short Answer Question";
+  const s = raw.toLowerCase().trim();
+  if (s.includes("mcq") || s.includes("choice")) {
+    return "Multiple Choice (MCQ)";
+  }
+  if (s.includes("code") || s.includes("coding")) {
+    return "Coding Challenge / Test";
+  }
+  if (s.includes("file") || s.includes("project") || s.includes("upload")) {
+    return "Project / File Upload";
+  }
+  if (s.includes("long") || s.includes("comprehens")) {
+    return "Long Answer / Comprehensive";
+  }
+  if (s.includes("short")) {
+    return "Short Answer Question";
+  }
+  return "Short Answer Question";
+}
+
+/** The five question kinds the course builder can author. */
+export type AssessmentKind = "MCQ" | "SHORT_ANSWER" | "LONG_ANSWER" | "CODING" | "FILE_UPLOAD";
+
+/**
+ * Resolve a question's kind from the human-readable label the builder stores.
+ *
+ * The student course page rendered every question as a multiple choice list
+ * regardless of this, so short answer, long answer, coding and file upload
+ * questions all appeared as A/B/C/D — the builder seeds `choices` with
+ * "Option A".."Option D" placeholders for every question, which is what showed
+ * up on screen.
+ */
+export function resolveAssessmentKind(raw?: string, fallback?: string): AssessmentKind {
+  const s = (raw || fallback || "").toLowerCase();
+  if (s.includes("mcq") || s.includes("choice")) return "MCQ";
+  if (s.includes("file") || s.includes("project") || s.includes("upload")) return "FILE_UPLOAD";
+  if (s.includes("cod")) return "CODING";
+  if (s.includes("long") || s.includes("comprehens")) return "LONG_ANSWER";
+  if (s.includes("short")) return "SHORT_ANSWER";
+  return "SHORT_ANSWER";
+}
+
+/** Short badge label for a question kind. */
+export function assessmentKindLabel(kind: AssessmentKind): string {
+  switch (kind) {
+    case "MCQ":
+      return "Multiple Choice";
+    case "SHORT_ANSWER":
+      return "Short Answer";
+    case "LONG_ANSWER":
+      return "Long Answer";
+    case "CODING":
+      return "Coding Challenge";
+    case "FILE_UPLOAD":
+      return "File Upload";
+  }
 }
 
 export interface Section {
@@ -173,15 +247,29 @@ export async function saveCourseAsync(newCourse: FullCourse): Promise<FullCourse
       }
       return saved;
     }
-  } catch (err) {
+    // The write never reached the database. Reporting success here is what
+    // let an admin edit an assignment, see it in their own workspace (served
+    // from this localStorage copy) and have no idea students were still being
+    // served the previous version from the database.
+    throw new Error(
+      lastSaveError ||
+        "Course could not be saved to the database. Your changes are only in this browser — please try again."
+    );
+  } catch (err: any) {
     console.error("[courses-store] saveCourseAsync failed:", err);
+    throw err instanceof Error
+      ? err
+      : new Error("Course could not be saved to the database. Please try again.");
   }
-
-  return newCourse;
 }
 
+/** Why the last backend save failed, so the caller can surface a real reason. */
+let lastSaveError: string | null = null;
+
 async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | null> {
-  const payload = {
+  lastSaveError = null;
+  const payload: any = {
+    id: course.id,
     title: course.title,
     slug: course.slug,
     track: course.track,
@@ -230,25 +318,57 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
           ? dbCourse.sectionsJson
           : course.sections,
       };
+    } else {
+      const errText = await res.text();
+      console.error("[courses-store] API save failed:", res.status, errText);
+      lastSaveError =
+        res.status === 401 || res.status === 403
+          ? "You are not signed in with an account allowed to edit courses. Please sign in again and retry."
+          : `The server rejected the save (HTTP ${res.status}). ${errText.slice(0, 200)}`;
     }
-  } catch (err) {
+  } catch (err: any) {
     console.warn("[courses-store] API call to save course failed:", err);
+    lastSaveError = err?.message || "Could not reach the API to save this course.";
   }
   return null;
 }
 
-export function deleteCourse(courseIdOrSlug: string) {
+/**
+ * Delete a course from the database, then from the local catalog.
+ *
+ * The local removal used to happen first with the API call fire-and-forget, so
+ * a rejected delete (a course that still holds enrolments, say) made the
+ * course vanish from the admin's screen while it stayed live for students.
+ * Nothing is removed locally now unless the database accepted the delete.
+ */
+export async function deleteCourse(courseIdOrSlug: string): Promise<void> {
   const current = getStoredCourses();
   const target = current.find((c) => c.id === courseIdOrSlug || c.slug === courseIdOrSlug);
-  const updated = current.filter((c) => c.id !== courseIdOrSlug && c.slug !== courseIdOrSlug);
-  safeLocalStorageSet(STORAGE_KEYS.COURSES, updated);
-
   const deleteId = target?.id || courseIdOrSlug;
-  apiFetch(`/courses/${encodeURIComponent(deleteId)}`, {
-    method: "DELETE",
-  }).catch((err) => {
+
+  let res: Response;
+  try {
+    res = await apiFetch(`/courses/${encodeURIComponent(deleteId)}`, {
+      method: "DELETE",
+    });
+  } catch (err: any) {
     console.warn("[courses-store] Failed to delete course from DB:", err);
-  });
+    throw new Error(err?.message || "Could not reach the API to delete this course.");
+  }
+
+  if (!res.ok) {
+    let message = `The server refused the delete (HTTP ${res.status}).`;
+    try {
+      const body = await res.json();
+      if (body?.message) message = Array.isArray(body.message) ? body.message.join(" ") : body.message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  safeLocalStorageSet(
+    STORAGE_KEYS.COURSES,
+    current.filter((c) => c.id !== courseIdOrSlug && c.slug !== courseIdOrSlug)
+  );
 }
 
 export function getStudentEnrollmentStorageKey(email?: string): string {
@@ -496,8 +616,13 @@ export function useStudentOwnedCourses(userEmail?: string): FullCourse[] {
       try {
         const enrollments = await fetchStudentEnrollments(effectiveEmail);
         if (!isCancelled) {
-          const slugs = Array.isArray(enrollments) ? enrollments.map((e) => e.slug) : [];
-          safeLocalStorageSet(storageKey, slugs);
+          const activeEnrollments = Array.isArray(enrollments)
+            ? enrollments.filter((e) => e.status !== "REMOVED")
+            : [];
+          const slugs = activeEnrollments.map((e) => e.slug).filter(Boolean);
+          if (Array.isArray(enrollments)) {
+            safeLocalStorageSet(storageKey, slugs);
+          }
         }
       } catch (err) {
         console.warn("[courses-store] Failed to sync student enrollments:", err);
@@ -508,9 +633,11 @@ export function useStudentOwnedCourses(userEmail?: string): FullCourse[] {
       syncEnrollments();
     };
     window.addEventListener("jks_video_progress_changed", handleProgressChange);
+    window.addEventListener("focus", handleProgressChange);
     return () => {
       isCancelled = true;
       window.removeEventListener("jks_video_progress_changed", handleProgressChange);
+      window.removeEventListener("focus", handleProgressChange);
     };
   }, [effectiveEmail, storageKey]);
 
@@ -528,3 +655,131 @@ export function getFullCourseBySlug(slug: string): FullCourse | undefined {
 }
 
 
+
+/**
+ * Normalize a raw backend course document into the shape the UI renders.
+ *
+ * `sectionsJson` is the single source of truth for curriculum and assignment
+ * content — the relational `modules` tree is rebuilt from it on every save and
+ * carries no assignment data, so it is only used as a last-resort skeleton.
+ */
+export function normalizeDbCourse(dbCourse: any, existing?: FullCourse): FullCourse {
+  const rawSections = Array.isArray(dbCourse?.sectionsJson)
+    ? dbCourse.sectionsJson
+    : Array.isArray(dbCourse?.sections)
+    ? dbCourse.sections
+    : [];
+
+  const sections: Section[] = rawSections.map((sec: any, idx: number) => ({
+    id: sec.id || `sec-${idx + 1}`,
+    title: sec.title || "",
+    order: sec.order || idx + 1,
+    description: sec.description || "",
+    subsections: Array.isArray(sec.subsections) ? sec.subsections : [],
+    directVideos: Array.isArray(sec.directVideos) ? sec.directVideos : [],
+    assignment: {
+      id: sec.assignment?.id || `asg-${idx + 1}`,
+      title: sec.assignment?.title || "",
+      description: sec.assignment?.description || "",
+      type: canonicalizeAssessmentType(sec.assignment?.type),
+      minPassingScore:
+        typeof sec.assignment?.minPassingScore === "number" ? sec.assignment.minPassingScore : 70,
+      modelAnswer: sec.assignment?.modelAnswer || "",
+      questions: Array.isArray(sec.assignment?.questions)
+        ? sec.assignment.questions.map((q: any, qIdx: number) => ({
+            id: q.id || `q-${qIdx + 1}`,
+            prompt: q.prompt || "",
+            type: canonicalizeAssessmentType(q.type || sec.assignment?.type),
+            choices: Array.isArray(q.choices) ? q.choices : [],
+            correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
+            modelAnswer: q.modelAnswer || "",
+            keywords: q.keywords || "",
+            language: q.language || "JavaScript",
+            starterCode: q.starterCode || "",
+            testCases: q.testCases || "",
+            structuredTestCases: Array.isArray(q.structuredTestCases) ? q.structuredTestCases : [],
+            solutionCode: q.solutionCode || "",
+            fileTypes: q.fileTypes || "",
+            maxFileSizeMb: typeof q.maxFileSizeMb === "number" ? q.maxFileSizeMb : 25,
+            checklist: q.checklist || "",
+            rubric: q.rubric || "",
+            minWords: q.minWords,
+            maxPoints: typeof q.maxPoints === "number" ? q.maxPoints : 10,
+            explanation: q.explanation || "",
+            guidance: q.guidance || "",
+          }))
+        : [],
+    },
+  }));
+
+  const price = dbCourse?.priceCents
+    ? Math.round(dbCourse.priceCents / 100)
+    : typeof dbCourse?.price === "number"
+    ? dbCourse.price
+    : existing?.price || 0;
+
+  return {
+    id: dbCourse?.id || existing?.id || `crs-${dbCourse?.slug}`,
+    slug: dbCourse?.slug || existing?.slug || "",
+    title: dbCourse?.title || existing?.title || "",
+    track: mapBackendTrack(dbCourse?.track),
+    level: dbCourse?.level || existing?.level || "Intermediate",
+    durationWeeks: dbCourse?.durationWeeks || existing?.durationWeeks || 12,
+    price,
+    rating: typeof dbCourse?.rating === "number" ? dbCourse.rating : existing?.rating || 5.0,
+    studentsEnrolled:
+      typeof dbCourse?.studentsEnrolled === "number"
+        ? dbCourse.studentsEnrolled
+        : existing?.studentsEnrolled || 0,
+    summary: dbCourse?.summary || existing?.summary || "",
+    thumbnail: dbCourse?.thumbnail || existing?.thumbnail || "",
+    sections: sections.length > 0 ? sections : existing?.sections || [],
+    createdAt: dbCourse?.createdAt || existing?.createdAt || new Date().toISOString(),
+    status: (dbCourse?.status === "PUBLISHED" || dbCourse?.status === "Published"
+      ? "Published"
+      : "Draft") as "Published" | "Draft",
+  };
+}
+
+/**
+ * Write a course into the local catalog WITHOUT pushing it back to the API.
+ *
+ * `saveCourse` is a staff action — it POSTs to /courses, which students are not
+ * allowed to do. Refreshing a student's cached copy of a course must never make
+ * that write, otherwise every course page view fires a rejected request.
+ */
+export function cacheCourseLocally(course: FullCourse): FullCourse {
+  const current = getStoredCourses();
+  const index = current.findIndex((c) => c.id === course.id || c.slug === course.slug);
+  const updated = index >= 0 ? [...current] : [course, ...current];
+  if (index >= 0) updated[index] = course;
+  safeLocalStorageSet(STORAGE_KEYS.COURSES, updated);
+  return course;
+}
+
+/**
+ * Read one course straight from the database and refresh the local cache.
+ *
+ * Enrolled students were reading curriculum out of localStorage, so an
+ * assignment an admin edited afterwards kept rendering with its old title,
+ * type and questions until the cache happened to be rebuilt. Every student
+ * surface that shows assignment content goes through here instead.
+ */
+export async function fetchLiveCourseBySlug(slug: string): Promise<FullCourse | null> {
+  if (!slug) return null;
+  try {
+    const res = await apiFetch(`/courses/${encodeURIComponent(slug)}`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    const dbCourse = await res.json();
+    if (!dbCourse?.slug && !dbCourse?.id) return null;
+    const normalized = normalizeDbCourse(dbCourse, getFullCourseBySlug(slug));
+    cacheCourseLocally(normalized);
+    return normalized;
+  } catch (err) {
+    console.warn("[courses-store] Live course fetch failed for", slug, err);
+    return null;
+  }
+}

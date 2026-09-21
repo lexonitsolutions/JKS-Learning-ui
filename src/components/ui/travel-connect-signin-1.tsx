@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import {
   loginWithApi,
   registerWithApi,
+  sendRegistrationOtpWithApi,
+  verifyRegistrationOtpWithApi,
   performLogout,
 } from "@/lib/auth/use-mock-auth";
 import type { MockRole } from "@/lib/auth/mock-users";
@@ -26,6 +28,7 @@ import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
 import {
   CheckCircle2,
   ShieldCheck,
+  ShieldAlert,
   Mail,
   RefreshCw,
   Sparkles,
@@ -273,7 +276,11 @@ const registerSchema = z
   .object({
     name: z.string().min(2, "Enter your full name"),
     email: z.string().email("Enter a valid email address"),
-    password: z.string().min(10, "Password must be at least 10 characters"),
+    phone: z
+      .string()
+      .min(10, "Please enter a valid 10-digit mobile number")
+      .regex(/^[0-9+\s()-]+$/, "Enter a valid phone number"),
+    password: z.string().min(5, "Password must be at least 5 characters"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -344,9 +351,17 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [verifyingEmailAddress, setVerifyingEmailAddress] = useState("");
 
-  const isAuthenticated = (isAuthLoaded && isSignedIn) || !!session;
+  const isBlocked = searchParams?.get("blocked") === "1" || session?.status === "BLOCKED";
+  const isAuthenticated = !isBlocked && ((isAuthLoaded && isSignedIn) || !!session);
   const userEmail = clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "";
   const userName = clerkUser?.fullName || clerkUser?.firstName || session?.name || "Student";
+
+  // If blocked, purge any remaining session
+  useEffect(() => {
+    if (isBlocked && (isSignedIn || session)) {
+      void performLogout(signOut);
+    }
+  }, [isBlocked, isSignedIn, session, signOut]);
 
   // Auto-reset loading state if the redirect does not happen within 15s.
   useEffect(() => {
@@ -396,7 +411,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
     return (
       <motion.div
         {...cardMotion}
-        className="flex w-full max-w-md flex-col items-center justify-center rounded-3xl bg-white dark:bg-surface-secondary p-8 text-center shadow-2xl border border-slate-100 dark:border-slate-800/80"
+        className="mx-auto flex w-full max-w-md flex-col items-center justify-center rounded-3xl bg-white dark:bg-surface-secondary p-8 text-center shadow-2xl border border-slate-100 dark:border-slate-800/80"
       >
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 mb-4">
           <CheckCircle2 className="h-8 w-8 text-[#2563EB] dark:text-blue-400" />
@@ -431,7 +446,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   return (
     <motion.div
       {...cardMotion}
-      className="flex w-full max-w-4xl flex-col md:flex-row overflow-hidden rounded-3xl bg-white dark:bg-surface-secondary shadow-2xl border border-slate-100 dark:border-slate-800/80"
+      className="mx-auto flex w-full max-w-4xl flex-col md:flex-row overflow-hidden rounded-3xl bg-white dark:bg-surface-secondary shadow-2xl border border-slate-100 dark:border-slate-800/80"
     >
       {/* Desktop Left side — animated dot map + brand */}
       <div className="relative hidden h-[620px] w-1/2 overflow-hidden border-r border-slate-100 dark:border-slate-800/80 md:block">
@@ -481,6 +496,18 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
                 : "New Account"}
             </span>
           </div>
+
+          {isBlocked && (
+            <div className="mb-6 flex items-start gap-3 rounded-2xl border border-rose-300 bg-rose-50 p-4 text-xs font-semibold text-rose-900 shadow-sm dark:border-rose-800/60 dark:bg-rose-950/40 dark:text-rose-200 animate-in fade-in slide-in-from-top-2 duration-300">
+              <ShieldAlert className="h-5 w-5 shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
+              <div>
+                <p className="font-bold text-rose-800 dark:text-rose-300 text-sm">Access Denied: Account Blocked</p>
+                <p className="mt-1 text-rose-700 dark:text-rose-300/90 leading-relaxed font-normal">
+                  Your account has been blocked by the administrator. Login and learning portal access is disabled. Please contact <span className="font-semibold text-rose-900 dark:text-rose-200 underline">support@jkslearning.com</span> for assistance.
+                </p>
+              </div>
+            </div>
+          )}
 
           {!isVerifyingEmail && (
             <>
@@ -543,7 +570,6 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
               }}
             />
           )}
-          <div id="clerk-captcha" />
         </FadeIn>
       </div>
     </motion.div>
@@ -742,7 +768,7 @@ function LoginFields() {
 
         <p className="pt-1 text-center text-xs text-slate-500 dark:text-slate-400 font-medium">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-bold text-blue-600 dark:text-blue-400 hover:underline">
+          <Link href="/sign-up" className="font-bold text-blue-600 dark:text-blue-400 hover:underline">
             Create account
           </Link>
         </p>
@@ -760,8 +786,8 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Clerk OTP Verification & Sign-In States
-  const { isLoaded: isSignUpLoaded, signUp, setActive } = useSignUp();
+  // Registration OTP Verification States
+  const [pendingValues, setPendingValues] = useState<RegisterValues | null>(null);
   const { isLoaded: isSignInLoaded, signIn } = useSignIn();
   const [isSignInVerification, setIsSignInVerification] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
@@ -804,141 +830,22 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
   const onSubmit = async (values: RegisterValues) => {
     setFormError(null);
 
-    // If Clerk is available, use Clerk's email verification sign-up
-    if (isSignUpLoaded && signUp) {
-      const parts = values.name.trim().split(" ");
-      const firstName = parts[0] || values.name;
-      const lastName = parts.slice(1).join(" ") || "";
-
-      try {
-        await signUp.create({
-          emailAddress: values.email,
-          password: values.password,
-          firstName,
-          lastName,
-        });
-
-        await signUp.prepareEmailAddressVerification({
-          strategy: "email_code",
-        });
-
-        setRegisteredEmail(values.email);
-        setIsSignInVerification(false);
-        setPendingVerification(true);
-        onVerificationChange?.(true, values.email);
-        setResendCooldown(30);
-        setOtp(["", "", "", "", "", ""]);
-        setOtpError(null);
-        setOtpSuccessMsg("We sent a 6-digit verification code to your email.");
-      } catch (err: unknown) {
-        // Robust check for existing account error across all Clerk response formats
-        const isAlreadyTaken =
-          (isClerkAPIResponseError(err) &&
-            err.errors?.some(
-              (e) =>
-                e.code === "form_identifier_exists" ||
-                e.code === "identifier_already_exists" ||
-                e.message?.toLowerCase().includes("taken") ||
-                e.message?.toLowerCase().includes("already exists") ||
-                e.longMessage?.toLowerCase().includes("taken") ||
-                e.longMessage?.toLowerCase().includes("already exists")
-            )) ||
-          (typeof err === "object" &&
-            err !== null &&
-            "errors" in err &&
-            Array.isArray((err as { errors: unknown[] }).errors) &&
-            (err as { errors: Array<{ code?: string; message?: string }> }).errors.some(
-              (e) =>
-                e?.code === "form_identifier_exists" ||
-                e?.code === "identifier_already_exists" ||
-                e?.message?.toLowerCase().includes("taken") ||
-                e?.message?.toLowerCase().includes("already exists")
-            )) ||
-          (err instanceof Error &&
-            (err.message.toLowerCase().includes("taken") ||
-              err.message.toLowerCase().includes("already exists") ||
-              err.message.includes("form_identifier_exists")));
-
-        // If email already exists in Clerk (e.g. user deleted from local DB or existing account)
-        if (isAlreadyTaken && isSignInLoaded && signIn) {
-          try {
-            // Attempt automatic sign-in with the provided credentials
-            const signInAttempt = await signIn.create({
-              identifier: values.email,
-              password: values.password,
-            });
-
-            if (signInAttempt.status === "complete") {
-              if (setActive) {
-                await setActive({ session: signInAttempt.createdSessionId });
-              }
-              window.location.assign(from);
-              return;
-            } else if (signInAttempt.status === "needs_first_factor") {
-              const emailFactor = signInAttempt.supportedFirstFactors?.find(
-                (f) => f.strategy === "email_code"
-              );
-              if (emailFactor && "emailAddressId" in emailFactor) {
-                await signIn.prepareFirstFactor({
-                  strategy: "email_code",
-                  emailAddressId: emailFactor.emailAddressId,
-                });
-                setRegisteredEmail(values.email);
-                setIsSignInVerification(true);
-                setPendingVerification(true);
-                onVerificationChange?.(true, values.email);
-                setResendCooldown(30);
-                setOtp(["", "", "", "", "", ""]);
-                setOtpError(null);
-                setOtpSuccessMsg("We found your account! We sent a 6-digit verification code to your email.");
-                return;
-              }
-            }
-          } catch {
-            // Auto sign-in with matching password did not complete, fall through to friendly UI message
-          }
-
-          setFormError(
-            "An account with this email address already exists in our system. Please sign in with your password or use a different email address."
-          );
-          return;
-        }
-
-        // If Clerk fails due to network error, ad-blocker or domain restriction, fallback to API register
-        const errMsg = err instanceof Error ? err.message : String(err || "");
-        const isNetworkErr =
-          errMsg.toLowerCase().includes("failed to fetch") ||
-          errMsg.toLowerCase().includes("network error") ||
-          errMsg.includes("clerk.accounts.dev");
-
-        if (isNetworkErr) {
-          const apiResult = await registerWithApi(values.name, values.email, values.password);
-          if (apiResult.ok) {
-            redirectAfterLogin("student", from);
-            return;
-          }
-          setFormError(apiResult.error);
-          return;
-        }
-
-        // For other unexpected errors, format a clean message
-        const msg = isClerkAPIResponseError(err)
-          ? err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "Registration failed"
-          : err instanceof Error
-          ? err.message
-          : "Registration failed. Please check your details.";
-        setFormError(msg);
-      }
-      return;
-    }
-
-    // Fallback if Clerk isn't ready
-    const result = await registerWithApi(values.name, values.email, values.password);
+    // Send 6-digit verification code directly to student's email via backend (Brevo)
+    const result = await sendRegistrationOtpWithApi(values.email, values.name);
     if (!result.ok) {
-      setFormError(result.error);
+      setFormError(result.error || "Failed to send verification code. Please try again.");
       return;
     }
-    redirectAfterLogin("student", from);
+
+    setPendingValues(values);
+    setRegisteredEmail(values.email);
+    setIsSignInVerification(false);
+    setPendingVerification(true);
+    onVerificationChange?.(true, values.email);
+    setResendCooldown(30);
+    setOtp(["", "", "", "", "", ""]);
+    setOtpError(null);
+    setOtpSuccessMsg("We sent a 6-digit verification code to your email.");
   };
 
   // OTP Input handlers
@@ -1006,33 +913,35 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
         });
 
         if (completeSignIn.status === "complete") {
-          if (setActive) {
-            await setActive({ session: completeSignIn.createdSessionId });
-          }
           window.location.assign(from);
+          return;
         } else {
           setOtpError("Verification incomplete. Please check your code and try again.");
-        }
-      } else if (isSignUpLoaded && signUp) {
-        const completeSignUp = await signUp.attemptEmailAddressVerification({ code });
-
-        if (completeSignUp.status === "complete") {
-          if (setActive) {
-            await setActive({ session: completeSignUp.createdSessionId });
-          }
-          window.location.assign(from);
-        } else {
-          setOtpError("Verification incomplete. Please check your code and try again.");
+          return;
         }
       }
-    } catch (err: unknown) {
-      console.error("[Clerk OTP Verify Error]", err);
-      const msg = isClerkAPIResponseError(err)
-        ? err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "Invalid code"
-        : err instanceof Error
-        ? err.message
-        : "Invalid or expired verification code. Please try again.";
-      setOtpError(msg);
+
+      if (!pendingValues) {
+        setOtpError("Registration session expired. Please go back and try again.");
+        return;
+      }
+
+      const result = await verifyRegistrationOtpWithApi({
+        name: pendingValues.name,
+        email: pendingValues.email,
+        phone: pendingValues.phone,
+        password: pendingValues.password,
+        otp: code,
+      });
+
+      if (!result.ok) {
+        setOtpError(result.error || "Invalid verification code. Please check and try again.");
+        return;
+      }
+
+      redirectAfterLogin("student", from);
+    } catch {
+      setOtpError("Could not reach the server. Please check your internet connection.");
     } finally {
       setVerifying(false);
     }
@@ -1051,17 +960,19 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
           await signIn.prepareFirstFactor({ strategy: "email_code", emailAddressId: factor.emailAddressId });
           setResendCooldown(30);
           setOtpSuccessMsg("A fresh 6-digit code has been sent to your inbox!");
+          return;
         }
-      } else if (signUp) {
-        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      }
+
+      const result = await sendRegistrationOtpWithApi(registeredEmail, pendingValues?.name);
+      if (result.ok) {
         setResendCooldown(30);
         setOtpSuccessMsg("A fresh 6-digit code has been sent to your inbox!");
+      } else {
+        setOtpError(result.error || "Failed to resend verification code.");
       }
-    } catch (err: unknown) {
-      const msg = isClerkAPIResponseError(err)
-        ? err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "Failed to resend code"
-        : "Failed to resend verification code. Please try again in a moment.";
-      setOtpError(msg);
+    } catch {
+      setOtpError("Failed to resend verification code. Please try again in a moment.");
     } finally {
       setIsResending(false);
     }
@@ -1270,16 +1181,31 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
       </div>
 
       <div>
+        <label htmlFor="register-phone" className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+          Mobile number <span className="text-blue-500">*</span>
+        </label>
+        <input
+          id="register-phone"
+          type="tel"
+          autoComplete="tel"
+          placeholder="+91 98765 43210"
+          className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 transition-all"
+          {...register("phone")}
+        />
+        {errors.phone && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.phone.message}</p>}
+      </div>
+
+      <div>
         <div className="flex items-center justify-between mb-1">
           <label htmlFor="register-password" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
             Password <span className="text-blue-500">*</span>
           </label>
-          <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400">Min. 10 characters</span>
+          <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400">Min. 5 characters</span>
         </div>
         <PasswordInput
           id="register-password"
           autoComplete="new-password"
-          placeholder="Enter your password (min 10 characters)"
+          placeholder="Enter your password (min 5 characters)"
           visible={passwordVisible}
           onToggle={() => setPasswordVisible((v) => !v)}
           {...register("password")}

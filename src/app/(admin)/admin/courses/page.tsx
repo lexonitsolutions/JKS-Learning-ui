@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Plus, BookOpen, Search, Award, Star, TrendingUp, Sparkles, Video, Layers, Pencil } from "lucide-react";
+import { Plus, BookOpen, Search, Award, Star, TrendingUp, Sparkles, Video, Layers, Pencil, Trash2, AlertTriangle, X } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { CourseWorkflowModal, type CourseWorkflowData } from "@/components/admin/course-workflow-modal";
 import { EditCourseModal } from "@/components/admin/edit-course-modal";
-import { useAllCourses, saveCourse, saveCourseAsync, type FullCourse } from "@/lib/data/courses-store";
+import { useAllCourses, saveCourse, saveCourseAsync, deleteCourse, type FullCourse } from "@/lib/data/courses-store";
 import type { Track } from "@/lib/data/courses";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
@@ -19,6 +19,11 @@ export default function AdminCoursesPage() {
   const [selectedTrack, setSelectedTrack] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Delete confirmation state
+  const [courseToDelete, setCourseToDelete] = useState<FullCourse | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const filteredCourses = courses.filter((c) => {
     const matchesTrack = selectedTrack === "All" || c.track === selectedTrack;
     const matchesQuery = c.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -26,6 +31,7 @@ export default function AdminCoursesPage() {
   });
 
   const handleCreateCourseFromModal = async (newCourse: CourseWorkflowData) => {
+    setSaveError(null);
     const fullCourse: FullCourse = {
       id: `crs-${Date.now()}`,
       slug: newCourse.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, ""),
@@ -65,8 +71,35 @@ export default function AdminCoursesPage() {
         },
       })),
     };
-    await saveCourseAsync(fullCourse);
+    // saveCourseAsync now throws when the database write is rejected, so an
+    // admin is told rather than shown a course that only exists in this browser.
+    try {
+      await saveCourseAsync(fullCourse);
+    } catch (err: any) {
+      console.error("[AdminCourses] Course save failed:", err);
+      setSaveError(err?.message || "Failed to save course. Please try again.");
+    }
   };
+
+  const handleDeleteCourse = async () => {
+    if (!courseToDelete) return;
+    setIsDeleting(true);
+    setSaveError(null);
+    try {
+      await deleteCourse(courseToDelete.id || courseToDelete.slug);
+      setCourseToDelete(null);
+    } catch (err: any) {
+      // A course with enrolments, submissions or billing records is refused by
+      // the API and must be archived instead — keep the dialog's target so the
+      // admin can see which course the message is about.
+      console.error("[AdminCourses] Course delete failed:", err);
+      setSaveError(err?.message || "Failed to delete course. Please try again.");
+      setCourseToDelete(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
 
   const totalEnrolled = courses.reduce((acc, c) => acc + (c.studentsEnrolled || 0), 0);
 
@@ -79,6 +112,12 @@ export default function AdminCoursesPage() {
       />
 
       <div className="flex-1 space-y-5 p-3 sm:p-6 lg:p-8 lg:pt-4">
+        {saveError && (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
+            {saveError}
+          </div>
+        )}
+
         {/* Top Action Bar */}
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           {/* Search and Filters */}
@@ -274,18 +313,14 @@ export default function AdminCoursesPage() {
                       </td>
                       <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setCourseToEdit(c);
-                              setIsEditModalOpen(true);
-                            }}
+                          <Link
+                            href={`/admin/courses/new?edit=${encodeURIComponent(c.slug || c.id)}`}
                             className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover hover:border-blue-400 transition-colors cursor-pointer"
-                            title="Edit course details and video lectures"
+                            title="Edit course in multi-stage course builder"
                           >
                             <Pencil className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                             <span>Edit Course</span>
-                          </button>
+                          </Link>
 
                           <Link
                             href={`/dashboard/my-courses/${c.slug}`}
@@ -293,6 +328,16 @@ export default function AdminCoursesPage() {
                           >
                             View Learning UI
                           </Link>
+
+                          <button
+                            type="button"
+                            onClick={() => setCourseToDelete(c)}
+                            className="flex items-center gap-1 rounded-lg border border-red-200 dark:border-red-900/60 bg-white dark:bg-surface-elevated px-2.5 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 shadow-xs hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-400 transition-colors cursor-pointer"
+                            title="Delete course permanently"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            <span>Delete</span>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -320,6 +365,91 @@ export default function AdminCoursesPage() {
         }}
         course={courseToEdit}
       />
+
+      {/* Delete Course Confirmation Modal */}
+      {courseToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => !isDeleting && setCourseToDelete(null)}
+          />
+
+          {/* Modal Card */}
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-red-200 dark:border-red-800/60 bg-white dark:bg-surface-secondary shadow-2xl p-6 space-y-5">
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => setCourseToDelete(null)}
+              disabled={isDeleting}
+              className="absolute top-4 right-4 rounded-lg p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            {/* Icon + Title */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-950/50">
+                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Delete Course?</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            {/* Course Info */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-surface-elevated px-4 py-3">
+              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{courseToDelete.title}</p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-mono mt-0.5">/{courseToDelete.slug}</p>
+              <div className="flex items-center gap-3 mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                <span>{courseToDelete.sections?.length || 0} sections</span>
+                <span>·</span>
+                <span>{courseToDelete.studentsEnrolled || 0} enrolled</span>
+                <span>·</span>
+                <span className={courseToDelete.status === "Published" ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "text-amber-600 dark:text-amber-400 font-semibold"}>
+                  {courseToDelete.status}
+                </span>
+              </div>
+            </div>
+
+            {/* Warning text */}
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              Deleting this course will permanently remove it from the database and the course catalog. Enrolled students will lose access. This <strong>cannot be reversed</strong>.
+            </p>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setCourseToDelete(null)}
+                disabled={isDeleting}
+                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteCourse}
+                disabled={isDeleting}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-70 shadow-[0_4px_14px_rgba(220,38,38,0.35)]"
+              >
+                {isDeleting ? (
+                  <>
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Yes, Delete Course</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

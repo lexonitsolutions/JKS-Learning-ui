@@ -12,12 +12,17 @@ import {
   Sparkles,
   CheckCircle2,
   Tv,
+  ExternalLink,
+  AlertTriangle,
+  Cloud,
 } from "lucide-react";
+
+import type { VideoSourceType } from "@/lib/data/courses-store";
 
 interface InAppVideoPlayerProps {
   title: string;
   videoUrl: string;
-  videoType: "upload" | "url";
+  videoType: VideoSourceType | string;
   durationFormatted?: string;
   antiSkip?: boolean;
   onVideoCompleted?: () => void;
@@ -27,11 +32,23 @@ interface InAppVideoPlayerProps {
   className?: string;
 }
 
+// Clean pasted video URL or extract src if user pasted an <iframe> snippet
+function cleanVideoUrl(rawUrl: string): string {
+  if (!rawUrl) return "";
+  const trimmed = rawUrl.trim();
+  const iframeMatch = trimmed.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+  if (iframeMatch && iframeMatch[1]) {
+    return iframeMatch[1];
+  }
+  return trimmed;
+}
+
 // Utility to parse YouTube video IDs from various URL formats
 function getYouTubeEmbedUrl(rawUrl: string): string | null {
   if (!rawUrl) return null;
+  const cleaned = cleanVideoUrl(rawUrl);
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = rawUrl.match(regExp);
+  const match = cleaned.match(regExp);
   if (match && match[2].length === 11) {
     const videoId = match[2];
     return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1&playsinline=1`;
@@ -42,10 +59,55 @@ function getYouTubeEmbedUrl(rawUrl: string): string | null {
 // Utility to parse Vimeo video IDs
 function getVimeoEmbedUrl(rawUrl: string): string | null {
   if (!rawUrl) return null;
+  const cleaned = cleanVideoUrl(rawUrl);
   const regExp = /(?:vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/;
-  const match = rawUrl.match(regExp);
+  const match = cleaned.match(regExp);
   if (match && match[1]) {
     return `https://player.vimeo.com/video/${match[1]}?autoplay=1&badge=0&autopause=0&player_id=0&app_id=58479`;
+  }
+  return null;
+}
+
+// Utility to parse Google Drive video/file URLs into embed links
+function getGoogleDriveEmbedUrl(rawUrl: string): string | null {
+  if (!rawUrl) return null;
+  const cleaned = cleanVideoUrl(rawUrl);
+  // Matches /file/d/{fileId} or id={fileId}
+  const match = cleaned.match(/(?:\/file\/d\/|id=)([a-zA-Z0-9_-]{15,})/);
+  if (match && match[1]) {
+    return `https://drive.google.com/file/d/${match[1]}/preview`;
+  }
+  if (cleaned.includes("drive.google.com") && cleaned.includes("/preview")) {
+    return cleaned;
+  }
+  return null;
+}
+
+// Utility to parse OneDrive / SharePoint video URLs into embed links
+function getOneDriveEmbedUrl(rawUrl: string): string | null {
+  if (!rawUrl) return null;
+  const cleaned = cleanVideoUrl(rawUrl);
+
+  // Teams links cannot be framed directly
+  if (cleaned.includes("teams.microsoft.com")) {
+    return null;
+  }
+
+  // 1drv.ms links are standard share redirects and CANNOT be embedded in iframes
+  if (cleaned.includes("1drv.ms")) {
+    return null;
+  }
+
+  if (cleaned.includes("sharepoint.com") || cleaned.includes("onedrive.live.com")) {
+    // If it's already an embed link
+    if (cleaned.includes("embed") || cleaned.includes("action=embedview") || cleaned.includes("_layouts/15/embed.aspx")) {
+      return cleaned;
+    }
+    // Replace download/view parameters with embed if present
+    if (cleaned.includes("onedrive.live.com") && (cleaned.includes("resid=") || cleaned.includes("id="))) {
+      return cleaned.replace(/(?:view\.aspx|redir\.aspx)/, "embed.aspx");
+    }
+    return null;
   }
   return null;
 }
@@ -73,17 +135,33 @@ export function InAppVideoPlayer({
   const [isCompleted, setIsCompleted] = useState(false);
   const [simulationTimerActive, setSimulationTimerActive] = useState(false);
 
-  // Check external embeds (YouTube, Vimeo, or Bunny Stream iframe)
-  const isYouTube = videoType === "url" && (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be"));
-  const isVimeo = videoType === "url" && videoUrl.includes("vimeo.com");
-  const isBunnyIframe =
-    videoUrl.includes("iframe.mediadelivery.net") ||
-    videoUrl.includes("video.bunnycdn.com/play");
+  const cleanedUrl = cleanVideoUrl(videoUrl);
+  const isTeams = cleanedUrl.includes("teams.microsoft.com");
+  const onedriveEmbedUrlCandidate = getOneDriveEmbedUrl(cleanedUrl);
+  const isOneDriveShareLink =
+    !isTeams &&
+    !onedriveEmbedUrlCandidate &&
+    (videoType === "onedrive" ||
+      cleanedUrl.includes("1drv.ms") ||
+      cleanedUrl.includes("onedrive.live.com") ||
+      cleanedUrl.includes("sharepoint.com"));
 
-  const youTubeEmbedSrc = isYouTube ? getYouTubeEmbedUrl(videoUrl) : null;
-  const vimeoEmbedSrc = isVimeo ? getVimeoEmbedUrl(videoUrl) : null;
-  const bunnyEmbedSrc = isBunnyIframe ? videoUrl : null;
-  const isExternalEmbed = Boolean(youTubeEmbedSrc || vimeoEmbedSrc || bunnyEmbedSrc);
+  // Check external embeds (YouTube, Vimeo, Bunny Stream, Google Drive, OneDrive)
+  const isYouTube = (videoType === "url" || videoType === "upload") && (cleanedUrl.includes("youtube.com") || cleanedUrl.includes("youtu.be"));
+  const isVimeo = (videoType === "url" || videoType === "upload") && cleanedUrl.includes("vimeo.com");
+  const isBunnyIframe =
+    cleanedUrl.includes("iframe.mediadelivery.net") ||
+    cleanedUrl.includes("video.bunnycdn.com/play");
+  const isGoogleDrive = videoType === "gdrive" || cleanedUrl.includes("drive.google.com");
+  const isOneDrive = !isTeams && !isOneDriveShareLink && Boolean(onedriveEmbedUrlCandidate);
+
+  const youTubeEmbedSrc = isYouTube ? getYouTubeEmbedUrl(cleanedUrl) : null;
+  const vimeoEmbedSrc = isVimeo ? getVimeoEmbedUrl(cleanedUrl) : null;
+  const bunnyEmbedSrc = isBunnyIframe ? cleanedUrl : null;
+  const gdriveEmbedSrc = isGoogleDrive ? (getGoogleDriveEmbedUrl(cleanedUrl) || cleanedUrl) : null;
+  const onedriveEmbedSrc = isOneDrive ? onedriveEmbedUrlCandidate : null;
+
+  const isExternalEmbed = Boolean(youTubeEmbedSrc || vimeoEmbedSrc || bunnyEmbedSrc || gdriveEmbedSrc || onedriveEmbedSrc);
 
   // Pause playback immediately if isPaused is true (e.g., student opens quiz/assessment)
   useEffect(() => {
@@ -217,6 +295,104 @@ export function InAppVideoPlayer({
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
+  // When a Microsoft Teams link is detected, show a clear explanatory fallback UI
+  // rather than a broken browser "teams.microsoft.com refused to connect" frame.
+  if (isTeams) {
+    return (
+      <div
+        ref={containerRef}
+        className={`relative aspect-video w-full overflow-hidden rounded-2xl border border-indigo-900/50 bg-gradient-to-br from-slate-950 via-[#111428] to-indigo-950/60 p-6 flex flex-col items-center justify-center text-center shadow-2xl ${className}`}
+      >
+        <div className="mx-auto flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-[#464EB8]/20 border border-[#464EB8]/40 text-[#7B83EB] shadow-lg mb-2.5">
+          <Tv className="h-6 w-6 sm:h-7 sm:w-7 text-[#7B83EB]" />
+        </div>
+
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#464EB8]/30 px-3 py-0.5 text-[11px] sm:text-xs font-semibold text-[#C5C9FF] border border-[#464EB8]/50 mb-2">
+          Microsoft Teams Link Detected
+        </span>
+
+        <h4 className="text-sm sm:text-base font-bold text-white max-w-md">
+          Teams Blocks Direct In-App Video Playback
+        </h4>
+
+        <p className="mt-1.5 max-w-lg text-[11px] sm:text-xs text-slate-300 leading-relaxed">
+          Microsoft strictly blocks <code className="text-[#A2A9FF] font-mono bg-black/40 px-1 py-0.5 rounded">teams.microsoft.com</code> links from playing inside embedded web frames (causing the browser <span className="text-rose-400 font-semibold">&ldquo;refused to connect&rdquo;</span> error).
+        </p>
+
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          <a
+            href={cleanedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#464EB8] px-3.5 py-1.5 text-xs font-bold text-white shadow-md hover:bg-[#5B63D3] transition-all"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            <span>Open in Microsoft Teams</span>
+          </a>
+        </div>
+
+        <div className="mt-3.5 max-w-lg rounded-xl border border-blue-500/30 bg-blue-950/40 p-2.5 text-left text-[11px] text-slate-300">
+          <p className="font-semibold text-blue-300 flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-blue-400" />
+            Recommended Solution:
+          </p>
+          <p className="mt-1 text-slate-300">
+            Download the <code className="text-blue-200">.mp4</code> file from Teams and choose <strong>&ldquo;Upload Video File&rdquo;</strong> in the Course Builder. It uploads directly to <strong>Bunny Stream</strong> so all students can watch with full anti-skip controls and zero login requirements.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // When a standard OneDrive / SharePoint share link (like 1drv.ms) is detected,
+  // show a clear explanatory fallback UI rather than a broken browser "refused to connect" iframe.
+  if (isOneDriveShareLink) {
+    return (
+      <div
+        ref={containerRef}
+        className={`relative aspect-video w-full overflow-hidden rounded-2xl border border-sky-900/50 bg-gradient-to-br from-slate-950 via-[#0c192c] to-sky-950/60 p-6 flex flex-col items-center justify-center text-center shadow-2xl ${className}`}
+      >
+        <div className="mx-auto flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-sky-500/20 border border-sky-500/40 text-sky-400 shadow-lg mb-2.5">
+          <Cloud className="h-6 w-6 sm:h-7 sm:w-7 text-sky-400" />
+        </div>
+
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-500/30 px-3 py-0.5 text-[11px] sm:text-xs font-semibold text-sky-200 border border-sky-500/50 mb-2">
+          OneDrive Share Link Detected
+        </span>
+
+        <h4 className="text-sm sm:text-base font-bold text-white max-w-md">
+          OneDrive Share Links Cannot Be Played in Web Players
+        </h4>
+
+        <p className="mt-1.5 max-w-lg text-[11px] sm:text-xs text-slate-300 leading-relaxed">
+          Microsoft blocks standard <code className="text-sky-300 font-mono bg-black/40 px-1 py-0.5 rounded">1drv.ms</code> links from playing inside embedded web frames (<span className="text-rose-400 font-semibold">X-Frame-Options: SAMEORIGIN</span>), causing the browser &ldquo;refused to connect&rdquo; error.
+        </p>
+
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          <a
+            href={cleanedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-md hover:bg-sky-500 transition-all"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            <span>Open Video in OneDrive</span>
+          </a>
+        </div>
+
+        <div className="mt-3.5 max-w-lg rounded-xl border border-blue-500/30 bg-blue-950/40 p-3 text-left text-[11px] text-slate-300">
+          <p className="font-semibold text-blue-300 flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-blue-400" />
+            Easiest Solution for This Video:
+          </p>
+          <p className="mt-1 text-slate-300">
+            You already have this MP4 file on your computer/OneDrive! Switch from <em>&ldquo;OneDrive Link&rdquo;</em> to <strong>&ldquo;Upload Video File&rdquo;</strong>, click <strong>Select MP4 Video</strong>, and select this file. It uploads directly to <strong>Bunny Stream</strong> for smooth in-app playback with anti-skip verification.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // When it's an external embed (YouTube / Vimeo / Bunny Stream), render clean embedded iframe
   if (isExternalEmbed) {
     return (
@@ -245,6 +421,22 @@ export function InAppVideoPlayer({
             src={bunnyEmbedSrc}
             title={title}
             allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+            allowFullScreen
+            className="h-full w-full border-0"
+          />
+        ) : gdriveEmbedSrc ? (
+          <iframe
+            src={gdriveEmbedSrc}
+            title={title}
+            allow="autoplay; encrypted-media; fullscreen"
+            allowFullScreen
+            className="h-full w-full border-0"
+          />
+        ) : onedriveEmbedSrc ? (
+          <iframe
+            src={onedriveEmbedSrc}
+            title={title}
+            allow="autoplay; encrypted-media; fullscreen"
             allowFullScreen
             className="h-full w-full border-0"
           />
@@ -292,7 +484,7 @@ export function InAppVideoPlayer({
         <video
           ref={videoRef}
           src={
-            videoUrl ||
+            cleanedUrl ||
             "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
           }
           onTimeUpdate={handleTimeUpdate}

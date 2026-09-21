@@ -34,7 +34,7 @@ export default function MyCoursesPage() {
   const [courses, setCourses] = useState<EnrolledCourseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [filterTab, setFilterTab] = useState<"all" | "in-progress" | "completed">("all");
+  const [filterTab, setFilterTab] = useState<"all" | "in-progress" | "completed" | "on-hold">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
@@ -48,14 +48,21 @@ export default function MyCoursesPage() {
       const activeEnrollments = data.filter((c: any) => c.status !== "REMOVED");
       const enriched = activeEnrollments.map((c) => {
         const exact = getExactStudentCourseProgress(c.slug, userEmail);
-        const prog = exact.completedMilestones > 0 ? exact.overallPercent : (c.progress || 0);
+        const prog = Math.max(c.progress || 0, exact.overallPercent || 0);
+        const completedVideos = Math.max(c.completedVideosCount || 0, exact.completedVideoIds.length);
+        const totalLessons = exact.totalVideos > 0
+          ? exact.totalVideos
+          : ((c.totalLessons && c.totalLessons > 0) ? c.totalLessons : (exact.totalMilestones || 1));
+        const totalSections = exact.totalSections > 0
+          ? exact.totalSections
+          : (c.totalSections || 1);
         return {
           ...c,
           progress: prog,
           status: c.status || "ACTIVE",
-          completedVideosCount: exact.completedVideoIds.length,
-          totalLessons: exact.totalVideos > 0 ? exact.totalVideos : (c.totalLessons || exact.totalMilestones || 1),
-          totalSections: exact.totalSections > 0 ? exact.totalSections : (c.totalSections || 1),
+          completedVideosCount: completedVideos,
+          totalLessons,
+          totalSections,
           isCompleted: prog >= 100,
         };
       });
@@ -90,15 +97,18 @@ export default function MyCoursesPage() {
     totalEnrolled > 0
       ? Math.round(courses.reduce((acc, c) => acc + (c.progress || 0), 0) / totalEnrolled)
       : 0;
-  const completedCount = courses.filter((c) => (c.progress || 0) >= 100).length;
+  const completedCount = courses.filter((c) => (c.progress || 0) >= 100 && c.status !== "ON_HOLD").length;
+  const onHoldCount = courses.filter((c) => c.status === "ON_HOLD").length;
 
   // Filtered List
   const filteredCourses = useMemo(() => {
     let list = courses;
     if (filterTab === "in-progress") {
-      list = list.filter((c) => (c.progress || 0) < 100);
+      list = list.filter((c) => (c.progress || 0) < 100 && c.status !== "ON_HOLD");
     } else if (filterTab === "completed") {
-      list = list.filter((c) => (c.progress || 0) >= 100);
+      list = list.filter((c) => (c.progress || 0) >= 100 && c.status !== "ON_HOLD");
+    } else if (filterTab === "on-hold") {
+      list = list.filter((c) => c.status === "ON_HOLD");
     }
 
     if (searchQuery.trim()) {
@@ -173,14 +183,17 @@ export default function MyCoursesPage() {
         {!isLoading && !errorMessage && totalEnrolled > 0 && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             {/* Status Tabs */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {[
                 { id: "all", label: `All Courses (${totalEnrolled})` },
                 {
                   id: "in-progress",
-                  label: `In Progress (${courses.filter((c) => (c.progress || 0) < 100).length})`,
+                  label: `In Progress (${courses.filter((c) => (c.progress || 0) < 100 && c.status !== "ON_HOLD").length})`,
                 },
                 { id: "completed", label: `Completed (${completedCount})` },
+                ...(onHoldCount > 0
+                  ? [{ id: "on-hold", label: `On Hold (${onHoldCount})` }]
+                  : []),
               ].map((tab) => {
                 const isActive = filterTab === tab.id;
                 return (
@@ -281,11 +294,15 @@ export default function MyCoursesPage() {
                       <span className="rounded-md bg-blue-500/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-300 border border-blue-400/30 backdrop-blur-md">
                         {course.track}
                       </span>
-                      {course.status === "PAUSED" && (
+                      {course.status === "ON_HOLD" ? (
+                        <span className="rounded-md bg-amber-500 text-white px-2 py-0.5 text-[10px] font-bold shadow-xs flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> On Hold
+                        </span>
+                      ) : course.status === "PAUSED" ? (
                         <span className="rounded-md bg-amber-500/90 text-white px-2 py-0.5 text-[10px] font-bold shadow-xs">
                           Paused by Admin
                         </span>
-                      )}
+                      ) : null}
                     </div>
 
                     <div className="absolute top-3 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-md shadow-xs border border-white/20">
@@ -378,7 +395,12 @@ export default function MyCoursesPage() {
 
                   {/* Card Footer: Direct Link to Course Learning Player */}
                   <div className="border-t border-slate-100 p-5 bg-slate-50/50 dark:border-slate-800 dark:bg-surface-elevated/50">
-                    {course.status === "PAUSED" ? (
+                    {course.status === "ON_HOLD" ? (
+                      <div className="flex items-center justify-center gap-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/60 py-3 text-xs font-bold text-amber-900 dark:text-amber-200 shadow-xs">
+                        <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        <span>Course on Hold (Contact Admin)</span>
+                      </div>
+                    ) : course.status === "PAUSED" ? (
                       <div className="flex items-center justify-center gap-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 py-3 text-xs font-bold text-amber-800 dark:text-amber-300">
                         <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                         <span>Access Paused by Administrator</span>

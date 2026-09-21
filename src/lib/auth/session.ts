@@ -10,6 +10,8 @@ export interface MockSession {
   name: string;
   initials: string;
   role: MockRole;
+  phone?: string;
+  status?: string;
 }
 
 export function encodeSession(session: MockSession): string {

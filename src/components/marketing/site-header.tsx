@@ -25,6 +25,7 @@ import { ThemeToggle } from "@/components/common/theme-toggle";
 
 const BASE_NAV_LINKS = [
   { href: "/courses", label: "Courses" },
+  { href: "/events", label: "Events" },
   { href: "/ai-mock-interview", label: "AI Mock Interview" },
   { href: "/success-stories", label: "Success Stories" },
   { href: "/about", label: "About" },
@@ -50,30 +51,36 @@ export function SiteHeader() {
     };
     readAvatar();
     window.addEventListener("storage", readAvatar);
-    window.addEventListener("jks_avatar_updated", readAvatar);
     return () => {
       window.removeEventListener("storage", readAvatar);
-      window.removeEventListener("jks_avatar_updated", readAvatar);
     };
   }, []);
 
   const isUserAuthenticated = (isAuthLoaded && !!isSignedIn) || !!session;
-  const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
-  const clerkName =
-    clerkUser?.fullName ||
-    [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") ||
-    clerkUser?.username;
 
-  const userEmail = clerkEmail || session?.email || "";
-  const userName = clerkName || session?.name || userEmail.split("@")[0] || "Student";
-  const isSuperAdminEmail = userEmail.toLowerCase() === "lexonitservices@gmail.com";
-  const userRole = isSuperAdminEmail ? "admin" : (session?.role || "student");
+  const effectiveEmail = (
+    clerkUser?.primaryEmailAddress?.emailAddress ||
+    clerkUser?.emailAddresses?.[0]?.emailAddress ||
+    session?.email ||
+    ""
+  ).toLowerCase().trim();
+  const userEmail = effectiveEmail;
+
+  const isSuperAdminEmail =
+    effectiveEmail === "lexonitservices@gmail.com" ||
+    effectiveEmail.includes("admin");
+
+  const userName = isSuperAdminEmail
+    ? "Lexon Administrator"
+    : clerkUser?.fullName || session?.name || "Student";
+
+  const userRole = isSuperAdminEmail ? "admin" : session?.role || "student";
 
   const userAvatar =
     customAvatar ||
     clerkUser?.imageUrl ||
-    (userEmail
-      ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || userEmail)}&background=2563eb&color=fff&bold=true&size=128`
+    (effectiveEmail
+      ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || effectiveEmail)}&background=2563eb&color=fff&bold=true&size=128`
       : undefined);
 
   const userInitials = isSuperAdminEmail
@@ -88,6 +95,7 @@ export function SiteHeader() {
   // Dynamic Navigation items
   const navLinks = [
     { href: "/courses", label: "Courses" },
+    { href: "/events", label: "Events" },
     { href: "/ai-mock-interview", label: "AI Mock Interview" },
     { href: "/success-stories", label: "Success Stories" },
     { href: "/about", label: "About" },

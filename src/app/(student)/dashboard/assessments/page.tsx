@@ -28,8 +28,13 @@ import {
   syncAllCourseProgress,
   getClientSessionEmail,
 } from "@/lib/data/enrollments-api";
-import { fetchStudentAssignedTasks, type IndividualTask } from "@/lib/data/tasks-api";
-import { getStoredCourses, type FullCourse } from "@/lib/data/courses-store";
+import { fetchStudentAssignedTasks, type IndividualTask, type TaskQuestion } from "@/lib/data/tasks-api";
+import {
+  getStoredCourses,
+  syncCoursesWithBackend,
+  fetchLiveCourseBySlug,
+  type FullCourse,
+} from "@/lib/data/courses-store";
 
 interface AssessmentRow {
   uniqueKey: string;
@@ -40,6 +45,38 @@ interface AssessmentRow {
   score: number;
   status: "Passed" | "Failed" | "Pending";
   date: string;
+  /** Live assignment content as authored by the admin. */
+  description: string;
+  minPassingScore: number;
+  questions: TaskQuestion[];
+}
+
+/**
+ * Translate a course section assignment into the question shape the
+ * assessment modal renders.
+ *
+ * The builder stores the answer key as `correctIndex` and the question kind as
+ * a human-readable label; the modal speaks `correctAnswer` and an enum.
+ */
+function toTaskQuestions(assignment: FullCourse["sections"][number]["assignment"]): TaskQuestion[] {
+  const raw = Array.isArray(assignment?.questions) ? assignment.questions : [];
+  return raw.map((q, idx) => {
+    const label = (q.type || assignment?.type || "").toLowerCase();
+    let type: TaskQuestion["type"] = "SHORT_ANSWER";
+    if (label.includes("mcq") || label.includes("choice")) type = "MCQ";
+    else if (label.includes("file") || label.includes("project") || label.includes("upload")) type = "FILE_UPLOAD";
+    else if (label.includes("long") || label.includes("cod") || label.includes("comprehens")) type = "LONG_ANSWER";
+
+    return {
+      id: q.id || `q-${idx + 1}`,
+      type,
+      prompt: q.prompt || `Question ${idx + 1}`,
+      modelAnswer: q.modelAnswer,
+      choices: Array.isArray(q.choices) ? q.choices : undefined,
+      correctAnswer: typeof q.correctIndex === "number" ? q.correctIndex : undefined,
+      maxPoints: typeof q.maxPoints === "number" ? q.maxPoints : undefined,
+    };
+  });
 }
 
 const STATUS_STYLE: Record<AssessmentRow["status"], string> = {
@@ -70,9 +107,13 @@ export default function AssessmentsPage() {
         setAssignedTasks(tasks);
       }
 
-      // 2. Fetch course milestone tests
+      // 2. Fetch course milestone tests.
+      // Curriculum comes from the API rather than the localStorage cache: an
+      // assignment an admin edited after the student enrolled would otherwise
+      // keep rendering from the copy cached at enrolment time.
       const enrollments = await fetchStudentEnrollments(effectiveEmail);
-      const allCourses: FullCourse[] = getStoredCourses();
+      let allCourses: FullCourse[] = await syncCoursesWithBackend().catch(() => []);
+      if (!allCourses.length) allCourses = getStoredCourses();
 
       const uniqueEnrollments = enrollments.filter(
         (e, idx, arr) =>
@@ -87,7 +128,11 @@ export default function AssessmentsPage() {
 
       await Promise.all(
         uniqueEnrollments.map(async (e) => {
-          const fullCourse = allCourses.find((c) => c.slug === e.slug || c.id === e.courseId);
+          // Draft / unpublished courses are absent from the public catalog,
+          // so fall back to a direct read for enrolments we cannot resolve.
+          const fullCourse =
+            allCourses.find((c) => c.slug === e.slug || c.id === e.courseId) ||
+            (await fetchLiveCourseBySlug(e.slug));
           let progress = await fetchCourseProgress(e.slug, effectiveEmail);
 
           if (fullCourse && fullCourse.sections && fullCourse.sections.length > 0) {
@@ -96,6 +141,8 @@ export default function AssessmentsPage() {
               const isCompleted = progress.completedAssignmentIds?.includes(assignmentId);
               const score = progress.assignmentScores?.[assignmentId] || (isCompleted ? 88 : 0);
               const rowKey = `${e.slug || e.courseId || "course"}-${assignmentId}-${sIdx}`;
+              const minPassingScore =
+                typeof sec.assignment?.minPassingScore === "number" ? sec.assignment.minPassingScore : 70;
 
               if (!rows.some((r) => r.uniqueKey === rowKey)) {
                 rows.push({
@@ -105,8 +152,11 @@ export default function AssessmentsPage() {
                   course: e.title,
                   courseSlug: e.slug,
                   score,
-                  status: isCompleted ? (score >= 70 ? "Passed" : "Failed") : "Pending",
+                  status: isCompleted ? (score >= minPassingScore ? "Passed" : "Failed") : "Pending",
                   date: isCompleted ? (e.lastAccessedAt ? e.lastAccessedAt.slice(0, 10) : new Date().toISOString().slice(0, 10)) : "—",
+                  description: sec.assignment?.description || "",
+                  minPassingScore,
+                  questions: toTaskQuestions(sec.assignment),
                 });
               }
             });
@@ -124,6 +174,17 @@ export default function AssessmentsPage() {
 
   useEffect(() => {
     loadAssessments();
+    // Re-read on focus so assignments edited by an admin while this tab sat
+    // open are picked up instead of the copy fetched on mount.
+    const handleFocus = () => {
+      if (document.visibilityState === "visible") loadAssessments();
+    };
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
   }, [loadAssessments]);
 
   const passedCount = assessments.filter((a) => a.status === "Passed").length;
@@ -160,7 +221,7 @@ export default function AssessmentsPage() {
       assessmentId: target.id,
       studentEmail: effectiveEmail,
       score,
-      feedback: score >= 70
+      feedback: score >= target.minPassingScore
         ? "Exceeded performance benchmark across all core competencies."
         : "Score below passing mark. Please review relevant module lectures.",
     }).catch((err) => {
@@ -171,7 +232,7 @@ export default function AssessmentsPage() {
       courseSlug: target.courseSlug,
       studentEmail: effectiveEmail,
       completedVideoIds: [],
-      completedAssignmentIds: score >= 70 ? [target.id] : [],
+      completedAssignmentIds: score >= target.minPassingScore ? [target.id] : [],
       assignmentScores: { [target.id]: score },
     }).catch(() => {});
 
@@ -181,7 +242,7 @@ export default function AssessmentsPage() {
           ? {
               ...a,
               score,
-              status: score >= 70 ? "Passed" : "Failed",
+              status: score >= target.minPassingScore ? "Passed" : "Failed",
               date: new Date().toISOString().slice(0, 10),
             }
           : a
@@ -467,6 +528,9 @@ export default function AssessmentsPage() {
           isOpen={activeIndex !== null}
           title={activeAssessment.title}
           course={activeAssessment.course}
+          questions={activeAssessment.questions}
+          instructions={activeAssessment.description}
+          passingScore={activeAssessment.minPassingScore}
           studentEmail={effectiveEmail}
           onClose={() => setActiveIndex(null)}
           onSubmit={handleSubmitScore}

@@ -137,12 +137,13 @@ export default function AdminStudentDetailsPage() {
   ) => {
     const res = await updateEnrollmentStatus(enrollmentId, newStatus);
     if (res.success) {
+      const savedStatus = res.data?.status || newStatus;
       setStudent((prev) => {
         if (!prev) return prev;
         return {
           ...prev,
           enrollments: prev.enrollments.map((e) =>
-            e.enrollmentId === enrollmentId ? { ...e, status: newStatus } : e
+            e.enrollmentId === enrollmentId ? { ...e, status: savedStatus } : e
           ),
         };
       });
@@ -1221,45 +1222,60 @@ export default function AdminStudentDetailsPage() {
                                     onClick={(e) => e.stopPropagation()}
                                     className="absolute right-0 top-10 z-30 w-48 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-1.5 shadow-2xl space-y-0.5 text-left animate-in fade-in zoom-in-95"
                                   >
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        handleUpdateCourseStatus(
-                                          course.enrollmentId,
-                                          course.status === "PAUSED" ? "ACTIVE" : "PAUSED"
-                                        )
-                                      }
-                                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
-                                    >
-                                      {course.status === "PAUSED" ? (
-                                        <>
-                                          <Play className="h-3.5 w-3.5 text-emerald-600" />
-                                          <span>Resume Course</span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Pause className="h-3.5 w-3.5" />
-                                          <span>Pause Course Access</span>
-                                        </>
-                                      )}
-                                    </button>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        if (
-                                          window.confirm(
-                                            `Are you sure you want to remove student from "${course.courseTitle}"?`
-                                          )
-                                        ) {
-                                          handleUpdateCourseStatus(course.enrollmentId, "REMOVED");
+                                    {course.status === "REMOVED" ? (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          handleUpdateCourseStatus(course.enrollmentId, "ACTIVE")
                                         }
-                                      }}
-                                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                      <span>Remove from Course</span>
-                                    </button>
+                                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
+                                      >
+                                        <Play className="h-3.5 w-3.5" />
+                                        <span>Restore Course Access</span>
+                                      </button>
+                                    ) : (
+                                      <>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            handleUpdateCourseStatus(
+                                              course.enrollmentId,
+                                              course.status === "PAUSED" ? "ACTIVE" : "PAUSED"
+                                            )
+                                          }
+                                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
+                                        >
+                                          {course.status === "PAUSED" ? (
+                                            <>
+                                              <Play className="h-3.5 w-3.5 text-emerald-600" />
+                                              <span>Resume Course</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Pause className="h-3.5 w-3.5" />
+                                              <span>Pause Course Access</span>
+                                            </>
+                                          )}
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            if (
+                                              window.confirm(
+                                                `Are you sure you want to remove student from "${course.courseTitle}"?`
+                                              )
+                                            ) {
+                                              handleUpdateCourseStatus(course.enrollmentId, "REMOVED");
+                                            }
+                                          }}
+                                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                                        >
+                                          <Trash2 className="h-3.5 w-3.5" />
+                                          <span>Remove from Course</span>
+                                        </button>
+                                      </>
+                                    )}
                                   </div>
                                 )}
                               </div>
@@ -1730,4 +1746,3 @@ export default function AdminStudentDetailsPage() {
     </>
   );
 }
-

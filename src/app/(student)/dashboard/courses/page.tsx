@@ -19,6 +19,8 @@ import {
   X,
   MessageCircle,
   Bookmark,
+  Clock,
+  AlertCircle,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
@@ -136,6 +138,7 @@ export default function StudentAllCoursesPage() {
   const [enrolledNotification, setEnrolledNotification] = useState<string | null>(null);
 
   const session = useMockSession();
+  const isStudentOnHold = session?.status === "ON_HOLD";
   const { user: clerkUser } = useUser();
   const email = (
     clerkUser?.primaryEmailAddress?.emailAddress ||
@@ -284,6 +287,22 @@ export default function StudentAllCoursesPage() {
           </div>
         </div>
 
+        {/* On Hold Account Alert / Notification */}
+        {(isStudentOnHold || enrolledNotification) && (
+          <div className="flex items-center gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-900 shadow-sm dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+            <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div>
+              <p className="font-bold text-amber-950 dark:text-amber-100">
+                {isStudentOnHold ? "Account On Hold" : "Enrollment Notice"}
+              </p>
+              <p className="mt-0.5 text-amber-800 dark:text-amber-300">
+                {enrolledNotification ||
+                  "Your student account is currently on hold. New course enrollments and bundle purchases are disabled. Please contact your student advisor or support."}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Course Cards Grid - 2 Columns on Mobile, 3 on Tablet, 4 on Desktop */}
         <Reveal variant="stagger" className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5">
           {filteredCourses.map((course) => {
@@ -413,17 +432,39 @@ export default function StudentAllCoursesPage() {
                     {/* Bottom CTA Button */}
                     <div className="pt-1.5 sm:pt-2">
                       {course.isBundle ? (
-                        <button
-                          type="button"
-                          onClick={() => setIsBundleModalOpen(true)}
-                          className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
-                        >
-                          <span className="truncate">Build Bundle</span>
-                          <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
-                        </button>
+                        isStudentOnHold ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEnrolledNotification("Your account is currently on hold. Bundle purchases are disabled.");
+                              setTimeout(() => setEnrolledNotification(null), 5000);
+                            }}
+                            className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800/60 dark:text-amber-200 py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold transition-all cursor-pointer"
+                          >
+                            <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                            <span className="truncate">Account On Hold</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setIsBundleModalOpen(true)}
+                            className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
+                          >
+                            <span className="truncate">Build Bundle</span>
+                            <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                          </button>
+                        )
                       ) : isOwned ? (() => {
                         const exact = getExactStudentCourseProgress(course.slug, email);
                         const isCompleted = exact.completedMilestones > 0 && exact.overallPercent >= 100;
+                        if (isStudentOnHold) {
+                          return (
+                            <div className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold border border-amber-300 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800/60 dark:text-amber-200">
+                              <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                              <span className="truncate">On Hold</span>
+                            </div>
+                          );
+                        }
                         return (
                           <Link
                             href={`/dashboard/my-courses/${course.slug}`}
@@ -446,7 +487,19 @@ export default function StudentAllCoursesPage() {
                             )}
                           </Link>
                         );
-                      })() : (
+                      })() : isStudentOnHold ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEnrolledNotification("Your account is currently on hold. Course enrollment is temporarily disabled.");
+                            setTimeout(() => setEnrolledNotification(null), 5000);
+                          }}
+                          className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800/60 dark:text-amber-200 py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold transition-all cursor-pointer"
+                        >
+                          <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                          <span className="truncate">Account On Hold</span>
+                        </button>
+                      ) : (
                         <Link
                           href={`/courses/${course.slug}`}
                           className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"

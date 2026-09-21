@@ -358,17 +358,68 @@ export async function deleteAdminStudent(id: string): Promise<{ success: boolean
 export async function updateEnrollmentStatus(
   enrollmentId: string,
   status: "ACTIVE" | "PAUSED" | "REMOVED"
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; data?: { status?: string }; error?: string }> {
   try {
     const res = await apiFetch(`/admin/enrollments/${encodeURIComponent(enrollmentId)}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    return { success: res.ok };
+    if (res.ok) {
+      return { success: true, data: await res.json() };
+    }
+    const errData = await res.json().catch(() => ({}));
+    return { success: false, error: errData.message || "Failed to update enrollment status" };
   } catch (err: any) {
     return { success: false, error: err?.message || "Failed to update enrollment status" };
   }
 }
 
+export interface UserProfileDto {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  phone?: string | null;
+  createdAt: string;
+}
 
+export interface UserProfileUpdate {
+  name?: string;
+  phone?: string;
+}
+
+export async function fetchMyProfile(): Promise<UserProfileDto | null> {
+  try {
+    const res = await apiFetch("/users/profile", {
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn("fetchMyProfile error:", err);
+  }
+  return null;
+}
+
+export async function updateMyProfile(
+  dto: UserProfileUpdate
+): Promise<{ success: boolean; data?: UserProfileDto; error?: string }> {
+  try {
+    const res = await apiFetch("/users/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, data };
+    }
+    const errData = await res.json().catch(() => ({}));
+    return { success: false, error: errData.message || "Failed to update profile" };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Network error updating profile" };
+  }
+}

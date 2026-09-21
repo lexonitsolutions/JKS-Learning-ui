@@ -19,6 +19,7 @@ import {
   Check,
   FileText,
   BadgeCheck,
+  AlertCircle,
 } from "lucide-react";
 import { registerCourseOnline, type Invoice } from "@/lib/data/invoices-store";
 import { enrollStudentCourse } from "@/lib/data/courses-store";
@@ -80,12 +81,16 @@ export function CourseCheckoutModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [generatedInvoice, setGeneratedInvoice] = useState<Invoice | null>(null);
+  const [enrollmentError, setEnrollmentError] = useState<string | null>(null);
+
+  const isStudentOnHold = session?.status === "ON_HOLD";
 
   useEffect(() => {
     if (isOpen) {
       setPaymentSuccess(false);
       setIsProcessing(false);
       setGeneratedInvoice(null);
+      setEnrollmentError(null);
     }
   }, [isOpen, course]);
 
@@ -123,7 +128,15 @@ export function CourseCheckoutModal({
   };
 
   const handleProcessPayment = async () => {
+    if (isStudentOnHold) {
+      setEnrollmentError(
+        "Your account is currently on hold. You cannot enroll in courses at this time. Please contact support.",
+      );
+      return;
+    }
+
     setIsProcessing(true);
+    setEnrollmentError(null);
 
     try {
       // Simulate banking gateway handshake & verification
@@ -164,7 +177,15 @@ export function CourseCheckoutModal({
       if (onEnrollSuccess) {
         onEnrollSuccess(course.slug);
       }
-    } catch (err) {
+    } catch (err: any) {
+      const errMsg = err?.message || "Payment registration failed.";
+      if (
+        errMsg.toLowerCase().includes("hold") ||
+        errMsg.toLowerCase().includes("blocked")
+      ) {
+        setEnrollmentError(errMsg);
+        return;
+      }
       console.error("Payment registration fallback:", err);
       enrollStudentCourse(course.slug, effectiveEmail);
       setPaymentSuccess(true);
@@ -215,6 +236,22 @@ export function CourseCheckoutModal({
         {/* Modal Body Content */}
         {!paymentSuccess ? (
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+            {/* On Hold / Error Alert Banner */}
+            {(isStudentOnHold || enrollmentError) && (
+              <div className="flex items-center gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-900 shadow-sm dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                  <AlertCircle className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-amber-950 dark:text-amber-100">Account On Hold</p>
+                  <p className="mt-0.5 text-amber-800 dark:text-amber-300">
+                    {enrollmentError ||
+                      "Your student account is currently on hold. New course enrollments are disabled. Please contact administration to reactivate your access."}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Desktop 2-Column Grid Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
               {/* LEFT COLUMN: Course & Payment Method (7 cols on desktop) */}
@@ -583,14 +620,19 @@ export function CourseCheckoutModal({
               </button>
               <button
                 type="button"
-                disabled={isProcessing}
+                disabled={isProcessing || isStudentOnHold}
                 onClick={handleProcessPayment}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-[1.01] cursor-pointer disabled:opacity-75"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-[1.01] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isProcessing ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span>Authorizing ₹{finalPrice.toLocaleString("en-IN")}…</span>
+                  </>
+                ) : isStudentOnHold ? (
+                  <>
+                    <Lock className="h-4 w-4" />
+                    <span>Account On Hold</span>
                   </>
                 ) : (
                   <>

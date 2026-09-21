@@ -47,6 +47,15 @@ interface TakeAssessmentModalProps {
   title: string;
   course: string;
   task?: IndividualTask | null;
+  /**
+   * The real questions authored by the admin for a course milestone
+   * assignment. Without these the modal used to fall back to
+   * DEFAULT_QUESTIONS, so students sat a generic placeholder quiz instead of
+   * the assignment their admin had actually written or edited.
+   */
+  questions?: TaskQuestion[];
+  instructions?: string;
+  passingScore?: number;
   studentEmail?: string;
   onClose: () => void;
   onSubmit: (score: number, submissionData?: any) => void;
@@ -57,6 +66,9 @@ export function TakeAssessmentModal({
   title,
   course,
   task,
+  questions,
+  instructions,
+  passingScore,
   studentEmail,
   onClose,
   onSubmit,
@@ -68,13 +80,29 @@ export function TakeAssessmentModal({
 
   if (!isOpen) return null;
 
-  const customQuestions: TaskQuestion[] = task?.questions && task.questions.length > 0 ? task.questions : [];
+  const customQuestions: TaskQuestion[] =
+    task?.questions && task.questions.length > 0
+      ? task.questions
+      : questions && questions.length > 0
+      ? questions
+      : [];
   const isIndividualTask = Boolean(task);
+  const effectiveInstructions = task?.instructions || instructions;
 
-  // MCQ Validation rule: If >1 MCQ is present, student must answer ALL before submitting
   const mcqQuestions = customQuestions.filter((q) => q.type === "MCQ");
   const answeredMcqCount = mcqQuestions.filter((q) => answers[q.id] !== undefined).length;
-  const allMcqsAnswered = mcqQuestions.length <= 1 || answeredMcqCount === mcqQuestions.length;
+
+  // Every question must be answered before the assignment can be submitted —
+  // only the MCQs were checked before, so a written question could be left
+  // blank and still submitted (and scored as a miss).
+  const isAnswered = (q: TaskQuestion) => {
+    const value = answers[q.id];
+    if (q.type === "MCQ") return typeof value === "number";
+    return typeof value === "string" && value.trim().length > 0;
+  };
+  const answeredCount = customQuestions.filter(isAnswered).length;
+  const allQuestionsAnswered =
+    customQuestions.length === 0 || answeredCount === customQuestions.length;
 
   const handleSelectOption = (qId: string, optIdx: number) => {
     setAnswers((prev) => ({ ...prev, [qId]: optIdx }));
@@ -95,10 +123,9 @@ export function TakeAssessmentModal({
   };
 
   const handleSubmit = async () => {
-    // Enforce all MCQs answered rule
-    if (mcqQuestions.length > 1 && answeredMcqCount < mcqQuestions.length) {
+    if (!allQuestionsAnswered) {
       setValidationError(
-        `Please answer all ${mcqQuestions.length} multiple-choice questions before submitting (${answeredMcqCount}/${mcqQuestions.length} answered).`
+        `Please answer all ${customQuestions.length} questions before submitting (${answeredCount}/${customQuestions.length} answered).`
       );
       return;
     }
@@ -127,8 +154,21 @@ export function TakeAssessmentModal({
         });
 
         onSubmit(autoScore, { answers, uploadedFileName });
+      } else if (customQuestions.length > 0) {
+        // Course milestone assignment authored by the admin. MCQs are scored
+        // against the configured answer key; anything else needs manual
+        // review, so it is recorded at the pass mark.
+        const score =
+          mcqQuestions.length > 0
+            ? Math.round(
+                (mcqQuestions.filter((q) => answers[q.id] === q.correctAnswer).length /
+                  mcqQuestions.length) *
+                  100
+              )
+            : passingScore ?? 85;
+        onSubmit(score, { answers, uploadedFileName: uploadedFileName || undefined });
       } else {
-        // Default course test evaluation
+        // No questions configured for this assignment — generic knowledge check.
         const correctCount = DEFAULT_QUESTIONS.reduce(
           (acc, q, idx) => acc + (answers[`default-${idx + 1}`] === q.correctIndex ? 1 : 0),
           0
@@ -173,9 +213,9 @@ export function TakeAssessmentModal({
           </div>
         </div>
 
-        {task?.instructions && (
+        {effectiveInstructions && (
           <div className="mt-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 p-3 text-xs text-blue-900 dark:text-blue-200">
-            <strong>Instructions:</strong> {task.instructions}
+            <strong>Instructions:</strong> {effectiveInstructions}
           </div>
         )}
 
@@ -347,9 +387,9 @@ export function TakeAssessmentModal({
         {/* MODAL FOOTER */}
         <div className="mt-8 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
           <div className="text-[11px] text-slate-400">
-            {mcqQuestions.length > 1 && (
+            {customQuestions.length > 0 && (
               <span>
-                {answeredMcqCount}/{mcqQuestions.length} MCQs answered
+                {answeredCount}/{customQuestions.length} answered
               </span>
             )}
           </div>
@@ -365,7 +405,7 @@ export function TakeAssessmentModal({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isSubmitting || (mcqQuestions.length > 1 && !allMcqsAnswered)}
+              disabled={isSubmitting || !allQuestionsAnswered}
               className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20 disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (

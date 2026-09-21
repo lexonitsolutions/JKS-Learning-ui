@@ -27,17 +27,21 @@ import {
   type PendingCompletionItem,
 } from "@/lib/data/certificates-api";
 import { fetchAdminStudents, type AdminStudentRecord } from "@/lib/data/students-api";
+import { useSearchParams } from "next/navigation";
 import { fetchDbCourses } from "@/lib/data/courses-api";
 import type { Course } from "@/lib/data/courses";
 
 export default function AdminCertificatesPage() {
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") === "pending" ? "pending" : "issued";
+
   const [certificates, setCertificates] = useState<AdminCertificateItem[]>([]);
   const [pendingCompletions, setPendingCompletions] = useState<PendingCompletionItem[]>([]);
   const [students, setStudents] = useState<AdminStudentRecord[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<"issued" | "pending">("issued");
+  const [activeTab, setActiveTab] = useState<"issued" | "pending">(initialTab);
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 

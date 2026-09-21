@@ -99,6 +99,7 @@ export default function StudentDashboardPage() {
   const [enrolledToast, setEnrolledToast] = useState<string | null>(null);
 
   const session = useMockSession();
+  const isStudentOnHold = session?.status === "ON_HOLD";
   const { user: clerkUser } = useUser();
 
   const email = (
@@ -168,6 +169,11 @@ export default function StudentDashboardPage() {
   const [checkoutCourse, setCheckoutCourse] = useState<CatalogCourse | null>(null);
 
   const handleQuickEnroll = (course: CatalogCourse) => {
+    if (isStudentOnHold) {
+      setEnrolledToast("Your account is currently on hold. Course enrollment is temporarily disabled.");
+      setTimeout(() => setEnrolledToast(null), 5000);
+      return;
+    }
     setCheckoutCourse(course);
   };
 
@@ -180,6 +186,23 @@ export default function StudentDashboardPage() {
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
+        {/* On-Hold Alert Banner */}
+        {isStudentOnHold && (
+          <div className="flex items-center gap-3.5 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-900 shadow-sm dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+              <Clock className="h-5 w-5" />
+            </div>
+            <div className="space-y-0.5">
+              <h4 className="font-extrabold text-sm text-amber-950 dark:text-amber-100">
+                Student Account On Hold
+              </h4>
+              <p className="text-amber-800 dark:text-amber-300 leading-relaxed">
+                Your student account is currently on hold. You can still browse the platform and view your enrolled history, but new course enrollments and active learning access are temporarily suspended. Please reach out to your counselor or administration to reactivate your access.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Success Toast */}
         {enrolledToast && (
           <div className="fixed top-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-3.5 text-xs font-bold text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-200 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-300">
@@ -501,13 +524,27 @@ export default function StudentDashboardPage() {
 
                     {/* Bottom CTA Button: Direct Link to Course Details & Enrollment */}
                     <div className="pt-2">
-                      <Link
-                        href={`/courses/${course.slug}`}
-                        className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2.5 px-4 text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
-                      >
-                        <span>Enroll Now</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
+                      {isStudentOnHold ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEnrolledToast("Your account is currently on hold. Course enrollment is temporarily disabled.");
+                            setTimeout(() => setEnrolledToast(null), 5000);
+                          }}
+                          className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800/60 dark:text-amber-200 py-2.5 px-4 text-xs font-bold transition-all cursor-pointer"
+                        >
+                          <Clock className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                          <span>Account On Hold</span>
+                        </button>
+                      ) : (
+                        <Link
+                          href={`/courses/${course.slug}`}
+                          className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2.5 px-4 text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
+                        >
+                          <span>Enroll Now</span>
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>

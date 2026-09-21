@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useAuth, useUser, useClerk } from "@clerk/nextjs";
 import { SESSION_COOKIE_NAME, encodeSession, type MockSession } from "@/lib/auth/session";
 import { MOCK_USERS } from "@/lib/auth/mock-users";
+import { logoutMockSession } from "@/lib/auth/use-mock-auth";
 import { apiUrl } from "@/lib/api/base-url";
 
 const SESSION_CHANGE_EVENT = "jks-mock-session-change";
@@ -12,6 +13,7 @@ const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 export function ClerkSessionSync() {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
+  const { signOut } = useClerk();
   const getTokenRef = useRef(getToken);
   getTokenRef.current = getToken;
 
@@ -94,6 +96,18 @@ export function ClerkSessionSync() {
             signal: AbortSignal.timeout(10000),
           });
 
+          if (res.status === 403) {
+            // Account is BLOCKED by administrator
+            logoutMockSession();
+            try {
+              await signOut();
+            } catch {}
+            if (typeof window !== "undefined") {
+              window.location.replace("/login?blocked=1");
+            }
+            return;
+          }
+
           if (res.ok) {
             const data = await res.json().catch(() => ({}));
             if (data?.accessToken && typeof window !== "undefined") {
@@ -102,23 +116,35 @@ export function ClerkSessionSync() {
               } catch {}
             }
             const backendUser = data?.user;
-            if (
-              backendUser &&
-              (backendUser.role === "SUPER_ADMIN" || backendUser.role === "ADMIN")
-            ) {
-              const adminSession: MockSession = {
+            if (backendUser) {
+              if (backendUser.status === "BLOCKED") {
+                logoutMockSession();
+                try {
+                  await signOut();
+                } catch {}
+                if (typeof window !== "undefined") {
+                  window.location.replace("/login?blocked=1");
+                }
+                return;
+              }
+
+              const isAdmin =
+                backendUser.role === "SUPER_ADMIN" || backendUser.role === "ADMIN";
+              const updatedSession: MockSession = {
                 ...session,
                 name: backendUser.name || session.name,
-                role: "admin",
+                role: isAdmin ? "admin" : session.role,
+                status: backendUser.status || "ACTIVE",
               };
-              document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(adminSession)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+              document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(updatedSession)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
               try {
                 localStorage.setItem(
                   "jks_auth_user",
                   JSON.stringify({
                     email,
-                    name: adminSession.name,
-                    role: "admin",
+                    name: updatedSession.name,
+                    role: updatedSession.role,
+                    status: updatedSession.status,
                     avatar: user.imageUrl,
                   })
                 );

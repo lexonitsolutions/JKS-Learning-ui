@@ -1,4 +1,3 @@
-import Script from "next/script";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter, Homemade_Apple } from "next/font/google";
@@ -77,9 +76,9 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Homemade+Apple&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
           rel="stylesheet"
         />
-        <Script
+        <script
           id="theme-init"
-          strategy="beforeInteractive"
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: themeInitScript }}
         />
       </head>
@@ -88,7 +87,7 @@ export default function RootLayout({
           <ClerkProvider
             publishableKey={CLERK_PUBLISHABLE_KEY}
             signInUrl="/login"
-            signUpUrl="/register"
+            signUpUrl="/sign-up"
             afterSignOutUrl="/login"
           >
             <ClerkSessionSync />

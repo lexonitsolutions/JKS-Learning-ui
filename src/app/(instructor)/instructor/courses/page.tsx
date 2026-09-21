@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Edit,
   Trash2,
+  PlayCircle,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { useAllCourses, type FullCourse } from "@/lib/data/courses-store";
@@ -173,13 +174,21 @@ export default function InstructorCoursesPage() {
                         <span>Roster</span>
                       </Link>
                       <Link
-                        href="/instructor/courses/new"
+                        href={`/instructor/courses/new?edit=${encodeURIComponent(crs.slug || crs.id)}`}
                         className="flex items-center justify-center gap-1 rounded-xl bg-[#2563EB] py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors"
                       >
                         <Edit className="h-3.5 w-3.5" />
                         <span>Edit Course</span>
                       </Link>
                     </div>
+
+                    <Link
+                      href={`/dashboard/my-courses/${crs.slug}`}
+                      className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated py-2 text-xs font-bold text-[#2563EB] dark:text-blue-400 shadow-xs hover:bg-[#EFF6FF] dark:hover:bg-surface-hover transition-colors"
+                    >
+                      <PlayCircle className="h-3.5 w-3.5" />
+                      <span>View Learning UI</span>
+                    </Link>
                   </div>
                 </div>
               </TiltCard>

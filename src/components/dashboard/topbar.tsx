@@ -33,6 +33,7 @@ import {
   Megaphone,
   MessageSquare,
   Star,
+  Calendar,
   type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -64,6 +65,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone, badge: "Soon" },
   { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
+  { href: "/admin/events", label: "Events", icon: Calendar, badge: "New" },
   { href: "/admin/instructors", label: "Instructors", icon: GraduationCap },
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
   { href: "/admin/assessments/questions", label: "Question Bank", icon: ClipboardCheck },

@@ -19,6 +19,7 @@ interface EarnedCertificate {
   grade: string;
   status: string;
   verificationId?: string;
+  studentName?: string;
 }
 
 export default function StudentCertificatesPage() {
@@ -68,13 +69,18 @@ export default function StudentCertificatesPage() {
           progress: prog,
           completedVideosCount: exact.completedVideoIds.length,
           totalLessons: exact.totalMilestones,
-          isCompleted: prog >= 100,
+          // Reaching 100% raises a completion request; the course is only
+          // complete — and the certificate only claimable — once an admin
+          // approves it.
+          isCompleted: prog >= 100 && c.completionApproved === true,
+          awaitingApproval: prog >= 100 && c.completionApproved !== true,
         };
       });
       setEnrollments(enriched);
 
-      // 3. If any enrollment is 100% completed, auto-claim certificate to MongoDB
-      const completedCourses = enriched.filter((e) => e.progress >= 100 || e.isCompleted);
+      // 3. Auto-claim only for approved completions. This used to fire at 100%
+      // progress alone, which handed out certificates with no admin review.
+      const completedCourses = enriched.filter((e) => e.isCompleted);
       for (const comp of completedCourses) {
         const alreadyInDb = certList.some(
           (c) => c.courseSlug === comp.slug || c.courseId === comp.courseId || c.courseTitle === comp.title
@@ -126,12 +132,13 @@ export default function StudentCertificatesPage() {
       grade: c.grade || "Mastery & Stage Completion (100%)",
       status: "Verified",
       verificationId: c.verificationId,
+      studentName: c.studentName || studentName,
     });
   });
 
   // Add any completed courses that might not yet be in dbCertificates state
   enrollments
-    .filter((e) => e.progress >= 100 || e.isCompleted)
+    .filter((e) => e.isCompleted)
     .forEach((e) => {
       const key = e.slug || e.title;
       if (!handledKeys.has(key)) {
@@ -147,7 +154,7 @@ export default function StudentCertificatesPage() {
       }
     });
 
-  const inProgressCourses = enrollments.filter((e) => e.progress < 100 && !e.isCompleted);
+  const inProgressCourses = enrollments.filter((e) => !e.isCompleted);
 
   const initials =
     session?.initials ||
@@ -271,7 +278,16 @@ export default function StudentCertificatesPage() {
                     <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                       <ShieldCheck className="h-3.5 w-3.5" /> Blockchain Authenticated
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/certificate/verify/${encodeURIComponent(cert.verificationId || cert.id)}`}
+                        target="_blank"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/60 px-3 py-2 text-xs font-bold text-[#2563EB] hover:bg-blue-100/60 dark:border-blue-900/40 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-900/40 cursor-pointer transition-colors"
+                        title="Open Public Verification Page"
+                      >
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        <span>Verify Online</span>
+                      </Link>
                       <button
                         type="button"
                         onClick={() => setSelectedCert(cert)}
@@ -328,13 +344,28 @@ export default function StudentCertificatesPage() {
                   className="flex flex-col justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50/60 p-4 sm:flex-row sm:items-center dark:border-slate-800 dark:bg-surface-elevated/60"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                        (item as any).awaitingApproval
+                          ? "bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"
+                          : "bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                      }`}
+                    >
                       <Lock className="h-4 w-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-slate-900 dark:text-white">{item.title}</div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">{item.title}</span>
+                        {(item as any).awaitingApproval && (
+                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                            Awaiting admin approval
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                        {item.completedVideosCount || 0} of {item.totalLessons || 0} Lessons Completed
+                        {(item as any).awaitingApproval
+                          ? "All milestones complete — an admin must approve your completion before the certificate is issued."
+                          : `${item.completedVideosCount || 0} of ${item.totalLessons || 0} Lessons Completed`}
                       </div>
                     </div>
                   </div>
@@ -381,10 +412,11 @@ export default function StudentCertificatesPage() {
           selectedCert
             ? {
                 id: selectedCert.id,
-                studentName,
+                studentName: selectedCert.studentName || studentName,
                 courseTitle: selectedCert.course,
                 issuedDate: selectedCert.issuedOn,
                 grade: selectedCert.grade,
+                verificationUrl: `${typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || "https://jks-learning-ui.vercel.app")}/certificate/verify/${encodeURIComponent(selectedCert.verificationId || selectedCert.id)}`,
               }
             : null
         }

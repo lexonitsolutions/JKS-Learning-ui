@@ -23,6 +23,9 @@ import {
   Upload,
   Image as ImageIcon,
   Palette,
+  Phone,
+  Mail,
+  Loader2,
 } from "lucide-react";
 
 function GithubIcon({ className = "h-4 w-4" }: { className?: string }) {
@@ -47,7 +50,7 @@ import { TiltCard } from "@/components/interactions/tilt-card";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 import { getClientSessionEmail, fetchStudentEnrollments, type EnrolledCourseItem } from "@/lib/data/enrollments-api";
-import { fetchStudentDetail, type AdminStudentDetail } from "@/lib/data/students-api";
+import { fetchStudentDetail, fetchMyProfile, updateMyProfile, type AdminStudentDetail } from "@/lib/data/students-api";
 
 // Preset Banner Themes for Quick Cover Customization
 const BANNER_PRESETS = [
@@ -89,6 +92,7 @@ const PRESET_AVATARS = ["#2563EB", "#7C3AED", "#059669", "#EA580C"].map(
 // Local storage persistent keys
 const STORAGE_KEYS = {
   PROFILE_NAME: "jks_student_profile_name_v3",
+  PROFILE_PHONE: "jks_student_profile_phone_v3",
   PROFILE_ROLE: "jks_student_profile_role_v3",
   PROFILE_BIO: "jks_student_profile_bio_v3",
   PROFILE_LOCATION: "jks_student_profile_location_v3",
@@ -113,11 +117,17 @@ export default function StudentProfilePage() {
 
   // Profile Form States
   const [name, setName] = useState(clerkName || session?.name || "Student Learner");
+  const [phone, setPhone] = useState(session?.phone || "");
   const [role, setRole] = useState("Student Learner");
   const [bio, setBio] = useState("Enrolled learner on JKS Learning.");
   const [location, setLocation] = useState("India");
   const [avatar, setAvatar] = useState(clerkUser?.imageUrl || "/images/hero-developer.png");
   const [enrolledTrack, setEnrolledTrack] = useState("No Active Track");
+
+  // Save States
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Banner State
   const [bannerType, setBannerType] = useState<"preset" | "image">("preset");
@@ -143,18 +153,27 @@ export default function StudentProfilePage() {
     if (session?.name) {
       setName(session.name);
     }
+    if (session?.phone) {
+      setPhone(session.phone);
+    }
 
     if (effectiveEmail) {
       Promise.all([
+        fetchMyProfile(),
         fetchStudentDetail(effectiveEmail),
         fetchStudentEnrollments(effectiveEmail),
       ])
-        .then(([detail, enrolledList]) => {
+        .then(([myProfile, detail, enrolledList]) => {
+          if (myProfile) {
+            if (myProfile.name) setName(myProfile.name);
+            if (myProfile.phone) setPhone(myProfile.phone);
+          }
+
           if (detail) {
             setStudentDetail(detail);
             if (detail.name) setName(detail.name);
             if (detail.phone && detail.phone !== "N/A") {
-              setLocation(`${detail.phone} · India`);
+              setPhone(detail.phone);
             }
           }
 
@@ -201,6 +220,9 @@ export default function StudentProfilePage() {
         const savedName = localStorage.getItem(STORAGE_KEYS.PROFILE_NAME + keySuffix);
         if (savedName) setName(savedName);
 
+        const savedPhone = localStorage.getItem(STORAGE_KEYS.PROFILE_PHONE + keySuffix);
+        if (savedPhone) setPhone(savedPhone);
+
         const savedRole = localStorage.getItem(STORAGE_KEYS.PROFILE_ROLE + keySuffix);
         if (savedRole) setRole(savedRole);
 
@@ -221,14 +243,45 @@ export default function StudentProfilePage() {
         }
       } catch {}
     }
-  }, [session?.name, session?.email, effectiveEmail]);
+  }, [session?.name, session?.email, session?.phone, effectiveEmail]);
 
   // Save profile updates
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    const trimmedName = name.trim();
+    const trimmedPhone = phone.trim();
+
     try {
-      localStorage.setItem(STORAGE_KEYS.PROFILE_NAME + keySuffix, name);
+      // 1. Persist directly to MongoDB Atlas database
+      const result = await updateMyProfile({
+        name: trimmedName,
+        phone: trimmedPhone,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update profile in database");
+      }
+
+      if (result.data) {
+        if (result.data.name) setName(result.data.name);
+        if (result.data.phone !== undefined) setPhone(result.data.phone || "");
+        if (studentDetail) {
+          setStudentDetail({
+            ...studentDetail,
+            name: result.data.name,
+            phone: result.data.phone || "N/A",
+          });
+        }
+      }
+
+      // 2. Persist to local storage
+      const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
+      localStorage.setItem(STORAGE_KEYS.PROFILE_NAME + keySuffix, trimmedName);
+      localStorage.setItem(STORAGE_KEYS.PROFILE_PHONE + keySuffix, trimmedPhone);
       localStorage.setItem(STORAGE_KEYS.PROFILE_ROLE + keySuffix, role);
       localStorage.setItem(STORAGE_KEYS.PROFILE_BIO + keySuffix, bio);
       localStorage.setItem(STORAGE_KEYS.PROFILE_LOCATION + keySuffix, location);
@@ -236,8 +289,8 @@ export default function StudentProfilePage() {
       localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR, avatar);
       window.dispatchEvent(new Event("jks_avatar_updated"));
 
+      // 3. Update session cookie
       if (typeof document !== "undefined") {
-        const trimmedName = name.trim();
         const initials =
           trimmedName
             .split(" ")
@@ -249,6 +302,7 @@ export default function StudentProfilePage() {
         const updatedSession = {
           email: effectiveEmail || session?.email || "student@example.com",
           name: trimmedName,
+          phone: trimmedPhone,
           initials,
           role: session?.role || "student",
         };
@@ -256,8 +310,18 @@ export default function StudentProfilePage() {
         document.cookie = `jks_mock_session=${encodeURIComponent(JSON.stringify(updatedSession))}; path=/; max-age=604800; SameSite=Lax`;
         window.dispatchEvent(new Event("jks-mock-session-change"));
       }
-    } catch {}
-    setIsEditModalOpen(false);
+
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setIsEditModalOpen(false);
+      }, 900);
+    } catch (err: any) {
+      console.error("Profile save error:", err);
+      setSaveError(err.message || "Failed to save profile. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -536,11 +600,29 @@ export default function StudentProfilePage() {
                     </p>
 
                     <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 px-3 py-1 font-semibold border border-emerald-200/70 dark:border-emerald-800/40 transition-colors cursor-pointer group"
+                        title="Click to edit mobile number"
+                      >
+                        <Phone className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                        <span>{phone || "+ Add Phone Number"}</span>
+                        <Pencil className="h-2.5 w-2.5 opacity-60 group-hover:opacity-100 transition-opacity ml-0.5" />
+                      </button>
+
+                      {effectiveEmail && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">
+                          <Mail className="h-3 w-3 text-slate-400" />
+                          {effectiveEmail}
+                        </span>
+                      )}
+
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">
                         <Globe className="h-3 w-3 text-slate-400" />
                         {location}
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-300 px-3 py-1 font-semibold">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-300 px-3 py-1 font-semibold">
                         <BookOpen className="h-3 w-3" />
                         {enrolledTrack}
                       </span>
@@ -896,15 +978,39 @@ export default function StudentProfilePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-md rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-surface-secondary">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Edit Student Profile</h3>
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#2563EB]">
+                  <Pencil className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Edit Student Profile</h3>
+                  <p className="text-[11px] text-slate-400">Update your details and database contact record</p>
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => setIsEditModalOpen(false)}
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setSaveError(null);
+                }}
                 className="rounded-xl p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-surface-hover dark:hover:text-slate-100 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
+
+            {saveError && (
+              <div className="mt-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/50 p-3 text-xs text-rose-700 dark:text-rose-300">
+                {saveError}
+              </div>
+            )}
+
+            {saveSuccess && (
+              <div className="mt-4 flex items-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 p-3 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                Profile and phone number updated in database!
+              </div>
+            )}
 
             <form onSubmit={handleSaveProfile} className="mt-4 space-y-4">
               <div>
@@ -916,6 +1022,32 @@ export default function StudentProfilePage() {
                   className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                   required
                 />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Mobile / Phone Number
+                  </label>
+                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+                    Syncs to DB
+                  </span>
+                </div>
+                <div className="relative mt-1.5">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <Phone className="h-4 w-4 text-slate-400" />
+                  </div>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 98765 43210"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                  />
+                </div>
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Your primary contact number for course certifications and WhatsApp updates.
+                </p>
               </div>
 
               <div>
@@ -940,11 +1072,12 @@ export default function StudentProfilePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Location / Contact</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Location</label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Hyderabad, India"
                   className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                 />
               </div>
@@ -952,16 +1085,33 @@ export default function StudentProfilePage() {
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-surface-hover cursor-pointer"
+                  disabled={isSaving}
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setSaveError(null);
+                  }}
+                  className="rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-surface-hover cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-700 shadow-md cursor-pointer"
+                  disabled={isSaving}
+                  className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-700 shadow-md cursor-pointer disabled:opacity-75"
                 >
-                  <Save className="h-4 w-4" /> Save Changes
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Saving to Database...
+                    </>
+                  ) : saveSuccess ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-white" /> Saved!
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" /> Save Changes
+                    </>
+                  )}
                 </button>
               </div>
             </form>

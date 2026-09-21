@@ -21,6 +21,7 @@ import {
   Sparkles,
   Megaphone,
   FileText,
+  Calendar,
   type LucideIcon,
 } from "lucide-react";
 import { useMockSession, logoutMockSession, performLogout } from "@/lib/auth/use-mock-auth";
@@ -54,6 +55,7 @@ const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
+  { href: "/admin/events", label: "Events", icon: Calendar, badge: "New" },
   { href: "/admin/instructors", label: "Instructors", icon: GraduationCap },
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
   { href: "/admin/certificates", label: "Certificates", icon: Award },

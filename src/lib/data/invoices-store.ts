@@ -193,7 +193,25 @@ export async function registerCourseOnline(data: {
       saveStoredInvoices([formatted, ...current]);
       return formatted;
     }
-  } catch (err) {
+
+    const errData = await res.json().catch(() => ({}));
+    const message =
+      errData?.message ||
+      (res.status === 403
+        ? "Your account is currently on hold. You cannot enroll in courses at this time."
+        : "Enrollment failed. Please check your credentials.");
+
+    if (res.status === 403 || res.status === 400 || res.status === 409) {
+      throw new Error(Array.isArray(message) ? message.join(", ") : message);
+    }
+  } catch (err: any) {
+    if (
+      err?.message &&
+      (err.message.toLowerCase().includes("hold") ||
+        err.message.toLowerCase().includes("blocked"))
+    ) {
+      throw err;
+    }
     console.warn("Backend API unavailable, falling back to local invoice generator:", err);
   }
 

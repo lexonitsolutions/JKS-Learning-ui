@@ -13,6 +13,13 @@ export default function proxy(request: NextRequest) {
     const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
     const session = decodeSession(sessionCookie);
 
+    if (session?.status === "BLOCKED") {
+      const url = new URL("/login?blocked=1", request.url);
+      const res = NextResponse.redirect(url);
+      res.cookies.delete(SESSION_COOKIE_NAME);
+      return res;
+    }
+
     // Also check for Clerk session cookies if present
     const hasClerkSession = !!(
       request.cookies.get("__session")?.value ||
@@ -24,7 +31,7 @@ export default function proxy(request: NextRequest) {
     const isStudentRoute = pathname.startsWith(PROTECTED_STUDENT_PREFIX);
     const isInstructorRoute = pathname.startsWith(PROTECTED_INSTRUCTOR_PREFIX);
     const isAdminRoute = pathname.startsWith(PROTECTED_ADMIN_PREFIX);
-    const isAuthPage = pathname === "/login" || pathname === "/register";
+    const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/sign-up";
 
     const isProtected = isStudentRoute || isInstructorRoute || isAdminRoute;
 
@@ -53,16 +60,26 @@ export default function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
 
-      if (isStudentRoute && isAdmin) {
+      // Allow admins and instructors to preview course learning UI
+      const isLearningPlayer = pathname.startsWith("/dashboard/my-courses");
+
+      if (isStudentRoute && !isLearningPlayer && isAdmin) {
         return NextResponse.redirect(new URL("/admin", request.url));
       }
 
-      if (isStudentRoute && session.role === "instructor") {
+      if (isStudentRoute && !isLearningPlayer && session.role === "instructor") {
         return NextResponse.redirect(new URL("/instructor", request.url));
       }
     }
 
-    return NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-pathname", pathname);
+
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
   } catch (err) {
     // Fail open safely so SSR pages never return 500
     console.error("[Proxy Middleware Error]", err);

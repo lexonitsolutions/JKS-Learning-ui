@@ -56,12 +56,15 @@ export function getClientSessionEmail(): string {
 }
 
 export async function fetchStudentEnrollments(userEmailOrId?: string): Promise<EnrolledCourseItem[]> {
-  const emailToQuery = userEmailOrId || getClientSessionEmail();
+  const emailToQuery = (userEmailOrId || getClientSessionEmail() || "").toLowerCase().trim();
 
   try {
     // 1. Try fetching via authenticated session /me
     const meRes = await apiFetch("/enrollments/me", {
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(emailToQuery ? { "x-user-email": emailToQuery } : {}),
+      },
       credentials: "include",
     });
 
@@ -76,7 +79,10 @@ export async function fetchStudentEnrollments(userEmailOrId?: string): Promise<E
     if (emailToQuery) {
       const studentRes = await apiFetch(`/enrollments/student/${encodeURIComponent(emailToQuery)}`,
         {
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-user-email": emailToQuery,
+          },
           cache: "no-store",
         }
       );

@@ -137,7 +137,7 @@ export function AddInstructorModal({
                   Instructor Added &amp; Welcome Email Dispatched!
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
-                  An official welcome email with Instructor ID, login email, and initial password has been sent to{" "}
+                  An official welcome email with login email and initial password has been sent to{" "}
                   <strong className="text-slate-800 dark:text-white">{createdCredentials.email}</strong>.
                 </p>
               </div>
@@ -152,7 +152,7 @@ export function AddInstructorModal({
                   <button
                     type="button"
                     onClick={() => {
-                      const text = `JKS Learning Instructor Credentials\nName: ${createdCredentials.name}\nInstructor ID: ${createdCredentials.id}\nEmail: ${createdCredentials.email}\nPassword: ${createdCredentials.password}\nLogin Portal: ${window.location.origin}/sign-in`;
+                      const text = `JKS Learning Instructor Credentials\nName: ${createdCredentials.name}\nEmail: ${createdCredentials.email}\nPassword: ${createdCredentials.password}\nLogin Portal: ${window.location.origin}/sign-in`;
                       navigator.clipboard.writeText(text);
                       setIsCopied(true);
                       setTimeout(() => setIsCopied(false), 2000);
@@ -173,14 +173,7 @@ export function AddInstructorModal({
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="rounded-xl bg-white dark:bg-surface p-2.5 border border-slate-200/80 dark:border-slate-700/80">
-                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Instructor ID</div>
-                    <div className="font-mono font-bold text-slate-900 dark:text-white truncate mt-0.5" title={createdCredentials.id}>
-                      {createdCredentials.id}
-                    </div>
-                  </div>
-
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div className="rounded-xl bg-white dark:bg-surface p-2.5 border border-slate-200/80 dark:border-slate-700/80">
                     <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Login Email</div>
                     <div className="font-semibold text-slate-900 dark:text-white truncate mt-0.5" title={createdCredentials.email}>
