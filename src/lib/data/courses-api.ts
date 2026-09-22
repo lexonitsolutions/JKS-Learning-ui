@@ -111,10 +111,27 @@ export function transformBackendCourse(bc: BackendCourse): Course {
     rating: typeof bc.rating === "number" ? bc.rating : 4.9,
     studentsEnrolled: typeof bc.studentsEnrolled === "number" ? bc.studentsEnrolled : 0,
     summary: bc.summary || "",
+    thumbnail: resolveCourseThumbnail(bc.thumbnail),
     demoVideoUrl,
     demoVideoTitle,
     modules,
   };
+}
+
+export function resolveCourseThumbnail(thumb?: string | null): string | undefined {
+  if (!thumb || typeof thumb !== "string") return undefined;
+  const trimmed = thumb.trim();
+  if (!trimmed) return undefined;
+  // Base64 data URL
+  if (trimmed.startsWith("data:")) return trimmed;
+  // Absolute HTTP/HTTPS URL
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  // Local public frontend static images
+  if (trimmed.startsWith("/images/") || trimmed.startsWith("/assets/")) return trimmed;
+  // Backend relative path e.g. "/uploads/courses/..."
+  const apiOrigin = apiUrl("").replace(/\/$/, "");
+  const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return `${apiOrigin}${cleanPath}`;
 }
 
 /**

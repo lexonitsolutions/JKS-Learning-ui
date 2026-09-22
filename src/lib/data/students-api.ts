@@ -443,7 +443,24 @@ export interface CourseTaskItem {
   courseId?: string;
   courseTitle?: string;
   courseSlug?: string;
-  source?: "submission" | "curriculum" | "sheet_log";
+  source?: "submission" | "curriculum" | "sheet_log" | "individual";
+  assignmentTitle?: string;
+  assignmentType?: string;
+  question?: string;
+  studentAnswer?: string;
+  options?: string[];
+  correctAnswer?: string;
+  isCorrect?: boolean;
+  submissionFileUrl?: string;
+  submissionFileName?: string;
+  submittedAt?: string;
+  dueDate?: string;
+  status?: string;
+  marks?: number;
+  maxMarks?: number;
+  feedback?: string;
+  enrollmentDate?: string;
+  courseStatus?: string;
 }
 
 export interface StudentCourseTasksResponse {

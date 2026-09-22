@@ -109,16 +109,25 @@ export function CourseThumbnail({
 }: CourseThumbnailProps) {
   const [hasError, setHasError] = useState(false);
 
+  // Normalize backend relative upload URLs if passed directly
+  const normalizedSrc =
+    typeof src === "string" &&
+    src.startsWith("/") &&
+    !src.startsWith("/images/") &&
+    !src.startsWith("/assets/")
+      ? `${(process.env.NEXT_PUBLIC_API_URL || "https://jks-learning-backend-production-d0d4.up.railway.app").replace(/\/$/, "")}${src}`
+      : src;
+
   // Check if src is valid and not one of the obsolete non-existent local fallback paths
   const isObsoleteLocalFallback =
-    typeof src === "string" &&
-    (src.includes("course-java.png") ||
-      src.includes("course-frontend.png") ||
-      src.includes("course-sap.png") ||
-      src.includes("course-dotnet.png"));
+    typeof normalizedSrc === "string" &&
+    (normalizedSrc.includes("course-java.png") ||
+      normalizedSrc.includes("course-frontend.png") ||
+      normalizedSrc.includes("course-sap.png") ||
+      normalizedSrc.includes("course-dotnet.png"));
 
-  const hasProvidedValidSrc = Boolean(src && src.trim() && !isObsoleteLocalFallback);
-  const resolvedSrc = hasProvidedValidSrc && !hasError ? src! : getFallbackImage(title, track);
+  const hasProvidedValidSrc = Boolean(normalizedSrc && normalizedSrc.trim() && !isObsoleteLocalFallback);
+  const resolvedSrc = hasProvidedValidSrc && !hasError ? normalizedSrc! : getFallbackImage(title, track);
 
   const theme = getThemeForCourse(title, track);
   const Icon = theme.icon;

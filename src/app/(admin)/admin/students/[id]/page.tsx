@@ -67,6 +67,8 @@ import {
   PauseCircle,
   ClipboardList,
   FileSpreadsheet,
+  LayoutGrid,
+  Table,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
@@ -129,6 +131,7 @@ export default function AdminStudentDetailsPage() {
   const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
   const [taskSearchQuery, setTaskSearchQuery] = useState("");
   const [selectedTaskModal, setSelectedTaskModal] = useState<CourseTaskItem | null>(null);
+  const [taskViewMode, setTaskViewMode] = useState<"cards" | "table">("cards");
 
   // Full Screen Student Course Learning & Assignment Inspector View State
   const [inspectingCourse, setInspectingCourse] = useState<StudentCourseDetail | null>(null);
@@ -254,6 +257,16 @@ export default function AdminStudentDetailsPage() {
           };
         });
         setStudent({ ...data, enrollments: enrichedEnrollments });
+        if (enrichedEnrollments.length > 0) {
+          setAvailableTaskCourses(
+            enrichedEnrollments.map((e) => ({
+              id: e.courseId,
+              title: e.courseTitle,
+              slug: e.courseSlug,
+              taskCount: 0,
+            }))
+          );
+        }
       } else {
         setErrorMessage(`Student profile '${studentIdOrSlug}' not found in the database.`);
       }
@@ -281,10 +294,10 @@ export default function AdminStudentDetailsPage() {
   }, [loadData]);
 
   useEffect(() => {
-    if (student) {
+    if (studentIdOrSlug) {
       loadCourseTasks(selectedTaskCourse);
     }
-  }, [student, selectedTaskCourse, loadCourseTasks]);
+  }, [studentIdOrSlug, selectedTaskCourse, loadCourseTasks]);
 
   // Overall calculations
   const totalCourses = student?.enrollments.length || 0;
@@ -1886,7 +1899,7 @@ export default function AdminStudentDetailsPage() {
                     </div>
                   </div>
 
-                  {/* Search and Table Container */}
+                  {/* Search, Filter & View Controls */}
                   <div className="rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary/90 p-5 sm:p-6 shadow-sm space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
@@ -1896,23 +1909,54 @@ export default function AdminStudentDetailsPage() {
                         </span>
                       </div>
 
-                      <div className="relative w-full sm:w-72">
-                        <input
-                          type="text"
-                          value={taskSearchQuery}
-                          onChange={(e) => setTaskSearchQuery(e.target.value)}
-                          placeholder="Search topic, syntax, code..."
-                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated pl-3 pr-8 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500"
-                        />
-                        {taskSearchQuery && (
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        {/* View Switcher */}
+                        <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-surface-elevated p-0.5">
                           <button
                             type="button"
-                            onClick={() => setTaskSearchQuery("")}
-                            className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                            onClick={() => setTaskViewMode("cards")}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              taskViewMode === "cards"
+                                ? "bg-white dark:bg-surface-secondary text-[#2563EB] dark:text-blue-400 shadow-xs"
+                                : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                            }`}
                           >
-                            <X className="h-3.5 w-3.5" />
+                            <LayoutGrid className="h-3.5 w-3.5" />
+                            <span>Structured View</span>
                           </button>
-                        )}
+                          <button
+                            type="button"
+                            onClick={() => setTaskViewMode("table")}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              taskViewMode === "table"
+                                ? "bg-white dark:bg-surface-secondary text-[#2563EB] dark:text-blue-400 shadow-xs"
+                                : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                            }`}
+                          >
+                            <Table className="h-3.5 w-3.5" />
+                            <span>Spreadsheet</span>
+                          </button>
+                        </div>
+
+                        {/* Search Input */}
+                        <div className="relative w-full sm:w-64">
+                          <input
+                            type="text"
+                            value={taskSearchQuery}
+                            onChange={(e) => setTaskSearchQuery(e.target.value)}
+                            placeholder="Search topic, question, answer..."
+                            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated pl-3 pr-8 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500"
+                          />
+                          {taskSearchQuery && (
+                            <button
+                              type="button"
+                              onClick={() => setTaskSearchQuery("")}
+                              className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -1924,91 +1968,370 @@ export default function AdminStudentDetailsPage() {
                         </p>
                       </div>
                     ) : filteredTasks.length > 0 ? (
-                      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-                        <table className="w-full text-left border-collapse text-xs">
-                          <thead>
-                            <tr className="bg-slate-100/80 dark:bg-surface-elevated border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                              <th className="p-3 w-24">Date</th>
-                              <th className="p-3 min-w-[160px]">Topic Name</th>
-                              <th className="p-3 min-w-[130px]">Program Name</th>
-                              <th className="p-3 min-w-[140px]">Syntax/Keywords</th>
-                              <th className="p-3 min-w-[180px]">Why We Are Using</th>
-                              <th className="p-3 min-w-[180px]">Where We Have To Use</th>
-                              <th className="p-3 min-w-[160px]">Examples/Case Study</th>
-                              <th className="p-3 min-w-[130px]">FLOW</th>
-                              <th className="p-3 w-20 text-center">Out of 5</th>
-                              <th className="p-3 min-w-[110px]">Remarks</th>
-                              <th className="p-3 w-16 text-center">Inspect</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {filteredTasks.map((t, idx) => (
-                              <tr
-                                key={t.id || idx}
-                                className="hover:bg-blue-50/40 dark:hover:bg-surface-hover/60 transition-colors group cursor-pointer"
-                                onClick={() => setSelectedTaskModal(t)}
+                      taskViewMode === "cards" ? (
+                        /* STRUCTURED DOSSIER CARD VIEW */
+                        <div className="space-y-6">
+                          {(() => {
+                            const groups: {
+                              courseTitle: string;
+                              courseSlug?: string;
+                              courseId?: string;
+                              enrollmentDate?: string;
+                              status?: string;
+                              tasks: CourseTaskItem[];
+                            }[] = [];
+
+                            filteredTasks.forEach((t) => {
+                              const key = t.courseTitle || "General Course Tasks";
+                              let existing = groups.find((g) => g.courseTitle === key);
+                              if (!existing) {
+                                const relEnrollment = student.enrollments.find(
+                                  (e) =>
+                                    e.courseTitle === t.courseTitle ||
+                                    e.courseSlug === t.courseSlug ||
+                                    e.courseId === t.courseId
+                                );
+                                existing = {
+                                  courseTitle: key,
+                                  courseSlug: t.courseSlug || relEnrollment?.courseSlug,
+                                  courseId: t.courseId || relEnrollment?.courseId,
+                                  enrollmentDate:
+                                    t.enrollmentDate ||
+                                    (relEnrollment?.enrolledAt
+                                      ? new Date(relEnrollment.enrolledAt).toLocaleDateString("en-US", {
+                                          month: "long",
+                                          day: "numeric",
+                                          year: "numeric",
+                                        })
+                                      : undefined),
+                                  status: t.courseStatus || relEnrollment?.status || "Active",
+                                  tasks: [],
+                                };
+                                groups.push(existing);
+                              }
+                              existing.tasks.push(t);
+                            });
+
+                            return groups.map((grp) => (
+                              <div
+                                key={grp.courseTitle}
+                                className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-secondary overflow-hidden shadow-xs space-y-0"
                               >
-                                <td className="p-3 text-[11px] font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                                  {t.date}
-                                </td>
-                                <td className="p-3 font-bold text-slate-900 dark:text-white">
-                                  <div>{t.topicName}</div>
-                                  {t.courseTitle && (
-                                    <span className="text-[10px] font-normal text-blue-600 dark:text-blue-400 block mt-0.5">
-                                      {t.courseTitle}
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="p-3">
-                                  <span className="rounded bg-slate-100 dark:bg-surface-elevated border border-slate-200 dark:border-slate-700 px-2 py-0.5 font-mono text-[10px] font-semibold text-slate-800 dark:text-slate-200">
-                                    {t.programName}
-                                  </span>
-                                </td>
-                                <td className="p-3 text-slate-600 dark:text-slate-400 text-[11px] max-w-[140px]">
-                                  <div className="line-clamp-2">{t.syntaxKeywords}</div>
-                                </td>
-                                <td className="p-3 text-slate-600 dark:text-slate-300 max-w-[180px]">
-                                  <div className="line-clamp-2 text-[11px]">{t.whyUsing}</div>
-                                </td>
-                                <td className="p-3 text-slate-600 dark:text-slate-300 max-w-[180px]">
-                                  <div className="line-clamp-2 text-[11px]">{t.whereUsing}</div>
-                                </td>
-                                <td className="p-3 max-w-[160px]">
-                                  <div className="rounded bg-slate-50 dark:bg-surface-elevated/70 border border-slate-200/60 dark:border-slate-800 p-1.5 font-mono text-[10px] text-slate-700 dark:text-slate-300 line-clamp-2">
-                                    {t.examplesCaseStudy}
+                                {/* Course Header Section */}
+                                <div className="bg-slate-50/90 dark:bg-surface-elevated/80 border-b border-slate-200/80 dark:border-slate-800 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                  <div className="space-y-1">
+                                    <div className="flex flex-wrap items-center gap-2.5">
+                                      <span className="text-[11px] font-black uppercase tracking-wider text-[#2563EB] dark:text-blue-400">
+                                        Course:
+                                      </span>
+                                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                                        {grp.courseTitle}
+                                      </h4>
+                                      <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                        Status: {grp.status || "Active"}
+                                      </span>
+                                    </div>
+                                    {grp.enrollmentDate && (
+                                      <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                        <Calendar className="h-3 w-3 text-slate-400" />
+                                        <span>Enrolled: {grp.enrollmentDate}</span>
+                                      </div>
+                                    )}
                                   </div>
-                                </td>
-                                <td className="p-3 text-slate-500 dark:text-slate-400 max-w-[130px]">
-                                  <div className="line-clamp-2 text-[10px]">{t.flow}</div>
-                                </td>
-                                <td className="p-3 text-center whitespace-nowrap">
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-xs font-black">
-                                    ★ {typeof t.outOf5 === "number" ? t.outOf5.toFixed(1) : "5.0"}
-                                  </span>
-                                </td>
-                                <td className="p-3 whitespace-nowrap">
-                                  <span className="rounded-full bg-blue-100 dark:bg-blue-950/70 border border-blue-300 dark:border-blue-800/60 text-blue-800 dark:text-blue-300 px-2 py-0.5 text-[10px] font-bold">
-                                    {t.remarks || "Verified"}
-                                  </span>
-                                </td>
-                                <td className="p-3 text-center">
+
                                   <button
                                     type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedTaskModal(t);
-                                    }}
-                                    className="rounded-lg p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
-                                    title="View full task details"
+                                    onClick={() =>
+                                      downloadStudentCourseTasksDocx(
+                                        studentIdOrSlug,
+                                        grp.courseId || grp.courseSlug,
+                                        grp.courseTitle
+                                      )
+                                    }
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 px-3.5 py-1.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer shrink-0 self-start sm:self-auto shadow-2xs"
                                   >
-                                    <Eye className="h-4 w-4" />
+                                    <Download className="h-3.5 w-3.5" />
+                                    <span>Download DOCX</span>
                                   </button>
-                                </td>
+                                </div>
+
+                                {/* Tasks / Assignments List */}
+                                <div className="p-4 sm:p-5 space-y-4 divide-y divide-slate-100 dark:divide-slate-800/70">
+                                  {grp.tasks.map((task, tIdx) => (
+                                    <div
+                                      key={task.id || tIdx}
+                                      className={tIdx > 0 ? "pt-4 space-y-3" : "space-y-3"}
+                                    >
+                                      {/* Task Title & Status Meta */}
+                                      <div className="flex flex-wrap items-start justify-between gap-2.5">
+                                        <div className="space-y-1 min-w-0">
+                                          <div className="flex flex-wrap items-center gap-2">
+                                            <span className="rounded-md bg-blue-100 dark:bg-blue-950/60 px-2 py-0.5 text-[10px] font-black text-[#2563EB] dark:text-blue-400">
+                                              Task {tIdx + 1}
+                                            </span>
+                                            <span className="text-xs font-bold text-slate-900 dark:text-white">
+                                              <span className="text-slate-400 font-semibold uppercase text-[10px] mr-1">
+                                                Topic:
+                                              </span>
+                                              {task.topicName}
+                                            </span>
+                                          </div>
+                                          <div className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                                            <span className="text-slate-400 text-[10px] uppercase font-semibold mr-1">
+                                              Assignment:
+                                            </span>
+                                            {task.assignmentTitle || task.programName}
+                                          </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 shrink-0">
+                                          <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                            {task.assignmentType || "Short Answer"}
+                                          </span>
+                                          <span
+                                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                                              task.status === "Graded" || task.status === "Completed"
+                                                ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
+                                                : task.status === "Submitted"
+                                                ? "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800"
+                                                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
+                                            }`}
+                                          >
+                                            {task.status || "Submitted"}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      {/* Question Prompt */}
+                                      <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated/40 p-3.5 space-y-1">
+                                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                          <HelpCircle className="h-3 w-3 text-blue-500" />
+                                          <span>Question / Assignment Prompt</span>
+                                        </div>
+                                        <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                          {task.question || task.whyUsing || task.topicName}
+                                        </p>
+                                      </div>
+
+                                      {/* Student Submission / Answer */}
+                                      <div className="rounded-xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/30 dark:bg-blue-950/20 p-3.5 space-y-2">
+                                        <div className="text-[10px] font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                                          <FileCheck className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                          <span>Student's Actual Answer / Submission</span>
+                                        </div>
+
+                                        {/* MCQ Answer View */}
+                                        {Array.isArray(task.options) && task.options.length > 0 ? (
+                                          <div className="space-y-1.5 mt-2">
+                                            {task.options.map((opt, oIdx) => {
+                                              const letter = String.fromCharCode(65 + oIdx);
+                                              const isSelected =
+                                                task.studentAnswer?.includes(opt) ||
+                                                task.studentAnswer === letter ||
+                                                task.studentAnswer === String(oIdx);
+                                              const isCorrect =
+                                                task.correctAnswer === opt ||
+                                                task.correctAnswer === letter ||
+                                                task.correctAnswer === String(oIdx);
+
+                                              return (
+                                                <div
+                                                  key={oIdx}
+                                                  className={`flex items-center justify-between rounded-lg p-2 text-xs border ${
+                                                    isSelected
+                                                      ? isCorrect
+                                                        ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200"
+                                                        : "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200"
+                                                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary text-slate-700 dark:text-slate-300"
+                                                  }`}
+                                                >
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-200 dark:bg-slate-700 text-[10px] font-bold">
+                                                      {letter}
+                                                    </span>
+                                                    <span className="font-medium">{opt}</span>
+                                                  </div>
+                                                  {isSelected && (
+                                                    <span className="rounded bg-blue-600 text-white px-2 py-0.5 text-[10px] font-bold">
+                                                      Student's Selection
+                                                    </span>
+                                                  )}
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        ) : task.submissionFileUrl ? (
+                                          /* File Upload Answer View */
+                                          <div className="flex items-center justify-between rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-surface-secondary p-3">
+                                            <div className="flex items-center gap-2.5">
+                                              <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                              <div>
+                                                <div className="text-xs font-bold text-slate-900 dark:text-white">
+                                                  {task.submissionFileName || "Student Project Archive"}
+                                                </div>
+                                                <div className="text-[10px] text-slate-400">Attached student deliverable file</div>
+                                              </div>
+                                            </div>
+                                            <a
+                                              href={task.submissionFileUrl}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              download
+                                              className="flex items-center gap-1.5 rounded-lg bg-blue-600 text-white px-3 py-1.5 text-xs font-bold hover:bg-blue-700 transition-colors"
+                                            >
+                                              <Download className="h-3.5 w-3.5" />
+                                              <span>Download File</span>
+                                            </a>
+                                          </div>
+                                        ) : (
+                                          /* Text / Code Answer View */
+                                          <div className="rounded-lg bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-800 p-3 text-xs text-slate-800 dark:text-slate-200 whitespace-pre-wrap font-sans">
+                                            {task.studentAnswer || task.examplesCaseStudy || "No written response submitted yet."}
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {/* Evaluation Footer */}
+                                      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800/60">
+                                        <div className="flex flex-wrap items-center gap-3">
+                                          {task.submittedAt && (
+                                            <span className="flex items-center gap-1">
+                                              <Clock className="h-3 w-3 text-slate-400" />
+                                              <span>
+                                                Submitted:{" "}
+                                                {new Date(task.submittedAt).toLocaleDateString("en-GB", {
+                                                  day: "numeric",
+                                                  month: "short",
+                                                  year: "numeric",
+                                                  hour: "2-digit",
+                                                  minute: "2-digit",
+                                                })}
+                                              </span>
+                                            </span>
+                                          )}
+                                          {task.dueDate && (
+                                            <span className="flex items-center gap-1">
+                                              <Calendar className="h-3 w-3 text-slate-400" />
+                                              <span>Due: {task.dueDate}</span>
+                                            </span>
+                                          )}
+                                          <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-emerald-700 dark:text-emerald-300 font-bold">
+                                            Marks: {task.marks ?? Math.round(task.outOf5 * 20)} / {task.maxMarks || 100}
+                                          </span>
+                                        </div>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => setSelectedTaskModal(task)}
+                                          className="inline-flex items-center gap-1 text-[#2563EB] dark:text-blue-400 hover:underline font-semibold cursor-pointer"
+                                        >
+                                          <Eye className="h-3 w-3" />
+                                          <span>Technical Details &amp; Flow</span>
+                                        </button>
+                                      </div>
+
+                                      {/* Feedback Note if Present */}
+                                      {task.feedback && (
+                                        <div className="rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 p-2.5 text-xs text-emerald-900 dark:text-emerald-200">
+                                          <span className="font-bold">Evaluator Feedback: </span>
+                                          <span>{task.feedback}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                      ) : (
+                        /* SPREADSHEET 10-COLUMN TABLE VIEW */
+                        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                          <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                              <tr className="bg-slate-100/80 dark:bg-surface-elevated border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                                <th className="p-3 w-24">Date</th>
+                                <th className="p-3 min-w-[160px]">Topic Name</th>
+                                <th className="p-3 min-w-[130px]">Program Name</th>
+                                <th className="p-3 min-w-[140px]">Syntax/Keywords</th>
+                                <th className="p-3 min-w-[180px]">Why We Are Using</th>
+                                <th className="p-3 min-w-[180px]">Where We Have To Use</th>
+                                <th className="p-3 min-w-[160px]">Examples/Case Study</th>
+                                <th className="p-3 min-w-[130px]">FLOW</th>
+                                <th className="p-3 w-20 text-center">Out of 5</th>
+                                <th className="p-3 min-w-[110px]">Remarks</th>
+                                <th className="p-3 w-16 text-center">Inspect</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                              {filteredTasks.map((t, idx) => (
+                                <tr
+                                  key={t.id || idx}
+                                  className="hover:bg-blue-50/40 dark:hover:bg-surface-hover/60 transition-colors group cursor-pointer"
+                                  onClick={() => setSelectedTaskModal(t)}
+                                >
+                                  <td className="p-3 text-[11px] font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                                    {t.date}
+                                  </td>
+                                  <td className="p-3 font-bold text-slate-900 dark:text-white">
+                                    <div>{t.topicName}</div>
+                                    {t.courseTitle && (
+                                      <span className="text-[10px] font-normal text-blue-600 dark:text-blue-400 block mt-0.5">
+                                        {t.courseTitle}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="rounded bg-slate-100 dark:bg-surface-elevated border border-slate-200 dark:border-slate-700 px-2 py-0.5 font-mono text-[10px] font-semibold text-slate-800 dark:text-slate-200">
+                                      {t.programName}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-slate-600 dark:text-slate-400 text-[11px] max-w-[140px]">
+                                    <div className="line-clamp-2">{t.syntaxKeywords}</div>
+                                  </td>
+                                  <td className="p-3 text-slate-600 dark:text-slate-300 max-w-[180px]">
+                                    <div className="line-clamp-2 text-[11px]">{t.whyUsing}</div>
+                                  </td>
+                                  <td className="p-3 text-slate-600 dark:text-slate-300 max-w-[180px]">
+                                    <div className="line-clamp-2 text-[11px]">{t.whereUsing}</div>
+                                  </td>
+                                  <td className="p-3 max-w-[160px]">
+                                    <div className="rounded bg-slate-50 dark:bg-surface-elevated/70 border border-slate-200/60 dark:border-slate-800 p-1.5 font-mono text-[10px] text-slate-700 dark:text-slate-300 line-clamp-2">
+                                      {t.examplesCaseStudy}
+                                    </div>
+                                  </td>
+                                  <td className="p-3 text-slate-500 dark:text-slate-400 max-w-[130px]">
+                                    <div className="line-clamp-2 text-[10px]">{t.flow}</div>
+                                  </td>
+                                  <td className="p-3 text-center whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-xs font-black">
+                                      ★ {typeof t.outOf5 === "number" ? t.outOf5.toFixed(1) : "5.0"}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 whitespace-nowrap">
+                                    <span className="rounded-full bg-blue-100 dark:bg-blue-950/70 border border-blue-300 dark:border-blue-800/60 text-blue-800 dark:text-blue-300 px-2 py-0.5 text-[10px] font-bold">
+                                      {t.remarks || "Verified"}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-center">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedTaskModal(t);
+                                      }}
+                                      className="rounded-lg p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
+                                      title="View full task details"
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )
                     ) : (
                       <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center space-y-2">
                         <FileSpreadsheet className="h-8 w-8 text-slate-400 mx-auto" />

@@ -66,8 +66,8 @@ export interface SectionAssignment {
 
 export function canonicalizeAssessmentType(raw?: string): string {
   if (!raw) return "Short Answer Question";
-  const s = raw.toLowerCase().trim();
-  if (s.includes("mcq") || s.includes("choice")) {
+  const s = raw.toLowerCase().trim().replace(/[-_]+/g, " ");
+  if (s.includes("mcq") || s.includes("choice") || s === "multiple choice") {
     return "Multiple Choice (MCQ)";
   }
   if (s.includes("code") || s.includes("coding")) {
@@ -89,16 +89,10 @@ export function canonicalizeAssessmentType(raw?: string): string {
 export type AssessmentKind = "MCQ" | "SHORT_ANSWER" | "LONG_ANSWER" | "CODING" | "FILE_UPLOAD";
 
 /**
- * Resolve a question's kind from the human-readable label the builder stores.
- *
- * The student course page rendered every question as a multiple choice list
- * regardless of this, so short answer, long answer, coding and file upload
- * questions all appeared as A/B/C/D — the builder seeds `choices` with
- * "Option A".."Option D" placeholders for every question, which is what showed
- * up on screen.
+ * Resolve a question's kind from the human-readable label or internal key the builder stores.
  */
 export function resolveAssessmentKind(raw?: string, fallback?: string): AssessmentKind {
-  const s = (raw || fallback || "").toLowerCase();
+  const s = (raw || fallback || "").toLowerCase().replace(/[-_]+/g, " ").trim();
   if (s.includes("mcq") || s.includes("choice")) return "MCQ";
   if (s.includes("file") || s.includes("project") || s.includes("upload")) return "FILE_UPLOAD";
   if (s.includes("cod")) return "CODING";

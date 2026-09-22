@@ -61,7 +61,9 @@ export async function createAdminTask(payload: {
   instructions?: string;
   courseId?: string;
   courseTitle?: string;
+  assignedStudentId?: string;
   assignedStudentEmail: string;
+  assignedStudentName?: string;
   dueDate?: string;
   requiredFiles?: string;
   questions?: TaskQuestion[];

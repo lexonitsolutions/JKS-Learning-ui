@@ -65,8 +65,8 @@ interface StepTab {
 const STEPS: StepTab[] = [
   { step: 1, label: "1. Course Basics", shortLabel: "Basics", icon: Layers },
   { step: 2, label: "2. Curriculum & Videos", shortLabel: "Curriculum", icon: Video },
-  { step: 3, label: "3. Anti-Skip & Security", shortLabel: "Anti-Skip", icon: Lock },
-  { step: 4, label: "4. Assignments & Pass Marks", shortLabel: "Assignments", icon: ClipboardCheck },
+  { step: 3, label: "3. Assignments & Pass Marks", shortLabel: "Assignments", icon: ClipboardCheck },
+  { step: 4, label: "4. Anti-Skip & Security", shortLabel: "Anti-Skip", icon: Lock },
   { step: 5, label: "5. Certificate & Publish", shortLabel: "Certificate", icon: Award },
 ];
 
@@ -305,10 +305,6 @@ function InstructorNewCourseContent() {
     }
 
     if (step === 3) {
-      return { valid: true, message: "" };
-    }
-
-    if (step === 4) {
       for (let i = 0; i < sections.length; i++) {
         const sec = sections[i];
         if (!sec.assignment.title.trim()) {
@@ -322,6 +318,10 @@ function InstructorNewCourseContent() {
           return { valid: false, message: `Section ${i + 1} passing mark must be between 40% and 100%.` };
         }
       }
+      return { valid: true, message: "" };
+    }
+
+    if (step === 4) {
       return { valid: true, message: "" };
     }
 
@@ -1545,116 +1545,10 @@ function InstructorNewCourseContent() {
                 </motion.div>
               )}
 
-              {/* STEP 3: ANTI-SKIP OPTIONS & STAGE PROTECTION POLICY */}
+              {/* STEP 3: ASSIGNMENTS & PASSING MARKS */}
               {currentStep === 3 && (
                 <motion.div
                   key="step-3"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-6"
-                >
-                  <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400">
-                      <Lock className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 3: Anti-Skip Options & Integrity Rules</h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Prevent video scrubbing and enforce sequential milestones before unlocking assignments
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Banner Alert */}
-                  <div className="rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-[#EFF6FF]/70 dark:bg-blue-950/30 p-4 text-xs text-slate-700 dark:text-slate-300">
-                    <div className="flex items-center gap-2 font-bold text-[#2563EB] dark:text-blue-400">
-                      <Sparkles className="h-4 w-4" />
-                      Anti-Skip Video Protection Enforcement
-                    </div>
-                    <p className="mt-1 leading-relaxed text-slate-600 dark:text-slate-400">
-                      When enabled, students cannot skip or fast-forward unwatched video segments. They must complete 100% of the lecture to unlock the section assignment.
-                    </p>
-                  </div>
-
-                  {/* Anti-Skip Toggles */}
-                  <div className="space-y-3">
-                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-elevated p-4 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600/50 transition-colors">
-                      <div className="space-y-0.5">
-                        <div className="text-xs font-bold text-slate-900 dark:text-white">
-                          Enforce 100% Video Watch (No Fast-Forwarding)
-                        </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Disables seek forward bar for unwatched portions of the video.
-                        </div>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={antiSkipEnforced}
-                        onChange={(e) => setAntiSkipEnforced(e.target.checked)}
-                        className="h-4 w-4 accent-[#2563EB] cursor-pointer mt-0.5"
-                      />
-                    </label>
-
-                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-elevated p-4 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600/50 transition-colors">
-                      <div className="space-y-0.5">
-                        <div className="text-xs font-bold text-slate-900 dark:text-white">
-                          Lock Section Assignment Until Video Is Finished
-                        </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Students cannot submit or take the assignment without watching all section videos.
-                        </div>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={requireFullWatchToUnlockAssignment}
-                        onChange={(e) => setRequireFullWatchToUnlockAssignment(e.target.checked)}
-                        className="h-4 w-4 accent-[#2563EB] cursor-pointer mt-0.5"
-                      />
-                    </label>
-
-                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-elevated p-4 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600/50 transition-colors">
-                      <div className="space-y-0.5">
-                        <div className="text-xs font-bold text-slate-900 dark:text-white">
-                          Enforce Sequential Stage Progression
-                        </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Section N+1 remains locked until Section N video and assignment are both completed.
-                        </div>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={preventForwardSeeking}
-                        onChange={(e) => setPreventForwardSeeking(e.target.checked)}
-                        className="h-4 w-4 accent-[#2563EB] cursor-pointer mt-0.5"
-                      />
-                    </label>
-                  </div>
-
-                  {/* Playback Speed Cap */}
-                  <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-4 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-slate-900 dark:text-white">Maximum Allowed Playback Speed</div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400">Limits acceleration to ensure material retention</div>
-                    </div>
-                    <select
-                      value={playbackSpeedCap}
-                      onChange={(e) => setPlaybackSpeedCap(e.target.value)}
-                      className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1 text-xs font-bold text-slate-800 dark:text-white outline-none"
-                    >
-                      <option value="1.0x">1.0x (Normal speed only)</option>
-                      <option value="1.25x">1.25x</option>
-                      <option value="1.5x">1.5x (Recommended)</option>
-                      <option value="2.0x">2.0x</option>
-                    </select>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* STEP 4: ASSIGNMENTS & PASSING MARKS */}
-              {currentStep === 4 && (
-                <motion.div
-                  key="step-4"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
@@ -2401,6 +2295,112 @@ function InstructorNewCourseContent() {
                       </div>
                     </div>
                   ))}
+                </motion.div>
+              )}
+
+              {/* STEP 4: ANTI-SKIP OPTIONS & STAGE PROTECTION POLICY */}
+              {currentStep === 4 && (
+                <motion.div
+                  key="step-4"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl space-y-6"
+                >
+                  <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400">
+                      <Lock className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 4: Anti-Skip Options & Integrity Rules</h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Prevent video scrubbing and enforce sequential milestones before unlocking assignments
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Banner Alert */}
+                  <div className="rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-[#EFF6FF]/70 dark:bg-blue-950/30 p-4 text-xs text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center gap-2 font-bold text-[#2563EB] dark:text-blue-400">
+                      <Sparkles className="h-4 w-4" />
+                      Anti-Skip Video Protection Enforcement
+                    </div>
+                    <p className="mt-1 leading-relaxed text-slate-600 dark:text-slate-400">
+                      When enabled, students cannot skip or fast-forward unwatched video segments. They must complete 100% of the lecture to unlock the section assignment.
+                    </p>
+                  </div>
+
+                  {/* Anti-Skip Toggles */}
+                  <div className="space-y-3">
+                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-elevated p-4 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600/50 transition-colors">
+                      <div className="space-y-0.5">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">
+                          Enforce 100% Video Watch (No Fast-Forwarding)
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Disables seek forward bar for unwatched portions of the video.
+                        </div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={antiSkipEnforced}
+                        onChange={(e) => setAntiSkipEnforced(e.target.checked)}
+                        className="h-4 w-4 accent-[#2563EB] cursor-pointer mt-0.5"
+                      />
+                    </label>
+
+                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-elevated p-4 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600/50 transition-colors">
+                      <div className="space-y-0.5">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">
+                          Lock Section Assignment Until Video Is Finished
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Students cannot submit or take the assignment without watching all section videos.
+                        </div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={requireFullWatchToUnlockAssignment}
+                        onChange={(e) => setRequireFullWatchToUnlockAssignment(e.target.checked)}
+                        className="h-4 w-4 accent-[#2563EB] cursor-pointer mt-0.5"
+                      />
+                    </label>
+
+                    <label className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-elevated p-4 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600/50 transition-colors">
+                      <div className="space-y-0.5">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white">
+                          Enforce Sequential Stage Progression
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Section N+1 remains locked until Section N video and assignment are both completed.
+                        </div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={preventForwardSeeking}
+                        onChange={(e) => setPreventForwardSeeking(e.target.checked)}
+                        className="h-4 w-4 accent-[#2563EB] cursor-pointer mt-0.5"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Playback Speed Cap */}
+                  <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-4 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">Maximum Allowed Playback Speed</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">Limits acceleration to ensure material retention</div>
+                    </div>
+                    <select
+                      value={playbackSpeedCap}
+                      onChange={(e) => setPlaybackSpeedCap(e.target.value)}
+                      className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1 text-xs font-bold text-slate-800 dark:text-white outline-none"
+                    >
+                      <option value="1.0x">1.0x (Normal speed only)</option>
+                      <option value="1.25x">1.25x</option>
+                      <option value="1.5x">1.5x (Recommended)</option>
+                      <option value="2.0x">2.0x</option>
+                    </select>
+                  </div>
                 </motion.div>
               )}
 
