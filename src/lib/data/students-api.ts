@@ -423,3 +423,75 @@ export async function updateMyProfile(
     return { success: false, error: err?.message || "Network error updating profile" };
   }
 }
+
+// ── Student Course Tasks & DOCX Export ────────────────────────
+
+export interface CourseTaskItem {
+  id: string;
+  date: string;
+  topicName: string;
+  programName: string;
+  syntaxKeywords: string;
+  whyUsing: string;
+  whereUsing: string;
+  whyWeAreUsing?: string;
+  whereWeHaveToUse?: string;
+  examplesCaseStudy: string;
+  flow: string;
+  outOf5: number;
+  remarks: string;
+  courseId?: string;
+  courseTitle?: string;
+  courseSlug?: string;
+  source?: "submission" | "curriculum" | "sheet_log";
+}
+
+export interface StudentCourseTasksResponse {
+  student: { id: string; name: string; email: string; phone?: string };
+  selectedCourse: { id: string; title: string; slug: string } | null;
+  availableCourses: { id: string; title: string; slug: string; taskCount: number }[];
+  tasks: CourseTaskItem[];
+}
+
+export async function fetchStudentCourseTasks(
+  studentIdOrSlug: string,
+  courseId?: string
+): Promise<StudentCourseTasksResponse | null> {
+  try {
+    const query = courseId ? `?courseId=${encodeURIComponent(courseId)}` : "";
+    const res = await apiFetch(`/admin/students/${encodeURIComponent(studentIdOrSlug)}/tasks${query}`, {
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn("Failed to fetch student course tasks from backend:", err);
+  }
+  return null;
+}
+
+export async function downloadStudentCourseTasksDocx(
+  studentIdOrSlug: string,
+  courseId?: string,
+  courseTitle?: string
+): Promise<void> {
+  const query = courseId ? `?courseId=${encodeURIComponent(courseId)}` : "";
+  const res = await apiFetch(`/admin/students/${encodeURIComponent(studentIdOrSlug)}/tasks/docx${query}`, {
+    method: "GET",
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to download course tasks document (Status ${res.status})`);
+  }
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const safeName = (courseTitle || "course_tasks").toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  a.download = `student_tasks_${safeName}.docx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+}

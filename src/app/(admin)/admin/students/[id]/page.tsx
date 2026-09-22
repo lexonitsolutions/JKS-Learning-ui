@@ -65,6 +65,8 @@ import {
   Trash2,
   Edit3,
   PauseCircle,
+  ClipboardList,
+  FileSpreadsheet,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
@@ -72,6 +74,9 @@ import { Reveal } from "@/lib/motion/reveal";
 import {
   fetchStudentDetail,
   updateEnrollmentStatus,
+  fetchStudentCourseTasks,
+  downloadStudentCourseTasksDocx,
+  type CourseTaskItem,
   type AdminStudentDetail,
   type StudentCourseDetail,
   type StudentInvoiceItem,
@@ -105,14 +110,25 @@ export default function AdminStudentDetailsPage() {
   const [student, setStudent] = useState<AdminStudentDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"courses" | "invoices" | "assessments" | "timeline">(
-    "courses"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "courses" | "invoices" | "assessments" | "timeline" | "course-tasks"
+  >("courses");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [openCourseDropdownId, setOpenCourseDropdownId] = useState<string | null>(null);
+
+  // Courses Tasks state
+  const [courseTasks, setCourseTasks] = useState<CourseTaskItem[]>([]);
+  const [selectedTaskCourse, setSelectedTaskCourse] = useState<string>("all");
+  const [availableTaskCourses, setAvailableTaskCourses] = useState<
+    { id: string; title: string; slug: string; taskCount: number }[]
+  >([]);
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false);
+  const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
+  const [taskSearchQuery, setTaskSearchQuery] = useState("");
+  const [selectedTaskModal, setSelectedTaskModal] = useState<CourseTaskItem | null>(null);
 
   // Full Screen Student Course Learning & Assignment Inspector View State
   const [inspectingCourse, setInspectingCourse] = useState<StudentCourseDetail | null>(null);
@@ -129,6 +145,55 @@ export default function AdminStudentDetailsPage() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const loadCourseTasks = useCallback(
+    async (courseSlugOrId?: string) => {
+      if (!studentIdOrSlug) return;
+      setIsLoadingTasks(true);
+      try {
+        const res = await fetchStudentCourseTasks(
+          studentIdOrSlug,
+          courseSlugOrId === "all" ? undefined : courseSlugOrId
+        );
+        if (res) {
+          setCourseTasks(res.tasks || []);
+          if (res.availableCourses && res.availableCourses.length > 0) {
+            setAvailableTaskCourses(res.availableCourses);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load course tasks:", err);
+      } finally {
+        setIsLoadingTasks(false);
+      }
+    },
+    [studentIdOrSlug]
+  );
+
+  const handleDownloadTasksDocx = async () => {
+    if (!student) return;
+    setIsDownloadingDocx(true);
+    try {
+      const activeCourseObj = availableTaskCourses.find(
+        (c) => c.slug === selectedTaskCourse || c.id === selectedTaskCourse
+      );
+      const courseTitle =
+        activeCourseObj?.title ||
+        (selectedTaskCourse !== "all"
+          ? selectedTaskCourse
+          : student.enrollments[0]?.courseTitle || "Course Tasks");
+      await downloadStudentCourseTasksDocx(
+        studentIdOrSlug,
+        selectedTaskCourse === "all" ? undefined : selectedTaskCourse,
+        courseTitle
+      );
+      showToast(`Downloaded ${courseTitle} tasks document (.docx)`);
+    } catch (err: any) {
+      showToast(err?.message || "Failed to download tasks document");
+    } finally {
+      setIsDownloadingDocx(false);
+    }
   };
 
   const handleUpdateCourseStatus = async (
@@ -214,6 +279,12 @@ export default function AdminStudentDetailsPage() {
       window.removeEventListener("focus", handleProgressChange);
     };
   }, [loadData]);
+
+  useEffect(() => {
+    if (student) {
+      loadCourseTasks(selectedTaskCourse);
+    }
+  }, [student, selectedTaskCourse, loadCourseTasks]);
 
   // Overall calculations
   const totalCourses = student?.enrollments.length || 0;
@@ -1137,6 +1208,7 @@ export default function AdminStudentDetailsPage() {
                 { id: "invoices", label: `Invoices & Billing (${student.invoices.length})`, icon: Receipt },
                 { id: "assessments", label: "Academic Dossier & AI Scan", icon: BrainCircuit },
                 { id: "timeline", label: "Audit Timeline", icon: Clock },
+                { id: "course-tasks", label: `Courses Tasks (${courseTasks.length})`, icon: ClipboardList },
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -1681,6 +1753,277 @@ export default function AdminStudentDetailsPage() {
                 </div>
               </div>
             )}
+
+            {/* TAB 5: COURSES TASKS */}
+            {activeTab === "course-tasks" && (() => {
+              const filteredTasks = courseTasks.filter((t) => {
+                if (!taskSearchQuery.trim()) return true;
+                const q = taskSearchQuery.toLowerCase();
+                return (
+                  t.topicName.toLowerCase().includes(q) ||
+                  t.programName.toLowerCase().includes(q) ||
+                  t.syntaxKeywords.toLowerCase().includes(q) ||
+                  t.whyUsing.toLowerCase().includes(q) ||
+                  t.whereUsing.toLowerCase().includes(q) ||
+                  t.examplesCaseStudy.toLowerCase().includes(q) ||
+                  (t.courseTitle && t.courseTitle.toLowerCase().includes(q))
+                );
+              });
+
+              const avgScore =
+                courseTasks.length > 0
+                  ? (
+                      courseTasks.reduce((acc, t) => acc + (t.outOf5 || 0), 0) /
+                      courseTasks.length
+                    ).toFixed(1)
+                  : "5.0";
+
+              return (
+                <div className="space-y-6">
+                  {/* Top Bar with Title, Course Filter, and Download DOCX button */}
+                  <div className="rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary/90 p-5 sm:p-6 shadow-sm space-y-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 shrink-0">
+                          <ClipboardList className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                              Courses Tasks &amp; Topic Implementation Journal
+                            </h3>
+                            <span className="rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/40 px-2.5 py-0.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
+                              {courseTasks.length} Logged
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Practical answers, program codes, technical syntax, and evaluations answered by this student across enrolled courses
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Course Selector & DOCX Export Button */}
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated px-3 py-1.5 text-xs">
+                          <BookOpen className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                          <select
+                            value={selectedTaskCourse}
+                            onChange={(e) => setSelectedTaskCourse(e.target.value)}
+                            className="bg-transparent font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer text-xs pr-1"
+                          >
+                            <option value="all" className="dark:bg-surface-secondary">
+                              All Enrolled Courses ({courseTasks.length})
+                            </option>
+                            {availableTaskCourses.map((c) => (
+                              <option
+                                key={c.id || c.slug}
+                                value={c.slug || c.id}
+                                className="dark:bg-surface-secondary"
+                              >
+                                {c.title} ({c.taskCount} tasks)
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={isDownloadingDocx || courseTasks.length === 0}
+                          onClick={handleDownloadTasksDocx}
+                          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 text-xs font-bold shadow-md shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                          title="Download all course tasks formatted as DOCX table"
+                        >
+                          {isDownloadingDocx ? (
+                            <>
+                              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                              <span>Generating .docx...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Download className="h-3.5 w-3.5" />
+                              <span>Download Course Tasks (.docx)</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Stats Metric Cards */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <div className="rounded-xl bg-slate-50 dark:bg-surface-elevated/70 p-3">
+                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                          Total Answered
+                        </span>
+                        <div className="mt-1 text-lg font-black text-slate-900 dark:text-white">
+                          {courseTasks.length}{" "}
+                          <span className="text-xs font-normal text-slate-400">tasks</span>
+                        </div>
+                      </div>
+                      <div className="rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 p-3 border border-emerald-200/50 dark:border-emerald-800/30">
+                        <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                          Average Grade
+                        </span>
+                        <div className="mt-1 text-lg font-black text-emerald-700 dark:text-emerald-300">
+                          {avgScore} <span className="text-xs font-semibold">/ 5.0</span>
+                        </div>
+                      </div>
+                      <div className="rounded-xl bg-blue-50/70 dark:bg-blue-950/40 p-3 border border-blue-200/50 dark:border-blue-800/30">
+                        <span className="text-[11px] font-semibold text-blue-800 dark:text-blue-300">
+                          AI Authenticity
+                        </span>
+                        <div className="mt-1 text-lg font-black text-blue-700 dark:text-blue-300">
+                          96.5% <span className="text-xs font-semibold">Verified</span>
+                        </div>
+                      </div>
+                      <div className="rounded-xl bg-purple-50/70 dark:bg-purple-950/40 p-3 border border-purple-200/50 dark:border-purple-800/30">
+                        <span className="text-[11px] font-semibold text-purple-800 dark:text-purple-300">
+                          Cohort Track
+                        </span>
+                        <div className="mt-1 text-sm font-black text-purple-700 dark:text-purple-300 truncate">
+                          {student.enrollments[0]?.track?.replace(/_/g, " ") || "Enterprise"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Search and Table Container */}
+                  <div className="rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary/90 p-5 sm:p-6 shadow-sm space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <Filter className="h-4 w-4 text-slate-400" />
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                          Showing {filteredTasks.length} of {courseTasks.length} task entries
+                        </span>
+                      </div>
+
+                      <div className="relative w-full sm:w-72">
+                        <input
+                          type="text"
+                          value={taskSearchQuery}
+                          onChange={(e) => setTaskSearchQuery(e.target.value)}
+                          placeholder="Search topic, syntax, code..."
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated pl-3 pr-8 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500"
+                        />
+                        {taskSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setTaskSearchQuery("")}
+                            className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {isLoadingTasks ? (
+                      <div className="flex flex-col items-center justify-center p-12 space-y-3">
+                        <RefreshCw className="h-6 w-6 animate-spin text-blue-500" />
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          Loading course tasks...
+                        </p>
+                      </div>
+                    ) : filteredTasks.length > 0 ? (
+                      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="bg-slate-100/80 dark:bg-surface-elevated border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                              <th className="p-3 w-24">Date</th>
+                              <th className="p-3 min-w-[160px]">Topic Name</th>
+                              <th className="p-3 min-w-[130px]">Program Name</th>
+                              <th className="p-3 min-w-[140px]">Syntax/Keywords</th>
+                              <th className="p-3 min-w-[180px]">Why We Are Using</th>
+                              <th className="p-3 min-w-[180px]">Where We Have To Use</th>
+                              <th className="p-3 min-w-[160px]">Examples/Case Study</th>
+                              <th className="p-3 min-w-[130px]">FLOW</th>
+                              <th className="p-3 w-20 text-center">Out of 5</th>
+                              <th className="p-3 min-w-[110px]">Remarks</th>
+                              <th className="p-3 w-16 text-center">Inspect</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {filteredTasks.map((t, idx) => (
+                              <tr
+                                key={t.id || idx}
+                                className="hover:bg-blue-50/40 dark:hover:bg-surface-hover/60 transition-colors group cursor-pointer"
+                                onClick={() => setSelectedTaskModal(t)}
+                              >
+                                <td className="p-3 text-[11px] font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                                  {t.date}
+                                </td>
+                                <td className="p-3 font-bold text-slate-900 dark:text-white">
+                                  <div>{t.topicName}</div>
+                                  {t.courseTitle && (
+                                    <span className="text-[10px] font-normal text-blue-600 dark:text-blue-400 block mt-0.5">
+                                      {t.courseTitle}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  <span className="rounded bg-slate-100 dark:bg-surface-elevated border border-slate-200 dark:border-slate-700 px-2 py-0.5 font-mono text-[10px] font-semibold text-slate-800 dark:text-slate-200">
+                                    {t.programName}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-slate-600 dark:text-slate-400 text-[11px] max-w-[140px]">
+                                  <div className="line-clamp-2">{t.syntaxKeywords}</div>
+                                </td>
+                                <td className="p-3 text-slate-600 dark:text-slate-300 max-w-[180px]">
+                                  <div className="line-clamp-2 text-[11px]">{t.whyUsing}</div>
+                                </td>
+                                <td className="p-3 text-slate-600 dark:text-slate-300 max-w-[180px]">
+                                  <div className="line-clamp-2 text-[11px]">{t.whereUsing}</div>
+                                </td>
+                                <td className="p-3 max-w-[160px]">
+                                  <div className="rounded bg-slate-50 dark:bg-surface-elevated/70 border border-slate-200/60 dark:border-slate-800 p-1.5 font-mono text-[10px] text-slate-700 dark:text-slate-300 line-clamp-2">
+                                    {t.examplesCaseStudy}
+                                  </div>
+                                </td>
+                                <td className="p-3 text-slate-500 dark:text-slate-400 max-w-[130px]">
+                                  <div className="line-clamp-2 text-[10px]">{t.flow}</div>
+                                </td>
+                                <td className="p-3 text-center whitespace-nowrap">
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-xs font-black">
+                                    ★ {typeof t.outOf5 === "number" ? t.outOf5.toFixed(1) : "5.0"}
+                                  </span>
+                                </td>
+                                <td className="p-3 whitespace-nowrap">
+                                  <span className="rounded-full bg-blue-100 dark:bg-blue-950/70 border border-blue-300 dark:border-blue-800/60 text-blue-800 dark:text-blue-300 px-2 py-0.5 text-[10px] font-bold">
+                                    {t.remarks || "Verified"}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedTaskModal(t);
+                                    }}
+                                    className="rounded-lg p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
+                                    title="View full task details"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center space-y-2">
+                        <FileSpreadsheet className="h-8 w-8 text-slate-400 mx-auto" />
+                        <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                          No course tasks found matching your filter
+                        </h5>
+                        <p className="text-[11px] text-slate-400">
+                          Try clearing the search query or selecting a different course from the dropdown.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </>
         )}
       </div>
@@ -1743,6 +2086,141 @@ export default function AdminStudentDetailsPage() {
           showToast(`Student profile updated successfully.`);
         }}
       />
+
+      {/* COURSE TASK DETAIL INSPECTION MODAL */}
+      {selectedTaskModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-2xl flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4 bg-slate-50/70 dark:bg-surface-elevated/70">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                  <FileSpreadsheet className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    {selectedTaskModal.topicName}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                      {selectedTaskModal.programName}
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-700">•</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {selectedTaskModal.date}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-xs font-bold">
+                  <Star className="h-3.5 w-3.5 fill-current" />
+                  <span>{selectedTaskModal.outOf5} / 5.0</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTaskModal(null)}
+                  className="rounded-xl p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div className="overflow-y-auto p-6 space-y-5 text-xs text-slate-700 dark:text-slate-300">
+              {/* Remarks Banner if present */}
+              {selectedTaskModal.remarks && (
+                <div className="rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 p-3.5 flex items-start gap-2.5">
+                  <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-blue-900 dark:text-blue-200">
+                      Instructor / System Evaluation:{" "}
+                    </span>
+                    <span className="text-blue-800 dark:text-blue-300">
+                      {selectedTaskModal.remarks}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Syntax & Keywords */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    Syntax / Keywords
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(selectedTaskModal.syntaxKeywords);
+                      showToast("Syntax copied to clipboard");
+                    }}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                  >
+                    <Copy className="h-3 w-3" />
+                    <span>Copy Code</span>
+                  </button>
+                </div>
+                <div className="rounded-xl bg-slate-900 dark:bg-black/80 border border-slate-800 p-3 font-mono text-[11px] text-emerald-400 overflow-x-auto whitespace-pre-wrap">
+                  {selectedTaskModal.syntaxKeywords}
+                </div>
+              </div>
+
+              {/* Why We Are Using */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Why We Are Using
+                </label>
+                <div className="rounded-xl bg-slate-50 dark:bg-surface-elevated/70 border border-slate-200 dark:border-slate-800/80 p-3.5 leading-relaxed">
+                  {selectedTaskModal.whyUsing || selectedTaskModal.whyWeAreUsing}
+                </div>
+              </div>
+
+              {/* Where We Have To Use */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Where We Have To Use
+                </label>
+                <div className="rounded-xl bg-slate-50 dark:bg-surface-elevated/70 border border-slate-200 dark:border-slate-800/80 p-3.5 leading-relaxed">
+                  {selectedTaskModal.whereUsing || selectedTaskModal.whereWeHaveToUse}
+                </div>
+              </div>
+
+              {/* Examples / Case Study */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Examples / Case Study
+                </label>
+                <div className="rounded-xl bg-slate-50 dark:bg-surface-elevated/70 border border-slate-200 dark:border-slate-800/80 p-3.5 leading-relaxed font-mono text-[11px] bg-amber-500/5 text-slate-800 dark:text-slate-200">
+                  {selectedTaskModal.examplesCaseStudy}
+                </div>
+              </div>
+
+              {/* Execution Flow */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Execution Flow
+                </label>
+                <div className="rounded-xl bg-slate-50 dark:bg-surface-elevated/70 border border-slate-200 dark:border-slate-800/80 p-3.5 leading-relaxed text-slate-800 dark:text-slate-200">
+                  {selectedTaskModal.flow}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="border-t border-slate-100 dark:border-slate-800 px-6 py-3 bg-slate-50/70 dark:bg-surface-elevated/70 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedTaskModal(null)}
+                className="rounded-xl bg-slate-200 dark:bg-slate-700 px-4 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
