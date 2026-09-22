@@ -13,6 +13,7 @@
  * The localhost fallback keeps `npm run dev` working with no .env.local entry,
  * matching the previous hardcoded behaviour exactly.
  */
+// Production API endpoint target synced with Railway
 const DEFAULT_API_URL =
   process.env.NODE_ENV === "production"
     ? "https://jks-learning-backend-production-d0d4.up.railway.app"
