@@ -335,23 +335,26 @@ export default function CertificateVerifyPage() {
 
         {/* Verification Search Form */}
         <div className="max-w-2xl mx-auto">
-          <form onSubmit={onSearchSubmit} className="relative flex items-center">
-            <div className="absolute left-4 text-slate-400 pointer-events-none">
-              <Search className="h-5 w-5" />
+          <form onSubmit={onSearchSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-0 sm:relative">
+            <div className="relative flex-1">
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+              </div>
+              <input
+                type="text"
+                value={searchId}
+                onChange={(e) => setSearchId(e.target.value)}
+                placeholder="Enter Certificate Verification ID (e.g. JKS-CERT-...)"
+                className="w-full rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-3 sm:py-3.5 pl-10 sm:pl-12 pr-4 sm:pr-32 text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-mono"
+              />
             </div>
-            <input
-              type="text"
-              value={searchId}
-              onChange={(e) => setSearchId(e.target.value)}
-              placeholder="Enter Certificate Verification ID (e.g. JKS-CERT-...)"
-              className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-3.5 pl-12 pr-32 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-mono"
-            />
             <button
               type="submit"
               disabled={loading || !searchId.trim()}
-              className="absolute right-2 rounded-xl bg-[#1E5EFF] hover:bg-blue-700 disabled:opacity-50 px-4 py-2 text-xs font-bold text-white shadow-sm transition-all cursor-pointer"
+              className="sm:absolute sm:right-2 rounded-xl bg-[#1E5EFF] hover:bg-blue-700 disabled:opacity-50 py-2.5 sm:py-2 px-5 text-xs font-bold text-white shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5"
             >
-              {loading ? "Verifying..." : "Verify ID"}
+              <ShieldCheck className="h-4 w-4 sm:hidden" />
+              <span>{loading ? "Verifying..." : "Verify ID"}</span>
             </button>
           </form>
         </div>
@@ -367,7 +370,7 @@ export default function CertificateVerifyPage() {
         )}
 
         {!loading && hasSearched && result && !result.valid && (
-          <div className="max-w-md mx-auto rounded-3xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/20 p-8 text-center space-y-4 shadow-sm">
+          <div className="max-w-md mx-auto rounded-3xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/20 p-6 sm:p-8 text-center space-y-4 shadow-sm">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400">
               <XCircle className="h-8 w-8" />
             </div>
@@ -393,161 +396,226 @@ export default function CertificateVerifyPage() {
           <div className="space-y-6">
             {/* Status Banner */}
             <div className="rounded-2xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/70 dark:bg-emerald-950/30 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-              <div className="flex items-center gap-3.5">
+              <div className="flex items-center gap-3.5 min-w-0">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
                   <BadgeCheck className="h-6 w-6" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-extrabold text-emerald-950 dark:text-emerald-200">
                       Official Credential Authenticated &amp; Valid
                     </span>
-                    <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                    <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">
                       ● Active
                     </span>
                   </div>
-                  <p className="text-xs text-emerald-800 dark:text-emerald-300/90 font-medium mt-0.5">
+                  <p className="text-xs text-emerald-800 dark:text-emerald-300/90 font-medium mt-0.5 break-words">
                     Issued to <strong>{result.studentName}</strong> for completing{" "}
                     <strong>{result.courseName}</strong> on {formattedDate}.
                   </p>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-auto">
+              {/* Action Buttons: Responsive Equal Grid on Mobile, Flex on Desktop */}
+              <div className="grid grid-cols-3 sm:flex items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={handleDownloadPNG}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white shadow-xs cursor-pointer transition-colors"
+                  className="flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-2.5 px-2 sm:px-3.5 text-[11px] sm:text-xs font-bold text-white shadow-xs cursor-pointer transition-colors text-center"
                 >
-                  <Download className="h-3.5 w-3.5" />
-                  <span>Download PNG</span>
+                  <Download className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden xs:inline">Download</span>
+                  <span>PNG</span>
                 </button>
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 rounded-xl bg-[#1E5EFF] hover:bg-blue-700 px-3.5 py-2 text-xs font-bold text-white shadow-xs cursor-pointer transition-colors"
+                  className="flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl bg-[#1E5EFF] hover:bg-blue-700 py-2.5 px-2 sm:px-3.5 text-[11px] sm:text-xs font-bold text-white shadow-xs cursor-pointer transition-colors text-center"
                 >
-                  <Printer className="h-3.5 w-3.5" />
-                  <span>Print PDF</span>
+                  <Printer className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden xs:inline">Print</span>
+                  <span>PDF</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs cursor-pointer transition-colors"
+                  className="flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 px-2 sm:px-3 text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs cursor-pointer transition-colors text-center"
                   title="Copy verification link"
                 >
-                  {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                  <span>{copied ? "Copied!" : "Copy Link"}</span>
+                  {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" /> : <Copy className="h-3.5 w-3.5 shrink-0" />}
+                  <span>{copied ? "Copied!" : "Copy"}</span>
                 </button>
               </div>
             </div>
 
+            {/* Privacy & Security Guarantee Banner */}
+            <div className="rounded-2xl border border-blue-200/80 dark:border-blue-900/50 bg-blue-50/70 dark:bg-blue-950/20 p-3.5 sm:p-4 flex items-start gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400 mt-0.5">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div className="text-xs space-y-1">
+                <div className="font-bold text-slate-900 dark:text-white flex flex-wrap items-center gap-2">
+                  <span>Public Credential Ledger · Account Privacy Guaranteed</span>
+                  <span className="text-[10px] rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold px-2 py-0.5">
+                    100% Isolated
+                  </span>
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                  This public verification link allows employers, universities, and LinkedIn recruiters to confirm course completion authenticity. <strong>No student account access, passwords, login sessions, or sensitive personal data are exposed.</strong> The student account remains completely isolated, encrypted, and secure.
+                </p>
+              </div>
+            </div>
+
             {/* Official Document Certificate Card */}
-            <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 sm:p-4 shadow-xl overflow-hidden">
+            <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-1 sm:p-4 shadow-xl overflow-hidden">
               <div
                 id="printable-certificate-area"
-                className="relative rounded-2xl border-4 border-[#1E40AF] p-6 sm:p-10 text-slate-900 bg-gradient-to-br from-[#FAFCFF] via-[#F3F7FD] to-[#EAF1FC] overflow-hidden select-none"
+                className="relative rounded-xl sm:rounded-2xl border-2 sm:border-4 border-[#1E40AF] p-4 sm:p-10 text-slate-900 bg-gradient-to-br from-[#FAFCFF] via-[#F3F7FD] to-[#EAF1FC] overflow-hidden select-none"
               >
                 {/* Inner Gold Border */}
-                <div className="pointer-events-none absolute inset-3 sm:inset-4 rounded-xl border border-amber-500/70" />
+                <div className="pointer-events-none absolute inset-2 sm:inset-4 rounded-lg sm:rounded-xl border border-amber-500/70" />
 
                 {/* Corner Flourishes */}
-                <div className="pointer-events-none absolute top-5 left-5 h-6 w-6 border-t-2 border-l-2 border-amber-500" />
-                <div className="pointer-events-none absolute top-5 right-5 h-6 w-6 border-t-2 border-r-2 border-amber-500" />
-                <div className="pointer-events-none absolute bottom-5 left-5 h-6 w-6 border-b-2 border-l-2 border-amber-500" />
-                <div className="pointer-events-none absolute bottom-5 right-5 h-6 w-6 border-b-2 border-r-2 border-amber-500" />
+                <div className="pointer-events-none absolute top-3 sm:top-5 left-3 sm:left-5 h-4 sm:h-6 w-4 sm:w-6 border-t-2 border-l-2 border-amber-500" />
+                <div className="pointer-events-none absolute top-3 sm:top-5 right-3 sm:right-5 h-4 sm:h-6 w-4 sm:w-6 border-t-2 border-r-2 border-amber-500" />
+                <div className="pointer-events-none absolute bottom-3 sm:bottom-5 left-3 sm:left-5 h-4 sm:h-6 w-4 sm:w-6 border-b-2 border-l-2 border-amber-500" />
+                <div className="pointer-events-none absolute bottom-3 sm:bottom-5 right-3 sm:right-5 h-4 sm:h-6 w-4 sm:w-6 border-b-2 border-r-2 border-amber-500" />
 
                 {/* Subtle Watermark */}
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.035] select-none">
-                  <div className="text-6xl sm:text-8xl md:text-9xl font-black rotate-[-15deg] tracking-widest text-blue-950">
+                  <div className="text-5xl sm:text-8xl md:text-9xl font-black rotate-[-15deg] tracking-widest text-blue-950">
                     JKS LEARNING
                   </div>
                 </div>
 
-                <div className="relative z-10 flex flex-col items-center text-center space-y-4 px-2 sm:px-6 py-2">
+                <div className="relative z-10 flex flex-col items-center text-center space-y-3 sm:space-y-4 px-1 sm:px-6 py-2">
                   {/* Logo / Header */}
                   <div className="flex items-center justify-center">
                     <img
                       src="/images/jks-logo.png"
                       alt="JKS Learning Technologies Institute"
-                      className="h-10 sm:h-12 w-auto max-w-[240px] object-contain select-none"
+                      className="h-8 sm:h-12 w-auto max-w-[200px] sm:max-w-[240px] object-contain select-none"
                       style={{ filter: "none", display: "block" }}
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <div className="text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-[#1E40AF]">
+                    <div className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#1E40AF]">
                       JKS Learning Technologies Institute
                     </div>
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-950 tracking-tight font-serif">
+                    <h2 className="text-xl sm:text-3xl md:text-4xl font-black text-slate-950 tracking-tight font-serif">
                       Certificate of Course Mastery
                     </h2>
-                    <div className="h-0.5 w-28 sm:w-36 bg-gradient-to-r from-transparent via-amber-500 to-transparent mx-auto mt-1" />
+                    <div className="h-0.5 w-24 sm:w-36 bg-gradient-to-r from-transparent via-amber-500 to-transparent mx-auto mt-1" />
                   </div>
 
-                  <p className="text-xs sm:text-sm text-slate-600 font-medium italic">
+                  <p className="text-[11px] sm:text-sm text-slate-600 font-medium italic">
                     This is to certify and officially attest that
                   </p>
 
-                  <div className="space-y-1">
-                    <div className="text-2xl sm:text-3xl md:text-4xl font-black text-[#1E3A8A] font-serif tracking-wide underline decoration-amber-400 decoration-2 underline-offset-6">
+                  <div className="space-y-1 max-w-full">
+                    <div className="text-xl sm:text-3xl md:text-4xl font-black text-[#1E3A8A] font-serif tracking-wide underline decoration-amber-400 decoration-2 underline-offset-6 break-words">
                       {result.studentName}
                     </div>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-slate-600 max-w-xl leading-relaxed">
+                  <p className="text-[11px] sm:text-sm text-slate-600 max-w-xl leading-relaxed">
                     has successfully completed 100% of the structured curriculum, practical coding assessments, and enterprise architecture capstones for
                   </p>
 
-                  <div className="rounded-xl border border-blue-200 bg-blue-50/80 px-6 py-2 shadow-xs">
-                    <span className="text-base sm:text-lg font-bold text-slate-950 tracking-tight">
+                  <div className="rounded-xl border border-blue-200 bg-blue-50/80 px-4 sm:px-6 py-1.5 sm:py-2 shadow-xs max-w-full">
+                    <span className="text-sm sm:text-base md:text-lg font-bold text-slate-950 tracking-tight break-words">
                       {result.courseName}
                     </span>
                   </div>
 
-                  <div className="text-xs text-emerald-800 font-semibold flex items-center gap-1.5 justify-center">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  <div className="text-[11px] sm:text-xs text-emerald-800 font-semibold flex items-center gap-1.5 justify-center">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                     <span>{result.grade || "Mastery & Stage Completion (100%)"} · Verified Candidate</span>
                   </div>
 
-                  {/* Certificate Footer Row */}
-                  <div className="w-full pt-6 sm:pt-8 border-t border-slate-300 grid grid-cols-3 items-end text-xs">
-                    {/* Left Column: ID & Issue Date */}
-                    <div className="text-left space-y-0.5">
-                      <div className="font-mono text-[10px] sm:text-xs font-bold text-[#1E40AF]">
-                        ID: {result.verificationId || activeCertId}
+                  {/* Certificate Footer Row — Mobile Fluid & Desktop 3-Column */}
+                  <div className="w-full pt-4 sm:pt-8 border-t border-slate-300">
+                    {/* Mobile Layout (< sm): Eliminates 4-line squished wrapping */}
+                    <div className="sm:hidden space-y-3">
+                      {/* Official Seal in Center */}
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-amber-600 to-amber-300 text-white shadow-md p-0.5 border-2 border-white">
+                          <div className="flex h-full w-full items-center justify-center rounded-full border border-dashed border-amber-100 flex-col">
+                            <ShieldCheck className="h-5 w-5 text-white" />
+                          </div>
+                        </div>
+                        <span className="text-[8px] font-bold uppercase tracking-wider text-amber-700 mt-1">
+                          Official Seal · Accredited
+                        </span>
                       </div>
-                      <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
-                        Issued: {formattedDate}
-                      </div>
-                      <div className="text-[9px] text-slate-400 font-mono">
-                        SHA-256 Verified Ledger
-                      </div>
-                    </div>
 
-                    {/* Center Column: Golden Certified Seal */}
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-amber-600 to-amber-300 text-white shadow-md p-1 border-2 border-white">
-                        <div className="flex h-full w-full items-center justify-center rounded-full border border-dashed border-amber-100 flex-col">
-                          <ShieldCheck className="h-6 w-6 text-white" />
+                      {/* Credentials & Signature Row */}
+                      <div className="flex items-end justify-between gap-2 text-xs pt-1">
+                        <div className="text-left space-y-0.5 flex-1 min-w-0 pr-2">
+                          <div className="font-mono text-[10px] font-bold text-[#1E40AF] break-all leading-snug">
+                            ID: {result.verificationId || activeCertId}
+                          </div>
+                          <div className="text-[10px] text-slate-500 font-medium">
+                            Issued: {formattedDate}
+                          </div>
+                          <div className="text-[8px] text-slate-400 font-mono">
+                            SHA-256 Verified Ledger
+                          </div>
+                        </div>
+
+                        <div className="text-right space-y-0.5 shrink-0 pl-2">
+                          <div className="font-serif italic font-black text-slate-900 text-xs sm:text-sm">
+                            Dr. J. K. Sundaram
+                          </div>
+                          <div className="text-[9px] font-bold text-slate-700 uppercase tracking-wider">
+                            Academic Director
+                          </div>
+                          <div className="text-[8px] text-slate-500">
+                            JKS Learning Technologies
+                          </div>
                         </div>
                       </div>
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-amber-700 mt-1">
-                        Official Seal
-                      </span>
                     </div>
 
-                    {/* Right Column: Signature of Director */}
-                    <div className="text-right space-y-0.5">
-                      <div className="font-serif italic font-black text-slate-900 text-sm sm:text-base">
-                        Dr. J. K. Sundaram
+                    {/* Desktop & Tablet Layout (>= sm) */}
+                    <div className="hidden sm:grid grid-cols-3 items-end text-xs">
+                      {/* Left Column: ID & Issue Date */}
+                      <div className="text-left space-y-0.5">
+                        <div className="font-mono text-xs font-bold text-[#1E40AF] break-all">
+                          ID: {result.verificationId || activeCertId}
+                        </div>
+                        <div className="text-[11px] text-slate-500 font-medium">
+                          Issued: {formattedDate}
+                        </div>
+                        <div className="text-[9px] text-slate-400 font-mono">
+                          SHA-256 Verified Ledger
+                        </div>
                       </div>
-                      <div className="text-[10px] sm:text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                        Academic Director
+
+                      {/* Center Column: Golden Certified Seal */}
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="flex h-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-tr from-amber-600 to-amber-300 text-white shadow-md p-1 border-2 border-white">
+                          <div className="flex h-full w-full items-center justify-center rounded-full border border-dashed border-amber-100 flex-col">
+                            <ShieldCheck className="h-6 w-6 text-white" />
+                          </div>
+                        </div>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-700 mt-1">
+                          Official Seal
+                        </span>
                       </div>
-                      <div className="text-[9px] text-slate-500">
-                        JKS Learning Technologies
+
+                      {/* Right Column: Signature of Director */}
+                      <div className="text-right space-y-0.5">
+                        <div className="font-serif italic font-black text-slate-900 text-sm sm:text-base">
+                          Dr. J. K. Sundaram
+                        </div>
+                        <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                          Academic Director
+                        </div>
+                        <div className="text-[9px] text-slate-500">
+                          JKS Learning Technologies
+                        </div>
                       </div>
                     </div>
                   </div>

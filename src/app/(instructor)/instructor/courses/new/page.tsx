@@ -29,9 +29,11 @@ import {
   Loader2,
   AlertCircle,
   Code2,
+  ArrowDownToLine,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
+import { ImportCourseModal } from "@/components/admin/import-course-modal";
 import {
   saveCourse,
   saveCourseAsync,
@@ -83,6 +85,48 @@ function InstructorNewCourseContent() {
   const [originalRating, setOriginalRating] = useState<number>(5.0);
   const [originalStudentsEnrolled, setOriginalStudentsEnrolled] = useState<number>(0);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importSuccessMessage, setImportSuccessMessage] = useState<string | null>(null);
+
+  const handleImportSections = (importedSections: Section[], replaceCurrent: boolean) => {
+    if (!importedSections || importedSections.length === 0) return;
+
+    // Check if current course only has 1 empty default draft section
+    const isCurrentDraftEmpty =
+      sections.length === 1 &&
+      !sections[0].title.trim() &&
+      (!sections[0].directVideos || sections[0].directVideos.length === 0) &&
+      (!sections[0].subsections || sections[0].subsections.length === 0);
+
+    if (replaceCurrent || isCurrentDraftEmpty) {
+      const reordered = importedSections.map((sec, idx) => ({
+        ...sec,
+        order: idx + 1,
+      }));
+      setSections(reordered);
+    } else {
+      const currentCount = sections.length;
+      const reorderedImported = importedSections.map((sec, idx) => ({
+        ...sec,
+        order: currentCount + idx + 1,
+      }));
+      setSections([...sections, ...reorderedImported]);
+    }
+
+    const totalLessons = importedSections.reduce(
+      (acc, s) =>
+        acc +
+        (s.directVideos?.length || 0) +
+        (s.subsections?.reduce((subAcc, sub) => subAcc + (sub.videos?.length || 0), 0) || 0),
+      0
+    );
+    const totalAsg = importedSections.filter((s) => s.assignment?.title?.trim()).length;
+
+    setImportSuccessMessage(
+      `Successfully imported ${importedSections.length} section(s) with ${totalLessons} lesson(s) and ${totalAsg} assignment(s)!`
+    );
+    setTimeout(() => setImportSuccessMessage(null), 6000);
+  };
 
   // Scroll to top whenever step changes so user never encounters stuck scroll
   useEffect(() => {
@@ -1130,20 +1174,45 @@ function InstructorNewCourseContent() {
                   exit={{ opacity: 0, y: -8 }}
                   className="space-y-6"
                 >
-                  <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-3">
+                  {importSuccessMessage && (
+                    <div className="flex items-center justify-between rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                        <span>{importSuccessMessage}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setImportSuccessMessage(null)}
+                        className="text-emerald-700 dark:text-emerald-400 hover:opacity-75"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-3">
                     <div>
                       <h2 className="text-sm font-bold text-slate-900 dark:text-white">Curriculum Sections & Video Lectures</h2>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         Create structured sections. Upload video files or embed YouTube/Vimeo URLs.
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={addSection}
-                      className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
-                    >
-                      <Plus className="h-4 w-4" /> Add Section
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/70 dark:bg-indigo-950/40 px-3.5 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer w-full sm:w-auto"
+                      >
+                        <ArrowDownToLine className="h-4 w-4 text-indigo-600 dark:text-indigo-400" /> Import from Existing Course
+                      </button>
+                      <button
+                        type="button"
+                        onClick={addSection}
+                        className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                      >
+                        <Plus className="h-4 w-4" /> Add Section
+                      </button>
+                    </div>
                   </div>
 
                   {sections.map((section, secIdx) => (
@@ -1554,14 +1623,24 @@ function InstructorNewCourseContent() {
                   exit={{ opacity: 0, y: -8 }}
                   className="space-y-5"
                 >
-                  <div className="rounded-2xl border border-emerald-100 dark:border-emerald-900/50 bg-[#ECFDF5]/70 dark:bg-emerald-950/30 p-4 text-xs text-slate-700 dark:text-slate-300">
-                    <div className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400">
-                      <ClipboardCheck className="h-4 w-4" />
-                      Section Milestones & Minimum Passing Thresholds
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 bg-[#ECFDF5]/70 dark:bg-emerald-950/30 p-4 text-xs text-slate-700 dark:text-slate-300">
+                    <div>
+                      <div className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400">
+                        <ClipboardCheck className="h-4 w-4" />
+                        Section Milestones & Minimum Passing Thresholds
+                      </div>
+                      <p className="mt-1 leading-relaxed text-slate-600 dark:text-slate-400">
+                        Specify the evaluation criteria and pass out marks for each section. Students must achieve this score to unlock subsequent sections.
+                      </p>
                     </div>
-                    <p className="mt-1 leading-relaxed text-slate-600 dark:text-slate-400">
-                      Specify the evaluation criteria and pass out marks for each section. Students must achieve this score to unlock subsequent sections.
-                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsImportModalOpen(true)}
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-white dark:bg-emerald-900/40 px-3 py-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-200 shadow-xs hover:bg-emerald-50 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer shrink-0"
+                    >
+                      <ArrowDownToLine className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      Import Curriculum & Assignments
+                    </button>
                   </div>
 
                   {sections.map((section, secIdx) => (
@@ -2687,6 +2766,14 @@ function InstructorNewCourseContent() {
           </div>
         </div>
       )}
+
+      {/* Import Course Curriculum & Assignments Modal */}
+      <ImportCourseModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        currentCourseSlugOrId={editSlug || existingCourseId || undefined}
+        onImport={handleImportSections}
+      />
     </>
   );
 }
