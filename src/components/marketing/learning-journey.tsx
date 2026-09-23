@@ -86,9 +86,9 @@ export function LearningJourney() {
             />
           </div>
 
-          {/* Mobile vertical connecting track & animated fill */}
+          {/* Mobile vertical connecting track & animated fill (aligned on icon axis to never cross text) */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 top-6 bottom-[5.5rem] w-0.5 md:hidden"
+            className="absolute left-6 -translate-x-1/2 top-6 bottom-10 w-0.5 md:hidden"
             aria-hidden
           >
             {/* Background track line */}
@@ -102,19 +102,21 @@ export function LearningJourney() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-5">
+          <div className="grid grid-cols-1 gap-8 sm:gap-10 md:grid-cols-5">
             {STEPS.map((step, i) => (
               <Reveal key={step.title} variant="fade-up" delay={reducedMotion ? 0 : i * 0.08}>
-                <div className="relative flex flex-col items-center text-center md:items-start md:text-left group">
-                  <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary-blue bg-white dark:bg-surface-secondary shadow-md shadow-primary-blue/15 transition-transform duration-300 group-hover:scale-110">
+                <div className="relative flex flex-row items-start text-left gap-4 md:flex-col md:items-start group">
+                  <div className="relative z-10 shrink-0 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary-blue bg-white dark:bg-surface-secondary shadow-md shadow-primary-blue/15 transition-transform duration-300 group-hover:scale-110">
                     <step.icon className="h-5 w-5 text-primary-blue dark:text-blue-400" />
                     {/* Small index badge */}
                     <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary-fill text-[9px] font-extrabold text-white">
                       {i + 1}
                     </span>
                   </div>
-                  <h3 className="text-h3 mt-4 text-text-heading font-bold text-base sm:text-lg">{step.title}</h3>
-                  <p className="mt-1 text-sm text-text-body dark:text-slate-400 max-w-xs">{step.body}</p>
+                  <div className="flex-1 min-w-0 pt-0.5 md:pt-0">
+                    <h3 className="text-h3 md:mt-4 text-text-heading font-bold text-base sm:text-lg">{step.title}</h3>
+                    <p className="mt-1 text-sm text-text-body dark:text-slate-400 max-w-xs">{step.body}</p>
+                  </div>
                 </div>
               </Reveal>
             ))}
