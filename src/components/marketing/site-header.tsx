@@ -128,10 +128,12 @@ export function SiteHeader() {
           : "border-transparent"
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-3.5 sm:px-6 lg:px-16">
-        <JksLogo size="md" className="py-1 shrink-0" imgClassName="h-7 sm:h-9 w-auto" />
+      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-3.5 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 gap-2 sm:gap-4">
+        <div className="shrink-0 flex items-center min-w-max mr-2 xl:mr-4">
+          <JksLogo size="md" className="py-1 shrink-0" imgClassName="h-7 sm:h-8 xl:h-9 w-auto" />
+        </div>
 
-        <nav className="hidden items-center gap-7 md:flex">
+        <nav className="hidden items-center gap-3 xl:gap-6 2xl:gap-7 lg:flex min-w-0">
           {navLinks.map((link) => {
             const active = pathname.startsWith(link.href) && link.href !== "/";
 
@@ -139,7 +141,7 @@ export function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`group relative text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                className={`group relative text-xs xl:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-1 ${
                   active
                     ? "text-primary-blue dark:text-blue-400"
                     : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
@@ -156,9 +158,9 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 xl:gap-3 shrink-0 ml-auto">
           {/* Theme Toggle Button */}
-          <div className="shrink-0 scale-90 sm:scale-100">
+          <div className="shrink-0 scale-90 sm:scale-95 xl:scale-100">
             <ThemeToggle />
           </div>
 
@@ -166,40 +168,40 @@ export function SiteHeader() {
             <>
               <Link
                 href="/login"
-                className="hidden text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-white sm:block px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-hover"
+                className="hidden text-xs xl:text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-white lg:block px-2.5 xl:px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-hover whitespace-nowrap"
               >
                 Log in
               </Link>
               <Link
                 href="/register"
-                className="hidden text-sm font-semibold text-primary-blue bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 px-3.5 py-1.5 rounded-lg transition-colors hover:bg-blue-100 dark:hover:bg-blue-900/50 sm:block"
+                className="hidden text-xs xl:text-sm font-semibold text-primary-blue bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 px-3 xl:px-3.5 py-1.5 rounded-lg transition-colors hover:bg-blue-100 dark:hover:bg-blue-900/50 xl:block whitespace-nowrap"
               >
                 Register
               </Link>
-              {/* Desktop Enroll Button (hidden on mobile) */}
+              {/* Desktop Enroll Button (hidden on tablet portrait and mobile) */}
               <Link
                 href="/register-course"
-                className="hidden md:inline-flex group items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 rounded-xl bg-primary-fill px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-primary-blue/25 transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-primary-blue/30"
+                className="hidden lg:inline-flex group items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 rounded-xl bg-primary-fill px-3 py-1.5 xl:px-4 xl:py-2.5 text-xs xl:text-sm font-bold text-white shadow-md shadow-primary-blue/25 transition-all hover:bg-blue-600 hover:shadow-lg hover:shadow-primary-blue/30"
               >
                 <span>Enroll Now</span>
                 <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
               </Link>
 
-              {/* Mobile: Clean login button */}
+              {/* Tablet & Mobile: Clean login button */}
               <Link
                 href="/login"
-                className="md:hidden text-xs font-semibold text-primary-blue dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 px-2.5 py-1.5 rounded-lg transition-colors"
+                className="lg:hidden text-xs font-semibold text-primary-blue dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap"
               >
                 Log in
               </Link>
 
-              {/* Mobile 3-line Menu Toggle for logged-out visitors */}
+              {/* Tablet & Mobile Menu Toggle for visitors */}
               <button
                 type="button"
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
                 aria-expanded={menuOpen}
                 onClick={() => setMenuOpen((v) => !v)}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border dark:border-slate-800 text-text-heading dark:text-slate-200 transition-colors hover:bg-bg-light dark:hover:bg-surface-hover md:hidden cursor-pointer"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border dark:border-slate-800 text-text-heading dark:text-slate-200 transition-colors hover:bg-bg-light dark:hover:bg-surface-hover lg:hidden cursor-pointer"
               >
                 {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
               </button>
@@ -207,13 +209,13 @@ export function SiteHeader() {
           ) : (
             <>
               {/* Desktop View: Public Header User Avatar & Dashboard CTA */}
-              <div className="hidden md:flex items-center gap-3">
+              <div className="hidden lg:flex items-center gap-2.5 xl:gap-3">
                 <Link
                   href={dashboardHref}
                   className="flex items-center rounded-full p-0.5 transition-transform hover:scale-105 shrink-0 focus:outline-none"
                   aria-label="Open My Dashboard"
                 >
-                  <div className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-md ring-2 ring-blue-500/30 overflow-hidden">
+                  <div className="relative flex h-8 w-8 xl:h-9 xl:w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-md ring-2 ring-blue-500/30 overflow-hidden">
                     {userAvatar ? (
                       <img
                         src={userAvatar}
@@ -231,7 +233,7 @@ export function SiteHeader() {
 
                 <Link
                   href={dashboardHref}
-                  className="group inline-flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-blue-500/25 transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-blue-500/30 cursor-pointer"
+                  className="group inline-flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-1.5 xl:px-4 xl:py-2.5 text-xs xl:text-sm font-bold text-white shadow-md shadow-blue-500/25 transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-blue-500/30 cursor-pointer"
                 >
                   <LayoutDashboard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span>Dashboard</span>
@@ -239,13 +241,13 @@ export function SiteHeader() {
                 </Link>
               </div>
 
-              {/* Mobile View: Profile Icon in place of 3-line menu icon! Tapping opens the section menu */}
+              {/* Tablet & Mobile View: Profile Icon in place of 3-line menu icon! Tapping opens the section menu */}
               <button
                 type="button"
                 aria-label={menuOpen ? "Close user menu" : "Open user menu"}
                 aria-expanded={menuOpen}
                 onClick={() => setMenuOpen((v) => !v)}
-                className="md:hidden relative flex items-center justify-center p-0.5 rounded-full transition-transform active:scale-95 focus:outline-none cursor-pointer"
+                className="lg:hidden relative flex items-center justify-center p-0.5 rounded-full transition-transform active:scale-95 focus:outline-none cursor-pointer"
               >
                 <div
                   className={`relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-md overflow-hidden ring-2 transition-all ${
@@ -287,7 +289,7 @@ export function SiteHeader() {
             animate={reducedMotion ? { opacity: 1 } : { opacity: 1, height: "auto" }}
             exit={reducedMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-            className="overflow-hidden border-t border-border dark:border-slate-800 bg-white/95 dark:bg-background/95 backdrop-blur-xl md:hidden"
+            className="overflow-hidden border-t border-border dark:border-slate-800 bg-white/95 dark:bg-background/95 backdrop-blur-xl lg:hidden"
           >
             <div className="flex flex-col gap-1 px-5 py-4">
               {/* Authenticated user profile card in mobile drawer */}
