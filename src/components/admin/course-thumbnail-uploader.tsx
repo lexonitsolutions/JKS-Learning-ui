@@ -12,6 +12,7 @@ import {
   AlertCircle,
   Eye,
 } from "lucide-react";
+import { uploadImage } from "@/lib/api/upload-api";
 
 interface CourseThumbnailUploaderProps {
   thumbnailUrl: string;
@@ -67,8 +68,8 @@ export function CourseThumbnailUploader({
   const [urlInputMode, setUrlInputMode] = useState(false);
   const [customUrl, setCustomUrl] = useState("");
 
-  // Client-side image processor: compresses large photos into high-res lightweight WebP/JPEG data URLs
-  const processImageFile = (file: File) => {
+  // Upload file directly to Cloudinary cloud storage
+  const processImageFile = async (file: File) => {
     if (!file) return;
 
     // Validation
@@ -86,79 +87,15 @@ export function CourseThumbnailUploader({
     setErrorMessage(null);
     setIsProcessing(true);
 
-    // If SVG or tiny GIF, read directly as data URL
-    if (file.type === "image/svg+xml" || file.size < 50 * 1024) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        if (result) {
-          onThumbnailChange(result);
-        }
-        setIsProcessing(false);
-      };
-      reader.onerror = () => {
-        setErrorMessage("Failed to read image file.");
-        setIsProcessing(false);
-      };
-      reader.readAsDataURL(file);
-      return;
-    }
-
-    // Canvas optimization to max 1280x720 16:9 WebP/JPEG
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const maxW = 1280;
-          const maxH = 720;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > maxW || height > maxH) {
-            const ratio = Math.min(maxW / width, maxH / height);
-            width = Math.round(width * ratio);
-            height = Math.round(height * ratio);
-          }
-
-          const canvas = document.createElement("canvas");
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-
-          if (!ctx) {
-            onThumbnailChange(e.target?.result as string);
-            setIsProcessing(false);
-            return;
-          }
-
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Try WebP first for optimal compression
-          let optimizedDataUrl = canvas.toDataURL("image/webp", 0.85);
-          if (!optimizedDataUrl.startsWith("data:image/webp")) {
-            optimizedDataUrl = canvas.toDataURL("image/jpeg", 0.85);
-          }
-
-          onThumbnailChange(optimizedDataUrl);
-        } catch {
-          // Fallback to original data URL if canvas fails
-          onThumbnailChange(e.target?.result as string);
-        } finally {
-          setIsProcessing(false);
-        }
-      };
-      img.onerror = () => {
-        setErrorMessage("Invalid or corrupted image file.");
-        setIsProcessing(false);
-      };
-      img.src = e.target?.result as string;
-    };
-    reader.onerror = () => {
-      setErrorMessage("Failed to read image file.");
+    try {
+      const result = await uploadImage(file, "course-thumbnail");
+      onThumbnailChange(result.url);
+    } catch (err: any) {
+      console.error("[CourseThumbnailUploader] Cloudinary upload error:", err);
+      setErrorMessage(err.message || "Failed to upload image to Cloudinary. Please try again.");
+    } finally {
       setIsProcessing(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
