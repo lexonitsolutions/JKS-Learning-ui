@@ -381,12 +381,17 @@ export interface UserProfileDto {
   email: string;
   role: string;
   phone?: string | null;
+  avatarUrl?: string | null;
+  avatarPublicId?: string | null;
+  status?: string;
   createdAt: string;
 }
 
 export interface UserProfileUpdate {
   name?: string;
   phone?: string;
+  avatarUrl?: string | null;
+  avatarPublicId?: string | null;
 }
 
 export async function fetchMyProfile(): Promise<UserProfileDto | null> {

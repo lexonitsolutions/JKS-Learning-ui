@@ -34,6 +34,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
   const [event, setEvent] = useState<EventItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [bannerError, setBannerError] = useState(false);
+  const [speakerAvatarError, setSpeakerAvatarError] = useState(false);
 
   // Registration Form State
   const [fullName, setFullName] = useState("");
@@ -202,14 +204,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             </div>
 
             {/* Poster / Banner */}
-            {event.bannerUrl && (
-              <div className="relative h-64 sm:h-80 w-full rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-lg dark:shadow-xl">
+            {event.bannerUrl && !bannerError && (
+              <div className="relative h-64 sm:h-80 w-full rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-lg dark:shadow-xl bg-slate-900">
                 <Image
                   src={event.bannerUrl}
                   alt={event.title}
                   fill
                   className="object-cover"
                   priority
+                  unoptimized={Boolean(event.bannerUrl.includes("cloudinary.com"))}
+                  onError={() => setBannerError(true)}
                 />
               </div>
             )}
@@ -221,14 +225,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   Session Mentor &amp; Speaker
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white text-xl font-black shadow-md">
-                    {event.speakerAvatar ? (
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white text-xl font-black shadow-md overflow-hidden">
+                    {event.speakerAvatar && !speakerAvatarError ? (
                       <Image
                         src={event.speakerAvatar}
                         alt={event.speakerName}
                         width={64}
                         height={64}
                         className="h-full w-full rounded-2xl object-cover"
+                        unoptimized={Boolean(event.speakerAvatar.includes("cloudinary.com"))}
+                        onError={() => setSpeakerAvatarError(true)}
                       />
                     ) : (
                       event.speakerName.slice(0, 2).toUpperCase()
@@ -261,6 +267,49 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">Session Agenda &amp; Curriculum</h2>
                 <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950/60 p-4 font-mono text-xs text-slate-800 dark:text-slate-300 leading-relaxed whitespace-pre-line">
                   {event.sessionDetails}
+                </div>
+              </div>
+            )}
+
+            {/* Event Dynamic Sections with Cloudinary Images */}
+            {event.sections && Array.isArray(event.sections) && event.sections.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-[#1E5EFF]" />
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Program Overview &amp; Key Highlights
+                  </h2>
+                </div>
+
+                <div className="space-y-6">
+                  {event.sections.map((sec, idx) => (
+                    <div
+                      key={sec.id || idx}
+                      className="overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none space-y-4"
+                    >
+                      {sec.imageUrl && (
+                        <div className="relative h-48 sm:h-64 w-full rounded-2xl overflow-hidden border border-slate-100 dark:border-white/10 shadow-xs">
+                          <Image
+                            src={sec.imageUrl}
+                            alt={sec.title || `Section ${idx + 1}`}
+                            fill
+                            unoptimized={Boolean(sec.imageUrl.includes("cloudinary.com"))}
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                          {sec.title}
+                        </h3>
+                        {sec.description && (
+                          <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                            {sec.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

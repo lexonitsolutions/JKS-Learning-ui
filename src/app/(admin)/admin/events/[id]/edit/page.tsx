@@ -17,6 +17,9 @@ import {
   Image as ImageIcon,
   User,
   FileText,
+  Plus,
+  Trash2,
+  Layers,
 } from "lucide-react";
 import {
   fetchAdminEventById,
@@ -24,7 +27,9 @@ import {
   type CreateEventPayload,
   type EventMode,
   type EventStatus,
+  type EventSectionItem,
 } from "@/lib/data/events-api";
+import { ImageUploadField } from "@/components/common/image-upload-field";
 
 export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -40,6 +45,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
+  const [bannerPublicId, setBannerPublicId] = useState("");
   const [mode, setMode] = useState<EventMode>("ONLINE");
   const [status, setStatus] = useState<EventStatus>("PUBLISHED");
   const [venueOrLink, setVenueOrLink] = useState("");
@@ -52,9 +58,36 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [speakerRole, setSpeakerRole] = useState("");
   const [speakerBio, setSpeakerBio] = useState("");
   const [speakerAvatar, setSpeakerAvatar] = useState("");
+  const [speakerAvatarPublicId, setSpeakerAvatarPublicId] = useState("");
 
   // Agenda / Session breakdown
   const [sessionDetails, setSessionDetails] = useState("");
+
+  // Event Sections with Multiple Images
+  const [sections, setSections] = useState<EventSectionItem[]>([]);
+
+  const handleAddSection = () => {
+    const newSec: EventSectionItem = {
+      id: `sec-${Date.now()}`,
+      title: "",
+      description: "",
+      imageUrl: "",
+      cloudinaryPublicId: "",
+    };
+    setSections((prev) => [...prev, newSec]);
+  };
+
+  const handleUpdateSection = (index: number, field: keyof EventSectionItem, val: string) => {
+    setSections((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: val };
+      return copy;
+    });
+  };
+
+  const handleRemoveSection = (index: number) => {
+    setSections((prev) => prev.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
     async function loadEvent() {
@@ -70,6 +103,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       setSlug(event.slug || "");
       setDescription(event.description || "");
       setBannerUrl(event.bannerUrl || "");
+      setBannerPublicId(event.bannerPublicId || "");
       setMode(event.mode || "ONLINE");
       setStatus(event.status || "PUBLISHED");
       setVenueOrLink(event.venueOrLink || "");
@@ -91,7 +125,9 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       setSpeakerRole(event.speakerRole || "");
       setSpeakerBio(event.speakerBio || "");
       setSpeakerAvatar(event.speakerAvatar || "");
+      setSpeakerAvatarPublicId(event.speakerAvatarPublicId || "");
       setSessionDetails(event.sessionDetails || "");
+      setSections(Array.isArray(event.sections) ? (event.sections as EventSectionItem[]) : []);
 
       setIsLoading(false);
     }
@@ -131,6 +167,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       slug: slug.trim() || undefined,
       description: description.trim(),
       bannerUrl: bannerUrl.trim() || undefined,
+      bannerPublicId: bannerPublicId.trim() || undefined,
       mode,
       status,
       venueOrLink: venueOrLink.trim(),
@@ -141,7 +178,9 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       speakerRole: speakerRole.trim() || undefined,
       speakerBio: speakerBio.trim() || undefined,
       speakerAvatar: speakerAvatar.trim() || undefined,
+      speakerAvatarPublicId: speakerAvatarPublicId.trim() || undefined,
       sessionDetails: sessionDetails.trim() || undefined,
+      sections,
     };
 
     const res = await updateAdminEvent(eventId, payload);
@@ -256,17 +295,18 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
               />
             </div>
 
-            <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] mb-1">
-                Banner / Poster Image URL
-              </label>
-              <input
-                type="url"
-                value={bannerUrl}
-                onChange={(e) => setBannerUrl(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-surface-elevated px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:border-blue-500 focus:outline-hidden"
-              />
-            </div>
+            <ImageUploadField
+              label="Event Banner / Thumbnail Image"
+              value={bannerUrl}
+              publicId={bannerPublicId}
+              onChange={(url, pid) => {
+                setBannerUrl(url);
+                setBannerPublicId(pid || "");
+              }}
+              folder="event-thumbnail"
+              aspectRatio="16/9"
+              helperText="Upload 16:9 banner or poster directly from your device (JPG, PNG, WebP, GIF, SVG up to 10MB)"
+            />
           </div>
         </div>
 
@@ -396,14 +436,17 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] mb-1">
-                Speaker Headshot / Avatar URL
-              </label>
-              <input
-                type="url"
+              <ImageUploadField
+                label="Speaker Headshot / Portrait"
                 value={speakerAvatar}
-                onChange={(e) => setSpeakerAvatar(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-surface-elevated px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:border-blue-500 focus:outline-hidden"
+                publicId={speakerAvatarPublicId}
+                onChange={(url, pid) => {
+                  setSpeakerAvatar(url);
+                  setSpeakerAvatarPublicId(pid || "");
+                }}
+                folder="event-speaker"
+                aspectRatio="1/1"
+                helperText="Upload speaker photo directly from your device (JPG, PNG, WebP up to 10MB)"
               />
             </div>
           </div>
@@ -427,6 +470,94 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
               className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-surface-elevated p-3 text-xs text-slate-900 dark:text-white focus:border-blue-500 focus:outline-hidden leading-relaxed font-mono"
             />
           </div>
+        </div>
+
+        {/* Section 5: Event Sections & Media (Requirement 5) */}
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-surface-secondary p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <Layers className="h-4 w-4 text-[#1E5EFF]" />
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Event Sections & Media Gallery</h2>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddSection}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60 px-3 py-1.5 text-xs font-bold text-[#1E5EFF] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add Section</span>
+            </button>
+          </div>
+
+          {sections.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-6 text-center text-xs text-slate-400">
+              No custom sections added yet. Click &quot;Add Section&quot; to add detailed curriculum sections, workshop previews, or highlights with Cloudinary uploaded images.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {sections.map((sec, idx) => (
+                <div
+                  key={sec.id || idx}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-surface-elevated p-4 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Section #{idx + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSection(idx)}
+                      className="text-xs text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 font-semibold inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      <span>Remove</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 text-xs">
+                    <div>
+                      <label className="block font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                        Section Title
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Architecture Blueprint & Hands-on Lab"
+                        value={sec.title}
+                        onChange={(e) => handleUpdateSection(idx, "title", e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-secondary px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-hidden"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                        Section Description
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder="Describe the content covered in this section..."
+                        value={sec.description}
+                        onChange={(e) => handleUpdateSection(idx, "description", e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-secondary p-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-hidden"
+                      />
+                    </div>
+
+                    <ImageUploadField
+                      label={`Section #${idx + 1} Image`}
+                      value={sec.imageUrl}
+                      publicId={sec.cloudinaryPublicId}
+                      onChange={(url, pid) => {
+                        handleUpdateSection(idx, "imageUrl", url);
+                        handleUpdateSection(idx, "cloudinaryPublicId", pid || "");
+                      }}
+                      folder="event-section"
+                      aspectRatio="16/9"
+                      helperText="Upload section diagram, photo, or visual directly to Cloudinary"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Submission Actions */}

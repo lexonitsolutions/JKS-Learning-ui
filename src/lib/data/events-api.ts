@@ -4,12 +4,21 @@ export type EventMode = "ONLINE" | "OFFLINE" | "HYBRID";
 export type EventStatus = "DRAFT" | "PUBLISHED" | "CANCELLED" | "COMPLETED";
 export type RegistrationEmailStatus = "PENDING" | "SENT" | "FAILED";
 
+export interface EventSectionItem {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl?: string | null;
+  cloudinaryPublicId?: string | null;
+}
+
 export interface EventItem {
   id: string;
   title: string;
   slug: string;
   description: string;
   bannerUrl?: string | null;
+  bannerPublicId?: string | null;
   mode: EventMode;
   status: EventStatus;
   venueOrLink: string;
@@ -20,7 +29,9 @@ export interface EventItem {
   speakerRole?: string | null;
   speakerBio?: string | null;
   speakerAvatar?: string | null;
+  speakerAvatarPublicId?: string | null;
   maxCapacity?: number | null;
+  sections?: EventSectionItem[] | null;
   registeredCount?: number;
   isSoldOut?: boolean;
   availableSpots?: number | null;
@@ -44,6 +55,7 @@ export interface CreateEventPayload {
   slug?: string;
   description: string;
   bannerUrl?: string;
+  bannerPublicId?: string;
   mode?: EventMode;
   status?: EventStatus;
   venueOrLink: string;
@@ -54,7 +66,9 @@ export interface CreateEventPayload {
   speakerRole?: string;
   speakerBio?: string;
   speakerAvatar?: string;
+  speakerAvatarPublicId?: string;
   maxCapacity?: number;
+  sections?: EventSectionItem[];
 }
 
 export interface RegisterEventPayload {

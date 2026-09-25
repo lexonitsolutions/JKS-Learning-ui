@@ -51,6 +51,7 @@ import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 import { getClientSessionEmail, fetchStudentEnrollments, type EnrolledCourseItem } from "@/lib/data/enrollments-api";
 import { fetchStudentDetail, fetchMyProfile, updateMyProfile, type AdminStudentDetail } from "@/lib/data/students-api";
+import { uploadImage } from "@/lib/api/upload-api";
 
 // Preset Banner Themes for Quick Cover Customization
 const BANNER_PRESETS = [
@@ -128,6 +129,8 @@ export default function StudentProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarUploadError, setAvatarUploadError] = useState<string | null>(null);
 
   // Banner State
   const [bannerType, setBannerType] = useState<"preset" | "image">("preset");
@@ -167,6 +170,7 @@ export default function StudentProfilePage() {
           if (myProfile) {
             if (myProfile.name) setName(myProfile.name);
             if (myProfile.phone) setPhone(myProfile.phone);
+            if (myProfile.avatarUrl) setAvatar(myProfile.avatarUrl);
           }
 
           if (detail) {
@@ -324,45 +328,75 @@ export default function StudentProfilePage() {
     }
   };
 
-  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        setBannerType("image");
-        setBannerVal(result);
-        try {
-          const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
-          localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_TYPE + keySuffix, "image");
-          localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_VAL + keySuffix, result);
-        } catch {}
-        setIsBannerModalOpen(false);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const uploadRes = await uploadImage(file, "other");
+      setBannerType("image");
+      setBannerVal(uploadRes.url);
+      try {
+        const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
+        localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_TYPE + keySuffix, "image");
+        localStorage.setItem(STORAGE_KEYS.PROFILE_BANNER_VAL + keySuffix, uploadRes.url);
+      } catch {}
+      setIsBannerModalOpen(false);
+    } catch (err: any) {
+      console.error("Cover banner upload failed:", err);
+    }
   };
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        setAvatar(result);
-        try {
-          const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
-          localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR + keySuffix, result);
-          localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR, result);
-          window.dispatchEvent(new Event("jks_avatar_updated"));
-        } catch {}
+    // Reset input so same file can be re-selected if desired
+    e.target.value = "";
+
+    setIsUploadingAvatar(true);
+    setAvatarUploadError(null);
+
+    try {
+      // 1. Upload directly to Cloudinary through backend upload endpoint
+      const uploadRes = await uploadImage(file, "user-profile");
+
+      // 2. Immediately reflect new avatar on screen
+      setAvatar(uploadRes.url);
+
+      // 3. Persist new Cloudinary avatar to user profile in MongoDB Atlas
+      const updateResult = await updateMyProfile({
+        avatarUrl: uploadRes.url,
+        avatarPublicId: uploadRes.publicId,
+      });
+
+      if (!updateResult.success) {
+        console.warn("Could not save avatar to database:", updateResult.error);
       }
-    };
-    reader.readAsDataURL(file);
+
+      // 4. Update localStorage and notify header, topbar, and sidebar
+      try {
+        const keySuffix = effectiveEmail ? `_${effectiveEmail}` : "";
+        localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR + keySuffix, uploadRes.url);
+        localStorage.setItem(STORAGE_KEYS.PROFILE_AVATAR, uploadRes.url);
+        localStorage.setItem("jks_student_avatar_v2", uploadRes.url);
+
+        const rawUser = localStorage.getItem("jks_auth_user");
+        if (rawUser) {
+          const parsed = JSON.parse(rawUser);
+          parsed.avatar = uploadRes.url;
+          localStorage.setItem("jks_auth_user", JSON.stringify(parsed));
+        }
+
+        window.dispatchEvent(new Event("jks_avatar_updated"));
+        window.dispatchEvent(new Event("jks-mock-session-change"));
+      } catch {}
+    } catch (err: any) {
+      console.error("Avatar upload failed:", err);
+      setAvatarUploadError(err.message || "Failed to upload avatar to Cloudinary");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   };
 
   const handleSelectPresetBanner = (presetClass: string) => {
@@ -559,12 +593,19 @@ export default function StudentProfilePage() {
                           className="object-cover"
                           unoptimized
                         />
+                        {isUploadingAvatar && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-xs z-10 text-white">
+                            <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
+                            <span className="text-[9px] font-semibold mt-1">Uploading...</span>
+                          </div>
+                        )}
                       </div>
                       <button
                         type="button"
                         onClick={() => avatarFileRef.current?.click()}
-                        className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-[#2563EB] text-white shadow-md hover:bg-blue-700 transition-transform hover:scale-110 cursor-pointer"
-                        title="Change profile picture"
+                        disabled={isUploadingAvatar}
+                        className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-[#2563EB] text-white shadow-md hover:bg-blue-700 transition-transform hover:scale-110 cursor-pointer disabled:opacity-50"
+                        title="Upload new profile picture to Cloudinary"
                       >
                         <Camera className="h-3.5 w-3.5" />
                       </button>
@@ -572,10 +613,16 @@ export default function StudentProfilePage() {
                         type="file"
                         ref={avatarFileRef}
                         onChange={handleAvatarUpload}
-                        accept="image/*"
+                        accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
                         className="hidden"
                       />
                     </div>
+
+                    {avatarUploadError && (
+                      <p className="text-xs text-rose-500 font-medium mb-2">
+                        {avatarUploadError}
+                      </p>
+                    )}
 
                     <div className="flex items-center justify-center gap-2">
                       <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">

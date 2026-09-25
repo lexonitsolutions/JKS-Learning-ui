@@ -13,16 +13,22 @@ import {
 } from "lucide-react";
 import { uploadImage, type ImageContext } from "@/lib/api/upload-api";
 
-interface ImageUploadFieldProps {
+export interface ImageUploadFieldProps {
   label?: string;
-  context: ImageContext;
+  context?: ImageContext;
+  folder?: string;
   currentUrl?: string | null;
+  value?: string | null;
   currentPublicId?: string | null;
-  onUploadComplete: (url: string, publicId: string) => void;
+  publicId?: string | null;
+  onUploadComplete?: (url: string, publicId: string) => void;
+  onChange?: (url: string, publicId?: string) => void;
   onRemove?: () => void;
   className?: string;
   previewHeight?: string;
+  aspectRatio?: string;
   hint?: string;
+  helperText?: string;
 }
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
@@ -31,18 +37,33 @@ const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 export function ImageUploadField({
   label,
   context,
+  folder,
   currentUrl,
+  value,
+  currentPublicId,
+  publicId,
   onUploadComplete,
+  onChange,
   onRemove,
   className = "",
   previewHeight = "h-48",
+  aspectRatio,
   hint,
+  helperText,
 }: ImageUploadFieldProps) {
+  const effectiveContext = ((context || folder || "other") as ImageContext);
+  const effectiveUrl = value !== undefined ? value : currentUrl;
+  const effectiveHint = helperText || hint;
+
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [uploadedUrl, setUploadedUrl] = useState<string | null>(currentUrl || null);
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(effectiveUrl || null);
+
+  React.useEffect(() => {
+    setUploadedUrl(effectiveUrl || null);
+  }, [effectiveUrl]);
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -59,16 +80,17 @@ export function ImageUploadField({
 
       setIsUploading(true);
       try {
-        const result = await uploadImage(file, context);
+        const result = await uploadImage(file, effectiveContext);
         setUploadedUrl(result.url);
-        onUploadComplete(result.url, result.publicId);
+        onUploadComplete?.(result.url, result.publicId);
+        onChange?.(result.url, result.publicId);
       } catch (err: any) {
         setError(err.message || "Upload failed. Please try again.");
       } finally {
         setIsUploading(false);
       }
     },
-    [context, onUploadComplete]
+    [effectiveContext, onUploadComplete, onChange]
   );
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -94,6 +116,7 @@ export function ImageUploadField({
   const handleRemove = () => {
     setUploadedUrl(null);
     setError(null);
+    onChange?.("", "");
     onRemove?.();
   };
 
@@ -178,7 +201,7 @@ export function ImageUploadField({
                 {isDragging ? "Drop to upload" : "Click or drag & drop"}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                {hint || "PNG, JPG, WebP, GIF, SVG — max 10 MB"}
+                {effectiveHint || "PNG, JPG, WebP, GIF, SVG — max 10 MB"}
               </p>
               <div className="mt-1 inline-flex items-center gap-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 shadow-xs">
                 <ImageIcon className="h-3.5 w-3.5" />

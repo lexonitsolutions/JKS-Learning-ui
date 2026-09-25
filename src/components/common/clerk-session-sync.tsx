@@ -82,6 +82,12 @@ export function ClerkSessionSync() {
         }
       } catch {}
 
+      // If user is currently going through the OAuth redirect flow, let AuthRedirectPage handle
+      // the sync directly so it can evaluate isNewUser and prompt for phone number without race conditions.
+      if (typeof window !== "undefined" && window.location.pathname.startsWith("/auth-redirect")) {
+        return;
+      }
+
       // Exchange the Clerk session for this API's own auth cookies, and create
       // the local user row on first sign-in (non-blocking).
       void (async () => {

@@ -184,6 +184,7 @@ export default function PublicEventsPage() {
                         src={event.bannerUrl}
                         alt={event.title}
                         fill
+                        unoptimized={Boolean(event.bannerUrl.includes("cloudinary.com"))}
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
