@@ -115,7 +115,7 @@ export function CourseThumbnail({
     src.startsWith("/") &&
     !src.startsWith("/images/") &&
     !src.startsWith("/assets/")
-      ? `${(process.env.NEXT_PUBLIC_API_URL || "https://jks-learning-backend-production-d0d4.up.railway.app").replace(/\/$/, "")}${src}`
+      ? `${(process.env.NEXT_PUBLIC_API_URL || "https://jks-learning-backend-production-c2eb.up.railway.app").replace(/\/$/, "")}${src}`
       : src;
 
   // Check if src is valid and not one of the obsolete non-existent local fallback paths
