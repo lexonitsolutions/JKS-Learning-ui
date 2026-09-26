@@ -262,8 +262,12 @@ let lastSaveError: string | null = null;
 
 async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | null> {
   lastSaveError = null;
+  const existingList = getStoredCourses();
+  const existing = existingList.find((c) => (course.id && c.id === course.id) || (course.slug && c.slug === course.slug));
+  const isUpdate = Boolean(existing || course.id);
+  const targetId = course.id || existing?.id || course.slug;
+
   const payload: any = {
-    id: course.id,
     title: course.title,
     slug: course.slug,
     track: course.track,
@@ -280,9 +284,16 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
     sectionsJson: course.sections,
   };
 
+  if (!isUpdate && course.id) {
+    payload.id = course.id;
+  }
+
+  const endpoint = isUpdate ? `/courses/${encodeURIComponent(targetId)}` : "/courses";
+  const method = isUpdate ? "PATCH" : "POST";
+
   try {
-    const res = await apiFetch("/courses", {
-      method: "POST",
+    const res = await apiFetch(endpoint, {
+      method,
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
@@ -325,6 +336,48 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
     lastSaveError = err?.message || "Could not reach the API to save this course.";
   }
   return null;
+}
+
+/**
+ * Toggle or update course publication status (Published <-> Draft) directly via PATCH /courses/:id
+ */
+export async function toggleCourseStatus(
+  courseIdOrSlug: string,
+  targetStatus?: "Published" | "Draft"
+): Promise<FullCourse> {
+  const current = getStoredCourses();
+  const existing = current.find((c) => c.id === courseIdOrSlug || c.slug === courseIdOrSlug);
+  if (!existing) {
+    throw new Error("Course not found in local catalog.");
+  }
+  const nextStatus = targetStatus || (existing.status === "Published" ? "Draft" : "Published");
+  const targetId = existing.id || existing.slug || courseIdOrSlug;
+
+  const res = await apiFetch(`/courses/${encodeURIComponent(targetId)}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ status: nextStatus.toUpperCase() }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    throw new Error(`Failed to update course status: ${errText || res.statusText}`);
+  }
+
+  const updatedCourse: FullCourse = {
+    ...existing,
+    status: nextStatus,
+  };
+
+  const updatedList = current.map((c) =>
+    c.id === existing.id || c.slug === existing.slug ? updatedCourse : c
+  );
+  safeLocalStorageSet(STORAGE_KEYS.COURSES, updatedList);
+
+  return updatedCourse;
 }
 
 /**

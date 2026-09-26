@@ -7,6 +7,7 @@ import { PageTransitionProvider } from "@/components/common/page-transition-prov
 import { WebsiteChatbot } from "@/components/common/website-chatbot";
 import { ClerkSessionSync } from "@/components/common/clerk-session-sync";
 import { ThemeProvider } from "@/lib/theme/theme-context";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -83,6 +84,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-200">
+        <GoogleAnalytics />
         <ThemeProvider>
           <ClerkProvider
             publishableKey={CLERK_PUBLISHABLE_KEY}

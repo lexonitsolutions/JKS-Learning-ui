@@ -1247,12 +1247,12 @@ export default function AdminStudentDetailsPage() {
             {activeTab === "courses" && (
               <div className="space-y-4">
                 {student.enrollments.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {student.enrollments.map((course) => (
                       <TiltCard key={course.enrollmentId} className="h-full">
-                        <div className="group flex h-full flex-col justify-between overflow-hidden rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary/90 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-800/50">
+                        <div className="group flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary/90 shadow-sm backdrop-blur-xl transition-all duration-300 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800/50">
                           {/* Rich Visual Header Banner with Course Image */}
-                          <div className="relative h-40 overflow-hidden bg-slate-950">
+                          <div className="relative h-28 overflow-hidden bg-slate-950">
                             <CourseThumbnail
                               src={course.thumbnail}
                               title={course.courseTitle}
@@ -1260,30 +1260,30 @@ export default function AdminStudentDetailsPage() {
                               className="w-full h-full"
                               aspectRatio="16/9"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent pointer-events-none" />
 
-                            <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 flex-wrap">
-                              <span className="inline-flex self-start rounded-md bg-blue-500/30 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-300 border border-blue-400/30 backdrop-blur-md">
+                            <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 flex-wrap">
+                              <span className="inline-flex self-start rounded-md bg-blue-500/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-300 border border-blue-400/30 backdrop-blur-md">
                                 {course.track}
                               </span>
                               {course.status === "PAUSED" && (
-                                <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/90 text-white px-2 py-0.5 text-[10px] font-bold shadow-xs">
-                                  <Pause className="h-3 w-3" /> Paused
+                                <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/90 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-xs">
+                                  <Pause className="h-2.5 w-2.5" /> Paused
                                 </span>
                               )}
                               {course.status === "REMOVED" && (
-                                <span className="inline-flex items-center gap-1 rounded-md bg-rose-600/90 text-white px-2 py-0.5 text-[10px] font-bold shadow-xs">
-                                  <Trash2 className="h-3 w-3" /> Removed
+                                <span className="inline-flex items-center gap-1 rounded-md bg-rose-600/90 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-xs">
+                                  <Trash2 className="h-2.5 w-2.5" /> Removed
                                 </span>
                               )}
                             </div>
 
-                            <div className="absolute bottom-3 left-4 z-10 text-xs text-slate-200 font-semibold flex items-center gap-1.5 drop-shadow-md">
-                              <Clock className="h-3.5 w-3.5 text-blue-400" />
+                            <div className="absolute bottom-2 left-2.5 z-10 text-[11px] text-slate-200 font-semibold flex items-center gap-1.5 drop-shadow-md">
+                              <Clock className="h-3 w-3 text-blue-400" />
                               <span>24 Weeks · Cohort Enrolled</span>
                             </div>
 
-                            <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5">
+                            <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
                               {/* Three Dots Menu for Course Actions */}
                               <div className="relative">
                                 <button
@@ -1296,16 +1296,16 @@ export default function AdminStudentDetailsPage() {
                                         : course.enrollmentId
                                     );
                                   }}
-                                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 text-white hover:bg-black/80 backdrop-blur-md shadow-xs border border-white/20 cursor-pointer transition-colors"
+                                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-black/60 text-white hover:bg-black/80 backdrop-blur-md shadow-xs border border-white/20 cursor-pointer transition-colors"
                                   title="Course Enrollment Controls"
                                 >
-                                  <MoreVertical className="h-4 w-4" />
+                                  <MoreVertical className="h-3.5 w-3.5" />
                                 </button>
 
                                 {openCourseDropdownId === course.enrollmentId && (
                                   <div
                                     onClick={(e) => e.stopPropagation()}
-                                    className="absolute right-0 top-10 z-30 w-48 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-1.5 shadow-2xl space-y-0.5 text-left animate-in fade-in zoom-in-95"
+                                    className="absolute right-0 top-8 z-30 w-44 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-1 shadow-xl space-y-0.5 text-left animate-in fade-in zoom-in-95"
                                   >
                                     {course.status === "REMOVED" ? (
                                       <button
@@ -1313,10 +1313,10 @@ export default function AdminStudentDetailsPage() {
                                         onClick={() =>
                                           handleUpdateCourseStatus(course.enrollmentId, "ACTIVE")
                                         }
-                                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
+                                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
                                       >
-                                        <Play className="h-3.5 w-3.5" />
-                                        <span>Restore Course Access</span>
+                                        <Play className="h-3 w-3" />
+                                        <span>Restore Access</span>
                                       </button>
                                     ) : (
                                       <>
@@ -1328,17 +1328,17 @@ export default function AdminStudentDetailsPage() {
                                               course.status === "PAUSED" ? "ACTIVE" : "PAUSED"
                                             )
                                           }
-                                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
+                                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
                                         >
                                           {course.status === "PAUSED" ? (
                                             <>
-                                              <Play className="h-3.5 w-3.5 text-emerald-600" />
-                                              <span>Resume Course</span>
+                                              <Play className="h-3 w-3 text-emerald-600" />
+                                              <span>Resume Access</span>
                                             </>
                                           ) : (
                                             <>
-                                              <Pause className="h-3.5 w-3.5" />
-                                              <span>Pause Course Access</span>
+                                              <Pause className="h-3 w-3" />
+                                              <span>Pause Access</span>
                                             </>
                                           )}
                                         </button>
@@ -1354,10 +1354,10 @@ export default function AdminStudentDetailsPage() {
                                               handleUpdateCourseStatus(course.enrollmentId, "REMOVED");
                                             }
                                           }}
-                                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
                                         >
-                                          <Trash2 className="h-3.5 w-3.5" />
-                                          <span>Remove from Course</span>
+                                          <Trash2 className="h-3 w-3" />
+                                          <span>Remove Student</span>
                                         </button>
                                       </>
                                     )}
@@ -1368,39 +1368,41 @@ export default function AdminStudentDetailsPage() {
                           </div>
 
                           {/* Card Body */}
-                          <div className="p-5 space-y-3.5 flex-1">
+                          <div className="p-3.5 space-y-2.5 flex-1">
                             <div>
-                              <div className="flex items-center justify-between gap-2">
-                                <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                              <div className="flex items-center justify-between gap-1.5">
+                                <h3 className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1" title={course.courseTitle}>
                                   {course.courseTitle}
                                 </h3>
                                 {course.status === "PAUSED" && (
-                                  <span className="rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 shrink-0">
-                                    Access Paused
+                                  <span className="rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/50 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 dark:text-amber-300 shrink-0">
+                                    Paused
                                   </span>
                                 )}
                               </div>
-                              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
-                                {course.summary}
-                              </p>
+                              {course.summary && (
+                                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                                  {course.summary}
+                                </p>
+                              )}
                             </div>
 
                             {/* Batch Timing */}
-                            <div className="rounded-xl bg-slate-50 dark:bg-surface-elevated p-2.5 border border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs">
-                              <Calendar className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400 shrink-0" />
-                              <div className="truncate">
-                                <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-400 block">Batch Timing</span>
-                                <span className="font-bold text-slate-800 dark:text-slate-200">{course.batchTiming}</span>
+                            <div className="rounded-lg bg-slate-50 dark:bg-surface-elevated px-2.5 py-1.5 border border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs">
+                              <Calendar className="h-3 w-3 text-[#2563EB] dark:text-blue-400 shrink-0" />
+                              <div className="truncate flex items-center gap-1.5">
+                                <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">Batch:</span>
+                                <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200 truncate">{course.batchTiming}</span>
                               </div>
                             </div>
 
                             {/* Progress Bar */}
-                            <div className="space-y-1.5 pt-1">
-                              <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-                                <span>Curriculum Progress</span>
-                                <span className="text-[#2563EB] dark:text-blue-400">{course.progress}%</span>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                                <span>Progress</span>
+                                <span className="text-[#2563EB] dark:text-blue-400 font-bold">{course.progress}%</span>
                               </div>
-                              <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                              <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                                 <div
                                   className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-cyan-500 transition-all duration-500"
                                   style={{ width: `${Math.max(4, Math.min(100, course.progress))}%` }}
@@ -1410,18 +1412,18 @@ export default function AdminStudentDetailsPage() {
                           </div>
 
                           {/* Card Footer: Open Full Inspector Player Button */}
-                          <div className="border-t border-slate-100 dark:border-slate-800 p-4 bg-slate-50/70 dark:bg-surface-elevated/70 flex flex-wrap items-center justify-between gap-2">
-                            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                              Enrolled: {new Date(course.enrolledAt).toLocaleDateString("en-IN")}
+                          <div className="border-t border-slate-100 dark:border-slate-800 px-3.5 py-2.5 bg-slate-50/70 dark:bg-surface-elevated/70 flex items-center justify-between gap-2">
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">
+                              {new Date(course.enrolledAt).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
                             </span>
 
                             <button
                               type="button"
                               onClick={() => handleOpenCourseInspector(course)}
-                              className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-blue-700 transition-all cursor-pointer shrink-0"
                             >
-                              <PlayCircle className="h-4 w-4" />
-                              <span>Inspect Student Course &amp; Assignments</span>
+                              <PlayCircle className="h-3 w-3" />
+                              <span>Inspect Course</span>
                             </button>
                           </div>
                         </div>

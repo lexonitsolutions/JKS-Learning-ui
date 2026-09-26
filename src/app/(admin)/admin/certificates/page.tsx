@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Award,
   ShieldCheck,
@@ -13,6 +13,7 @@ import {
   Sparkles,
   Users,
   BookOpen,
+  Search,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
@@ -42,8 +43,81 @@ export default function AdminCertificatesPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<"issued" | "pending">(initialTab);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedCourse, setSelectedCourse] = useState<string>("ALL");
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Distinct courses for dropdown filter
+  const uniqueCourses = useMemo(() => {
+    const set = new Set<string>();
+    courses.forEach((c) => {
+      if (c.title) set.add(c.title);
+    });
+    certificates.forEach((c) => {
+      if (c.courseTitle) set.add(c.courseTitle);
+    });
+    pendingCompletions.forEach((p) => {
+      if (p.courseTitle) set.add(p.courseTitle);
+    });
+    return Array.from(set).sort();
+  }, [courses, certificates, pendingCompletions]);
+
+  // Filtered issued certificates
+  const filteredCertificates = useMemo(() => {
+    let list = certificates;
+
+    if (selectedCourse !== "ALL") {
+      list = list.filter(
+        (c) =>
+          c.courseTitle === selectedCourse ||
+          c.courseId === selectedCourse ||
+          c.courseSlug === selectedCourse
+      );
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter((c) => {
+        const studentNameMatch = c.studentName?.toLowerCase().includes(q);
+        const studentEmailMatch = c.studentEmail?.toLowerCase().includes(q);
+        const studentIdMatch = c.userId?.toLowerCase().includes(q);
+        const certIdMatch =
+          c.verificationId?.toLowerCase().includes(q) || c.id?.toLowerCase().includes(q);
+        const courseMatch = c.courseTitle?.toLowerCase().includes(q);
+        return studentNameMatch || studentEmailMatch || studentIdMatch || certIdMatch || courseMatch;
+      });
+    }
+
+    return list;
+  }, [certificates, selectedCourse, searchQuery]);
+
+  // Filtered pending completions
+  const filteredPendingCompletions = useMemo(() => {
+    let list = pendingCompletions;
+
+    if (selectedCourse !== "ALL") {
+      list = list.filter(
+        (p) =>
+          p.courseTitle === selectedCourse ||
+          p.courseId === selectedCourse ||
+          p.courseSlug === selectedCourse
+      );
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter((p) => {
+        const studentNameMatch = p.studentName?.toLowerCase().includes(q);
+        const studentEmailMatch = p.studentEmail?.toLowerCase().includes(q);
+        const studentIdMatch = p.userId?.toLowerCase().includes(q);
+        const courseMatch = p.courseTitle?.toLowerCase().includes(q);
+        return studentNameMatch || studentEmailMatch || studentIdMatch || courseMatch;
+      });
+    }
+
+    return list;
+  }, [pendingCompletions, selectedCourse, searchQuery]);
 
   const [selectedCert, setSelectedCert] = useState<CertificateData | null>(null);
   const [isIssueModalOpen, setIsIssueModalOpen] = useState<boolean>(false);
@@ -150,15 +224,7 @@ export default function AdminCertificatesPage() {
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
         {/* Actions Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-              Issued Credential Ledger
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Live database records of student course completions and certificates
-            </p>
-          </div>
+        <div className="flex items-center justify-end gap-2">
 
           <div className="flex items-center gap-2">
             <button
@@ -245,8 +311,8 @@ export default function AdminCertificatesPage() {
           </TiltCard>
         </Reveal>
 
-        {/* Tab Switcher & Feedback */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        {/* Tab Switcher & Search & Filter Controls */}
+        <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -257,7 +323,7 @@ export default function AdminCertificatesPage() {
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-800"
               }`}
             >
-              Issued Credentials ({certificates.length})
+              Issued Credentials ({filteredCertificates.length}{filteredCertificates.length !== certificates.length ? ` / ${certificates.length}` : ""})
             </button>
             <button
               type="button"
@@ -271,10 +337,71 @@ export default function AdminCertificatesPage() {
               <span>Pending Completions</span>
               {pendingCompletions.length > 0 && (
                 <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-extrabold text-white animate-pulse">
-                  {pendingCompletions.length}
+                  {filteredPendingCompletions.length}
                 </span>
               )}
             </button>
+          </div>
+
+          {/* Search bar & Course Dropdown */}
+          <div className="flex flex-1 flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-end gap-2.5">
+            {/* Search Input */}
+            <div className="relative flex-1 min-w-[240px] sm:max-w-md">
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by student ID, name, email, cert ID, course..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg py-2 pr-8 pl-9 text-xs font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute top-1/2 right-2.5 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  title="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Course Dropdown Filter */}
+            <div className="relative min-w-[180px]">
+              <select
+                value={selectedCourse}
+                onChange={(e) => setSelectedCourse(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500 pr-8 shadow-xs cursor-pointer"
+              >
+                <option value="ALL">All Courses ({uniqueCourses.length})</option>
+                {uniqueCourses.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {(searchQuery || selectedCourse !== "ALL") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCourse("ALL");
+                }}
+                className="inline-flex items-center gap-1 rounded-xl px-2.5 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                title="Reset all filters"
+              >
+                <X className="h-3.5 w-3.5" />
+                <span>Reset</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -319,6 +446,28 @@ export default function AdminCertificatesPage() {
                   When enrolled students reach 100% video lectures and pass all milestone assessments, their completion requests will appear here for admin review and approval before certificate issuance.
                 </p>
               </div>
+            ) : filteredPendingCompletions.length === 0 ? (
+              <div className="py-12 flex flex-col items-center justify-center text-center max-w-md mx-auto space-y-3">
+                <div className="h-12 w-12 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 flex items-center justify-center">
+                  <Search className="h-6 w-6" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  No Matching Completion Requests Found
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  No pending completion requests match your search criteria. Try adjusting your search query or selecting "All Courses".
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCourse("ALL");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" /> Clear Filters
+                </button>
+              </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs min-w-[700px]">
@@ -333,7 +482,7 @@ export default function AdminCertificatesPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
-                    {pendingCompletions.map((p) => (
+                    {filteredPendingCompletions.map((p) => (
                       <tr
                         key={p.enrollmentId}
                         className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-hover"
@@ -342,6 +491,9 @@ export default function AdminCertificatesPage() {
                           <div>
                             <p className="font-bold text-slate-900 dark:text-white">{p.studentName}</p>
                             <p className="text-[10px] text-slate-400 font-normal">{p.studentEmail}</p>
+                            {p.userId && (
+                              <p className="text-[9px] text-slate-400/80 font-mono font-normal">ID: {p.userId}</p>
+                            )}
                           </div>
                         </td>
                         <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
@@ -419,6 +571,28 @@ export default function AdminCertificatesPage() {
                 <Plus className="h-4 w-4" /> Issue First Certificate
               </button>
             </div>
+          ) : filteredCertificates.length === 0 ? (
+            <div className="py-12 flex flex-col items-center justify-center text-center max-w-md mx-auto space-y-3">
+              <div className="h-12 w-12 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 flex items-center justify-center">
+                <Search className="h-6 w-6" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                No Matching Certificates Found
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                No issued certificates match your search query or course selection. Try clearing your filters.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCourse("ALL");
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" /> Clear Filters
+              </button>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs min-w-[650px]">
@@ -433,7 +607,7 @@ export default function AdminCertificatesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
-                  {certificates.map((c) => (
+                  {filteredCertificates.map((c) => (
                     <tr
                       key={c.id || c.verificationId}
                       className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-hover"
@@ -443,6 +617,9 @@ export default function AdminCertificatesPage() {
                           <p className="font-bold text-slate-900 dark:text-white">{c.studentName}</p>
                           {c.studentEmail && (
                             <p className="text-[10px] text-slate-400 font-normal">{c.studentEmail}</p>
+                          )}
+                          {c.userId && (
+                            <p className="text-[9px] text-slate-400/80 font-mono font-normal">ID: {c.userId}</p>
                           )}
                         </div>
                       </td>

@@ -444,7 +444,6 @@ export default function PlaygroundPage() {
       <DashboardTopbar
         title="Interactive Code Playground"
         subtitle="Write, compile, and execute frontend and backend code directly in your browser."
-        userInitials="JD"
       />
 
       <div className="flex-1 p-4 pt-2 sm:p-6 lg:p-8 lg:pt-2 flex flex-col h-[calc(100vh-100px)]">

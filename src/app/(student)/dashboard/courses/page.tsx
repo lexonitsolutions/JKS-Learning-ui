@@ -226,7 +226,6 @@ export default function StudentAllCoursesPage() {
       <DashboardTopbar
         title="Courses Catalog"
         subtitle="Explore all industry-grade engineering tracks, JKS master series & verified certifications."
-        userInitials="JD"
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
@@ -501,7 +500,7 @@ export default function StudentAllCoursesPage() {
                         </button>
                       ) : (
                         <Link
-                          href={`/courses/${course.slug}`}
+                          href={`/dashboard/courses/${course.slug}`}
                           className="w-full flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2 sm:py-2.5 px-2 sm:px-4 text-[11px] sm:text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
                         >
                           <span className="truncate">Enroll Now</span>

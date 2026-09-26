@@ -25,6 +25,30 @@ export function isChunkLoadError(error: unknown): boolean {
   );
 }
 
+// A resource `error` event is only ours to act on when it came from a Next.js
+// build artifact on this origin. Third-party scripts (Clerk's clerk.browser.js
+// and ui.browser.js, analytics, chat widgets) load cross-origin and fail for
+// their own reasons — reloading the page on those just restarts their download
+// and can trap the app in a reload loop, which is what stops Clerk's UI
+// renderer from ever mounting.
+function isFirstPartyChunkElement(target: EventTarget | null): boolean {
+  if (!target) return false;
+  const el = target as HTMLElement;
+  if (el.tagName !== "SCRIPT" && el.tagName !== "LINK") return false;
+
+  const src =
+    (el as HTMLScriptElement).src || (el as HTMLLinkElement).href || "";
+  if (!src) return false;
+
+  try {
+    const url = new URL(src, window.location.href);
+    if (url.origin !== window.location.origin) return false;
+    return url.pathname.startsWith("/_next/");
+  } catch {
+    return false;
+  }
+}
+
 export function handleChunkRetry() {
   if (typeof window === "undefined") return false;
   try {
@@ -49,7 +73,7 @@ export function ChunkErrorHandler() {
       if (
         isChunkLoadError(event.error) ||
         isChunkLoadError(event.message) ||
-        (event.target && (event.target as HTMLElement).tagName === "SCRIPT")
+        isFirstPartyChunkElement(event.target)
       ) {
         const handled = handleChunkRetry();
         if (handled) {

@@ -34,6 +34,12 @@ import {
 import { useStudentBookmarks } from "@/lib/data/bookmarks-store";
 import { CourseCheckoutModal } from "@/components/dashboard/course-checkout-modal";
 import { mapFullCourseToCatalog, type CatalogCourse } from "@/app/(student)/dashboard/courses/page";
+import {
+  fetchStudentEnrollments,
+  getExactStudentCourseProgress,
+  type EnrolledCourseItem,
+} from "@/lib/data/enrollments-api";
+import { CourseThumbnail } from "@/components/common/course-thumbnail";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 
@@ -112,19 +118,92 @@ export default function StudentDashboardPage() {
 
   const allCourses = useAllCourses();
   const ownedCourses = useStudentOwnedCourses(email);
-  const ownedSlugs = useMemo(() => ownedCourses.map((c) => c.slug), [ownedCourses]);
+  const [liveEnrollments, setLiveEnrollments] = useState<EnrolledCourseItem[]>([]);
   const { isBookmarked, toggleBookmark } = useStudentBookmarks(email);
 
+  useEffect(() => {
+    let isMounted = true;
+    async function loadLiveEnrollments() {
+      if (!email) return;
+      try {
+        const data = await fetchStudentEnrollments(email);
+        const active = data.filter((c: any) => c.status !== "REMOVED");
+        const enriched = active.map((c) => {
+          const exact = getExactStudentCourseProgress(c.slug, email);
+          const prog = Math.max(c.progress || 0, exact.overallPercent || 0);
+          return {
+            ...c,
+            progress: prog,
+            isCompleted: prog >= 100,
+          };
+        });
+        if (isMounted) setLiveEnrollments(enriched);
+      } catch (err) {
+        console.error("Failed to load dashboard enrollments:", err);
+      }
+    }
+    loadLiveEnrollments();
+    const handleProgress = () => loadLiveEnrollments();
+    window.addEventListener("jks_video_progress_changed", handleProgress);
+    window.addEventListener("focus", handleProgress);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("jks_video_progress_changed", handleProgress);
+      window.removeEventListener("focus", handleProgress);
+    };
+  }, [email]);
+
+  const enrolledList = useMemo(() => {
+    const list: Array<{
+      slug: string;
+      title: string;
+      track: string;
+      thumbnail?: string;
+      progress: number;
+    }> = [];
+    const seen = new Set<string>();
+
+    for (const item of liveEnrollments) {
+      if (!seen.has(item.slug)) {
+        seen.add(item.slug);
+        list.push({
+          slug: item.slug,
+          title: item.title,
+          track: item.track,
+          thumbnail: item.thumbnail,
+          progress: item.progress || 0,
+        });
+      }
+    }
+
+    for (const owned of ownedCourses) {
+      if (!seen.has(owned.slug)) {
+        seen.add(owned.slug);
+        const exact = getExactStudentCourseProgress(owned.slug, email);
+        list.push({
+          slug: owned.slug,
+          title: owned.title,
+          track: owned.track,
+          thumbnail: owned.thumbnail,
+          progress: exact.overallPercent || 0,
+        });
+      }
+    }
+
+    return list;
+  }, [liveEnrollments, ownedCourses, email]);
+
+  const allEnrolledSlugs = useMemo(() => enrolledList.map((c) => c.slug), [enrolledList]);
   const catalogCourses = useMemo(() => allCourses.map(mapFullCourseToCatalog), [allCourses]);
 
   // Latest non-enrolled courses for discovery
   const latestNonEnrolledCourses = useMemo(() => {
     const nonEnrolled = catalogCourses.filter(
-      (c) => !c.isBundle && !ownedSlugs.includes(c.slug)
+      (c) => !c.isBundle && !allEnrolledSlugs.includes(c.slug)
     );
     // Return the latest 4 available non-enrolled courses
     return nonEnrolled.slice(0, 4);
-  }, [catalogCourses, ownedSlugs]);
+  }, [catalogCourses, allEnrolledSlugs]);
 
   // Auto-play slideshow every 5 seconds (pauses when user hovers)
   useEffect(() => {
@@ -391,6 +470,88 @@ export default function StudentDashboardPage() {
           </div>
         </Reveal>
 
+        {/* Enrolled Courses Section (Shown at top of Latest Courses column) */}
+        {enrolledList.length > 0 && (
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  My Enrolled Courses
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Pick up right where you left off
+                </p>
+              </div>
+              <Link
+                href="/dashboard/my-courses"
+                className="flex items-center gap-1 text-xs font-bold text-[#2563EB] hover:underline dark:text-blue-400"
+              >
+                <span>View all ({enrolledList.length})</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <Reveal variant="stagger" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {enrolledList.slice(0, 3).map((course) => (
+                <TiltCard key={course.slug} className="h-full">
+                  <div className="flex h-full flex-col justify-between overflow-hidden rounded-[20px] border border-white/80 bg-white/90 shadow-[0_4px_20px_rgb(20,50,100,0.05)] backdrop-blur-xl transition-all duration-300 hover:shadow-lg hover:border-blue-200 dark:border-slate-800/80 dark:bg-surface-secondary dark:hover:border-blue-500/40">
+                    <div className="relative h-32 w-full overflow-hidden bg-slate-950">
+                      <CourseThumbnail
+                        src={course.thumbnail}
+                        title={course.title}
+                        track={course.track}
+                        className="w-full h-full"
+                        aspectRatio="16/9"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute top-2.5 left-3 z-10 flex items-center gap-1.5">
+                        <span className="rounded-md bg-blue-500/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-blue-300 border border-blue-400/30 backdrop-blur-md">
+                          {course.track}
+                        </span>
+                      </div>
+                      <div className="absolute top-2.5 right-3 z-10 flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-md shadow-xs border border-white/20">
+                        <BookOpen className="h-3.5 w-3.5 text-blue-400" />
+                      </div>
+                    </div>
+
+                    <div className="flex-1 p-4 space-y-3">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 leading-snug line-clamp-1 dark:text-white" title={course.title}>
+                          {course.title}
+                        </h4>
+                      </div>
+
+                      <div>
+                        <div className="mb-1 flex justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                          <span>Progress</span>
+                          <span className="text-[#2563EB] dark:text-blue-400">{course.progress}%</span>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-cyan-500 transition-all duration-500"
+                            style={{ width: `${Math.max(0, Math.min(100, course.progress))}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-100 p-3.5 bg-slate-50/50 dark:border-slate-800 dark:bg-surface-elevated/50">
+                      <Link
+                        href={`/dashboard/my-courses/${course.slug}`}
+                        className="flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:scale-[1.01]"
+                      >
+                        <PlayCircle className="h-3.5 w-3.5" />
+                        <span>Continue Learning</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                </TiltCard>
+              ))}
+            </Reveal>
+          </div>
+        )}
+
         {/* Latest Courses Section (Shows New Available Courses Matching Catalog Cards) */}
         <div>
           <div className="mb-4 flex items-center justify-between">
@@ -538,7 +699,7 @@ export default function StudentDashboardPage() {
                         </button>
                       ) : (
                         <Link
-                          href={`/courses/${course.slug}`}
+                          href={`/dashboard/courses/${course.slug}`}
                           className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2.5 px-4 text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
                         >
                           <span>Enroll Now</span>

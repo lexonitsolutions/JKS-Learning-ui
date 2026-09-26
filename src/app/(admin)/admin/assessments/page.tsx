@@ -33,6 +33,7 @@ export default function AdminAssessmentsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [selectedCourse, setSelectedCourse] = useState<string>("ALL");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [reviewingTask, setReviewingTask] = useState<IndividualTask | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -69,7 +70,16 @@ export default function AdminAssessmentsPage() {
   const submittedCount = tasks.filter((t) => t.status === "SUBMITTED").length;
   const completedCount = tasks.filter((t) => t.status === "COMPLETED" || t.status === "REVIEWED").length;
 
-  // Filtered List
+  // Distinct courses for dropdown filter
+  const uniqueCourses = useMemo(() => {
+    const set = new Set<string>();
+    tasks.forEach((t) => {
+      if (t.courseTitle) set.add(t.courseTitle);
+    });
+    return Array.from(set).sort();
+  }, [tasks]);
+
+  // Filtered List with course and student search
   const filteredTasks = useMemo(() => {
     let list = tasks;
 
@@ -81,18 +91,24 @@ export default function AdminAssessmentsPage() {
       }
     }
 
+    if (selectedCourse !== "ALL") {
+      list = list.filter((t) => t.courseTitle === selectedCourse);
+    }
+
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (t) =>
-          t.title.toLowerCase().includes(q) ||
-          t.assignedStudentEmail.toLowerCase().includes(q) ||
-          (t.courseTitle && t.courseTitle.toLowerCase().includes(q))
-      );
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter((t) => {
+        const titleMatch = t.title.toLowerCase().includes(q);
+        const emailMatch = t.assignedStudentEmail.toLowerCase().includes(q);
+        const idMatch = t.assignedStudentId ? t.assignedStudentId.toLowerCase().includes(q) : false;
+        const courseMatch = t.courseTitle ? t.courseTitle.toLowerCase().includes(q) : false;
+        const descMatch = t.description ? t.description.toLowerCase().includes(q) : false;
+        return titleMatch || emailMatch || idMatch || courseMatch || descMatch;
+      });
     }
 
     return list;
-  }, [tasks, statusFilter, searchQuery]);
+  }, [tasks, statusFilter, selectedCourse, searchQuery]);
 
   return (
     <>
@@ -112,15 +128,7 @@ export default function AdminAssessmentsPage() {
         )}
 
         {/* Top Action Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              Individual Student Tasks / Assignments
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Assign personalized assignments, MCQs, and long-answer rubrics with model answer comparison
-            </p>
-          </div>
+        <div className="flex flex-wrap items-center justify-end gap-2.5">
 
           <div className="flex flex-wrap items-center gap-2.5">
             <button
@@ -211,17 +219,39 @@ export default function AdminAssessmentsPage() {
         </Reveal>
 
         {/* Search & Filter Controls */}
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
           <div className="flex flex-1 flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
-            <div className="relative w-full sm:w-auto sm:min-w-[280px]">
+            {/* Search Input: Title, Student ID, Email, Course */}
+            <div className="relative flex-1 min-w-[280px]">
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search by task title, student email, or course..."
+                placeholder="Search by student ID, email, task, or course..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg py-2 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
               />
+            </div>
+
+            {/* Course Dropdown Filter */}
+            <div className="relative min-w-[200px]">
+              <select
+                value={selectedCourse}
+                onChange={(e) => setSelectedCourse(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500 pr-8 shadow-xs cursor-pointer"
+              >
+                <option value="ALL">All Courses ({uniqueCourses.length})</option>
+                {uniqueCourses.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
 
             {/* Filter Tabs */}

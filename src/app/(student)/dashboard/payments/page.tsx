@@ -18,7 +18,7 @@ export default function PaymentsPage() {
 
   return (
     <>
-      <DashboardTopbar title="Payment & Invoice History" subtitle="Tax receipts and payment records for your course enrollments" userInitials="JD" />
+      <DashboardTopbar title="Payment & Invoice History" subtitle="Tax receipts and payment records for your course enrollments" />
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <TiltCard>

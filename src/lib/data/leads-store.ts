@@ -1,3 +1,5 @@
+import { jksAnalytics } from "@/lib/analytics/jks-analytics";
+
 export type LeadStatus =
   | "new"
   | "assigned"
@@ -289,6 +291,9 @@ export function addLead(newLeadData: Omit<Lead, "id" | "createdDate" | "activiti
 
   const updated = [newLead, ...current];
   saveStoredLeads(updated);
+  if (typeof window !== "undefined") {
+    jksAnalytics.contactSubmission(newLeadData.source || "lead_inquiry");
+  }
   return newLead;
 }
 

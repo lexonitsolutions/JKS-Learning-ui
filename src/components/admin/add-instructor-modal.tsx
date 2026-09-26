@@ -33,6 +33,8 @@ export function AddInstructorModal({
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("Lead Trainer, Java Full Stack");
   const [track, setTrack] = useState("Full Stack");
+  const [customTrack, setCustomTrack] = useState("");
+  const [phone, setPhone] = useState("");
   const [assignedCourses, setAssignedCourses] = useState(1);
   const [bio, setBio] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
@@ -64,6 +66,14 @@ export function AddInstructorModal({
       return;
     }
 
+    if (phone.trim() && (phone.trim().length < 10 || phone.trim().length > 12)) {
+      setError("Phone number must be between 10 and 12 numeric digits including country code.");
+      return;
+    }
+
+    const effectiveTrack = track === "Custom" ? (customTrack.trim() || "Specialist") : track;
+    const effectiveRole = role.trim() || `Lead Trainer, ${effectiveTrack}`;
+
     setIsSaving(true);
     setError(null);
 
@@ -71,7 +81,8 @@ export function AddInstructorModal({
       name: name.trim(),
       email: email.trim().toLowerCase(),
       password: password.trim(),
-      title: role.trim() || `${track} Specialist`,
+      title: effectiveRole,
+      phone: phone.trim() || undefined,
     });
 
     setIsSaving(false);
@@ -202,6 +213,8 @@ export function AddInstructorModal({
                     setName("");
                     setEmail("");
                     setPassword("");
+                    setPhone("");
+                    setCustomTrack("");
                     setBio("");
                     onClose();
                   }}
@@ -263,27 +276,48 @@ export function AddInstructorModal({
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                    Lecturer Login Password *
-                  </label>
-                  <span className="text-[11px] text-slate-400">Min 8 characters</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Login Password *
+                    </label>
+                    <span className="text-[10px] text-slate-400">Min 8 chars</span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Initial login password"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
+                  />
                 </div>
-                <input
-                  type="text"
-                  required
-                  minLength={8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Initial login password"
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
-                />
-                <p className="mt-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                  <Mail className="h-3.5 w-3.5 shrink-0" />
-                  <span>An automated welcome email with the Instructor ID, login email, and initial password will be sent automatically.</span>
-                </p>
+
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Phone Number (Max 12 Digits)
+                    </label>
+                    <span className="text-[10px] text-slate-400">Numeric only</span>
+                  </div>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={12}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 12))}
+                    placeholder="e.g. 919876543210"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
+                  />
+                </div>
               </div>
+
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                <Mail className="h-3.5 w-3.5 shrink-0" />
+                <span>An automated welcome email with login email, initial password, and role will be sent automatically.</span>
+              </p>
 
               {error && (
                 <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-[11px] font-semibold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
@@ -296,20 +330,49 @@ export function AddInstructorModal({
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                     Track / Specialization
                   </label>
-                  <select
-                    value={track}
-                    onChange={(e) => {
-                      setTrack(e.target.value);
-                      setRole(`Lead Trainer, ${e.target.value}`);
-                    }}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
-                  >
-                    <option value="Full Stack">Full Stack</option>
-                    <option value="Frontend">Frontend</option>
-                    <option value="SAP">SAP</option>
-                    <option value="Cloud & DevOps">Cloud & DevOps</option>
-                    <option value="AI & Data">AI & Data</option>
-                  </select>
+                  <div className="relative mt-1.5">
+                    <select
+                      value={track}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTrack(val);
+                        if (val !== "Custom") {
+                          setRole(`Lead Trainer, ${val}`);
+                        } else if (customTrack) {
+                          setRole(`Lead Trainer, ${customTrack}`);
+                        }
+                      }}
+                      className="w-full appearance-none rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500 pr-8 shadow-xs cursor-pointer"
+                    >
+                      <option value="Full Stack">Full Stack</option>
+                      <option value="Frontend">Frontend</option>
+                      <option value="SAP">SAP</option>
+                      <option value="Cloud & DevOps">Cloud & DevOps</option>
+                      <option value="AI & Data">AI & Data</option>
+                      <option value="Custom">Custom / Other Track...</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                      <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {track === "Custom" && (
+                    <div className="mt-2 animate-in fade-in slide-in-from-top-1">
+                      <input
+                        type="text"
+                        required
+                        value={customTrack}
+                        onChange={(e) => {
+                          setCustomTrack(e.target.value);
+                          setRole(`Lead Trainer, ${e.target.value}`);
+                        }}
+                        placeholder="Type custom specialization (e.g. Flutter, Salesforce, Cyber Security)"
+                        className="w-full rounded-xl border border-blue-300 dark:border-blue-700/80 bg-blue-50/40 dark:bg-blue-950/20 px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div>

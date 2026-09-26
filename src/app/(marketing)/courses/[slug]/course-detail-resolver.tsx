@@ -7,6 +7,7 @@ import { CourseDetailView } from "./course-detail-view";
 import { apiUrl } from "@/lib/api/base-url";
 import { transformBackendCourse } from "@/lib/data/courses-api";
 import type { Course } from "@/lib/data/courses";
+import { jksAnalytics } from "@/lib/analytics/jks-analytics";
 
 interface CourseDetailResolverProps {
   slug: string;
@@ -17,6 +18,17 @@ export function CourseDetailResolver({ slug, initialCourse }: CourseDetailResolv
   const [course, setCourse] = useState<Course | undefined>(initialCourse);
   const [loading, setLoading] = useState<boolean>(!initialCourse);
   const [error, setError] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (course) {
+      jksAnalytics.courseView({
+        course_id: course.slug,
+        course_slug: course.slug,
+        course_name: course.title,
+        track: course.track,
+      });
+    }
+  }, [course]);
 
   useEffect(() => {
     if (initialCourse) return;

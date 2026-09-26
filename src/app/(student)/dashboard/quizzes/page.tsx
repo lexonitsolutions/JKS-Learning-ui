@@ -22,6 +22,7 @@ import {
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
 import { TiltCard } from "@/components/interactions/tilt-card";
+import { jksAnalytics } from "@/lib/analytics/jks-analytics";
 
 interface Quiz {
   id: string;
@@ -281,6 +282,25 @@ export default function QuizzesPage() {
     setCurrentQIndex(0);
     setSelectedAnswers({});
     setIsSubmitted(false);
+    jksAnalytics.assignmentView({
+      assignment_id: quiz.id,
+      assignment_title: quiz.title,
+      course_slug: quiz.category,
+    });
+  };
+
+  const handleSubmitQuiz = () => {
+    setIsSubmitted(true);
+    if (activeQuiz) {
+      const res = calculateScore();
+      jksAnalytics.assignmentSubmission({
+        assignment_id: activeQuiz.id,
+        assignment_title: activeQuiz.title,
+        course_slug: activeQuiz.category,
+        passed: res.passed,
+        score: res.percent,
+      });
+    }
   };
 
   const handleSelectOption = (optIndex: number) => {
@@ -309,7 +329,6 @@ export default function QuizzesPage() {
       <DashboardTopbar
         title="Quizzes & Knowledge Checks"
         subtitle="Validate your mastery with interactive, topic-focused micro quizzes."
-        userInitials="JD"
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
@@ -512,7 +531,7 @@ export default function QuizzesPage() {
                   ) : (
                     <button
                       type="button"
-                      onClick={() => setIsSubmitted(true)}
+                      onClick={handleSubmitQuiz}
                       className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-6 py-2 text-xs font-bold text-white shadow-md hover:bg-emerald-700 cursor-pointer"
                     >
                       <CheckCircle2 className="h-4 w-4" />

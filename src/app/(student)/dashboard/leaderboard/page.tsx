@@ -114,32 +114,23 @@ export default function LeaderboardPage() {
 
   return (
     <>
-      <DashboardTopbar userInitials={session?.initials || "ST"}>
-        <div className="relative w-full max-w-md hidden sm:block">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search courses, topics, or anything..."
-            className="w-full rounded-full border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 pl-9 pr-4 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:border-blue-500 shadow-xs"
-          />
-        </div>
-      </DashboardTopbar>
+      <DashboardTopbar
+        title="Leaderboard"
+        subtitle="Global student rankings, daily activity streaks, and mastery scores."
+      />
 
-      <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">
-        {/* PAGE HEADER WITH TIME DROPDOWN */}
+      <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
+        {/* PAGE CONTROLS BAR WITH SEARCH & TIME DROPDOWN */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 shadow-xs">
-              <Trophy className="h-5 w-5" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                Leaderboard
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                Global student rankings, daily activity streaks, and mastery scores.
-              </p>
-            </div>
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search students..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 pl-9 pr-4 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:border-blue-500 shadow-xs"
+            />
           </div>
 
           {/* This Week Dropdown */}

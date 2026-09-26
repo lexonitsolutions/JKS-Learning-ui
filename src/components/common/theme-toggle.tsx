@@ -7,7 +7,7 @@ import { useTheme } from "@/lib/theme/theme-context";
 interface ThemeToggleProps {
   className?: string;
   showLabel?: boolean;
-  variant?: "icon" | "pill" | "dropdown";
+  variant?: "icon" | "pill" | "dropdown" | "ghost";
 }
 
 export function ThemeToggle({
@@ -26,13 +26,24 @@ export function ThemeToggle({
     // Avoid hydration mismatch by rendering a placeholder of equal size
     return (
       <div
-        className={`h-9 w-9 rounded-xl border border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-900 animate-pulse ${className}`}
+        className={`h-9 w-9 rounded-xl ${
+          variant === "ghost"
+            ? "bg-slate-900/[0.04] dark:bg-white/[0.06]"
+            : "border border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-900"
+        } animate-pulse ${className}`}
         aria-hidden="true"
       />
     );
   }
 
   const isDark = resolvedTheme === "dark";
+
+  // "ghost" blends the control into the page background: no card surface, no
+  // border — only the icon shows until the control is hovered or focused.
+  const shellClasses =
+    variant === "ghost"
+      ? "border border-transparent bg-transparent text-slate-600 hover:bg-slate-900/[0.06] hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+      : "border border-slate-200/80 bg-white/90 text-slate-700 shadow-xs hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-surface-hover";
 
   if (variant === "pill") {
     return (
@@ -90,7 +101,7 @@ export function ThemeToggle({
     <button
       type="button"
       onClick={toggleTheme}
-      className={`relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white/90 text-slate-700 shadow-xs hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-surface-hover transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${className}`}
+      className={`relative flex h-9 w-9 items-center justify-center rounded-xl ${shellClasses} transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${className}`}
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
       title={`Switch to ${isDark ? "light" : "dark"} mode`}
     >

@@ -29,29 +29,25 @@ export function GooglePhoneModal({
   if (!isOpen) return null;
 
   const validatePhone = (input: string): { isValid: boolean; sanitized: string; error?: string } => {
-    const trimmed = input.trim();
-    if (!trimmed) {
+    const cleaned = input.replace(/[^0-9]/g, "").slice(0, 12);
+    if (!cleaned) {
       return { isValid: false, sanitized: "", error: "Phone number is required." };
     }
-    const cleaned = trimmed.replace(/[\s\-()]/g, "");
-    const phoneRegex = /^\+?[0-9]{10,15}$/;
-    if (!phoneRegex.test(cleaned)) {
+    if (cleaned.length < 10 || cleaned.length > 12) {
       return {
         isValid: false,
         sanitized: cleaned,
-        error: "Please enter a valid phone number (10 to 15 digits, e.g. +91 9876543210 or 9876543210).",
+        error: "Please enter a valid numeric phone number (10 to 12 digits including country code, e.g. 919876543210).",
       };
     }
     return { isValid: true, sanitized: cleaned };
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    if (/^[0-9+\s\-()]*$/.test(val)) {
-      setPhoneNumber(val);
-      if (validationError) setValidationError(null);
-      if (serverError) setServerError(null);
-    }
+    const digitsOnly = e.target.value.replace(/[^0-9]/g, "").slice(0, 12);
+    setPhoneNumber(digitsOnly);
+    if (validationError) setValidationError(null);
+    if (serverError) setServerError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -169,16 +165,18 @@ export function GooglePhoneModal({
                     <input
                       id="phone-input"
                       type="tel"
+                      inputMode="numeric"
+                      maxLength={12}
                       value={phoneNumber}
                       onChange={handleInputChange}
-                      placeholder="+91 9876543210"
+                      placeholder="e.g. 919876543210"
                       disabled={isSubmitting}
                       className="w-full rounded-xl border border-slate-700 bg-slate-950/80 py-2.5 pl-10 pr-4 text-sm font-medium text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
                       autoFocus
                     />
                   </div>
                   <p className="mt-1.5 text-[11px] text-slate-400">
-                    Format: 10 to 15 digits with optional country code (e.g. +91 9876543210)
+                    Numeric only: 10 to 12 digits including country code (e.g. 919876543210)
                   </p>
                 </div>
 

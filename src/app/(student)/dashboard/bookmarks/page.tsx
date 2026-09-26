@@ -42,7 +42,6 @@ export default function BookmarksPage() {
       <DashboardTopbar
         title="Bookmarks"
         subtitle="Quick access to your saved courses, lectures, assignments, and cheat sheets."
-        userInitials="JD"
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">

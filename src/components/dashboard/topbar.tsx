@@ -152,10 +152,8 @@ export function DashboardTopbar({
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [exploreOpen, setExploreOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const exploreRef = useRef<HTMLDivElement>(null);
-  const profileRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const session = useMockSession();
   const { signOut } = useAuth();
@@ -229,14 +227,11 @@ export function DashboardTopbar({
     userEmail
   );
 
-  // Close explore, profile, and notification dropdowns on outside click
+  // Close explore and notification dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (exploreRef.current && !exploreRef.current.contains(e.target as Node)) {
         setExploreOpen(false);
-      }
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        setProfileOpen(false);
       }
       if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
         setNotificationsOpen(false);
@@ -250,7 +245,6 @@ export function DashboardTopbar({
   useEffect(() => {
     setMobileMenuOpen(false);
     setExploreOpen(false);
-    setProfileOpen(false);
     setNotificationsOpen(false);
   }, [pathname]);
 
@@ -267,20 +261,19 @@ export function DashboardTopbar({
   }, [mobileMenuOpen]);
 
   const handleLogout = async () => {
-    setProfileOpen(false);
     await performLogout(signOut);
   };
 
   return (
     <>
-      <header className="flex items-center justify-between gap-2 sm:gap-4 px-3.5 pt-3.5 pb-2 sm:px-6 sm:pt-6 lg:px-8 print:hidden">
+      <header className="sticky top-0 z-30 flex h-16 sm:h-20 shrink-0 items-center justify-between gap-2 sm:gap-4 px-4 sm:px-6 lg:px-8 border-b border-transparent bg-transparent backdrop-blur-md transition-all print:hidden">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           {/* Mobile Hamburger Toggle Button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open mobile navigation"
-            className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 dark:border-slate-800 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 shadow-xs backdrop-blur-md transition-all hover:bg-white dark:hover:bg-surface-hover md:hidden cursor-pointer active:scale-95"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl border border-transparent bg-transparent text-slate-700 dark:text-slate-200 transition-all hover:bg-slate-900/[0.06] dark:hover:bg-white/10 md:hidden cursor-pointer active:scale-95"
           >
             <Menu className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2]" />
           </button>
@@ -307,7 +300,7 @@ export function DashboardTopbar({
 
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Dark / Light Theme Toggle */}
-          <ThemeToggle />
+          <ThemeToggle variant="ghost" />
 
           {/* Explore Dropdown Button */}
           <div ref={exploreRef} className="relative">
@@ -316,8 +309,8 @@ export function DashboardTopbar({
               onClick={() => setExploreOpen(!exploreOpen)}
               className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                 exploreOpen
-                  ? "border-[#2563EB] bg-blue-50/80 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 shadow-xs"
-                  : "border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover shadow-xs"
+                  ? "border-[#2563EB]/60 bg-blue-50/80 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400"
+                  : "border-transparent bg-transparent text-slate-700 dark:text-slate-200 hover:bg-slate-900/[0.06] dark:hover:bg-white/10"
               }`}
             >
               <LayoutGrid className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" />
@@ -389,11 +382,11 @@ export function DashboardTopbar({
               aria-label="Notifications"
               aria-expanded={notificationsOpen}
               onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full border border-white/70 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 shadow-[0_4px_12px_rgba(20,50,100,0.06)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all hover:bg-white dark:hover:bg-surface-hover hover:shadow-md cursor-pointer"
+              className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-900/[0.06] dark:hover:bg-white/10 cursor-pointer"
             >
               <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2]" />
               {unreadCount > 0 ? (
-                <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white ring-2 ring-white dark:ring-slate-900 animate-in zoom-in-50">
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white ring-2 ring-white/80 dark:ring-slate-950 animate-in zoom-in-50">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               ) : null}
@@ -494,154 +487,28 @@ export function DashboardTopbar({
             </AnimatePresence>
           </div>
 
-          {/* Custom JKS Learning Profile Popover */}
-          <div ref={profileRef} className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-1.5 rounded-full p-0.5 transition-transform hover:scale-105 cursor-pointer focus:outline-none"
-              aria-label="User profile menu"
-              aria-expanded={profileOpen}
-            >
-              <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs sm:text-sm font-bold text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)] overflow-hidden ring-2 ring-blue-500/20">
-                {userAvatar ? (
-                  <img
-                    src={userAvatar}
-                    alt={userName}
-                    className="h-full w-full object-cover"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                ) : null}
-                <span className={userAvatar ? "sr-only" : ""}>{resolvedInitials}</span>
-              </div>
-              <ChevronDown
-                className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 hidden sm:block ${
-                  profileOpen ? "rotate-180 text-primary-blue" : ""
-                }`}
-              />
-            </button>
-
-            {/* Profile Dropdown Menu */}
-            <AnimatePresence>
-              {profileOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                  transition={{ duration: 0.16, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2 w-64 sm:w-72 max-w-[calc(100vw-24px)] z-50 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated p-2 shadow-[0_12px_40px_rgba(15,23,42,0.14)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl font-sans"
-                >
-                  {/* User Profile Header */}
-                  <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 p-3 bg-slate-50/70 dark:bg-slate-900/60 rounded-xl mb-1.5">
-                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white overflow-hidden shadow-xs">
-                      {userAvatar ? (
-                        <img
-                          src={userAvatar}
-                          alt={userName}
-                          className="h-full w-full object-cover"
-                          referrerPolicy="no-referrer"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).style.display = "none";
-                          }}
-                        />
-                      ) : null}
-                      <span className={userAvatar ? "sr-only" : ""}>{resolvedInitials}</span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-bold text-slate-900 dark:text-white">{userName}</p>
-                      <p className="truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">{userEmail}</p>
-                      <div className="mt-1 flex items-center gap-1">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-100/80 dark:bg-blue-950/60 px-2 py-0.5 text-[9px] font-bold text-blue-700 dark:text-blue-400 capitalize">
-                          {isAdmin ? (
-                            <>
-                              <Shield className="h-2.5 w-2.5" /> Admin
-                            </>
-                          ) : isInstructor ? (
-                            <>
-                              <GraduationCap className="h-2.5 w-2.5" /> Instructor
-                            </>
-                          ) : (
-                            <>
-                              <GraduationCap className="h-2.5 w-2.5" /> Student
-                            </>
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Dropdown Action Links */}
-                  <div className="space-y-0.5">
-                    <Link
-                      href={rootHref}
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-surface-hover hover:text-primary-blue dark:hover:text-white transition-colors"
-                    >
-                      <LayoutDashboard className="h-4 w-4 text-primary-blue" />
-                      <span>{isAdmin ? "Admin Overview" : isInstructor ? "Instructor Dashboard" : "My Dashboard"}</span>
-                    </Link>
-
-                    {!isAdmin && !isInstructor && (
-                      <Link
-                        href="/dashboard/my-courses"
-                        onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-surface-hover hover:text-primary-blue dark:hover:text-white transition-colors"
-                      >
-                        <BookOpen className="h-4 w-4 text-emerald-600" />
-                        <span>My Enrolled Courses</span>
-                      </Link>
-                    )}
-
-                    <div
-                      className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-55 select-none"
-                      title="AI Mock Interview (Feature Coming Soon — Disabled)"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <BrainCircuit className="h-4 w-4 text-slate-400 dark:text-slate-500" />
-                        <span>AI Mock Interview</span>
-                      </div>
-                      <span className="rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-400/15 dark:text-amber-200 dark:border-amber-400/30 px-1.5 py-0.5 text-[9px] font-bold leading-none">
-                        Soon
-                      </span>
-                    </div>
-
-                    <Link
-                      href={isAdmin ? "/admin/payments" : "/dashboard/payments"}
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-surface-hover hover:text-primary-blue dark:hover:text-white transition-colors"
-                    >
-                      <CreditCard className="h-4 w-4 text-amber-600" />
-                      <span>Invoices & Billing</span>
-                    </Link>
-
-                    <Link
-                      href={isAdmin ? "/admin/settings" : isInstructor ? "/instructor/profile" : "/dashboard/profile"}
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-surface-hover hover:text-primary-blue dark:hover:text-white transition-colors"
-                    >
-                      <User className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                      <span>Profile & Settings</span>
-                    </Link>
-                  </div>
-
-                  {/* Divider & Sign Out */}
-                  <div className="mt-1.5 border-t border-slate-100 dark:border-slate-800 pt-1.5">
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-                    >
-                      <LogOut className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-                      <span>Sign out</span>
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          {/* User Profile Avatar Link (no dropdown menu) */}
+          <Link
+            href={isAdmin ? "/admin/settings" : isInstructor ? "/instructor/profile" : "/dashboard/profile"}
+            className="flex items-center rounded-full p-0.5 transition-transform hover:scale-105 focus:outline-none shrink-0"
+            aria-label="User profile"
+            title={userName}
+          >
+            <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs sm:text-sm font-bold text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)] overflow-hidden ring-2 ring-blue-500/20">
+              {userAvatar ? (
+                <img
+                  src={userAvatar}
+                  alt={userName}
+                  className="h-full w-full object-cover"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              ) : null}
+              <span className={userAvatar ? "sr-only" : ""}>{resolvedInitials}</span>
+            </div>
+          </Link>
         </div>
       </header>
 

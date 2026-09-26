@@ -6,6 +6,7 @@ import { useMockSession, performLogout } from "@/lib/auth/use-mock-auth";
 import { JksLogo } from "@/components/common/jks-logo";
 import { GooglePhoneModal } from "@/components/common/google-phone-modal";
 import { apiUrl } from "@/lib/api/base-url";
+import { jksAnalytics } from "@/lib/analytics/jks-analytics";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -140,9 +141,11 @@ export default function AuthRedirectPage() {
 
       // Check if user is completely new and does not exist in the database
       if (isNewUser) {
+        jksAnalytics.signup("clerk_oauth");
         // Show phone-number input popup ONLY for new users
         setShowPhoneModal(true);
       } else {
+        jksAnalytics.login("clerk_oauth");
         // Existing user: smoothly redirect to dashboard without popup
         setTimeout(() => {
           window.location.replace(target);

@@ -660,9 +660,9 @@ export default function CourseLearningHubPage({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F8FAFC] text-slate-800 dark:bg-background dark:text-slate-100 overflow-x-hidden transition-colors duration-200">
-      {/* Top Learning Hub Navigation Bar */}
-      <header className="sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-slate-200 bg-white/95 px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md dark:border-slate-800/80 dark:bg-surface-secondary/95">
+    <div className="flex min-h-screen flex-col bg-transparent text-slate-800 dark:text-slate-100 overflow-x-hidden">
+      {/* Top Learning Hub Navigation Bar (Invisible/Transparent Background) */}
+      <header className="sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-transparent bg-transparent px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md dark:border-transparent dark:bg-transparent">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <Link
             href={
@@ -672,7 +672,7 @@ export default function CourseLearningHubPage({
                 ? "/instructor/courses"
                 : "/dashboard/my-courses"
             }
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors shrink-0 dark:border-slate-700/80 dark:bg-surface-elevated dark:text-slate-200 dark:hover:bg-surface-hover"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white/70 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-white hover:text-blue-600 transition-all shrink-0 dark:border-slate-700/80 dark:bg-surface-elevated/70 dark:text-slate-200 dark:hover:bg-surface-hover dark:hover:text-blue-400 shadow-xs"
           >
             <ArrowLeft className="h-4 w-4" />{" "}
             {session?.role === "admin" || session?.email?.toLowerCase() === "lexonitservices@gmail.com"

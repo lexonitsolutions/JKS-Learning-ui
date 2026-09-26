@@ -103,6 +103,7 @@ export default function AdminStudentsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTab, setFilterTab] = useState<"All" | "Enrolled" | "NoCourses">("All");
+  const [courseFilter, setCourseFilter] = useState<string>("ALL");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [editingStudent, setEditingStudent] = useState<AdminStudentRecord | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
@@ -228,6 +229,34 @@ export default function AdminStudentsPage() {
   const enrolledCount = students.filter((s) => s.totalEnrolled > 0).length;
   const noCoursesCount = students.filter((s) => s.totalEnrolled === 0).length;
 
+  // Every distinct course that at least one student is enrolled in, with its
+  // live headcount — drives the "Course Enrolled" filter dropdown.
+  const courseOptions = useMemo(() => {
+    const map = new Map<string, { slug: string; title: string; count: number }>();
+    students.forEach((s) => {
+      const seen = new Set<string>();
+      s.enrollments.forEach((e) => {
+        const slug = (e.courseSlug || e.courseId || e.courseTitle || "").toLowerCase();
+        if (!slug || seen.has(slug)) return;
+        seen.add(slug);
+        const existing = map.get(slug);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          map.set(slug, { slug, title: e.courseTitle || slug, count: 1 });
+        }
+      });
+    });
+    return Array.from(map.values()).sort((a, b) => a.title.localeCompare(b.title));
+  }, [students]);
+
+  // Reset the course filter if that course disappears from the roster.
+  useEffect(() => {
+    if (courseFilter !== "ALL" && !courseOptions.some((c) => c.slug === courseFilter)) {
+      setCourseFilter("ALL");
+    }
+  }, [courseOptions, courseFilter]);
+
   // Filtered List
   const filtered = useMemo(() => {
     let list = students;
@@ -236,6 +265,14 @@ export default function AdminStudentsPage() {
       list = list.filter((s) => s.totalEnrolled > 0);
     } else if (filterTab === "NoCourses") {
       list = list.filter((s) => s.totalEnrolled === 0);
+    }
+
+    if (courseFilter !== "ALL") {
+      list = list.filter((s) =>
+        s.enrollments.some(
+          (e) => (e.courseSlug || e.courseId || e.courseTitle || "").toLowerCase() === courseFilter
+        )
+      );
     }
 
     if (searchQuery.trim()) {
@@ -252,7 +289,7 @@ export default function AdminStudentsPage() {
     }
 
     return list;
-  }, [students, filterTab, searchQuery]);
+  }, [students, filterTab, courseFilter, searchQuery]);
 
   // Dynamic CSV Exporter
   const handleExportCSV = () => {
@@ -428,6 +465,44 @@ export default function AdminStudentsPage() {
                 </button>
               ))}
             </div>
+
+            {/* Course Enrolled Filter */}
+            <div className="relative w-full sm:w-auto">
+              <Layers className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-[#2563EB] dark:text-blue-400" />
+              <select
+                value={courseFilter}
+                onChange={(e) => setCourseFilter(e.target.value)}
+                aria-label="Filter students by enrolled course"
+                title="Filter students by enrolled course"
+                className={`w-full sm:w-auto sm:max-w-[260px] appearance-none rounded-xl border bg-white dark:bg-input-bg py-2 pr-8 pl-9 text-xs font-bold outline-none shadow-xs transition-colors cursor-pointer focus:border-[#2563EB] dark:focus:border-blue-500 ${
+                  courseFilter === "ALL"
+                    ? "border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-200"
+                    : "border-[#2563EB] dark:border-blue-500 text-[#2563EB] dark:text-blue-400"
+                }`}
+              >
+                <option value="ALL">All Courses ({courseOptions.length})</option>
+                {courseOptions.map((c) => (
+                  <option key={c.slug} value={c.slug}>
+                    {c.title} ({c.count})
+                  </option>
+                ))}
+              </select>
+              <ChevronRight className="pointer-events-none absolute top-1/2 right-2.5 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-slate-400" />
+            </div>
+
+            {(courseFilter !== "ALL" || filterTab !== "All" || searchQuery.trim()) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCourseFilter("ALL");
+                  setFilterTab("All");
+                  setSearchQuery("");
+                }}
+                className="self-start rounded-xl px-2.5 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer whitespace-nowrap"
+              >
+                Clear filters ({filtered.length})
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-auto">

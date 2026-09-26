@@ -26,6 +26,7 @@ import {
   registerForEvent,
   type EventItem,
 } from "@/lib/data/events-api";
+import { jksAnalytics } from "@/lib/analytics/jks-analytics";
 
 export default function EventDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
@@ -54,6 +55,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         setErrorMessage("Event not found or has been unpublished.");
       } else {
         setEvent(data);
+        jksAnalytics.eventView({
+          event_id: data.id,
+          event_slug: data.slug,
+          event_name: data.title,
+          mode: data.mode,
+        });
       }
       setIsLoading(false);
     }
@@ -81,6 +88,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
 
     if (res.success) {
       setIsSuccess(true);
+      jksAnalytics.eventRegistration({
+        event_id: event.id,
+        event_slug: event.slug,
+        event_name: event.title,
+        mode: event.mode,
+      });
       // Increment registered count visually
       setEvent((prev) =>
         prev

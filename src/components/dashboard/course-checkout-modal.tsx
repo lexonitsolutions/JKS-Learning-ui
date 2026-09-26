@@ -59,8 +59,21 @@ export function CourseCheckoutModal({
   const { user: clerkUser } = useUser();
 
   const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
-  const effectiveEmail = (clerkEmail || session?.email || getClientSessionEmail() || "student@jkslearning.com").toLowerCase().trim();
-  const studentName = clerkUser?.fullName || clerkUser?.firstName || session?.name || "Student Learner";
+  // Email of whoever is actually signed in — Clerk first, then the mock session,
+  // then the session cookie / localStorage.
+  const detectedEmail = (clerkEmail || session?.email || getClientSessionEmail() || "").toLowerCase().trim();
+  const detectedName =
+    clerkUser?.fullName ||
+    [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") ||
+    clerkUser?.firstName ||
+    session?.name ||
+    "";
+
+  // Editable student name and email with automatic detection
+  const [studentName, setStudentName] = useState(detectedName);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [accountEmail, setAccountEmail] = useState(detectedEmail);
+  const [emailTouched, setEmailTouched] = useState(false);
 
   const [phone, setPhone] = useState("9876543210");
   const [selectedBatch, setSelectedBatch] = useState("Weekday Live Evening (7:00 PM - 8:30 PM IST)");
@@ -91,8 +104,23 @@ export function CourseCheckoutModal({
       setIsProcessing(false);
       setGeneratedInvoice(null);
       setEnrollmentError(null);
+      // Dropping "touched" re-arms the prefill effect below, so reopening the
+      // modal picks the signed-in account back up.
+      setEmailTouched(false);
+      setNameTouched(false);
     }
   }, [isOpen, course]);
+
+  // Clerk hydrates after the first render; adopt the resolved account details unless the
+  // learner has already typed their own.
+  useEffect(() => {
+    if (!emailTouched && detectedEmail) {
+      setAccountEmail(detectedEmail);
+    }
+    if (!nameTouched && detectedName) {
+      setStudentName(detectedName);
+    }
+  }, [detectedEmail, emailTouched, detectedName, nameTouched]);
 
   // Handle ESC key to close
   useEffect(() => {
@@ -106,6 +134,9 @@ export function CourseCheckoutModal({
   }, [isOpen, isProcessing, onClose]);
 
   if (!isOpen || !course) return null;
+
+  const effectiveEmail = accountEmail.toLowerCase().trim();
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(effectiveEmail);
 
   const basePrice = course.price > 0 ? course.price : 29999;
   const originalPrice = course.originalPrice || Math.round(basePrice * 1.5);
@@ -128,6 +159,19 @@ export function CourseCheckoutModal({
   };
 
   const handleProcessPayment = async () => {
+    const trimmedName = studentName.trim();
+    if (!trimmedName) {
+      setNameTouched(true);
+      setEnrollmentError("Please enter your name to proceed with enrollment.");
+      return;
+    }
+
+    if (!isEmailValid) {
+      setEmailTouched(true);
+      setEnrollmentError("Enter a valid account email — your enrollment and invoice are sent there.");
+      return;
+    }
+
     if (isStudentOnHold) {
       setEnrollmentError(
         "Your account is currently on hold. You cannot enroll in courses at this time. Please contact support.",
@@ -143,7 +187,7 @@ export function CourseCheckoutModal({
       await new Promise((resolve) => setTimeout(resolve, 1400));
 
       const invoice = await registerCourseOnline({
-        studentName,
+        studentName: trimmedName,
         studentEmail: effectiveEmail,
         studentPhone: phone,
         studentCity: "Bengaluru, India",
@@ -303,27 +347,57 @@ export function CourseCheckoutModal({
                 {/* Student Details Pre-filled Info */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                    <label htmlFor="checkout-student-name" className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">
                       Student Name
                     </label>
                     <input
+                      id="checkout-student-name"
                       type="text"
-                      disabled
+                      autoComplete="name"
+                      placeholder="Enter your full name"
                       value={studentName}
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-100 p-2.5 text-xs font-semibold text-slate-700 outline-none dark:border-slate-700 dark:bg-surface-elevated dark:text-slate-300 cursor-not-allowed"
+                      onChange={(e) => {
+                        setNameTouched(true);
+                        setStudentName(e.target.value);
+                      }}
+                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-semibold text-slate-800 outline-none transition-colors focus:border-[#2563EB] focus:ring-1 focus:ring-blue-500 dark:border-slate-700 dark:bg-input-bg dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                    <label htmlFor="checkout-account-email" className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">
                       Account Email
                     </label>
                     <input
+                      id="checkout-account-email"
                       type="email"
-                      disabled
-                      value={effectiveEmail}
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-100 p-2.5 text-xs font-semibold text-slate-700 outline-none dark:border-slate-700 dark:bg-surface-elevated dark:text-slate-300 cursor-not-allowed"
+                      autoComplete="email"
+                      inputMode="email"
+                      placeholder="you@example.com"
+                      value={accountEmail}
+                      onChange={(e) => {
+                        setEmailTouched(true);
+                        setAccountEmail(e.target.value);
+                      }}
+                      onBlur={() => setEmailTouched(true)}
+                      aria-invalid={emailTouched && !isEmailValid}
+                      className={`mt-1 w-full rounded-xl border bg-white p-2.5 text-xs font-semibold text-slate-800 outline-none transition-colors dark:bg-input-bg dark:text-white dark:placeholder-slate-500 ${
+                        emailTouched && !isEmailValid
+                          ? "border-rose-400 focus:border-rose-500 dark:border-rose-500/70"
+                          : "border-slate-200 focus:border-[#2563EB] dark:border-slate-700 dark:focus:border-blue-500"
+                      }`}
                     />
+                    <p
+                      className={`mt-1 text-[10px] font-medium ${
+                        emailTouched && !isEmailValid
+                          ? "text-rose-600 dark:text-rose-400"
+                          : "text-slate-400 dark:text-slate-500"
+                      }`}
+                    >
+                      {emailTouched && !isEmailValid
+                        ? "Enter a valid email address."
+                        : "Enrollment access and the invoice go to this address."}
+                    </p>
                   </div>
                 </div>
 
@@ -620,7 +694,7 @@ export function CourseCheckoutModal({
               </button>
               <button
                 type="button"
-                disabled={isProcessing || isStudentOnHold}
+                disabled={isProcessing || isStudentOnHold || !isEmailValid}
                 onClick={handleProcessPayment}
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-[1.01] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >

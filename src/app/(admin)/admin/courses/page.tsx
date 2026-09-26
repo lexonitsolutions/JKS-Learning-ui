@@ -6,7 +6,7 @@ import { Plus, BookOpen, Search, Award, Star, TrendingUp, Sparkles, Video, Layer
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { CourseWorkflowModal, type CourseWorkflowData } from "@/components/admin/course-workflow-modal";
 import { EditCourseModal } from "@/components/admin/edit-course-modal";
-import { useAllCourses, saveCourse, saveCourseAsync, deleteCourse, type FullCourse } from "@/lib/data/courses-store";
+import { useAllCourses, saveCourse, saveCourseAsync, deleteCourse, toggleCourseStatus, type FullCourse } from "@/lib/data/courses-store";
 import type { Track } from "@/lib/data/courses";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
@@ -23,6 +23,19 @@ export default function AdminCoursesPage() {
   const [courseToDelete, setCourseToDelete] = useState<FullCourse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [togglingCourseId, setTogglingCourseId] = useState<string | null>(null);
+
+  const handleToggleStatus = async (course: FullCourse) => {
+    try {
+      setTogglingCourseId(course.id || course.slug);
+      const nextStatus = course.status === "Published" ? "Draft" : "Published";
+      await toggleCourseStatus(course.id || course.slug, nextStatus);
+    } catch (err: any) {
+      alert(err?.message || "Failed to update course status");
+    } finally {
+      setTogglingCourseId(null);
+    }
+  };
 
   const filteredCourses = courses.filter((c) => {
     const matchesTrack = selectedTrack === "All" || c.track === selectedTrack;
@@ -301,15 +314,23 @@ export default function AdminCoursesPage() {
                         )}
                       </td>
                       <td className="px-4 py-4 text-center whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                        <button
+                          type="button"
+                          disabled={togglingCourseId === (c.id || c.slug)}
+                          onClick={() => handleToggleStatus(c)}
+                          title={`Click to ${c.status === "Published" ? "unpublish (switch to Draft)" : "publish"} course`}
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50 ${
                             c.status === "Published"
-                              ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-transparent dark:border-emerald-800/40"
-                              : "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-transparent dark:border-amber-800/40"
+                              ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
+                              : "bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:hover:bg-amber-900/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60"
                           }`}
                         >
-                          {c.status}
-                        </span>
+                          <span className={`h-1.5 w-1.5 rounded-full ${c.status === "Published" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+                          <span>{togglingCourseId === (c.id || c.slug) ? "Updating..." : c.status}</span>
+                          <span className="text-[10px] opacity-75 font-normal ml-0.5">
+                            ({c.status === "Published" ? "Unpublish" : "Publish"})
+                          </span>
+                        </button>
                       </td>
                       <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
