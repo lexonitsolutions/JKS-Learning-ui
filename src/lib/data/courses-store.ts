@@ -324,6 +324,7 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
         Accept: "application/json",
       },
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(60_000),
     });
 
     if (res.ok) {

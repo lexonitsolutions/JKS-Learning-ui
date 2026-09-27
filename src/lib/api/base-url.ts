@@ -46,12 +46,11 @@ export function apiUrl(path: string): string {
  * How long to wait before giving up on the API.
  *
  * The backend's Mongo driver gives up after ~30s. A browser fetch left hanging
- * that long is routinely aborted first — by a React StrictMode double-effect,
- * an unmount, or a dev-server hot reload — and an aborted fetch surfaces as a
- * bare `TypeError: Failed to fetch` with no status and no message. Failing here
- * first turns that into an error that says what actually happened.
+ * too long can be aborted by lifecycle events, but heavy mutations like course
+ * saves and cold starts can take 15-25s. 45s allows operations to complete while
+ * protecting against infinite hangs.
  */
-const API_TIMEOUT_MS = 15_000;
+const API_TIMEOUT_MS = 45_000;
 
 export class ApiError extends Error {
   constructor(
