@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api/base-url";
+import { recordDailyActivity } from "@/lib/utils/activity-ledger";
 
 export interface EnrolledCourseItem {
   id: string;
@@ -132,6 +133,7 @@ export async function saveVideoProgress(params: {
       const existing = existingRaw ? JSON.parse(existingRaw) : { completedVideoIds: [] };
       if (completed && !existing.completedVideoIds.includes(videoId)) {
         existing.completedVideoIds.push(videoId);
+        recordDailyActivity(effectiveEmail, "lesson");
       }
       localStorage.setItem(localKey, JSON.stringify(existing));
 
@@ -585,6 +587,7 @@ export async function submitAssessment(params: {
       }),
     });
     if (res.ok) {
+      recordDailyActivity(effectiveEmail, "assignment");
       return await res.json();
     }
   } catch (err) {

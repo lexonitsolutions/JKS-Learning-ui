@@ -92,12 +92,37 @@ export type AssessmentKind = "MCQ" | "SHORT_ANSWER" | "LONG_ANSWER" | "CODING" |
  * Resolve a question's kind from the human-readable label or internal key the builder stores.
  */
 export function resolveAssessmentKind(raw?: string, fallback?: string): AssessmentKind {
-  const s = (raw || fallback || "").toLowerCase().replace(/[-_]+/g, " ").trim();
-  if (s.includes("mcq") || s.includes("choice")) return "MCQ";
-  if (s.includes("file") || s.includes("project") || s.includes("upload")) return "FILE_UPLOAD";
-  if (s.includes("cod")) return "CODING";
-  if (s.includes("long") || s.includes("comprehens")) return "LONG_ANSWER";
-  if (s.includes("short")) return "SHORT_ANSWER";
+  const fallbackNorm = (fallback || "").toLowerCase().replace(/[-_]+/g, " ").trim();
+  const rawNorm = (raw || "").toLowerCase().replace(/[-_]+/g, " ").trim();
+
+  // If assignment type was set to Short Answer by Admin, or question is Short Answer:
+  if (fallbackNorm.includes("short") || rawNorm.includes("short")) {
+    return "SHORT_ANSWER";
+  }
+
+  if (fallbackNorm.includes("long") || fallbackNorm.includes("comprehens") || rawNorm.includes("long") || rawNorm.includes("comprehens")) {
+    return "LONG_ANSWER";
+  }
+
+  if (fallbackNorm.includes("cod") || rawNorm.includes("cod")) {
+    return "CODING";
+  }
+
+  if (
+    fallbackNorm.includes("file") ||
+    fallbackNorm.includes("project") ||
+    fallbackNorm.includes("upload") ||
+    rawNorm.includes("file") ||
+    rawNorm.includes("project") ||
+    rawNorm.includes("upload")
+  ) {
+    return "FILE_UPLOAD";
+  }
+
+  if (rawNorm.includes("mcq") || rawNorm.includes("choice") || fallbackNorm.includes("mcq") || fallbackNorm.includes("choice")) {
+    return "MCQ";
+  }
+
   return "SHORT_ANSWER";
 }
 

@@ -22,11 +22,15 @@ import {
   Megaphone,
   FileText,
   Calendar,
+  Menu,
+  X,
   type LucideIcon,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useMockSession, logoutMockSession, performLogout } from "@/lib/auth/use-mock-auth";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { JksLogo } from "@/components/common/jks-logo";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 
 
 interface NavItem {
@@ -98,10 +102,41 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [customAvatar, setCustomAvatar] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [hoveredHref, setHoveredHref] = useState<string | null>(null);
 
   const session = useMockSession();
   const { signOut } = useClerk();
   const { user: clerkUser } = useUser();
+
+  // Listen to global open/close mobile nav events
+  useEffect(() => {
+    const handleOpen = () => setMobileOpen(true);
+    const handleClose = () => setMobileOpen(false);
+    window.addEventListener("jks_open_mobile_nav", handleOpen);
+    window.addEventListener("jks_close_mobile_nav", handleClose);
+    return () => {
+      window.removeEventListener("jks_open_mobile_nav", handleOpen);
+      window.removeEventListener("jks_close_mobile_nav", handleClose);
+    };
+  }, []);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   useEffect(() => {
     try {
@@ -183,37 +218,63 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
       const active =
         item.href === pathname ||
         (item.href !== rootHref && pathname.startsWith(item.href));
+      const isHovered = hoveredHref === item.href;
 
       if (isCoursesNav && !isCollapsed) {
+        const isMainActive = isCoursesActive && pathname === coursesBaseHref;
         return (
           <div key={item.href} className="space-y-1">
-            <Link
-              href={item.href}
-              className={`group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
-                isCoursesActive && pathname === coursesBaseHref
-                  ? "bg-nav-item-active-bg text-nav-item-active-text font-semibold shadow-sm shadow-blue-500/25"
-                  : "text-nav-item hover:bg-nav-item-hover-bg hover:text-nav-item-hover-text"
-              }`}
+            <div
+              className="relative"
+              onMouseEnter={() => setHoveredHref(item.href)}
+              onMouseLeave={() => setHoveredHref(null)}
             >
-              <div className="flex items-center gap-3">
-                <item.icon
-                  className={`h-4 w-4 shrink-0 transition-colors ${
-                    isCoursesActive && pathname === coursesBaseHref
-                      ? "text-nav-item-active-text"
-                      : "text-nav-item-icon group-hover:text-nav-item-hover-text"
-                  }`}
+              {/* Smooth hover indicator */}
+              {isHovered && !isMainActive && (
+                <motion.div
+                  layoutId="sidebar-hover-pill"
+                  className="absolute inset-0 rounded-xl bg-slate-100/90 dark:bg-slate-800/60 pointer-events-none"
+                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
                 />
-                <span className="truncate">{item.label}</span>
-              </div>
-            </Link>
+              )}
+
+              {/* Active selection indicator */}
+              {isMainActive && (
+                <motion.div
+                  layoutId="sidebar-active-pill"
+                  className="absolute inset-0 rounded-xl bg-nav-item-active-bg shadow-sm shadow-blue-500/25 pointer-events-none"
+                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                />
+              )}
+
+              <Link
+                href={item.href}
+                className={`relative z-10 group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                  isMainActive
+                    ? "text-nav-item-active-text font-semibold"
+                    : "text-nav-item hover:text-nav-item-hover-text"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <item.icon
+                    className={`h-4 w-4 shrink-0 transition-colors ${
+                      isMainActive
+                        ? "text-nav-item-active-text"
+                        : "text-nav-item-icon group-hover:text-nav-item-hover-text"
+                    }`}
+                  />
+                  <span className="truncate">{item.label}</span>
+                </div>
+              </Link>
+            </div>
 
             {/* Sub-menu under Courses */}
             <div className="pl-6 pr-1 py-0.5 space-y-1 border-l-2 border-border-subtle ml-4">
               <Link
                 href={coursesBaseHref}
-                className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-all duration-200 hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                   pathname === coursesBaseHref
-                    ? "bg-nav-sub-active-bg text-nav-sub-active-text font-bold"
+                    ? "bg-nav-sub-active-bg text-nav-sub-active-text font-bold shadow-xs"
                     : "text-nav-item hover:bg-nav-item-hover-bg hover:text-nav-item-hover-text"
                 }`}
               >
@@ -223,9 +284,9 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
               <Link
                 href={`${coursesBaseHref}/new`}
-                className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-all duration-200 hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                   pathname === `${coursesBaseHref}/new`
-                    ? "bg-nav-sub-active-bg text-nav-sub-active-text font-bold"
+                    ? "bg-nav-sub-active-bg text-nav-sub-active-text font-bold shadow-xs"
                     : "text-nav-item hover:bg-nav-item-hover-bg hover:text-nav-item-hover-text"
                 }`}
               >
@@ -285,19 +346,46 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
       }
 
       return (
-        <div key={item.href} className="relative group flex items-center justify-center">
+        <div
+          key={item.href}
+          className="relative group flex items-center justify-center"
+          onMouseEnter={() => setHoveredHref(item.href)}
+          onMouseLeave={() => setHoveredHref(null)}
+        >
+          {/* Smooth hover indicator */}
+          {isHovered && !active && (
+            <motion.div
+              layoutId="sidebar-hover-pill"
+              className="absolute inset-0 rounded-xl bg-slate-100/90 dark:bg-slate-800/60 pointer-events-none"
+              transition={{ type: "spring", stiffness: 450, damping: 35 }}
+            />
+          )}
+
+          {/* Active selection indicator */}
+          {active && (
+            <motion.div
+              layoutId="sidebar-active-pill"
+              className={
+                isCollapsed
+                  ? "absolute inset-0 rounded-xl bg-gradient-to-tr from-[#2563EB] to-[#3B82F6] shadow-md shadow-blue-500/30 scale-105 pointer-events-none"
+                  : "absolute inset-0 rounded-xl bg-nav-item-active-bg shadow-sm shadow-blue-500/25 pointer-events-none"
+              }
+              transition={{ type: "spring", stiffness: 400, damping: 32 }}
+            />
+          )}
+
           <Link
             href={item.href}
-            className={`relative flex items-center transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+            className={`relative z-10 flex items-center transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
               isCollapsed
                 ? "h-10 w-10 justify-center rounded-xl"
                 : "w-full gap-3 px-3.5 py-2.5 rounded-xl text-[13.5px]"
             } ${
               active
                 ? isCollapsed
-                  ? "bg-gradient-to-tr from-[#2563EB] to-[#3B82F6] text-white shadow-md shadow-blue-500/30 scale-105"
-                  : "bg-nav-item-active-bg text-nav-item-active-text font-semibold shadow-sm shadow-blue-500/25"
-                : "text-nav-item hover:bg-nav-item-hover-bg hover:text-nav-item-hover-text active:bg-surface-active active:scale-95"
+                  ? "text-white"
+                  : "text-nav-item-active-text font-semibold"
+                : "text-nav-item hover:text-nav-item-hover-text active:scale-95"
             }`}
           >
             <item.icon
@@ -305,7 +393,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                 isCollapsed ? "h-[19px] w-[19px]" : "h-4 w-4"
               } ${
                 active
-                  ? "text-nav-item-active-text"
+                  ? isCollapsed ? "text-white" : "text-nav-item-active-text"
                   : "text-nav-item-icon group-hover:text-nav-item-hover-text"
               }`}
             />
@@ -345,11 +433,13 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
   };
 
   return (
-    <aside
-      className={`hidden shrink-0 flex-col p-3.5 md:flex transition-all duration-300 ease-in-out print:hidden ${
-        isCollapsed ? "w-[78px]" : "w-[260px]"
-      }`}
-    >
+    <>
+      {/* Desktop Sticky & Static Sidebar (Permanently Docked to Viewport) */}
+      <aside
+        className={`hidden shrink-0 flex-col p-3 md:p-3.5 md:flex sticky top-0 h-screen z-40 transition-all duration-300 ease-in-out print:hidden ${
+          isCollapsed ? "w-[78px]" : "w-[260px]"
+        }`}
+      >
       <div className="relative flex h-full flex-col rounded-[24px] border border-[var(--nav-border)] bg-[var(--nav-surface)] shadow-[0_12px_36px_-6px_rgba(20,50,100,0.08),0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_12px_36px_-6px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all duration-300 overflow-hidden">
         {/* Header: Logo & Toggle */}
         <div
@@ -523,5 +613,150 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
         </div>
       </div>
     </aside>
+
+      {/* Mobile Floating Menu Launcher (Visible on screens < md) */}
+      <div className="md:hidden fixed bottom-5 left-5 z-40 print:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open navigation menu"
+          className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#2563EB] text-white shadow-xl shadow-blue-600/35 hover:bg-blue-700 active:scale-95 transition-all cursor-pointer ring-2 ring-white/80 dark:ring-slate-800"
+        >
+          <Menu className="h-6 w-6 stroke-[2.2]" />
+        </button>
+      </div>
+
+      {/* Unified Responsive Mobile Navigation Drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <div className="fixed inset-0 z-[100] md:hidden flex">
+            {/* Backdrop Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs"
+              aria-hidden
+            />
+
+            {/* Sliding Drawer Container */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 26, stiffness: 280 }}
+              className="relative z-10 flex h-full w-[290px] max-w-[85vw] flex-col bg-white dark:bg-surface-secondary shadow-2xl border-r border-slate-200 dark:border-slate-800"
+            >
+              {/* Header inside drawer */}
+              <div className="flex h-16 shrink-0 items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <JksLogo size="sm" href="/" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                    {isAdmin ? "Admin" : isInstructor ? "Faculty" : "Student"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <ThemeToggle />
+                  <button
+                    type="button"
+                    onClick={() => setMobileOpen(false)}
+                    aria-label="Close navigation"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Navigation items scrollable list */}
+              <nav className="flex-1 overflow-y-auto space-y-1 p-3">
+                <div className="space-y-1">
+                  {mainItems.map((item) => {
+                    const active =
+                      item.href === pathname ||
+                      (item.href !== rootHref && pathname.startsWith(item.href));
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileOpen(false)}
+                        className={`group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
+                          active
+                            ? "bg-[#EFF6FF] dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 font-bold shadow-xs"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className={`h-4 w-4 shrink-0 transition-colors ${active ? "text-[#2563EB]" : "text-slate-400"}`} />
+                          <span>{item.label}</span>
+                        </div>
+                        {item.badge && (
+                          <span className="rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-400/15 dark:text-amber-200 dark:border-amber-400/30 px-1.5 py-0.5 text-[10px] font-bold leading-none">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                {secItems.length > 0 && (
+                  <>
+                    <div className="my-2.5 border-t border-slate-100 dark:border-slate-800" />
+                    <div className="space-y-1">
+                      {secItems.map((item) => {
+                        const active = pathname.startsWith(item.href);
+                        const Icon = item.icon;
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setMobileOpen(false)}
+                            className={`group flex items-center justify-between rounded-xl px-3.5 py-2 text-xs font-medium transition-all ${
+                              active
+                                ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold"
+                                : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Icon className="h-4 w-4 shrink-0" />
+                              <span>{item.label}</span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </nav>
+
+              {/* Bottom Profile & Logout Card */}
+              <div className="p-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-xs font-bold text-white shadow-xs">
+                    {userInitials}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-xs font-bold text-slate-900 dark:text-white">{userName}</div>
+                    <div className="truncate text-[11px] text-slate-400">{userEmail}</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-xs transition-colors hover:text-rose-600 hover:border-rose-200 dark:hover:text-rose-400 dark:hover:border-rose-800 cursor-pointer"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Log out</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

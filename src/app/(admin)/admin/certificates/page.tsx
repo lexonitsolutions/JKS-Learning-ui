@@ -18,6 +18,8 @@ import {
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
+import { motion } from "framer-motion";
+import { CustomDropdown } from "@/components/ui/custom-dropdown";
 import { CertificateModal, type CertificateData } from "@/components/common/certificate-modal";
 import {
   fetchAdminCertificates,
@@ -313,30 +315,46 @@ export default function AdminCertificatesPage() {
 
         {/* Tab Switcher & Search & Filter Controls */}
         <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated p-1 shadow-xs">
             <button
               type="button"
               onClick={() => setActiveTab("issued")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+              className={`relative px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer select-none ${
                 activeTab === "issued"
-                  ? "bg-[#2563EB] text-white shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-800"
+                  ? "text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              Issued Credentials ({filteredCertificates.length}{filteredCertificates.length !== certificates.length ? ` / ${certificates.length}` : ""})
+              {activeTab === "issued" && (
+                <motion.div
+                  layoutId="certificates-active-tab"
+                  className="absolute inset-0 rounded-lg bg-[#2563EB] shadow-xs"
+                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                />
+              )}
+              <span className="relative z-10">
+                Issued Credentials ({filteredCertificates.length}{filteredCertificates.length !== certificates.length ? ` / ${certificates.length}` : ""})
+              </span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("pending")}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+              className={`relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer select-none ${
                 activeTab === "pending"
-                  ? "bg-[#2563EB] text-white shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-800"
+                  ? "text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <span>Pending Completions</span>
+              {activeTab === "pending" && (
+                <motion.div
+                  layoutId="certificates-active-tab"
+                  className="absolute inset-0 rounded-lg bg-[#2563EB] shadow-xs"
+                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                />
+              )}
+              <span className="relative z-10">Pending Completions</span>
               {pendingCompletions.length > 0 && (
-                <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-extrabold text-white animate-pulse">
+                <span className="relative z-10 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-extrabold text-white animate-pulse">
                   {filteredPendingCompletions.length}
                 </span>
               )}
@@ -367,26 +385,19 @@ export default function AdminCertificatesPage() {
               )}
             </div>
 
-            {/* Course Dropdown Filter */}
-            <div className="relative min-w-[180px]">
-              <select
-                value={selectedCourse}
-                onChange={(e) => setSelectedCourse(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500 pr-8 shadow-xs cursor-pointer"
-              >
-                <option value="ALL">All Courses ({uniqueCourses.length})</option>
-                {uniqueCourses.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
-                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
+            {/* Course CustomDropdown Filter */}
+            <CustomDropdown
+              options={[
+                { value: "ALL", label: `All Courses (${uniqueCourses.length})` },
+                ...uniqueCourses.map((c) => ({ value: c, label: c })),
+              ]}
+              value={selectedCourse}
+              onChange={(val) => setSelectedCourse(val)}
+              placeholder="Filter by Course"
+              icon={<BookOpen className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" />}
+              searchable={uniqueCourses.length > 5}
+              minWidth="min-w-[190px] max-w-[260px]"
+            />
 
             {(searchQuery || selectedCourse !== "ALL") && (
               <button

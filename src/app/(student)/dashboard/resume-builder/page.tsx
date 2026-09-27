@@ -27,12 +27,15 @@ import {
   ArrowLeft,
   Check,
   ArrowUpDown,
+  Download,
+  Loader2,
 } from "lucide-react";
 
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { useUser } from "@clerk/nextjs";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { fetchStudentEnrollments } from "@/lib/data/enrollments-api";
+import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
 
 interface ExperienceItem {
   id: string;
@@ -225,6 +228,7 @@ export default function ResumeBuilderPage() {
   const [template, setTemplate] = useState<"modern" | "minimalist" | "executive">("modern");
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving">("saved");
+  const [previewZoom, setPreviewZoom] = useState<"100" | "fit">("100");
 
   // Section collapse states for clean mobile/desktop accordion
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -615,38 +619,36 @@ export default function ResumeBuilderPage() {
     }
   };
 
-  const handlePrint = () => {
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
     // Ensure mobile view switches to preview so the resume sheet is mounted and rendered
     setMobileTab("preview");
 
-    // Temporarily isolate light theme so dark mode does not affect printed colors or sheet styling
-    const htmlEl = typeof document !== "undefined" ? document.documentElement : null;
-    const wasDark = htmlEl ? htmlEl.classList.contains("dark") : false;
-    if (htmlEl && wasDark) {
-      htmlEl.classList.remove("dark");
-      htmlEl.removeAttribute("data-theme");
-      htmlEl.style.colorScheme = "light";
-    }
+    // Allow DOM to settle if tab changed
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-    const originalTitle = document.title;
-    const cleanName = resumeData.personal.fullName
-      ? resumeData.personal.fullName.trim().replace(/[^a-zA-Z0-9]/g, "_")
-      : "Resume";
-    document.title = `${cleanName}_Resume`;
+    const sheetEl = document.getElementById("printable-resume-sheet");
+    if (!sheetEl || isExportingPdf) return;
 
-    // Delay briefly to allow DOM layout to update before print dialog triggers
-    setTimeout(() => {
+    setIsExportingPdf(true);
+    try {
+      const cleanName = resumeData.personal.fullName
+        ? resumeData.personal.fullName.trim().replace(/[^a-zA-Z0-9]/g, "_")
+        : "Tech_Resume";
+
+      await downloadElementAsPdf(sheetEl, `${cleanName}_Resume.pdf`, {
+        orientation: "portrait",
+        format: "a4",
+        marginMm: 0,
+        scale: 2.5,
+      });
+    } catch (err) {
+      console.error("Direct PDF download failed, falling back to print:", err);
       window.print();
-      // Restore previous state after print dialog closes
-      setTimeout(() => {
-        document.title = originalTitle;
-        if (htmlEl && wasDark) {
-          htmlEl.classList.add("dark");
-          htmlEl.setAttribute("data-theme", "dark");
-          htmlEl.style.colorScheme = "dark";
-        }
-      }, 500);
-    }, 150);
+    } finally {
+      setIsExportingPdf(false);
+    }
   };
 
   // Dynamic Section Renderers for Templates
@@ -1254,6 +1256,24 @@ export default function ResumeBuilderPage() {
                 break-inside: avoid !important;
               }
             }
+            .resume-scroll-pane {
+              scrollbar-width: thin;
+              scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+              -webkit-overflow-scrolling: touch;
+            }
+            .resume-scroll-pane::-webkit-scrollbar {
+              width: 6px;
+            }
+            .resume-scroll-pane::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            .resume-scroll-pane::-webkit-scrollbar-thumb {
+              background: rgba(148, 163, 184, 0.4);
+              border-radius: 9999px;
+            }
+            .resume-scroll-pane::-webkit-scrollbar-thumb:hover {
+              background: rgba(100, 116, 139, 0.7);
+            }
           `,
         }}
       />
@@ -1264,11 +1284,11 @@ export default function ResumeBuilderPage() {
         userInitials={userInitials}
       />
 
-      <div className="flex-1 p-3 sm:p-6 lg:p-8 lg:pt-4 space-y-4 sm:space-y-6">
+      <div className="flex-1 flex flex-col p-3 sm:p-5 lg:p-6 space-y-4 print:!p-0">
         {/* ========================================================================= */}
         {/* TOP CONTROL BAR: Template Selector, Actions & Mobile Toggle               */}
         {/* ========================================================================= */}
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-3 sm:p-4 shadow-xs print:hidden">
+        <div className="shrink-0 flex flex-col gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-3 sm:p-4 shadow-xs print:hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             {/* Template Selector */}
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
@@ -1329,11 +1349,16 @@ export default function ResumeBuilderPage() {
 
               <button
                 type="button"
-                onClick={handlePrint}
-                className="flex items-center gap-1.5 rounded-xl bg-[#1E5EFF] dark:bg-blue-600 px-3.5 sm:px-4 py-1.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 dark:hover:bg-blue-500 transition-all active:scale-98 cursor-pointer"
+                onClick={handleDownloadPdf}
+                disabled={isExportingPdf}
+                className="flex items-center gap-1.5 rounded-xl bg-[#1E5EFF] dark:bg-blue-600 px-3.5 sm:px-4 py-1.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 dark:hover:bg-blue-500 transition-all active:scale-98 cursor-pointer disabled:opacity-70"
               >
-                <Printer className="h-4 w-4" />
-                <span>Download PDF</span>
+                {isExportingPdf ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                <span>{isExportingPdf ? "Generating PDF..." : "Download PDF"}</span>
               </button>
             </div>
           </div>
@@ -2132,36 +2157,68 @@ export default function ResumeBuilderPage() {
           {/* RIGHT: REAL-TIME ATS PREVIEW CONTAINER (7 Cols on desktop)            */}
           {/* ===================================================================== */}
           <div
-            className={`lg:col-span-7 flex flex-col items-center resume-print-wrapper print:!flex print:!col-span-12 print:!w-full print:!p-0 print:!m-0 ${
+            id="resume-preview-sticky-col"
+            className={`lg:col-span-7 sticky top-20 lg:top-[5.25rem] self-start flex flex-col items-center resume-print-wrapper print:!flex print:!col-span-12 print:!w-full print:!p-0 print:!m-0 transition-all duration-300 ${
               mobileTab === "edit" ? "hidden lg:flex" : "flex"
             }`}
           >
             {/* Desktop Preview Header & Controls */}
-            <div className="w-full flex items-center justify-between pb-3 px-1 text-xs text-slate-500 dark:text-slate-400 print:hidden">
+            <div className="w-full flex items-center justify-between pb-3 px-1 text-xs text-slate-500 dark:text-slate-400 print:hidden shrink-0">
               <span className="font-semibold flex items-center gap-1.5">
                 <Eye className="h-4 w-4 text-[#1E5EFF] dark:text-blue-400" />
                 <span>Live Document Preview (A4 Standard)</span>
               </span>
 
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-medium hidden sm:inline">Active Template:</span>
+                {/* Scale / Fit toggle */}
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-surface-elevated p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewZoom("100")}
+                    className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                      previewZoom === "100"
+                        ? "bg-white dark:bg-surface-secondary text-[#1E5EFF] dark:text-blue-400 shadow-2xs"
+                        : "text-slate-500 hover:text-slate-900 dark:text-slate-400"
+                    }`}
+                  >
+                    100%
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewZoom("fit")}
+                    className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                      previewZoom === "fit"
+                        ? "bg-white dark:bg-surface-secondary text-[#1E5EFF] dark:text-blue-400 shadow-2xs"
+                        : "text-slate-500 hover:text-slate-900 dark:text-slate-400"
+                    }`}
+                  >
+                    Fit Screen
+                  </button>
+                </div>
+
+                <span className="text-[11px] font-medium hidden sm:inline">Template:</span>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-900 dark:text-white bg-slate-100 dark:bg-surface-elevated px-2 py-0.5 rounded-md">
                   {template === "modern" ? "Modern Tech" : template === "minimalist" ? "ATS Minimalist" : "Executive Pro"}
                 </span>
               </div>
             </div>
 
-            {/* Printable & Scaled Preview Container */}
-            <div className="w-full overflow-x-auto pb-4 flex justify-center">
+            {/* Printable & Natural Scaled Preview Container (shown like before without inner scrollpane) */}
+            <div className="w-full overflow-x-auto pb-6 flex justify-center">
               <div
                 id="printable-resume-sheet"
                 className="w-full max-w-[820px] transition-transform duration-200"
+                style={
+                  previewZoom === "fit"
+                    ? { transform: "scale(0.85)", transformOrigin: "top center" }
+                    : undefined
+                }
               >
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {/* TEMPLATE 1: MODERN TECH                                            */}
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {template === "modern" && (
-                  <div className="w-full min-h-[1080px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-[#1E5EFF] border border-slate-200 text-slate-800 space-y-5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans">
+                  <div className="w-full min-h-[1123px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-[#1E5EFF] border border-slate-200 text-slate-800 space-y-5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans">
                     {/* Header */}
                     <div className="border-b border-slate-200 pb-4 space-y-2">
                       <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
@@ -2222,7 +2279,7 @@ export default function ResumeBuilderPage() {
                 {/* TEMPLATE 2: ATS MINIMALIST (Strict Classic Monochrome)              */}
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {template === "minimalist" && (
-                  <div className="w-full min-h-[1080px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border border-slate-200 text-black space-y-4 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans">
+                  <div className="w-full min-h-[1123px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border border-slate-200 text-black space-y-4 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans">
                     {/* Centered Traditional ATS Header */}
                     <div className="text-center pb-2 border-b border-black">
                       <h1 className="text-2xl sm:text-3xl font-black uppercase text-black tracking-tight">
@@ -2258,7 +2315,7 @@ export default function ResumeBuilderPage() {
                 {/* TEMPLATE 3: EXECUTIVE PRO (Serif Two-Column Sidebar Layout)         */}
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {template === "executive" && (
-                  <div className="w-full min-h-[1080px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-slate-900 border border-slate-200 text-slate-900 space-y-5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-serif">
+                  <div className="w-full min-h-[1123px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-slate-900 border border-slate-200 text-slate-900 space-y-5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-serif">
                     {/* Editorial Serif Header */}
                     <div className="border-b-2 border-slate-900 pb-4">
                       <h1 className="text-3xl sm:text-4xl font-normal tracking-wide text-slate-900">
@@ -2270,9 +2327,9 @@ export default function ResumeBuilderPage() {
                     </div>
 
                     {/* 2-Column Asymmetrical Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start font-sans">
+                    <div className="grid grid-cols-12 gap-5 items-start font-sans">
                       {/* Left Column (4 Cols): Contact, Skills, Education, Certs */}
-                      <div className="md:col-span-4 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 space-y-5 text-xs">
+                      <div className="col-span-12 sm:col-span-4 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 space-y-5 text-xs">
                         {/* Contact */}
                         <div className="space-y-2">
                           <h3 className="font-serif font-bold text-xs uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1">
@@ -2329,7 +2386,7 @@ export default function ResumeBuilderPage() {
                       </div>
 
                       {/* Right Column (8 Cols): Dynamic Sections */}
-                      <div className="md:col-span-8 space-y-5">
+                      <div className="col-span-12 sm:col-span-8 space-y-5">
                         {sectionOrder
                           .filter((secId) => ["summary", "experience", "projects"].includes(secId))
                           .map((secId) => (

@@ -23,6 +23,7 @@ import {
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
+import { motion } from "framer-motion";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 import { fetchStudentEnrollments, getClientSessionEmail, getExactStudentCourseProgress, type EnrolledCourseItem } from "@/lib/data/enrollments-api";
@@ -183,7 +184,7 @@ export default function MyCoursesPage() {
         {!isLoading && !errorMessage && totalEnrolled > 0 && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             {/* Status Tabs */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated p-1 shadow-xs">
               {[
                 { id: "all", label: `All Courses (${totalEnrolled})` },
                 {
@@ -201,13 +202,20 @@ export default function MyCoursesPage() {
                     key={tab.id}
                     type="button"
                     onClick={() => setFilterTab(tab.id as any)}
-                    className={`rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer select-none ${
+                    className={`relative rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer select-none ${
                       isActive
-                        ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20 scale-[1.02]"
-                        : "bg-slate-200/80 text-slate-700 hover:bg-slate-300 hover:text-slate-900 dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover dark:hover:text-white"
+                        ? "text-white"
+                        : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                     }`}
                   >
-                    {tab.label}
+                    {isActive && (
+                      <motion.div
+                        layoutId="student-courses-tab-pill"
+                        className="absolute inset-0 rounded-full bg-[#2563EB] shadow-md shadow-blue-500/25"
+                        transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                      />
+                    )}
+                    <span className="relative z-10">{tab.label}</span>
                   </button>
                 );
               })}

@@ -40,6 +40,8 @@ export interface StudentCourseDetail {
   batchTiming: string;
   progress: number;
   status?: string;
+  completionApproved?: boolean;
+  completionRequestedAt?: string | null;
   completedVideosCount?: number;
   completedVideoIds?: string[];
   completedAssignmentIds?: string[];

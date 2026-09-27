@@ -40,25 +40,6 @@ const CLERK_PUBLISHABLE_KEY =
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
   "pk_test_ZWFzeS1jb3VnYXItMzY0MC5jbGVyay5hY2NvdW50cy5kZXYk";
 
-// Anti-FOUC script: Immediately initializes dark theme before React mounts
-const themeInitScript = `
-  (function() {
-    try {
-      var stored = localStorage.getItem('jks-theme');
-      var isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.style.colorScheme = 'dark';
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.documentElement.style.colorScheme = 'light';
-      }
-    } catch (e) {}
-  })();
-`;
-
 export default function RootLayout({
   children,
 }: {
@@ -70,19 +51,6 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${homemadeApple.variable} font-sans h-full antialiased`}
     >
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Homemade+Apple&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-          rel="stylesheet"
-        />
-        <script
-          id="theme-init"
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: themeInitScript }}
-        />
-      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-200">
         <GoogleAnalytics />
         <ThemeProvider>

@@ -877,12 +877,17 @@ function InstructorNewCourseContent() {
               type="button"
               onClick={() => handlePublishCourse("Published")}
               disabled={isPublishing}
-              className="w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-[#2563EB] px-3.5 sm:px-5 py-2 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:bg-blue-700 transition-all hover:scale-[1.02] cursor-pointer text-center"
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-[#2563EB] px-3.5 sm:px-5 py-2 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:bg-blue-700 transition-all hover:scale-[1.02] cursor-pointer text-center disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {publishedSuccess ? (
                 <>
                   <CheckCircle2 className="h-4 w-4 animate-bounce shrink-0" />
                   <span className="truncate">{isEditMode ? "Updated!" : "Published!"}</span>
+                </>
+              ) : isPublishing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin shrink-0 text-white" />
+                  <span className="truncate">{isEditMode ? "Saving & Updating..." : "Publishing..."}</span>
                 </>
               ) : (
                 <>
@@ -2613,12 +2618,17 @@ function InstructorNewCourseContent() {
                     type="button"
                     onClick={() => handlePublishCourse("Published")}
                     disabled={isPublishing}
-                    className="flex items-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-600 px-4 sm:px-6 py-2 sm:py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-600 px-4 sm:px-6 py-2 sm:py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {publishedSuccess ? (
                       <>
                         <CheckCircle2 className="h-4 w-4 animate-bounce shrink-0" />
                         <span className="truncate">{isEditMode ? "Updated!" : "Published!"}</span>
+                      </>
+                    ) : isPublishing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin shrink-0 text-white" />
+                        <span className="truncate">{isEditMode ? "Saving & Updating Course..." : "Publishing Course..."}</span>
                       </>
                     ) : (
                       <>
@@ -2704,12 +2714,17 @@ function InstructorNewCourseContent() {
                 type="button"
                 onClick={() => handlePublishCourse("Published")}
                 disabled={isPublishing}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] py-3 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:bg-blue-700 transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] py-3 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {publishedSuccess ? (
                   <>
                     <CheckCircle2 className="h-4 w-4 animate-bounce" />
                     <span>{isEditMode ? "Updated Successfully!" : "Course Published!"}</span>
+                  </>
+                ) : isPublishing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-white" />
+                    <span>{isEditMode ? "Saving & Updating..." : "Publishing & Syncing..."}</span>
                   </>
                 ) : (
                   <>
@@ -2774,6 +2789,72 @@ function InstructorNewCourseContent() {
         currentCourseSlugOrId={editSlug || existingCourseId || undefined}
         onImport={handleImportSections}
       />
+
+      {/* FLOATING SAVE & SYNC PROGRESS MODAL OVERLAY */}
+      <AnimatePresence>
+        {isPublishing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 10 }}
+              className="relative w-full max-w-md rounded-2xl sm:rounded-3xl border border-white/20 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-8 text-center shadow-2xl backdrop-blur-2xl dark:border-slate-800"
+            >
+              {publishedSuccess ? (
+                <div className="space-y-4">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 ring-8 ring-emerald-500/10">
+                    <CheckCircle2 className="h-8 w-8 animate-bounce" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                      {isEditMode ? "Course Updated Successfully!" : "Course Published Successfully!"}
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      Redirecting back to course catalog...
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  <div className="relative mx-auto flex h-16 w-16 items-center justify-center">
+                    <div className="absolute inset-0 rounded-full border-4 border-[#2563EB]/20 border-t-[#2563EB] animate-spin" />
+                    <Sparkles className="h-6 w-6 text-[#2563EB] dark:text-blue-400 animate-pulse" />
+                  </div>
+
+                  <div>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                      {isEditMode ? "Saving & Updating Course..." : "Publishing Course Catalog..."}
+                    </h3>
+                    <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Uploading syllabus, lecture links, quizzes, and sequential stage verification rules to server database...
+                    </p>
+                  </div>
+
+                  {/* Animated Progress indicator bar */}
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-[#2563EB] via-indigo-500 to-cyan-400 rounded-full"
+                      initial={{ width: "15%" }}
+                      animate={{ width: ["20%", "65%", "90%"] }}
+                      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                  </div>
+
+                  <div className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 flex items-center justify-center gap-1.5">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[#2563EB]" />
+                    <span>Syncing with JKS Learning API</span>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

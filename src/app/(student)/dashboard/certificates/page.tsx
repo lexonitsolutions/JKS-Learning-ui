@@ -41,7 +41,10 @@ export default function StudentCertificatesPage() {
       // 1. Fetch real DB certificates for this student
       let certList: any[] = [];
       try {
-        const meRes = await apiFetch("/certificates/me", { credentials: "include" });
+        const meRes = await apiFetch("/certificates/me", {
+          headers: effectiveEmail ? { "x-user-email": effectiveEmail } : {},
+          credentials: "include",
+        });
         if (meRes.ok) {
           const list = await meRes.json();
           if (Array.isArray(list)) certList = list;
@@ -50,7 +53,10 @@ export default function StudentCertificatesPage() {
 
       if (certList.length === 0 && effectiveEmail) {
         try {
-          const emailRes = await apiFetch(`/certificates/student/${encodeURIComponent(effectiveEmail)}`, { cache: "no-store" });
+          const emailRes = await apiFetch(`/certificates/student/${encodeURIComponent(effectiveEmail)}`, {
+            headers: { "x-user-email": effectiveEmail },
+            cache: "no-store",
+          });
           if (emailRes.ok) {
             const list = await emailRes.json();
             if (Array.isArray(list)) certList = list;

@@ -2,8 +2,9 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Printer, Download, Award, ShieldCheck, CheckCircle2 } from "lucide-react";
-import { JksLogo } from "@/components/common/jks-logo";
+import { X, Printer, Download, Award, ShieldCheck, CheckCircle2, Loader2 } from "lucide-react";
+import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
+import { JKS_LOGO_BASE64 } from "@/lib/utils/logo-base64";
 
 export interface CertificateData {
   id: string;
@@ -23,6 +24,7 @@ interface CertificateModalProps {
 export function CertificateModal({ certificate, onClose }: CertificateModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -60,12 +62,23 @@ export function CertificateModal({ certificate, onClose }: CertificateModalProps
 
   if (!certificate || !mounted) return null;
 
-  const handlePrint = () => {
-    document.body.classList.add("printing-certificate");
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove("printing-certificate");
-    }, 1500);
+  const handleDownloadPDF = async () => {
+    if (!printRef.current || !certificate || isDownloadingPdf) return;
+    setIsDownloadingPdf(true);
+    try {
+      const cleanTitle = (certificate.courseTitle || "Course").replace(/[^a-zA-Z0-9]/g, "_");
+      await downloadElementAsPdf(printRef.current, `JKS_Certificate_${cleanTitle}_${certificate.id}.pdf`, {
+        orientation: "landscape",
+        format: "a4",
+        marginMm: 0,
+        scale: 2,
+      });
+    } catch (err) {
+      console.error("Direct certificate PDF download failed, falling back to window.print():", err);
+      window.print();
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
   const handleDownloadPNG = () => {
@@ -337,12 +350,16 @@ export function CertificateModal({ certificate, onClose }: CertificateModalProps
             </button>
             <button
               type="button"
-              onClick={handlePrint}
-              className="flex items-center gap-1 sm:gap-1.5 rounded-xl bg-[#2563EB] px-2.5 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-bold text-white hover:bg-blue-600 active:scale-95 transition-all shadow-md cursor-pointer"
+              onClick={handleDownloadPDF}
+              disabled={isDownloadingPdf}
+              className="flex items-center gap-1 sm:gap-1.5 rounded-xl bg-[#2563EB] px-2.5 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-bold text-white hover:bg-blue-600 active:scale-95 transition-all shadow-md cursor-pointer disabled:opacity-70"
             >
-              <Printer className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Print</span>
-              <span>PDF</span>
+              {isDownloadingPdf ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Download className="h-3.5 w-3.5" />
+              )}
+              <span>{isDownloadingPdf ? "Saving..." : "PDF"}</span>
             </button>
             <button
               type="button"
@@ -381,7 +398,7 @@ export function CertificateModal({ certificate, onClose }: CertificateModalProps
             {/* Header / Logo */}
             <div className="flex items-center justify-center pt-0.5">
               <img
-                src="/images/jks-logo.png"
+                src={JKS_LOGO_BASE64}
                 alt="JKS Learning Technologies Institute"
                 className="h-8 sm:h-11 w-auto max-w-[200px] sm:max-w-[260px] object-contain select-none"
                 style={{ filter: "none", display: "block" }}

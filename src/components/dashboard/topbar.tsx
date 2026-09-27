@@ -6,87 +6,24 @@ import { usePathname } from "next/navigation";
 import {
   Bell,
   Menu,
-  X,
-  LayoutDashboard,
-  BookOpen,
-  ClipboardCheck,
-  BrainCircuit,
-  Award,
-  CreditCard,
-  User,
-  Users,
-  GraduationCap,
-  BarChart3,
-  Settings,
-  LogOut,
   LayoutGrid,
   ChevronDown,
   ChevronUp,
-  MonitorPlay,
-  UserCheck,
   Trophy,
   Bookmark,
   Code2,
-  FileText,
-  Shield,
   Sparkles,
-  Megaphone,
-  MessageSquare,
+  ClipboardCheck,
   Star,
-  Calendar,
-  type LucideIcon,
+  MessageSquare,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMockSession, logoutMockSession, performLogout } from "@/lib/auth/use-mock-auth";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { useUser } from "@clerk/nextjs";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useNotifications } from "@/lib/data/notifications-store";
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  badge?: string;
-}
 
-const STUDENT_NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/my-courses", label: "My Courses", icon: BookOpen },
-  { href: "/dashboard/resume-builder", label: "Resume Maker", icon: FileText },
-  { href: "/dashboard/assessments", label: "Assessments", icon: ClipboardCheck },
-  { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit, badge: "Soon" },
-  { href: "/dashboard/certificates", label: "Certificates", icon: Award },
-  { href: "/dashboard/payments", label: "Invoices & Billing", icon: CreditCard },
-  { href: "/dashboard/profile", label: "Profile", icon: User },
-];
-
-const ADMIN_NAV: NavItem[] = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone, badge: "Soon" },
-  { href: "/admin/students", label: "Students", icon: Users },
-  { href: "/admin/courses", label: "Courses", icon: BookOpen },
-  { href: "/admin/events", label: "Events", icon: Calendar, badge: "New" },
-  { href: "/admin/instructors", label: "Instructors", icon: GraduationCap },
-  { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
-  { href: "/admin/assessments/questions", label: "Question Bank", icon: ClipboardCheck },
-  { href: "/admin/ai-interviews", label: "AI Interviews", icon: BrainCircuit, badge: "Soon" },
-  { href: "/admin/certificates", label: "Certificates", icon: Award },
-  { href: "/admin/payments", label: "Invoices & Billing", icon: CreditCard },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
-];
-
-
-const INSTRUCTOR_NAV: NavItem[] = [
-  { href: "/instructor", label: "Overview", icon: LayoutDashboard },
-  { href: "/instructor/students", label: "My Students", icon: Users },
-  { href: "/instructor/courses", label: "My Courses", icon: BookOpen },
-  { href: "/instructor/courses/new", label: "Upload Course", icon: BookOpen },
-  { href: "/instructor/assessments", label: "Assessments & Grading", icon: ClipboardCheck },
-  { href: "/instructor/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/instructor/profile", label: "Profile", icon: User },
-  { href: "/instructor/settings", label: "Settings", icon: Settings },
-];
 
 // Explore Dropdown Items for Student Workspace
 const STUDENT_EXPLORE_SECTIONS = [
@@ -150,13 +87,11 @@ export function DashboardTopbar({
   children?: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [exploreOpen, setExploreOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const exploreRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const session = useMockSession();
-  const { signOut } = useAuth();
   const { user: clerkUser } = useUser();
 
   const [customAvatar, setCustomAvatar] = useState<string | null>(null);
@@ -179,8 +114,6 @@ export function DashboardTopbar({
 
   const isAdmin = pathname.startsWith("/admin");
   const isInstructor = pathname.startsWith("/instructor");
-  const navItems = isAdmin ? ADMIN_NAV : isInstructor ? INSTRUCTOR_NAV : STUDENT_NAV;
-  const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
   const exploreSections = isAdmin
     ? ADMIN_EXPLORE_SECTIONS
     : isInstructor
@@ -241,28 +174,11 @@ export function DashboardTopbar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close mobile drawer & menus on route change
+  // Close menus on route change
   useEffect(() => {
-    setMobileMenuOpen(false);
     setExploreOpen(false);
     setNotificationsOpen(false);
   }, [pathname]);
-
-  // Lock body scroll when mobile drawer is open
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileMenuOpen]);
-
-  const handleLogout = async () => {
-    await performLogout(signOut);
-  };
 
   return (
     <>
@@ -271,7 +187,11 @@ export function DashboardTopbar({
           {/* Mobile Hamburger Toggle Button */}
           <button
             type="button"
-            onClick={() => setMobileMenuOpen(true)}
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(new CustomEvent("jks_open_mobile_nav"));
+              }
+            }}
             aria-label="Open mobile navigation"
             className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl border border-transparent bg-transparent text-slate-700 dark:text-slate-200 transition-all hover:bg-slate-900/[0.06] dark:hover:bg-white/10 md:hidden cursor-pointer active:scale-95"
           >
@@ -511,127 +431,6 @@ export function DashboardTopbar({
           </Link>
         </div>
       </header>
-
-      {/* Slide-out Mobile Navigation Drawer */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 md:hidden flex">
-            {/* Backdrop Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
-              aria-hidden
-            />
-
-            {/* Sliding Drawer Container */}
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 26, stiffness: 280 }}
-              className="relative z-10 flex h-full w-[280px] max-w-[85vw] flex-col bg-white dark:bg-surface shadow-2xl border-r border-transparent dark:border-slate-800"
-            >
-              {/* Header inside drawer */}
-              <div className="flex h-16 items-center justify-between px-5 border-b border-slate-100 dark:border-slate-800">
-                <Link
-                  href={rootHref}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-1 text-lg font-bold tracking-tight text-slate-900 dark:text-white"
-                >
-                  JKS <span className="text-[#2563EB]">Learning</span>
-                </Link>
-                <div className="flex items-center gap-2">
-                  <ThemeToggle />
-                  <button
-                    type="button"
-                    onClick={() => setMobileMenuOpen(false)}
-                    aria-label="Close navigation"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Navigation links */}
-              <nav className="flex-1 overflow-y-auto space-y-1 p-3">
-                {navItems.map((item) => {
-                  const active =
-                    item.href === pathname ||
-                    (item.href !== rootHref && pathname.startsWith(item.href));
-                  const Icon = item.icon;
-                  const isSoon = item.badge === "Soon";
-
-                  if (isSoon) {
-                    return (
-                      <div
-                        key={item.href}
-                        className="flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-55 select-none"
-                        title={`${item.label} (Feature Coming Soon)`}
-                      >
-                        <div className="flex items-center gap-3.5">
-                          <Icon className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
-                          <span>{item.label}</span>
-                        </div>
-                        <span className="rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-400/15 dark:text-amber-200 dark:border-amber-400/30 px-1.5 py-0.5 text-[10px] font-bold leading-none">
-                          Soon
-                        </span>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`group flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
-                        active
-                          ? "bg-[#EFF6FF] dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 font-bold shadow-xs"
-                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover hover:text-slate-900 dark:hover:text-white"
-                      }`}
-                    >
-                      <Icon
-                        className={`h-4 w-4 shrink-0 transition-colors ${
-                          active
-                            ? "text-[#2563EB] stroke-[2.2]"
-                            : "text-slate-400 group-hover:text-slate-600 dark:text-slate-400 dark:group-hover:text-slate-300"
-                        }`}
-                      />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </nav>
-
-              {/* User Profile Card at Bottom */}
-              <div className="p-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-xs font-bold text-white shadow-xs">
-                    {resolvedInitials}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-xs font-bold text-slate-900 dark:text-white">{userName}</div>
-                    <div className="truncate text-[11px] text-slate-400">{userEmail}</div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-xs transition-colors hover:text-rose-600 hover:border-rose-200 dark:hover:text-rose-400 dark:hover:border-rose-800"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                  <span>Log out</span>
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </>
   );
 }

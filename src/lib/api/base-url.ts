@@ -87,19 +87,56 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
         headers.set("Authorization", `Bearer ${token}`);
       }
 
-      // Also forward session cookies / headers for multi-strategy backend authentication
-      if (!headers.has("x-mock-session")) {
-        const match = document.cookie.match(/(?:^|; )jks_mock_session=([^;]*)/);
-        const cookieSession = match?.[1] || document.cookie.match(/(?:^|; )jks_session=([^;]*)/)?.[1];
-        if (cookieSession) {
+      // Multi-strategy email and session resolution
+      let resolvedEmail = headers.get("x-user-email") || "";
+
+      // 1. Check document.cookie for session
+      const match = document.cookie.match(/(?:^|; )jks_mock_session=([^;]*)/);
+      const cookieSession = match?.[1] || document.cookie.match(/(?:^|; )jks_session=([^;]*)/)?.[1];
+      if (cookieSession) {
+        if (!headers.has("x-mock-session")) {
           headers.set("x-mock-session", cookieSession);
+        }
+        if (!resolvedEmail) {
           try {
             const parsed = JSON.parse(decodeURIComponent(cookieSession));
-            if (parsed?.email && !headers.has("x-user-email")) {
-              headers.set("x-user-email", parsed.email);
-            }
+            if (parsed?.email) resolvedEmail = String(parsed.email).trim().toLowerCase();
           } catch {}
         }
+      }
+
+      // 2. Check localStorage jks_auth_user
+      if (!resolvedEmail) {
+        try {
+          const rawAuth = localStorage.getItem("jks_auth_user");
+          if (rawAuth) {
+            const parsed = JSON.parse(rawAuth);
+            if (parsed?.email) resolvedEmail = String(parsed.email).trim().toLowerCase();
+          }
+        } catch {}
+      }
+
+      // 3. Check localStorage direct email keys
+      if (!resolvedEmail) {
+        resolvedEmail = (
+          localStorage.getItem("jks_student_email") ||
+          localStorage.getItem("jks_user_email") ||
+          ""
+        ).trim().toLowerCase();
+      }
+
+      // 4. Check active Clerk user in window
+      if (!resolvedEmail && (window as any).Clerk?.user) {
+        const clerkUser = (window as any).Clerk.user;
+        const cEmail =
+          clerkUser.primaryEmailAddress?.emailAddress ||
+          clerkUser.emailAddresses?.[0]?.emailAddress ||
+          "";
+        if (cEmail) resolvedEmail = String(cEmail).trim().toLowerCase();
+      }
+
+      if (resolvedEmail && !headers.has("x-user-email")) {
+        headers.set("x-user-email", resolvedEmail);
       }
     } catch {}
   }

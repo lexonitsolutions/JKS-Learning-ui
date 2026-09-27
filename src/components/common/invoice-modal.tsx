@@ -2,9 +2,10 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Printer, Download, CheckCircle2, ShieldCheck, QrCode, Building, Award, FileText } from "lucide-react";
+import { X, Printer, Download, CheckCircle2, ShieldCheck, QrCode, Building, Award, FileText, Loader2 } from "lucide-react";
 import { type Invoice } from "@/lib/data/invoices-store";
-import { JksLogo } from "@/components/common/jks-logo";
+import { JKS_LOGO_BASE64 } from "@/lib/utils/logo-base64";
+import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
 
 interface InvoiceModalProps {
   invoice: Invoice | null;
@@ -14,6 +15,7 @@ interface InvoiceModalProps {
 export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -27,33 +29,30 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
       }
     };
 
-    const handleBeforePrint = () => {
-      document.body.classList.add("printing-invoice");
-    };
-    const handleAfterPrint = () => {
-      document.body.classList.remove("printing-invoice");
-    };
-
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("beforeprint", handleBeforePrint);
-    window.addEventListener("afterprint", handleAfterPrint);
-
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("beforeprint", handleBeforePrint);
-      window.removeEventListener("afterprint", handleAfterPrint);
-      document.body.classList.remove("printing-invoice");
     };
   }, [invoice, onClose]);
 
   if (!invoice || !mounted) return null;
 
-  const handlePrint = () => {
-    document.body.classList.add("printing-invoice");
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove("printing-invoice");
-    }, 1500);
+  const handleDownloadPdf = async () => {
+    if (!printRef.current || !invoice || isDownloadingPdf) return;
+    setIsDownloadingPdf(true);
+    try {
+      await downloadElementAsPdf(printRef.current, `Invoice-${invoice.invoiceNumber}.pdf`, {
+        orientation: "portrait",
+        format: "a4",
+        marginMm: 6,
+        scale: 2,
+      });
+    } catch (err) {
+      console.error("Direct PDF download failed, falling back to window.print():", err);
+      window.print();
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
   const modalContent = (
@@ -111,12 +110,16 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={handlePrint}
-              className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3 sm:px-4 py-2 text-xs font-bold text-white hover:bg-blue-600 active:scale-95 transition-all shadow-md cursor-pointer"
+              onClick={handleDownloadPdf}
+              disabled={isDownloadingPdf}
+              className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3 sm:px-4 py-2 text-xs font-bold text-white hover:bg-blue-600 active:scale-95 transition-all shadow-md cursor-pointer disabled:opacity-70"
             >
-              <Printer className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Download / Print A4 PDF</span>
-              <span className="sm:hidden">Print PDF</span>
+              {isDownloadingPdf ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Download className="h-3.5 w-3.5" />
+              )}
+              <span>{isDownloadingPdf ? "Generating PDF..." : "Download PDF"}</span>
             </button>
             <button
               type="button"
@@ -144,7 +147,11 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
           {/* Header Row */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5 border-b-2 border-slate-900 pb-5 sm:pb-6">
             <div className="space-y-2">
-              <JksLogo size="md" variant="light" href="" />
+              <img
+                src={JKS_LOGO_BASE64}
+                alt="JKS Learning"
+                className="h-8 sm:h-9 w-auto object-contain select-none"
+              />
               <div className="text-xs text-slate-600 space-y-0.5 leading-relaxed">
                 <p className="font-extrabold text-slate-950 text-sm">JKS Learning Technologies Private Limited</p>
                 <p className="text-slate-600">Tech Park Phase II, Outer Ring Road, Bengaluru, Karnataka - 560103</p>

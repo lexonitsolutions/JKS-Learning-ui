@@ -68,6 +68,8 @@ import {
   getClientSessionEmail,
 } from "@/lib/data/enrollments-api";
 import { CertificateModal } from "@/components/common/certificate-modal";
+import { DashboardTopbar } from "@/components/dashboard/topbar";
+import { recordDailyActivity } from "@/lib/utils/activity-ledger";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 import { useCourseReviews } from "@/lib/data/reviews-store";
@@ -394,11 +396,16 @@ export default function CourseLearningHubPage({
   const overallPercent = totalMilestones > 0 ? Math.min(100, Math.round((completedMilestones / totalMilestones) * 100)) : 0;
 
   const handleVideoCompleted = async (vidId: string) => {
-    const updatedVideos = completedVideoIds.includes(vidId)
-      ? completedVideoIds
-      : [...completedVideoIds, vidId];
+    const isNew = !completedVideoIds.includes(vidId);
+    const updatedVideos = isNew
+      ? [...completedVideoIds, vidId]
+      : completedVideoIds;
 
     setCompletedVideoIds(updatedVideos);
+
+    if (isNew) {
+      recordDailyActivity(effectiveEmail, "lesson");
+    }
 
     if (typeof window !== "undefined") {
       try {
@@ -519,6 +526,7 @@ export default function CourseLearningHubPage({
       if (passed) {
         if (!updatedCompletedAssignments.includes(asgId)) {
           updatedCompletedAssignments.push(asgId);
+          recordDailyActivity(effectiveEmail, "assignment");
         }
       } else {
         // If failed, remove from passed/completed list so certificate stays locked
@@ -661,7 +669,14 @@ export default function CourseLearningHubPage({
 
   return (
     <div className="flex min-h-screen flex-col bg-transparent text-slate-800 dark:text-slate-100 overflow-x-hidden">
-      {/* Top Learning Hub Navigation Bar (Invisible/Transparent Background) */}
+      {/* Static Top Header across every page */}
+      <DashboardTopbar
+        title={course.title}
+        subtitle={`${allSections.length} Sections · ${allVideos.length} Video Lessons`}
+        userInitials={session?.initials || "ST"}
+      />
+
+      {/* Top Learning Hub Navigation Bar */}
       <header className="sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-transparent bg-transparent px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md dark:border-transparent dark:bg-transparent">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <Link

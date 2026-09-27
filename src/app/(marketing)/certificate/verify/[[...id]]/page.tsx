@@ -20,6 +20,8 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api/base-url";
+import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
+import { JKS_LOGO_BASE64 } from "@/lib/utils/logo-base64";
 
 interface VerificationResult {
   valid: boolean;
@@ -102,8 +104,27 @@ export default function CertificateVerifyPage() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    if (!result || !result.valid || isDownloadingPdf) return;
+    const el = document.getElementById("printable-certificate-area");
+    if (!el) return;
+    setIsDownloadingPdf(true);
+    try {
+      const student = (result.studentName || "Student").replace(/[^a-zA-Z0-9]/g, "_");
+      await downloadElementAsPdf(el, `JKS_Certificate_${student}_${result.verificationId || activeCertId}.pdf`, {
+        orientation: "landscape",
+        format: "a4",
+        marginMm: 0,
+        scale: 2,
+      });
+    } catch (err) {
+      console.error("Direct certificate PDF download failed, falling back to window.print():", err);
+      window.print();
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
   const handleDownloadPNG = () => {
@@ -429,12 +450,12 @@ export default function CertificateVerifyPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={handlePrint}
-                  className="flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl bg-[#1E5EFF] hover:bg-blue-700 py-2.5 px-2 sm:px-3.5 text-[11px] sm:text-xs font-bold text-white shadow-xs cursor-pointer transition-colors text-center"
+                  onClick={handleDownloadPDF}
+                  disabled={isDownloadingPdf}
+                  className="flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl bg-[#1E5EFF] hover:bg-blue-700 py-2.5 px-2 sm:px-3.5 text-[11px] sm:text-xs font-bold text-white shadow-xs cursor-pointer transition-colors text-center disabled:opacity-70"
                 >
-                  <Printer className="h-3.5 w-3.5 shrink-0" />
-                  <span className="hidden xs:inline">Print</span>
-                  <span>PDF</span>
+                  <Download className="h-3.5 w-3.5 shrink-0" />
+                  <span>{isDownloadingPdf ? "Saving..." : "PDF"}</span>
                 </button>
                 <button
                   type="button"
@@ -492,7 +513,7 @@ export default function CertificateVerifyPage() {
                   {/* Logo / Header */}
                   <div className="flex items-center justify-center">
                     <img
-                      src="/images/jks-logo.png"
+                      src={JKS_LOGO_BASE64}
                       alt="JKS Learning Technologies Institute"
                       className="h-8 sm:h-12 w-auto max-w-[200px] sm:max-w-[240px] object-contain select-none"
                       style={{ filter: "none", display: "block" }}

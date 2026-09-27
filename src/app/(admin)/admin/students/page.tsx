@@ -40,6 +40,8 @@ import {
 import { getExactStudentCourseProgress } from "@/lib/data/enrollments-api";
 import { MessageStudentModal } from "@/components/admin/message-student-modal";
 import { EditStudentModal } from "@/components/admin/edit-student-modal";
+import { motion } from "framer-motion";
+import { CustomDropdown, type DropdownOption } from "@/components/ui/custom-dropdown";
 
 export function getStudentProgressRating(progress: number) {
   if (progress >= 85) {
@@ -444,8 +446,8 @@ export default function AdminStudentsPage() {
               />
             </div>
 
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated p-1 shadow-xs overflow-x-auto">
+            {/* Filter Tabs with animated pill */}
+            <div className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated p-1 shadow-xs overflow-x-auto">
               {[
                 { id: "All", label: `All (${totalRegistered})` },
                 { id: "Enrolled", label: `Enrolled (${enrolledCount})` },
@@ -455,40 +457,41 @@ export default function AdminStudentsPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setFilterTab(tab.id as any)}
-                  className={`rounded-lg px-3 py-1 text-xs font-bold transition-colors whitespace-nowrap cursor-pointer ${
+                  className={`relative rounded-lg px-3 py-1.5 text-xs font-bold transition-colors whitespace-nowrap cursor-pointer select-none ${
                     filterTab === tab.id
-                      ? "bg-[#2563EB] text-white shadow-xs"
+                      ? "text-white"
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
-                  {tab.label}
+                  {filterTab === tab.id && (
+                    <motion.div
+                      layoutId="students-filter-pill"
+                      className="absolute inset-0 rounded-lg bg-[#2563EB] shadow-xs"
+                      transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-10">{tab.label}</span>
                 </button>
               ))}
             </div>
 
-            {/* Course Enrolled Filter */}
-            <div className="relative w-full sm:w-auto">
-              <Layers className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-[#2563EB] dark:text-blue-400" />
-              <select
-                value={courseFilter}
-                onChange={(e) => setCourseFilter(e.target.value)}
-                aria-label="Filter students by enrolled course"
-                title="Filter students by enrolled course"
-                className={`w-full sm:w-auto sm:max-w-[260px] appearance-none rounded-xl border bg-white dark:bg-input-bg py-2 pr-8 pl-9 text-xs font-bold outline-none shadow-xs transition-colors cursor-pointer focus:border-[#2563EB] dark:focus:border-blue-500 ${
-                  courseFilter === "ALL"
-                    ? "border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-200"
-                    : "border-[#2563EB] dark:border-blue-500 text-[#2563EB] dark:text-blue-400"
-                }`}
-              >
-                <option value="ALL">All Courses ({courseOptions.length})</option>
-                {courseOptions.map((c) => (
-                  <option key={c.slug} value={c.slug}>
-                    {c.title} ({c.count})
-                  </option>
-                ))}
-              </select>
-              <ChevronRight className="pointer-events-none absolute top-1/2 right-2.5 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-slate-400" />
-            </div>
+            {/* Course Enrolled Filter using CustomDropdown */}
+            <CustomDropdown
+              options={[
+                { value: "ALL", label: `All Courses (${courseOptions.length})` },
+                ...courseOptions.map((c) => ({
+                  value: c.slug,
+                  label: c.title,
+                  count: c.count,
+                })),
+              ]}
+              value={courseFilter}
+              onChange={(val) => setCourseFilter(val)}
+              placeholder="Filter by Enrolled Course"
+              icon={<Layers className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" />}
+              searchable={courseOptions.length > 5}
+              minWidth="min-w-[210px] max-w-[280px]"
+            />
 
             {(courseFilter !== "ALL" || filterTab !== "All" || searchQuery.trim()) && (
               <button

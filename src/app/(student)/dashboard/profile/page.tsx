@@ -52,6 +52,11 @@ import { useUser } from "@clerk/nextjs";
 import { getClientSessionEmail, fetchStudentEnrollments, type EnrolledCourseItem } from "@/lib/data/enrollments-api";
 import { fetchStudentDetail, fetchMyProfile, updateMyProfile, type AdminStudentDetail } from "@/lib/data/students-api";
 import { uploadImage } from "@/lib/api/upload-api";
+import {
+  recordDailyActivity,
+  computeActivityMatrix,
+  type ActivityDay,
+} from "@/lib/utils/activity-ledger";
 
 // Preset Banner Themes for Quick Cover Customization
 const BANNER_PRESETS = [
@@ -146,7 +151,16 @@ export default function StudentProfilePage() {
   const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState("2026");
-  const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number } | null>(null);
+  const [hoveredDay, setHoveredDay] = useState<ActivityDay | null>(null);
+  const [activityTick, setActivityTick] = useState(0);
+
+  // Record daily login activity and listen for real-time lesson/quiz completions
+  useEffect(() => {
+    recordDailyActivity(effectiveEmail, "login");
+    const onActivityChange = () => setActivityTick((t) => t + 1);
+    window.addEventListener("jks_activity_updated", onActivityChange);
+    return () => window.removeEventListener("jks_activity_updated", onActivityChange);
+  }, [effectiveEmail]);
 
   const bannerFileRef = useRef<HTMLInputElement>(null);
   const avatarFileRef = useRef<HTMLInputElement>(null);
@@ -417,36 +431,20 @@ export default function StudentProfilePage() {
     { name: "LeetCode", icon: Code2, connected: false },
   ]);
 
+  // Real dynamic 52-week contribution heatmap matrix (GitHub-style)
+  const activityMatrix = useMemo(() => {
+    return computeActivityMatrix(effectiveEmail, completedLessonsCount, completedAssignmentsCount);
+  }, [effectiveEmail, completedLessonsCount, completedAssignmentsCount, activityTick]);
+
   // Real Total Contributions
-  const totalContributions = completedLessonsCount + completedAssignmentsCount;
-
-  // Real 48-week contribution heatmap matrix (Clean 0 when no activity)
-  const heatmapWeeks = useMemo(() => {
-    const weeks = [];
-    const months = ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"];
-    
-    for (let w = 0; w < 48; w++) {
-      const days = [];
-      for (let d = 0; d < 7; d++) {
-        // Only map if real contributions exist
-        const hasActivity = totalContributions > 0 && w === 47 && d === 6;
-        const level = hasActivity ? Math.min(4, Math.max(1, totalContributions)) : 0;
-        const count = hasActivity ? totalContributions : 0;
-
-        days.push({
-          level,
-          count,
-          date: `Week ${w + 1}, Day ${d + 1}`,
-        });
-      }
-      weeks.push(days);
-    }
-    return { weeks, months };
-  }, [totalContributions]);
+  const totalContributions = Math.max(
+    completedLessonsCount + completedAssignmentsCount,
+    activityMatrix.totalActivities
+  );
 
   // Real Streak Calculation
-  const currentStreakDays = totalContributions > 0 ? 1 : 0;
-  const longestStreakDays = totalContributions > 0 ? 1 : 0;
+  const currentStreakDays = activityMatrix.currentStreakDays;
+  const longestStreakDays = activityMatrix.longestStreakDays;
 
   // Real Solved Stats calculation
   const totalAvailableAssessments = enrollments.reduce((sum, e) => sum + (e.totalSections || 0), 0);
@@ -860,7 +858,7 @@ export default function StudentProfilePage() {
                   <div className="mt-5 overflow-x-auto pb-2">
                     <div className="min-w-[650px]">
                       <div className="flex text-[10px] font-medium text-slate-400 pl-8 mb-1.5 justify-between pr-2">
-                        {heatmapWeeks.months.map((m, idx) => (
+                        {activityMatrix.months.map((m, idx) => (
                           <span key={`${m}-${idx}`}>{m}</span>
                         ))}
                       </div>
@@ -874,7 +872,7 @@ export default function StudentProfilePage() {
                         </div>
 
                         <div className="grid grid-flow-col grid-rows-7 gap-[3px] flex-1">
-                          {heatmapWeeks.weeks.map((week, wIdx) =>
+                          {activityMatrix.weeks.map((week, wIdx) =>
                             week.map((day, dIdx) => {
                               let bg = "bg-slate-100 dark:bg-slate-800";
                               if (day.level === 1) bg = "bg-emerald-200 dark:bg-emerald-800/60";
@@ -887,6 +885,7 @@ export default function StudentProfilePage() {
                                   key={`${wIdx}-${dIdx}`}
                                   onMouseEnter={() => setHoveredDay(day)}
                                   onMouseLeave={() => setHoveredDay(null)}
+                                  title={`${day.count} activities on ${day.date}`}
                                   className={`h-[11px] w-[11px] rounded-[2.5px] ${bg} transition-transform hover:scale-125 cursor-pointer`}
                                 />
                               );
@@ -898,7 +897,9 @@ export default function StudentProfilePage() {
                       <div className="mt-4 flex items-center justify-between text-[11px] text-slate-400">
                         <span>
                           {hoveredDay && hoveredDay.count > 0
-                            ? `${hoveredDay.count} activities on ${hoveredDay.date}`
+                            ? `${hoveredDay.count} ${hoveredDay.count === 1 ? "activity" : "activities"} on ${hoveredDay.date}`
+                            : hoveredDay
+                            ? `No activity on ${hoveredDay.date}`
                             : "Daily activity and lesson completions"}
                         </span>
                         <div className="flex items-center gap-1">
@@ -906,6 +907,7 @@ export default function StudentProfilePage() {
                           <span className="h-2.5 w-2.5 rounded-[2px] bg-slate-100 dark:bg-slate-800" />
                           <span className="h-2.5 w-2.5 rounded-[2px] bg-emerald-200 dark:bg-emerald-800/60" />
                           <span className="h-2.5 w-2.5 rounded-[2px] bg-emerald-400 dark:bg-emerald-600/70" />
+                          <span className="h-2.5 w-2.5 rounded-[2px] bg-emerald-500 dark:bg-emerald-500" />
                           <span className="h-2.5 w-2.5 rounded-[2px] bg-emerald-600 dark:bg-emerald-400" />
                           <span className="text-[10px]">More</span>
                         </div>

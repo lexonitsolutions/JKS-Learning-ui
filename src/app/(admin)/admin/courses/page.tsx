@@ -10,6 +10,7 @@ import { useAllCourses, saveCourse, saveCourseAsync, deleteCourse, toggleCourseS
 import type { Track } from "@/lib/data/courses";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
+import { motion } from "framer-motion";
 
 export default function AdminCoursesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -146,19 +147,26 @@ export default function AdminCoursesPage() {
               />
             </div>
 
-            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated p-1 shadow-xs overflow-x-auto">
+            <div className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated p-1 shadow-xs overflow-x-auto">
               {["All", "Full Stack", "Frontend", "SAP"].map((trk) => (
                 <button
                   key={trk}
                   type="button"
                   onClick={() => setSelectedTrack(trk)}
-                  className={`rounded-lg px-3 py-1 text-xs font-bold transition-colors whitespace-nowrap cursor-pointer ${
+                  className={`relative rounded-lg px-3 py-1.5 text-xs font-bold transition-colors whitespace-nowrap cursor-pointer select-none ${
                     selectedTrack === trk
-                      ? "bg-[#2563EB] text-white shadow-xs"
+                      ? "text-white"
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
-                  {trk}
+                  {selectedTrack === trk && (
+                    <motion.div
+                      layoutId="courses-track-pill"
+                      className="absolute inset-0 rounded-lg bg-[#2563EB] shadow-xs"
+                      transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-10">{trk}</span>
                 </button>
               ))}
             </div>
