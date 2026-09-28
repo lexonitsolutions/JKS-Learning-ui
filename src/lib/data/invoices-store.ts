@@ -155,6 +155,57 @@ export async function registerCourseOnline(data: {
     if (res.ok) {
       const json = await res.json();
       const inv = json.invoice;
+
+      // Automatically sync student name and phone with local profile state and session
+      if (typeof window !== "undefined") {
+        const studentEmail = (data.studentEmail || "").toLowerCase().trim();
+        const enteredName = (data.studentName || "").trim();
+        const enteredPhone = (data.studentPhone || "").trim();
+
+        if (enteredName && enteredName.length >= 2) {
+          localStorage.setItem("jks_student_profile_name_v3", enteredName);
+          if (studentEmail) {
+            localStorage.setItem(`jks_student_profile_name_v3_${studentEmail}`, enteredName);
+          }
+          localStorage.setItem("jks_student_name", enteredName);
+          localStorage.setItem("jks_user_name", enteredName);
+        }
+
+        if (enteredPhone && enteredPhone.length >= 10) {
+          localStorage.setItem("jks_student_profile_phone_v3", enteredPhone);
+          if (studentEmail) {
+            localStorage.setItem(`jks_student_profile_phone_v3_${studentEmail}`, enteredPhone);
+          }
+          localStorage.setItem("jks_student_phone", enteredPhone);
+        }
+
+        const rawAuth = localStorage.getItem("jks_auth_user");
+        if (rawAuth) {
+          try {
+            const parsed = JSON.parse(rawAuth);
+            if (enteredName) parsed.name = enteredName;
+            if (enteredPhone) parsed.phone = enteredPhone;
+            localStorage.setItem("jks_auth_user", JSON.stringify(parsed));
+          } catch {}
+        }
+
+        const match =
+          document.cookie.match(/(?:^|; )jks_session=([^;]*)/) ||
+          document.cookie.match(/(?:^|; )jks_mock_session=([^;]*)/);
+        if (match?.[1]) {
+          try {
+            const sessionData = JSON.parse(decodeURIComponent(match[1]));
+            if (enteredName) sessionData.name = enteredName;
+            if (enteredPhone) sessionData.phone = enteredPhone;
+            document.cookie = `jks_session=${encodeURIComponent(JSON.stringify(sessionData))}; path=/; max-age=604800; SameSite=Lax`;
+            document.cookie = `jks_mock_session=${encodeURIComponent(JSON.stringify(sessionData))}; path=/; max-age=604800; SameSite=Lax`;
+          } catch {}
+        }
+
+        window.dispatchEvent(new Event("jks-mock-session-change"));
+        window.dispatchEvent(new Event("jks_profile_updated"));
+      }
+
       const formatted: Invoice = {
         id: inv.id,
         invoiceNumber: inv.invoiceNumber,

@@ -77,11 +77,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
       return;
     }
 
+    const cleanedMobile = mobile.replace(/[^0-9]/g, "").slice(0, 10);
+    if (cleanedMobile.length !== 10) {
+      setFormError("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
     setIsSubmitting(true);
     const res = await registerForEvent(event.id, {
       fullName: fullName.trim(),
       email: email.trim().toLowerCase(),
-      mobile: mobile.trim(),
+      mobile: cleanedMobile,
       notes: notes.trim() || undefined,
     });
     setIsSubmitting(false);
@@ -476,15 +482,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
 
                     <div>
                       <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] mb-1">
-                        Mobile Number *
+                        Mobile Number (10 Digits) *
                       </label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                         <input
                           type="tel"
-                          placeholder="+91 98765 43210"
+                          inputMode="numeric"
+                          maxLength={10}
+                          placeholder="9876543210"
                           value={mobile}
-                          onChange={(e) => setMobile(e.target.value)}
+                          onChange={(e) => setMobile(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
                           required
                           disabled={event.isSoldOut || isSubmitting}
                           className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/60 dark:bg-slate-900/60 pl-9 pr-3 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-hidden disabled:opacity-50 font-mono"

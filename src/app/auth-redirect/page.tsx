@@ -10,11 +10,11 @@ import { jksAnalytics } from "@/lib/analytics/jks-analytics";
 import {
   ShieldCheck,
   CheckCircle2,
-  Terminal,
-  ArrowRight,
   AlertTriangle,
   RefreshCw,
   LogOut,
+  Loader2,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,7 +24,6 @@ export default function AuthRedirectPage() {
   const { signOut } = useClerk();
   const session = useMockSession();
 
-  const [stepIndex, setStepIndex] = useState(0);
   const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
@@ -34,17 +33,9 @@ export default function AuthRedirectPage() {
 
   const hasInitiatedSync = useRef(false);
 
-  // Progressive steps animation
   useEffect(() => {
-    const s1 = setTimeout(() => setStepIndex(1), 500);
-    const s2 = setTimeout(() => setStepIndex(2), 1200);
     const fallbackTimer = setTimeout(() => setShowFallback(true), 6000);
-
-    return () => {
-      clearTimeout(s1);
-      clearTimeout(s2);
-      clearTimeout(fallbackTimer);
-    };
+    return () => clearTimeout(fallbackTimer);
   }, []);
 
   const executeSync = useCallback(async () => {
@@ -57,7 +48,9 @@ export default function AuthRedirectPage() {
       user?.primaryEmailAddress?.emailAddress ||
       user?.emailAddresses?.[0]?.emailAddress ||
       ""
-    ).toLowerCase().trim();
+    )
+      .toLowerCase()
+      .trim();
 
     if (!email) {
       setSyncStatus("error");
@@ -90,7 +83,6 @@ export default function AuthRedirectPage() {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        // CRITICAL: Do NOT treat database/network errors as a new user.
         setSyncStatus("error");
         setErrorMessage(
           errorData.message ||
@@ -139,26 +131,36 @@ export default function AuthRedirectPage() {
 
       setSyncStatus("success");
 
-      // Check if user is completely new and does not exist in the database
+      // Verify whether student has a valid phone number recorded in their profile
+      const rawPhone = String(backendUser?.phone || "").trim();
+      const hasPhoneInProfile =
+        rawPhone.length >= 10 && rawPhone !== "null" && rawPhone !== "undefined";
+
+      const shouldAskPhone =
+        !isAdmin && (!hasPhoneInProfile || Boolean(data?.needsPhone) || isNewUser);
+
       if (isNewUser) {
         jksAnalytics.signup("clerk_oauth");
-        // Show phone-number input popup ONLY for new users
-        setShowPhoneModal(true);
       } else {
         jksAnalytics.login("clerk_oauth");
-        // Existing user: smoothly redirect to dashboard without popup
+      }
+
+      if (shouldAskPhone) {
+        // Halt automatic navigation and display the official phone number completion modal
+        setShowPhoneModal(true);
+      } else {
+        // User already has phone number in profile — proceed smoothly to target
         setTimeout(() => {
           window.location.replace(target);
-        }, 900);
+        }, 800);
       }
     } catch (err: any) {
       console.error("[AuthRedirect] clerk-sync failed:", err);
-      // Under NO circumstances treat a network or DB error as a new user
       setSyncStatus("error");
       setErrorMessage(
         err?.message?.includes("timed out")
           ? "Database connection timed out. Please check your internet connection."
-          : "Database or network error encountered while synchronizing account."
+          : "Encountered a connection issue while synchronizing your account."
       );
     }
   }, [user, getToken, signOut]);
@@ -172,7 +174,6 @@ export default function AuthRedirectPage() {
 
   const handlePhoneSuccess = (_savedPhone: string) => {
     setShowPhoneModal(false);
-    // Continue to normal dashboard
     window.location.replace(resolvedTargetUrl);
   };
 
@@ -187,60 +188,43 @@ export default function AuthRedirectPage() {
     session?.email ||
     "";
   const userName = user?.fullName || user?.firstName || session?.name || "Student";
-  const isSuperAdmin = userEmail.toLowerCase() === "lexonitservices@gmail.com";
-  const userRole = isSuperAdmin ? "admin" : session?.role || "student";
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#070B14] p-4 text-white selection:bg-blue-500 selection:text-white">
-      {/* Subtle blueprint grid background */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#1E293B_1px,transparent_1px)] [background-size:24px_24px] opacity-60" />
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-slate-50 dark:bg-[#0B0F19] p-4 text-slate-900 dark:text-slate-100 selection:bg-blue-600 selection:text-white">
+      {/* Subtle classic gradient aura */}
+      <div className="pointer-events-none absolute inset-0 bg-radial from-blue-500/5 via-transparent to-transparent opacity-80" />
 
-      {/* Cyber Ambient Glows */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[450px] w-[600px] rounded-full bg-blue-600/15 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-40 right-1/4 h-[350px] w-[450px] rounded-full bg-cyan-500/10 blur-[100px]" />
-
-      {/* Developer Terminal Console Card */}
-      <div className="relative z-10 w-full max-w-[440px] overflow-hidden rounded-3xl border border-slate-800/90 bg-slate-900/80 p-6 sm:p-8 backdrop-blur-2xl shadow-[0_25px_70px_rgba(0,0,0,0.85)]">
-        {/* Top Header with Logo and Live Telemetry Badge */}
-        <div className="flex items-center justify-between border-b border-slate-800/80 pb-5">
-          <div className="flex items-center gap-2">
-            <JksLogo
-              size="md"
-              variant="dark"
-              href=""
-              imgClassName="h-8 w-auto filter drop-shadow-[0_2px_8px_rgba(37,99,235,0.4)]"
-            />
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-950/50 px-2.5 py-1 font-mono text-[10px] font-semibold text-emerald-400 backdrop-blur-md">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            </span>
-            <span>TLS 1.3 SECURE</span>
+      {/* Main Authentication Card */}
+      <div className="relative z-10 w-full max-w-[420px] overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#111827] p-7 sm:p-8 shadow-xl">
+        {/* Card Header */}
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-5">
+          <JksLogo size="sm" href="" imgClassName="h-7 w-auto" />
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+            <ShieldCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+            <span>Secure Sign-In</span>
           </div>
         </div>
 
-        {/* Center Scanner / Orbital Loader OR Error State */}
+        {/* Content Area */}
         {syncStatus === "error" ? (
-          <div className="my-8 flex flex-col items-center justify-center text-center">
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 shadow-lg shadow-rose-500/20">
-              <AlertTriangle className="h-8 w-8 text-rose-400" />
+          <div className="py-6 text-center space-y-3">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60">
+              <AlertTriangle className="h-6 w-6" />
             </div>
-            <h1 className="mt-4 text-xl font-black tracking-tight text-white">
-              Database Sync Failed
+            <h1 className="text-lg font-bold text-slate-900 dark:text-white">
+              Sync Issue Encountered
             </h1>
-            <p className="mt-2 text-xs font-medium text-slate-400 px-2 leading-relaxed">
-              {errorMessage || "Unable to connect to the database. Existing user validation could not be completed."}
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed px-2">
+              {errorMessage || "Unable to establish account synchronization. Please try again."}
             </p>
 
-            <div className="mt-6 flex w-full flex-col gap-2">
+            <div className="pt-3 flex flex-col gap-2">
               <button
                 type="button"
                 onClick={handleRetry}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-xs font-bold text-white transition-all hover:bg-blue-700 cursor-pointer shadow-md shadow-blue-500/20"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 py-2.5 text-xs font-semibold text-white transition-all shadow-xs cursor-pointer"
               >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw className="h-3.5 w-3.5" />
                 <span>Retry Connection</span>
               </button>
               <button
@@ -249,139 +233,71 @@ export default function AuthRedirectPage() {
                   void performLogout(signOut);
                   window.location.replace("/login");
                 }}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 py-2.5 text-xs font-semibold text-slate-300 transition-all hover:bg-slate-700 cursor-pointer"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 py-2.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-3.5 w-3.5" />
                 <span>Return to Sign In</span>
               </button>
             </div>
           </div>
         ) : (
-          <>
-            <div className="my-8 flex flex-col items-center justify-center">
-              <div className="relative flex h-20 w-20 items-center justify-center">
-                {/* Outer spinning orbital gradient ring */}
-                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-cyan-400 border-r-blue-500 animate-spin [animation-duration:2s]" />
-
-                {/* Inner counter-spinning dashed ring */}
-                <div className="absolute inset-2 rounded-full border border-dashed border-slate-700/80 border-b-indigo-400 animate-spin [animation-duration:3s] [animation-direction:reverse]" />
-
-                {/* Pulsing center core */}
-                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/30">
-                  <ShieldCheck className="h-6 w-6 text-white" />
+          <div className="py-8 text-center space-y-4">
+            <div className="relative mx-auto flex h-14 w-14 items-center justify-center">
+              {syncStatus === "success" ? (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                  <CheckCircle2 className="h-6 w-6" />
                 </div>
-              </div>
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/60">
+                  <Loader2 className="h-6 w-6 animate-spin text-blue-600 dark:text-blue-400" />
+                </div>
+              )}
+            </div>
 
-              {/* Heading & Subtitle */}
-              <h1 className="mt-5 text-xl font-black tracking-tight text-white sm:text-2xl">
-                {syncStatus === "success" ? "Access Granted" : "Verifying Profile"}
+            <div className="space-y-1">
+              <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                {syncStatus === "success" ? "Authentication Confirmed" : "Signing you in"}
               </h1>
-              <p className="mt-1 text-center text-xs font-medium text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {syncStatus === "success"
-                  ? "Identity verified against MongoDB Atlas..."
-                  : "Checking database credentials & security policies..."}
+                  ? "Setting up your student workspace..."
+                  : "Connecting your account securely..."}
               </p>
             </div>
 
-            {/* Real-time Verification Checklist */}
-            <div className="space-y-2.5 rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4 font-mono text-xs">
-              {/* Step 1 */}
-              <div className="flex items-center justify-between text-slate-300">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                  <span className="font-medium text-slate-200">Google OAuth Identity</span>
-                </div>
-                <span className="text-[10px] text-emerald-400 font-semibold uppercase">Verified</span>
-              </div>
-
-              {/* Step 2 */}
-              <div className="flex items-center justify-between text-slate-300">
-                <div className="flex items-center gap-2">
-                  {syncStatus === "success" ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                  ) : (
-                    <div className="h-4 w-4 rounded-full border border-slate-700 flex items-center justify-center">
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-ping" />
-                    </div>
-                  )}
-                  <span className="font-medium text-slate-200">Database Account Check</span>
-                </div>
-                <span className="text-[10px] text-blue-400 font-semibold uppercase">
-                  {syncStatus === "success" ? "Synchronized" : "Checking"}
-                </span>
-              </div>
-
-              {/* Step 3 */}
-              <div className="flex items-center justify-between text-slate-300">
-                <div className="flex items-center gap-2">
-                  {stepIndex >= 2 && syncStatus === "success" ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                  ) : (
-                    <div className="h-4 w-4 rounded-full border border-slate-700 flex items-center justify-center">
-                      <div className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
-                    </div>
-                  )}
-                  <span className="font-medium text-slate-200">Routing Environment</span>
-                </div>
-                <span className="text-[10px] text-cyan-400 font-semibold uppercase">
-                  {syncStatus === "success" ? "Ready" : "Preparing"}
-                </span>
-              </div>
-            </div>
-
-            {/* Animated Progress Bar */}
-            <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-blue-600 via-cyan-400 to-indigo-500 transition-all duration-700 ease-out shadow-[0_0_10px_rgba(34,211,238,0.5)]"
-                style={{
-                  width:
-                    syncStatus === "success"
-                      ? "100%"
-                      : stepIndex === 0
-                        ? "35%"
-                        : "75%",
-                }}
-              />
-            </div>
-
-            {/* Terminal Log Snippet */}
-            <div className="mt-4 flex items-center justify-between px-1 text-[11px] font-mono text-slate-500">
-              <span className="inline-flex items-center gap-1">
-                <Terminal className="h-3 w-3 text-slate-400" />
-                <span>sys.auth.google()</span>
-              </span>
-              <span className="text-slate-400">
-                status: <span className="text-emerald-400 font-bold">200 OK</span>
-              </span>
-            </div>
-
-            {/* Fallback Escape Hatch if taking longer */}
-            {showFallback && syncStatus === "success" && !showPhoneModal && (
-              <div className="mt-6 border-t border-slate-800/80 pt-4 text-center">
-                <p className="text-xs text-slate-400">Taking longer than usual?</p>
-                <div className="mt-2.5 flex justify-center gap-3">
-                  <Link
-                    href={resolvedTargetUrl}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-700 hover:to-indigo-700 cursor-pointer"
-                  >
-                    <span>Enter Dashboard</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
+            {/* Subtle Escape Link if connection takes time */}
+            {showFallback && syncStatus !== "success" && (
+              <div className="pt-2 text-xs text-slate-400 dark:text-slate-500">
+                Taking longer than usual?{" "}
+                <Link
+                  href="/dashboard"
+                  className="font-semibold text-blue-600 dark:text-blue-400 underline underline-offset-2"
+                >
+                  Continue to Dashboard
+                </Link>
               </div>
             )}
-          </>
+          </div>
         )}
+
+        {/* Card Footer */}
+        <div className="border-t border-slate-100 dark:border-slate-800/80 pt-4 text-center">
+          <p className="text-[11px] text-slate-400 dark:text-slate-500">
+            JKS Learning · Enterprise IT Training & Certification
+          </p>
+        </div>
       </div>
 
-      {/* New Google User Phone Modal */}
-      <GooglePhoneModal
-        isOpen={showPhoneModal}
-        userEmail={userEmail}
-        userName={userName}
-        accessToken={accessToken || undefined}
-        onSuccess={handlePhoneSuccess}
-      />
+      {/* Professional Student Phone Onboarding Modal */}
+      {showPhoneModal && (
+        <GooglePhoneModal
+          isOpen={showPhoneModal}
+          userEmail={userEmail}
+          userName={userName}
+          accessToken={accessToken || undefined}
+          onSuccess={handlePhoneSuccess}
+        />
+      )}
     </div>
   );
 }

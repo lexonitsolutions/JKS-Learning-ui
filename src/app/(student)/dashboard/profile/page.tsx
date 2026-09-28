@@ -272,12 +272,19 @@ export default function StudentProfilePage() {
 
     const trimmedName = name.trim();
     const trimmedPhone = phone.trim();
+    const cleanedPhone = trimmedPhone.replace(/[^0-9]/g, "").slice(0, 10);
+
+    if (cleanedPhone && cleanedPhone.length !== 10) {
+      setSaveError("Please enter a valid 10-digit mobile number.");
+      setIsSaving(false);
+      return;
+    }
 
     try {
       // 1. Persist directly to MongoDB Atlas database
       const result = await updateMyProfile({
         name: trimmedName,
-        phone: trimmedPhone,
+        phone: cleanedPhone || "",
       });
 
       if (!result.success) {
@@ -1088,14 +1095,16 @@ export default function StudentProfilePage() {
                   </div>
                   <input
                     type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
+                    placeholder="9876543210"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB] font-mono"
                   />
                 </div>
                 <p className="mt-1 text-[11px] text-slate-400">
-                  Your primary contact number for course certifications and WhatsApp updates.
+                  Enter your 10-digit mobile number (e.g. 9876543210).
                 </p>
               </div>
 

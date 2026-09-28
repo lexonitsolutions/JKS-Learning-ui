@@ -13,6 +13,12 @@ import {
   ExternalLink,
   Check,
   Shield,
+  Users,
+  GraduationCap,
+  ClipboardCheck,
+  Clock,
+  Sparkles,
+  Inbox,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
@@ -23,35 +29,59 @@ import {
 } from "@/lib/data/notifications-store";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 
-type TabFilter = "all" | "unread" | "reviews" | "qa" | "system";
+type AdminTabFilter =
+  | "all"
+  | "unread"
+  | "students"
+  | "tutors"
+  | "courses"
+  | "assignments"
+  | "enrollments"
+  | "system";
 
 export default function AdminNotificationsPage() {
   const session = useMockSession();
   const adminEmail = session?.email || "admin@jkslearning.dev";
 
-  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } =
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll, refresh } =
     useNotifications("admin", adminEmail);
 
-  const [activeTab, setActiveTab] = useState<TabFilter>("all");
+  const [activeTab, setActiveTab] = useState<AdminTabFilter>("all");
 
   const filteredNotifications = notifications.filter((notif) => {
     if (activeTab === "unread") return !notif.read;
-    if (activeTab === "reviews") return notif.type === "review";
-    if (activeTab === "qa") return notif.type === "qa";
-    if (activeTab === "system") return notif.type === "system" || notif.type === "enrollment";
+    if (activeTab === "students") {
+      return (
+        notif.type === "enrollment" ||
+        notif.type === "course" ||
+        notif.type === "resume" ||
+        notif.type === "interview"
+      );
+    }
+    if (activeTab === "tutors") return notif.type === "tutor";
+    if (activeTab === "courses") return notif.type === "course";
+    if (activeTab === "assignments") return notif.type === "assessment";
+    if (activeTab === "enrollments") return notif.type === "enrollment";
+    if (activeTab === "system") {
+      return notif.type === "system" || notif.type === "qa" || notif.type === "review";
+    }
     return true;
   });
 
   const getIconForType = (type: NotificationType) => {
     switch (type) {
+      case "tutor":
+        return <GraduationCap className="h-4 w-4 text-purple-600" />;
+      case "assessment":
+        return <ClipboardCheck className="h-4 w-4 text-amber-500" />;
+      case "course":
+        return <Trophy className="h-4 w-4 text-blue-500" />;
+      case "enrollment":
+        return <BookOpen className="h-4 w-4 text-emerald-500" />;
       case "review":
         return <Star className="h-4 w-4 text-amber-500 fill-amber-400" />;
       case "qa":
         return <MessageSquare className="h-4 w-4 text-blue-500" />;
-      case "assessment":
-        return <Trophy className="h-4 w-4 text-amber-500" />;
-      case "enrollment":
-        return <BookOpen className="h-4 w-4 text-emerald-500" />;
       default:
         return <Shield className="h-4 w-4 text-indigo-500" />;
     }
@@ -61,7 +91,7 @@ export default function AdminNotificationsPage() {
     <>
       <DashboardTopbar
         title="Admin Notifications"
-        subtitle="Manage student reviews, Q&A support inquiries, and platform audit logs in real time."
+        subtitle="Real-time alerts for student enrollments, assignment submissions, tutor actions, and system milestones."
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4 max-w-5xl mx-auto w-full">
@@ -69,66 +99,34 @@ export default function AdminNotificationsPage() {
         <Reveal>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
             {/* Filter Tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-              <button
-                type="button"
-                onClick={() => setActiveTab("all")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === "all"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-              >
-                All ({notifications.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("unread")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === "unread"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-              >
-                Unread ({unreadCount})
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("reviews")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === "reviews"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-              >
-                Student Reviews
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("qa")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === "qa"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-              >
-                Course Questions
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("system")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === "system"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-              >
-                System &amp; Audit
-              </button>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+              {[
+                { id: "all", label: `All (${notifications.length})` },
+                { id: "unread", label: `Unread (${unreadCount})` },
+                { id: "students", label: "Student Activity" },
+                { id: "tutors", label: "Tutor Activity" },
+                { id: "courses", label: "Courses" },
+                { id: "assignments", label: "Assignments" },
+                { id: "enrollments", label: "Enrollments" },
+                { id: "system", label: "System & Reviews" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as AdminTabFilter)}
+                  className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
             {/* Batch Action Buttons */}
-            <div className="flex items-center gap-2 self-end sm:self-auto">
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
               {unreadCount > 0 && (
                 <button
                   type="button"
@@ -157,20 +155,20 @@ export default function AdminNotificationsPage() {
           </div>
         </Reveal>
 
-        {/* Notifications List */}
+        {/* Notifications Stream */}
         <Reveal>
           {filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center bg-white/50 dark:bg-surface/50">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 mb-4">
-                <Bell className="h-7 w-7 stroke-[1.5]" />
+                <Inbox className="h-7 w-7 stroke-[1.5]" />
               </div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 No notifications in this filter
               </h3>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-sm">
                 {activeTab === "unread"
-                  ? "All admin notices and student reviews have been marked as reviewed."
-                  : "Live alerts from student course reviews and Q&A questions will stream here."}
+                  ? "You're all caught up! No unread notifications right now."
+                  : "Live alerts from system events, enrollments, and tutor actions will appear here."}
               </p>
             </div>
           ) : (
@@ -208,12 +206,24 @@ export default function AdminNotificationsPage() {
                           <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-400 capitalize">
                             {notif.type}
                           </span>
+                          {notif.courseName && (
+                            <span className="rounded-md bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                              {notif.courseName}
+                            </span>
+                          )}
+                          {notif.batchTiming && (
+                            <span className="rounded-md bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                              {notif.batchTiming}
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                           {notif.body}
                         </p>
                         <div className="flex items-center gap-3 pt-1 text-[11px] text-slate-400 font-mono">
+                          <Clock className="h-3 w-3 inline mr-1" />
                           <span>{notif.formattedDate}</span>
+                          {notif.actorName && <span>• Actor: {notif.actorName}</span>}
                         </div>
                       </div>
                     </div>

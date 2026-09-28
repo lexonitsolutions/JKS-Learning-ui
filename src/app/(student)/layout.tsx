@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { SESSION_COOKIE_NAME, decodeSession } from "@/lib/auth/session";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { AmbientPageBackground } from "@/components/ui/ambient-page-background";
+import { StudentPhoneGuard } from "@/components/common/student-phone-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
     <div className="relative flex min-h-screen text-slate-800 dark:text-slate-100 font-sans font-apple antialiased selection:bg-[#2563EB]/15 selection:text-[#2563EB]">
       <AmbientPageBackground />
       <DashboardSidebar role="student" />
+      <StudentPhoneGuard />
       <main className="relative flex flex-1 flex-col min-w-0">{children}</main>
     </div>
   );

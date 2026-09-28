@@ -66,8 +66,9 @@ export function AddInstructorModal({
       return;
     }
 
-    if (phone.trim() && (phone.trim().length < 10 || phone.trim().length > 12)) {
-      setError("Phone number must be between 10 and 12 numeric digits including country code.");
+    const cleanedPhone = phone.replace(/[^0-9]/g, "").slice(0, 10);
+    if (phone.trim() && cleanedPhone.length !== 10) {
+      setError("Mobile number must be exactly 10 digits.");
       return;
     }
 
@@ -82,7 +83,7 @@ export function AddInstructorModal({
       email: email.trim().toLowerCase(),
       password: password.trim(),
       title: effectiveRole,
-      phone: phone.trim() || undefined,
+      phone: cleanedPhone || undefined,
     });
 
     setIsSaving(false);
@@ -298,18 +299,18 @@ export function AddInstructorModal({
                 <div>
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                      Phone Number (Max 12 Digits)
+                      Mobile Number (10 Digits)
                     </label>
                     <span className="text-[10px] text-slate-400">Numeric only</span>
                   </div>
                   <input
                     type="tel"
                     inputMode="numeric"
-                    maxLength={12}
+                    maxLength={10}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 12))}
-                    placeholder="e.g. 919876543210"
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
+                    placeholder="9876543210"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500 font-mono"
                   />
                 </div>
               </div>

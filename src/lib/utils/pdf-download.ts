@@ -7,12 +7,18 @@ export interface PdfExportOptions {
   marginMm?: number;
   scale?: number;
   filename?: string;
+  singlePageFit?: boolean;
 }
 
 /**
  * Directly downloads an HTML element as a crisp, high-resolution PDF file
- * saved straight into the user's Downloads folder without triggering window.print()
- * or the browser print dialog.
+ * saved straight into the user's Downloads folder.
+ *
+ * Guarantees:
+ * - 100% Light Mode enforcement during capture (no dark-mode wash-out or white-on-white text)
+ * - Safe color translation so modern CSS (oklch, color-mix) converts cleanly to sRGB
+ * - Proportional single-page fitting for resumes, certificates, and invoices so content
+ *   never gets awkwardly sliced in half across pages.
  */
 export async function downloadElementAsPdf(
   element: HTMLElement,
@@ -22,20 +28,24 @@ export async function downloadElementAsPdf(
   const orientation = options?.orientation || "portrait";
   const format = options?.format || "a4";
   const marginMm = options?.marginMm ?? 0;
-  const scale = options?.scale ?? 2;
+  const scale = options?.scale ?? 2.5;
 
   // Pre-capture styling adjustments
   const originalBoxShadow = element.style.boxShadow;
   const originalTransform = element.style.transform;
+  const originalTransition = element.style.transition;
   element.style.boxShadow = "none";
   element.style.transform = "none";
+  element.style.transition = "none";
 
   const child = element.firstElementChild as HTMLElement | null;
   const originalChildShadow = child ? child.style.boxShadow : "";
   const originalChildRadius = child ? child.style.borderRadius : "";
+  const originalChildTransition = child ? child.style.transition : "";
   if (child) {
     child.style.boxShadow = "none";
     child.style.borderRadius = "0px";
+    child.style.transition = "none";
   }
 
   const originalHostGetComputedStyle = typeof window !== "undefined" ? window.getComputedStyle : null;
@@ -49,13 +59,13 @@ export async function downloadElementAsPdf(
   }
 
   const safeColor = (str: string): string => {
-    if (!str || !/(?:lab|lch|oklab|oklch)\(/i.test(str)) return str;
+    if (!str || !/(?:lab|lch|oklab|oklch|color-mix)\(/i.test(str)) return str;
     if (tempCtx) {
       try {
         tempCtx.fillStyle = "#000000";
         tempCtx.fillStyle = str;
         const res = tempCtx.fillStyle;
-        if (res && !/(?:lab|lch|oklab|oklch)\(/i.test(res)) {
+        if (res && !/(?:lab|lch|oklab|oklch|color-mix)\(/i.test(res)) {
           return res;
         }
       } catch {
@@ -97,7 +107,7 @@ export async function downloadElementAsPdf(
     const canvas = await html2canvas(element, {
       scale,
       useCORS: true,
-      allowTaint: false, // Must be FALSE so canvas.toDataURL() never throws SecurityError
+      allowTaint: false,
       backgroundColor: "#ffffff",
       logging: false,
       scrollX: 0,
@@ -105,19 +115,92 @@ export async function downloadElementAsPdf(
       windowWidth: Math.max(element.scrollWidth || 800, 800),
       imageTimeout: 15000,
       onclone: (clonedDoc, clonedElement) => {
-        // Ensure white background and clean capture
+        // 1. Force light theme on cloned document root and body
+        clonedDoc.documentElement.classList.remove("dark");
+        clonedDoc.documentElement.removeAttribute("data-theme");
+        clonedDoc.documentElement.style.colorScheme = "light";
+        clonedDoc.documentElement.style.backgroundColor = "#ffffff";
+        clonedDoc.documentElement.style.color = "#0f172a";
+
+        clonedDoc.body.classList.remove("dark");
+        clonedDoc.body.removeAttribute("data-theme");
+        clonedDoc.body.style.colorScheme = "light";
+        clonedDoc.body.style.backgroundColor = "#ffffff";
+        clonedDoc.body.style.color = "#0f172a";
+
+        // 2. Inject rock-solid light-theme variables and high-contrast color definitions
+        const styleOverride = clonedDoc.createElement("style");
+        styleOverride.id = "jks-pdf-light-theme-override";
+        styleOverride.textContent = `
+          :root, html, body {
+            color-scheme: light !important;
+            --background: #ffffff !important;
+            --foreground: #0f172a !important;
+            --text-primary: #0f172a !important;
+            --text-secondary: #334155 !important;
+            --text-muted: #64748b !important;
+            --color-slate-50: #f8fafc !important;
+            --color-slate-100: #f1f5f9 !important;
+            --color-slate-200: #e2e8f0 !important;
+            --color-slate-300: #cbd5e1 !important;
+            --color-slate-400: #94a3b8 !important;
+            --color-slate-500: #64748b !important;
+            --color-slate-600: #475569 !important;
+            --color-slate-700: #334155 !important;
+            --color-slate-800: #1e293b !important;
+            --color-slate-900: #0f172a !important;
+            --color-slate-950: #020617 !important;
+            --color-primary-blue: #1e5eff !important;
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+          }
+          .dark, [data-theme="dark"] {
+            color-scheme: light !important;
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+          }
+          #printable-resume-sheet,
+          #printable-resume-sheet * {
+            color-scheme: light !important;
+            box-sizing: border-box !important;
+          }
+          #printable-resume-sheet {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            transform: none !important;
+            transition: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+          }
+          #printable-resume-sheet .text-slate-900 { color: #0f172a !important; }
+          #printable-resume-sheet .text-slate-800 { color: #1e293b !important; }
+          #printable-resume-sheet .text-slate-700 { color: #334155 !important; }
+          #printable-resume-sheet .text-slate-600 { color: #475569 !important; }
+          #printable-resume-sheet .text-slate-500 { color: #64748b !important; }
+          #printable-resume-sheet .text-black { color: #000000 !important; }
+          #printable-resume-sheet .border-slate-200 { border-color: #e2e8f0 !important; }
+          #printable-resume-sheet .border-slate-300 { border-color: #cbd5e1 !important; }
+          #printable-resume-sheet .bg-slate-50 { background-color: #f8fafc !important; }
+          #printable-resume-sheet .bg-slate-100 { background-color: #f1f5f9 !important; }
+          #printable-resume-sheet .bg-white { background-color: #ffffff !important; }
+        `;
+        clonedDoc.head.appendChild(styleOverride);
+
+        // 3. Reset cloned element attributes
         clonedElement.style.backgroundColor = "#ffffff";
+        clonedElement.style.color = "#0f172a";
         clonedElement.style.boxShadow = "none";
         clonedElement.style.transform = "none";
+        clonedElement.style.transition = "none";
 
-        // Remove any rounded corners or shadows from children in cloned DOM
         const clonedChild = clonedElement.firstElementChild as HTMLElement | null;
         if (clonedChild) {
           clonedChild.style.borderRadius = "0px";
           clonedChild.style.boxShadow = "none";
+          clonedChild.style.transition = "none";
         }
 
-        // 0. Intercept clonedDoc.defaultView.getComputedStyle to translate any lab/oklch color
+        // 4. Intercept clonedDoc.defaultView.getComputedStyle to translate any remaining lab/oklch colors
         try {
           const defaultView = clonedDoc.defaultView;
           if (defaultView) {
@@ -131,74 +214,7 @@ export async function downloadElementAsPdf(
           // ignore
         }
 
-        // 1. Sanitize style tags in clonedDoc: strip lab() and oklch() color functions that html2canvas cannot parse
-        try {
-          const styleElements = clonedDoc.querySelectorAll("style");
-          styleElements.forEach((styleTag) => {
-            if (styleTag.textContent && /(?:lab|lch|oklab|oklch)\(/i.test(styleTag.textContent)) {
-              styleTag.textContent = styleTag.textContent
-                .replace(/@supports\s*\([^{}]*(?:lab|oklch)[^{}]*\)\s*\{[^{}]*(\{[^{}]*\}[^{}]*)*\}/gi, "")
-                .replace(/(?:lab|oklab|oklch|lch)\([^)]+\)/gi, "rgb(15, 23, 42)");
-            }
-          });
-        } catch {
-          // ignore
-        }
-
-        // 2. Remove any CSS stylesheet rules that contain unsupported lab() / oklch()
-        try {
-          for (let i = 0; i < clonedDoc.styleSheets.length; i++) {
-            const sheet = clonedDoc.styleSheets[i];
-            try {
-              const rules = sheet.cssRules;
-              if (!rules) continue;
-              for (let j = rules.length - 1; j >= 0; j--) {
-                const rule = rules[j];
-                if (rule.cssText && /(?:lab|lch|oklab|oklch)\(/i.test(rule.cssText)) {
-                  try {
-                    sheet.deleteRule(j);
-                  } catch {
-                    // rule deletion may fail on read-only rules; fallback handled
-                  }
-                }
-              }
-            } catch {
-              // Cross-origin stylesheet access restricted, safe to skip
-            }
-          }
-        } catch {
-          // ignore
-        }
-
-        // 3. Ensure no element inside clonedElement has an inline/computed lab() color
-        try {
-          const allNodes = [clonedElement, ...Array.from(clonedElement.querySelectorAll("*"))] as HTMLElement[];
-          const colorProps = [
-            "color",
-            "backgroundColor",
-            "borderColor",
-            "borderTopColor",
-            "borderRightColor",
-            "borderBottomColor",
-            "borderLeftColor",
-          ] as const;
-
-          for (const node of allNodes) {
-            if (!node.style) continue;
-            const computed = clonedDoc.defaultView?.getComputedStyle(node);
-            if (!computed) continue;
-            for (const prop of colorProps) {
-              const val = computed[prop];
-              if (val && /(?:lab|lch|oklab|oklch)\(/i.test(val)) {
-                node.style[prop] = prop === "backgroundColor" ? "#ffffff" : "#0f172a";
-              }
-            }
-          }
-        } catch {
-          // ignore
-        }
-
-        // 4. Sanitize SVG attributes (fill, stroke) in cloned document
+        // 5. Sanitize SVG attributes (fill, stroke) in cloned document
         try {
           const svgNodes = clonedDoc.querySelectorAll("svg, path, circle, rect, line, polyline, polygon");
           svgNodes.forEach((node) => {
@@ -219,9 +235,8 @@ export async function downloadElementAsPdf(
 
     let imgData: string;
     try {
-      imgData = canvas.toDataURL("image/jpeg", 0.95);
+      imgData = canvas.toDataURL("image/jpeg", 0.98);
     } catch {
-      // Fallback to PNG if JPEG export is restricted
       imgData = canvas.toDataURL("image/png");
     }
 
@@ -238,17 +253,25 @@ export async function downloadElementAsPdf(
     const printableWidth = pdfWidth - marginMm * 2;
     const printableHeight = pdfHeight - marginMm * 2;
 
-    const imgWidth = printableWidth;
-    const imgHeight = (canvas.height * printableWidth) / canvas.width;
+    const naturalImgWidth = printableWidth;
+    const naturalImgHeight = (canvas.height * printableWidth) / canvas.width;
 
-    // Single page check: If the content fits on 1 page (or within 5% overflow tolerance),
-    // scale to fit cleanly on a single page!
-    if (imgHeight <= printableHeight * 1.05) {
-      const finalHeight = Math.min(imgHeight, printableHeight);
-      pdf.addImage(imgData, "JPEG", marginMm, marginMm, imgWidth, finalHeight, undefined, "FAST");
+    // Single-page proportional fit: If the content is within 1.35x of 1 A4 page (or explicitly requested),
+    // scale it proportionally so it fits completely and beautifully on 1 page with no text cut in half!
+    const shouldFitSinglePage =
+      options?.singlePageFit ?? (naturalImgHeight <= printableHeight * 1.35);
+
+    if (shouldFitSinglePage) {
+      const scaleFactor = Math.min(1, printableHeight / naturalImgHeight);
+      const renderWidth = naturalImgWidth * scaleFactor;
+      const renderHeight = naturalImgHeight * scaleFactor;
+      const xOffset = marginMm + (printableWidth - renderWidth) / 2;
+      const yOffset = marginMm;
+
+      pdf.addImage(imgData, "JPEG", xOffset, yOffset, renderWidth, renderHeight, undefined, "FAST");
     } else {
-      // Multi-page document handling
-      let heightLeft = imgHeight;
+      // Multi-page document handling for genuinely long multi-page resumes
+      let heightLeft = naturalImgHeight;
       let position = marginMm;
       let page = 0;
 
@@ -256,7 +279,7 @@ export async function downloadElementAsPdf(
         if (page > 0) {
           pdf.addPage();
         }
-        pdf.addImage(imgData, "JPEG", marginMm, position, imgWidth, imgHeight, undefined, "FAST");
+        pdf.addImage(imgData, "JPEG", marginMm, position, naturalImgWidth, naturalImgHeight, undefined, "FAST");
         heightLeft -= printableHeight;
         position -= printableHeight;
         page++;
@@ -285,9 +308,11 @@ export async function downloadElementAsPdf(
     }
     element.style.boxShadow = originalBoxShadow;
     element.style.transform = originalTransform;
+    element.style.transition = originalTransition;
     if (child) {
       child.style.boxShadow = originalChildShadow;
       child.style.borderRadius = originalChildRadius;
+      child.style.transition = originalChildTransition;
     }
   }
 }

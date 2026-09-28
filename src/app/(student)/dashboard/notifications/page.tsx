@@ -10,9 +10,13 @@ import {
   Star,
   Trophy,
   BookOpen,
-  Info,
+  Award,
   ExternalLink,
   Check,
+  Inbox,
+  Clock,
+  Sparkles,
+  ClipboardCheck,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
@@ -24,7 +28,13 @@ import {
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 
-type TabFilter = "all" | "unread" | "qa" | "assessment" | "system";
+type StudentTabFilter =
+  | "all"
+  | "unread"
+  | "courses"
+  | "assessments"
+  | "certificates"
+  | "system";
 
 export default function StudentNotificationsPage() {
   const session = useMockSession();
@@ -35,26 +45,32 @@ export default function StudentNotificationsPage() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } =
     useNotifications("student", userEmail);
 
-  const [activeTab, setActiveTab] = useState<TabFilter>("all");
+  const [activeTab, setActiveTab] = useState<StudentTabFilter>("all");
 
   const filteredNotifications = notifications.filter((notif) => {
     if (activeTab === "unread") return !notif.read;
-    if (activeTab === "qa") return notif.type === "qa";
-    if (activeTab === "assessment") return notif.type === "assessment";
-    if (activeTab === "system") return notif.type === "system" || notif.type === "enrollment";
+    if (activeTab === "courses") return notif.type === "course" || notif.type === "enrollment";
+    if (activeTab === "assessments") return notif.type === "assessment";
+    if (activeTab === "certificates") return notif.type === "certificate";
+    if (activeTab === "system") {
+      return notif.type === "system" || notif.type === "qa" || notif.type === "review";
+    }
     return true;
   });
 
   const getIconForType = (type: NotificationType) => {
     switch (type) {
+      case "certificate":
+        return <Award className="h-4 w-4 text-emerald-600" />;
+      case "assessment":
+        return <ClipboardCheck className="h-4 w-4 text-purple-600" />;
+      case "course":
+      case "enrollment":
+        return <BookOpen className="h-4 w-4 text-blue-600" />;
       case "qa":
         return <MessageSquare className="h-4 w-4 text-blue-500" />;
       case "review":
         return <Star className="h-4 w-4 text-amber-500 fill-amber-400" />;
-      case "assessment":
-        return <Trophy className="h-4 w-4 text-amber-500" />;
-      case "enrollment":
-        return <BookOpen className="h-4 w-4 text-emerald-500" />;
       default:
         return <Bell className="h-4 w-4 text-indigo-500" />;
     }
@@ -64,7 +80,7 @@ export default function StudentNotificationsPage() {
     <>
       <DashboardTopbar
         title="Notifications"
-        subtitle="Track your curriculum progress, Q&A replies from mentors, and platform announcements."
+        subtitle="Track your curriculum progress, assignment reviews, course completion milestones, and mentor updates."
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4 max-w-5xl mx-auto w-full">
@@ -72,66 +88,32 @@ export default function StudentNotificationsPage() {
         <Reveal>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
             {/* Filter Tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-              <button
-                type="button"
-                onClick={() => setActiveTab("all")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === "all"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-              >
-                All ({notifications.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("unread")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === "unread"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-              >
-                Unread ({unreadCount})
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("qa")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === "qa"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-              >
-                Q&A Discussions
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("assessment")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === "assessment"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-              >
-                Assessments &amp; Streak
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("system")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === "system"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
-              >
-                Platform
-              </button>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+              {[
+                { id: "all", label: `All (${notifications.length})` },
+                { id: "unread", label: `Unread (${unreadCount})` },
+                { id: "courses", label: "Courses & Progress" },
+                { id: "assessments", label: "Assignments & Quizzes" },
+                { id: "certificates", label: "Certificates" },
+                { id: "system", label: "Mentors & Q&A" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as StudentTabFilter)}
+                  className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
             {/* Batch Action Buttons */}
-            <div className="flex items-center gap-2 self-end sm:self-auto">
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
               {unreadCount > 0 && (
                 <button
                   type="button"
@@ -160,20 +142,20 @@ export default function StudentNotificationsPage() {
           </div>
         </Reveal>
 
-        {/* Notifications List */}
+        {/* Notifications Stream */}
         <Reveal>
           {filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center bg-white/50 dark:bg-surface/50">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 mb-4">
-                <Bell className="h-7 w-7 stroke-[1.5]" />
+                <Inbox className="h-7 w-7 stroke-[1.5]" />
               </div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                No notifications found
+                No notifications in this filter
               </h3>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-sm">
                 {activeTab === "unread"
-                  ? "You have no unread notifications right now. Great job keeping up!"
-                  : "Notifications regarding your course questions, instructor feedback, and milestones will appear here."}
+                  ? "You are all caught up! No unread notifications right now."
+                  : "Notifications for your enrolled courses, quizzes, and mentor feedbacks will appear here."}
               </p>
             </div>
           ) : (
@@ -208,11 +190,17 @@ export default function StudentNotificationsPage() {
                               New
                             </span>
                           )}
+                          {notif.courseName && (
+                            <span className="rounded-md bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                              {notif.courseName}
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                           {notif.body}
                         </p>
                         <div className="flex items-center gap-3 pt-1 text-[11px] text-slate-400 font-mono">
+                          <Clock className="h-3 w-3 inline mr-1" />
                           <span>{notif.formattedDate}</span>
                         </div>
                       </div>

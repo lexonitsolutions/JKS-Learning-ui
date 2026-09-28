@@ -320,14 +320,16 @@ export default function AdminPaymentsPage() {
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 dark:text-slate-300">Mobile / WhatsApp *</label>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Mobile / WhatsApp (10 Digits) *</label>
                   <input
                     type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
                     required
-                    placeholder="+91 98765 43210"
+                    placeholder="9876543210"
                     value={form.studentPhone}
-                    onChange={(e) => setForm({ ...form, studentPhone: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400"
+                    onChange={(e) => setForm({ ...form, studentPhone: e.target.value.replace(/[^0-9]/g, "").slice(0, 10) })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 font-mono"
                   />
                 </div>
               </div>

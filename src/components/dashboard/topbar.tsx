@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   Menu,
@@ -87,6 +87,7 @@ export function DashboardTopbar({
   children?: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [exploreOpen, setExploreOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const exploreRef = useRef<HTMLDivElement>(null);
@@ -155,8 +156,14 @@ export function DashboardTopbar({
       ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || userEmail)}&background=2563eb&color=fff&bold=true&size=128`
       : undefined);
 
+  const roleType: "admin" | "instructor" | "student" = isAdmin
+    ? "admin"
+    : isInstructor
+    ? "instructor"
+    : "student";
+
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(
-    isAdmin ? "admin" : "student",
+    roleType,
     userEmail
   );
 
@@ -355,6 +362,9 @@ export function DashboardTopbar({
                             onClick={() => {
                               markAsRead(notif.id);
                               setNotificationsOpen(false);
+                              if (notif.link) {
+                                router.push(notif.link);
+                              }
                             }}
                             className={`flex items-start gap-3 p-3.5 transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-hover ${
                               !notif.read ? "bg-blue-50/40 dark:bg-blue-950/20" : ""
@@ -395,7 +405,7 @@ export function DashboardTopbar({
 
                   <div className="border-t border-slate-100 dark:border-slate-800 p-2 bg-slate-50/50 dark:bg-slate-900/40 text-center">
                     <Link
-                      href={isAdmin ? "/admin/notifications" : "/dashboard/notifications"}
+                      href={isAdmin ? "/admin/notifications" : isInstructor ? "/instructor/notifications" : "/dashboard/notifications"}
                       onClick={() => setNotificationsOpen(false)}
                       className="inline-block w-full py-1.5 text-center text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
                     >

@@ -36,6 +36,7 @@ import { useUser } from "@clerk/nextjs";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { fetchStudentEnrollments } from "@/lib/data/enrollments-api";
 import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
+import { apiFetch } from "@/lib/api/base-url";
 
 interface ExperienceItem {
   id: string;
@@ -625,11 +626,20 @@ export default function ResumeBuilderPage() {
     // Ensure mobile view switches to preview so the resume sheet is mounted and rendered
     setMobileTab("preview");
 
-    // Allow DOM to settle if tab changed
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // Temporarily switch zoom to 100% ("100") so html2canvas renders the unscaled element cleanly at 1:1
+    const previousZoom = previewZoom;
+    if (previewZoom !== "100") {
+      setPreviewZoom("100");
+    }
+
+    // Allow DOM to settle if tab changed or zoom changed
+    await new Promise((resolve) => setTimeout(resolve, 150));
 
     const sheetEl = document.getElementById("printable-resume-sheet");
-    if (!sheetEl || isExportingPdf) return;
+    if (!sheetEl || isExportingPdf) {
+      if (previousZoom !== "100") setPreviewZoom(previousZoom);
+      return;
+    }
 
     setIsExportingPdf(true);
     try {
@@ -642,12 +652,31 @@ export default function ResumeBuilderPage() {
         format: "a4",
         marginMm: 0,
         scale: 2.5,
+        singlePageFit: true,
       });
+
+      apiFetch("/activity-logs/client", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "RESUME_DOWNLOADED",
+          entityType: "RESUME",
+          entityName: `${cleanName}_Resume.pdf`,
+          description: `Student exported PDF resume: "${cleanName}_Resume.pdf"`,
+          metadata: {
+            templateId: template,
+            targetRole: resumeData.personal.headline || "Software Engineer",
+          },
+        }),
+      }).catch(() => {});
     } catch (err) {
       console.error("Direct PDF download failed, falling back to print:", err);
       window.print();
     } finally {
       setIsExportingPdf(false);
+      if (previousZoom !== "100") {
+        setPreviewZoom(previousZoom);
+      }
     }
   };
 
@@ -656,12 +685,12 @@ export default function ResumeBuilderPage() {
     switch (secId) {
       case "summary":
         return resumeData.personal.summary ? (
-          <div className="space-y-1.5">
-            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]">
-              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" />
+          <div className="space-y-1">
+            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]" style={{ color: "#1E5EFF" }}>
+              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" style={{ backgroundColor: "#1E5EFF" }} />
               Professional Summary
             </h2>
-            <p className="text-xs text-slate-700 leading-relaxed pl-4 border-l-2 border-slate-200">
+            <p className="text-xs text-slate-700 leading-relaxed pl-4 border-l-2 border-slate-200" style={{ color: "#334155", borderColor: "#E2E8F0" }}>
               {resumeData.personal.summary}
             </p>
           </div>
@@ -669,40 +698,40 @@ export default function ResumeBuilderPage() {
 
       case "skills":
         return (
-          <div className="space-y-2">
-            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]">
-              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" />
+          <div className="space-y-1.5">
+            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]" style={{ color: "#1E5EFF" }}>
+              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" style={{ backgroundColor: "#1E5EFF" }} />
               Technical Expertise
             </h2>
-            <div className="grid grid-cols-1 gap-1.5 text-xs pl-4 border-l-2 border-slate-200">
+            <div className="grid grid-cols-1 gap-1 text-xs pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.skills.languages && (
                 <div>
-                  <span className="font-bold text-slate-900">Languages: </span>
-                  <span className="text-slate-700">{resumeData.skills.languages}</span>
+                  <span className="font-bold text-slate-900" style={{ color: "#0F172A" }}>Languages: </span>
+                  <span className="text-slate-700" style={{ color: "#334155" }}>{resumeData.skills.languages}</span>
                 </div>
               )}
               {resumeData.skills.frameworks && (
                 <div>
-                  <span className="font-bold text-slate-900">Frameworks &amp; Libs: </span>
-                  <span className="text-slate-700">{resumeData.skills.frameworks}</span>
+                  <span className="font-bold text-slate-900" style={{ color: "#0F172A" }}>Frameworks &amp; Libs: </span>
+                  <span className="text-slate-700" style={{ color: "#334155" }}>{resumeData.skills.frameworks}</span>
                 </div>
               )}
               {resumeData.skills.databases && (
                 <div>
-                  <span className="font-bold text-slate-900">Databases &amp; ORM: </span>
-                  <span className="text-slate-700">{resumeData.skills.databases}</span>
+                  <span className="font-bold text-slate-900" style={{ color: "#0F172A" }}>Databases &amp; ORM: </span>
+                  <span className="text-slate-700" style={{ color: "#334155" }}>{resumeData.skills.databases}</span>
                 </div>
               )}
               {resumeData.skills.cloudDevOps && (
                 <div>
-                  <span className="font-bold text-slate-900">Cloud &amp; DevOps: </span>
-                  <span className="text-slate-700">{resumeData.skills.cloudDevOps}</span>
+                  <span className="font-bold text-slate-900" style={{ color: "#0F172A" }}>Cloud &amp; DevOps: </span>
+                  <span className="text-slate-700" style={{ color: "#334155" }}>{resumeData.skills.cloudDevOps}</span>
                 </div>
               )}
               {resumeData.skills.coreCS && (
                 <div>
-                  <span className="font-bold text-slate-900">Core CS: </span>
-                  <span className="text-slate-700">{resumeData.skills.coreCS}</span>
+                  <span className="font-bold text-slate-900" style={{ color: "#0F172A" }}>Core CS: </span>
+                  <span className="text-slate-700" style={{ color: "#334155" }}>{resumeData.skills.coreCS}</span>
                 </div>
               )}
             </div>
@@ -711,29 +740,29 @@ export default function ResumeBuilderPage() {
 
       case "experience":
         return resumeData.experiences.length > 0 ? (
-          <div className="space-y-3">
-            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]">
-              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" />
+          <div className="space-y-2">
+            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]" style={{ color: "#1E5EFF" }}>
+              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" style={{ backgroundColor: "#1E5EFF" }} />
               Work Experience
             </h2>
-            <div className="space-y-3 pl-4 border-l-2 border-slate-200">
+            <div className="space-y-2 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.experiences.map((exp) => (
-                <div key={exp.id} className="space-y-1 text-xs">
+                <div key={exp.id} className="space-y-0.5 text-xs">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between font-bold text-slate-900">
-                    <span>
-                      {exp.role} — <span className="text-[#1E5EFF]">{exp.company}</span>
-                      {exp.location && <span className="text-slate-500 font-normal"> ({exp.location})</span>}
+                    <span style={{ color: "#0F172A" }}>
+                      {exp.role} — <span className="text-[#1E5EFF]" style={{ color: "#1E5EFF" }}>{exp.company}</span>
+                      {exp.location && <span className="text-slate-500 font-normal" style={{ color: "#64748B" }}> ({exp.location})</span>}
                     </span>
                     {(exp.startDate || exp.endDate) && (
-                      <span className="text-slate-500 font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded">
+                      <span className="text-slate-600 font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded border border-slate-200/80" style={{ color: "#475569", backgroundColor: "#F1F5F9", borderColor: "#E2E8F0" }}>
                         {exp.startDate} - {exp.endDate}
                       </span>
                     )}
                   </div>
                   {exp.points.length > 0 && (
-                    <ul className="list-disc list-inside space-y-1 text-slate-700 pl-1 pt-0.5">
+                    <ul className="list-disc list-inside space-y-0.5 text-slate-700 pl-1 pt-0.5" style={{ color: "#334155" }}>
                       {exp.points.map((pt, idx) => (
-                        <li key={idx} className="leading-snug">
+                        <li key={idx} className="leading-snug" style={{ color: "#334155" }}>
                           {pt}
                         </li>
                       ))}
@@ -747,31 +776,31 @@ export default function ResumeBuilderPage() {
 
       case "projects":
         return resumeData.projects.length > 0 ? (
-          <div className="space-y-3">
-            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]">
-              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" />
+          <div className="space-y-2">
+            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]" style={{ color: "#1E5EFF" }}>
+              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" style={{ backgroundColor: "#1E5EFF" }} />
               Key Projects &amp; Architectures
             </h2>
-            <div className="space-y-3 pl-4 border-l-2 border-slate-200">
+            <div className="space-y-2 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.projects.map((proj) => (
-                <div key={proj.id} className="space-y-1 text-xs">
+                <div key={proj.id} className="space-y-0.5 text-xs">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between font-bold text-slate-900">
-                    <span className="font-semibold text-slate-900">{proj.title}</span>
+                    <span className="font-semibold text-slate-900" style={{ color: "#0F172A" }}>{proj.title}</span>
                     {proj.liveUrl && (
-                      <span className="text-[#1E5EFF] font-mono text-[11px] underline">
+                      <span className="text-[#1E5EFF] font-mono text-[11px] underline" style={{ color: "#1E5EFF" }}>
                         {proj.liveUrl}
                       </span>
                     )}
                   </div>
                   {proj.techStack && (
-                    <div className="text-[11px] text-slate-600 font-medium">
-                      <span className="text-slate-400">Stack:</span> {proj.techStack}
+                    <div className="text-[11px] text-slate-600 font-medium" style={{ color: "#475569" }}>
+                      <span className="text-slate-400" style={{ color: "#94A3B8" }}>Stack:</span> {proj.techStack}
                     </div>
                   )}
                   {proj.points.length > 0 && (
-                    <ul className="list-disc list-inside space-y-1 text-slate-700 pl-1">
+                    <ul className="list-disc list-inside space-y-0.5 text-slate-700 pl-1" style={{ color: "#334155" }}>
                       {proj.points.map((pt, idx) => (
-                        <li key={idx} className="leading-snug">
+                        <li key={idx} className="leading-snug" style={{ color: "#334155" }}>
                           {pt}
                         </li>
                       ))}
@@ -785,17 +814,17 @@ export default function ResumeBuilderPage() {
 
       case "education":
         return resumeData.educations.length > 0 ? (
-          <div className="space-y-2">
-            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]">
-              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" />
+          <div className="space-y-1.5">
+            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]" style={{ color: "#1E5EFF" }}>
+              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" style={{ backgroundColor: "#1E5EFF" }} />
               Education
             </h2>
-            <div className="space-y-2 pl-4 border-l-2 border-slate-200">
+            <div className="space-y-1.5 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.educations.map((edu) => (
                 <div key={edu.id} className="text-xs">
-                  <div className="font-bold text-slate-900">{edu.degree}</div>
-                  <div className="text-slate-700">{edu.institution}</div>
-                  <div className="text-slate-500 text-[11px]">
+                  <div className="font-bold text-slate-900" style={{ color: "#0F172A" }}>{edu.degree}</div>
+                  <div className="text-slate-700" style={{ color: "#334155" }}>{edu.institution}</div>
+                  <div className="text-slate-500 text-[11px]" style={{ color: "#64748B" }}>
                     {edu.year} {edu.score ? `• ${edu.score}` : ""}
                   </div>
                 </div>
@@ -806,18 +835,18 @@ export default function ResumeBuilderPage() {
 
       case "certifications":
         return resumeData.certifications.length > 0 ? (
-          <div className="space-y-2">
-            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]">
-              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" />
+          <div className="space-y-1.5">
+            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E5EFF]" style={{ color: "#1E5EFF" }}>
+              <span className="h-2 w-2 rounded-full bg-[#1E5EFF]" style={{ backgroundColor: "#1E5EFF" }} />
               Verified Credentials
             </h2>
-            <div className="space-y-1.5 pl-4 border-l-2 border-slate-200">
+            <div className="space-y-1 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.certifications.map((cert) => (
-                <div key={cert.id} className="text-xs text-slate-800 flex items-start gap-1.5">
-                  <Award className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                <div key={cert.id} className="text-xs text-slate-800 flex items-start gap-1.5" style={{ color: "#1E293B" }}>
+                  <Award className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" style={{ color: "#059669" }} />
                   <div>
-                    <div className="font-semibold text-slate-900">{cert.title}</div>
-                    <div className="text-[11px] text-slate-500">
+                    <div className="font-semibold text-slate-900" style={{ color: "#0F172A" }}>{cert.title}</div>
+                    <div className="text-[11px] text-slate-500" style={{ color: "#64748B" }}>
                       {cert.issuer} {cert.year ? `• ${cert.year}` : ""}
                     </div>
                   </div>
@@ -837,10 +866,10 @@ export default function ResumeBuilderPage() {
       case "summary":
         return resumeData.personal.summary ? (
           <div>
-            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-1.5">
+            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-1.5" style={{ color: "#000000", borderColor: "#000000" }}>
               PROFESSIONAL SUMMARY
             </h2>
-            <p className="text-xs text-black leading-relaxed text-justify">
+            <p className="text-xs text-black leading-relaxed text-justify" style={{ color: "#000000" }}>
               {resumeData.personal.summary}
             </p>
           </div>
@@ -849,38 +878,38 @@ export default function ResumeBuilderPage() {
       case "skills":
         return (
           <div>
-            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-1.5">
+            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-1.5" style={{ color: "#000000", borderColor: "#000000" }}>
               TECHNICAL SKILLS
             </h2>
-            <div className="space-y-0.5 text-xs text-black">
+            <div className="space-y-0.5 text-xs text-black" style={{ color: "#000000" }}>
               {resumeData.skills.languages && (
                 <div>
-                  <span className="font-bold">Languages: </span>
-                  <span>{resumeData.skills.languages}</span>
+                  <span className="font-bold" style={{ color: "#000000" }}>Languages: </span>
+                  <span style={{ color: "#000000" }}>{resumeData.skills.languages}</span>
                 </div>
               )}
               {resumeData.skills.frameworks && (
                 <div>
-                  <span className="font-bold">Frameworks &amp; Libraries: </span>
-                  <span>{resumeData.skills.frameworks}</span>
+                  <span className="font-bold" style={{ color: "#000000" }}>Frameworks &amp; Libraries: </span>
+                  <span style={{ color: "#000000" }}>{resumeData.skills.frameworks}</span>
                 </div>
               )}
               {resumeData.skills.databases && (
                 <div>
-                  <span className="font-bold">Databases &amp; Systems: </span>
-                  <span>{resumeData.skills.databases}</span>
+                  <span className="font-bold" style={{ color: "#000000" }}>Databases &amp; Systems: </span>
+                  <span style={{ color: "#000000" }}>{resumeData.skills.databases}</span>
                 </div>
               )}
               {resumeData.skills.cloudDevOps && (
                 <div>
-                  <span className="font-bold">Cloud &amp; DevOps: </span>
-                  <span>{resumeData.skills.cloudDevOps}</span>
+                  <span className="font-bold" style={{ color: "#000000" }}>Cloud &amp; DevOps: </span>
+                  <span style={{ color: "#000000" }}>{resumeData.skills.cloudDevOps}</span>
                 </div>
               )}
               {resumeData.skills.coreCS && (
                 <div>
-                  <span className="font-bold">Core Competencies: </span>
-                  <span>{resumeData.skills.coreCS}</span>
+                  <span className="font-bold" style={{ color: "#000000" }}>Core Competencies: </span>
+                  <span style={{ color: "#000000" }}>{resumeData.skills.coreCS}</span>
                 </div>
               )}
             </div>
@@ -890,25 +919,25 @@ export default function ResumeBuilderPage() {
       case "experience":
         return resumeData.experiences.length > 0 ? (
           <div>
-            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-2">
+            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-2" style={{ color: "#000000", borderColor: "#000000" }}>
               WORK EXPERIENCE
             </h2>
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {resumeData.experiences.map((exp) => (
-                <div key={exp.id} className="text-xs text-black space-y-0.5">
-                  <div className="flex justify-between items-baseline font-bold">
-                    <span>
+                <div key={exp.id} className="text-xs text-black space-y-0.5" style={{ color: "#000000" }}>
+                  <div className="flex justify-between items-baseline font-bold" style={{ color: "#000000" }}>
+                    <span style={{ color: "#000000" }}>
                       {exp.role.toUpperCase()}, {exp.company}
-                      {exp.location && <span className="font-normal"> — {exp.location}</span>}
+                      {exp.location && <span className="font-normal" style={{ color: "#000000" }}> — {exp.location}</span>}
                     </span>
-                    <span className="font-mono text-[11px]">
+                    <span className="font-mono text-[11px]" style={{ color: "#000000" }}>
                       {exp.startDate} – {exp.endDate}
                     </span>
                   </div>
                   {exp.points.length > 0 && (
-                    <ul className="list-disc list-outside pl-4 space-y-0.5 text-black">
+                    <ul className="list-disc list-outside pl-4 space-y-0.5 text-black" style={{ color: "#000000" }}>
                       {exp.points.map((pt, idx) => (
-                        <li key={idx} className="leading-snug">
+                        <li key={idx} className="leading-snug" style={{ color: "#000000" }}>
                           {pt}
                         </li>
                       ))}
@@ -923,25 +952,25 @@ export default function ResumeBuilderPage() {
       case "projects":
         return resumeData.projects.length > 0 ? (
           <div>
-            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-2">
+            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-2" style={{ color: "#000000", borderColor: "#000000" }}>
               KEY PROJECTS
             </h2>
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {resumeData.projects.map((proj) => (
-                <div key={proj.id} className="text-xs text-black space-y-0.5">
-                  <div className="flex justify-between items-baseline font-bold">
-                    <span>{proj.title}</span>
-                    {proj.liveUrl && <span className="font-mono text-[11px] font-normal">{proj.liveUrl}</span>}
+                <div key={proj.id} className="text-xs text-black space-y-0.5" style={{ color: "#000000" }}>
+                  <div className="flex justify-between items-baseline font-bold" style={{ color: "#000000" }}>
+                    <span style={{ color: "#000000" }}>{proj.title}</span>
+                    {proj.liveUrl && <span className="font-mono text-[11px] font-normal" style={{ color: "#000000" }}>{proj.liveUrl}</span>}
                   </div>
                   {proj.techStack && (
-                    <div className="text-[11px] italic text-neutral-800">
+                    <div className="text-[11px] italic text-neutral-800" style={{ color: "#262626" }}>
                       Technologies: {proj.techStack}
                     </div>
                   )}
                   {proj.points.length > 0 && (
-                    <ul className="list-disc list-outside pl-4 space-y-0.5 text-black">
+                    <ul className="list-disc list-outside pl-4 space-y-0.5 text-black" style={{ color: "#000000" }}>
                       {proj.points.map((pt, idx) => (
-                        <li key={idx} className="leading-snug">
+                        <li key={idx} className="leading-snug" style={{ color: "#000000" }}>
                           {pt}
                         </li>
                       ))}
@@ -956,17 +985,17 @@ export default function ResumeBuilderPage() {
       case "education":
         return resumeData.educations.length > 0 ? (
           <div>
-            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-1.5">
+            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-1.5" style={{ color: "#000000", borderColor: "#000000" }}>
               EDUCATION
             </h2>
             <div className="space-y-1.5">
               {resumeData.educations.map((edu) => (
-                <div key={edu.id} className="flex justify-between items-baseline text-xs text-black">
+                <div key={edu.id} className="flex justify-between items-baseline text-xs text-black" style={{ color: "#000000" }}>
                   <div>
-                    <span className="font-bold">{edu.degree}</span>, {edu.institution}
-                    {edu.location && <span className="text-neutral-700"> — {edu.location}</span>}
+                    <span className="font-bold" style={{ color: "#000000" }}>{edu.degree}</span>, {edu.institution}
+                    {edu.location && <span className="text-neutral-700" style={{ color: "#333333" }}> — {edu.location}</span>}
                   </div>
-                  <span className="font-mono text-[11px] shrink-0">
+                  <span className="font-mono text-[11px] shrink-0" style={{ color: "#000000" }}>
                     {edu.year} {edu.score ? `(${edu.score})` : ""}
                   </span>
                 </div>
@@ -978,16 +1007,16 @@ export default function ResumeBuilderPage() {
       case "certifications":
         return resumeData.certifications.length > 0 ? (
           <div>
-            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-1.5">
+            <h2 className="text-[11px] font-black uppercase tracking-widest text-black border-b border-black pb-0.5 mb-1.5" style={{ color: "#000000", borderColor: "#000000" }}>
               CERTIFICATIONS &amp; CREDENTIALS
             </h2>
-            <div className="space-y-1 text-xs text-black">
+            <div className="space-y-1 text-xs text-black" style={{ color: "#000000" }}>
               {resumeData.certifications.map((cert) => (
-                <div key={cert.id} className="flex justify-between items-baseline">
-                  <span className="font-medium">
-                    • {cert.title} — <span className="text-neutral-700">{cert.issuer}</span>
+                <div key={cert.id} className="flex justify-between items-baseline" style={{ color: "#000000" }}>
+                  <span className="font-medium" style={{ color: "#000000" }}>
+                    • {cert.title} — <span className="text-neutral-700" style={{ color: "#333333" }}>{cert.issuer}</span>
                   </span>
-                  {cert.year && <span className="font-mono text-[11px] shrink-0">{cert.year}</span>}
+                  {cert.year && <span className="font-mono text-[11px] shrink-0" style={{ color: "#000000" }}>{cert.year}</span>}
                 </div>
               ))}
             </div>
@@ -1004,32 +1033,32 @@ export default function ResumeBuilderPage() {
       case "skills":
         return (
           <div className="space-y-2">
-            <h3 className="font-serif font-bold text-xs uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1">
+            <h3 className="font-serif font-bold text-xs uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1" style={{ color: "#0F172A", borderColor: "#CBD5E1" }}>
               Expertise
             </h3>
             <div className="space-y-2 text-[11px]">
               {resumeData.skills.languages && (
                 <div>
-                  <span className="font-bold text-slate-900 block">Languages</span>
-                  <span className="text-slate-600">{resumeData.skills.languages}</span>
+                  <span className="font-bold text-slate-900 block" style={{ color: "#0F172A" }}>Languages</span>
+                  <span className="text-slate-600" style={{ color: "#475569" }}>{resumeData.skills.languages}</span>
                 </div>
               )}
               {resumeData.skills.frameworks && (
                 <div>
-                  <span className="font-bold text-slate-900 block">Frameworks</span>
-                  <span className="text-slate-600">{resumeData.skills.frameworks}</span>
+                  <span className="font-bold text-slate-900 block" style={{ color: "#0F172A" }}>Frameworks</span>
+                  <span className="text-slate-600" style={{ color: "#475569" }}>{resumeData.skills.frameworks}</span>
                 </div>
               )}
               {resumeData.skills.databases && (
                 <div>
-                  <span className="font-bold text-slate-900 block">Databases</span>
-                  <span className="text-slate-600">{resumeData.skills.databases}</span>
+                  <span className="font-bold text-slate-900 block" style={{ color: "#0F172A" }}>Databases</span>
+                  <span className="text-slate-600" style={{ color: "#475569" }}>{resumeData.skills.databases}</span>
                 </div>
               )}
               {resumeData.skills.cloudDevOps && (
                 <div>
-                  <span className="font-bold text-slate-900 block">Cloud &amp; DevOps</span>
-                  <span className="text-slate-600">{resumeData.skills.cloudDevOps}</span>
+                  <span className="font-bold text-slate-900 block" style={{ color: "#0F172A" }}>Cloud &amp; DevOps</span>
+                  <span className="text-slate-600" style={{ color: "#475569" }}>{resumeData.skills.cloudDevOps}</span>
                 </div>
               )}
             </div>
@@ -1039,15 +1068,15 @@ export default function ResumeBuilderPage() {
       case "education":
         return resumeData.educations.length > 0 ? (
           <div className="space-y-2">
-            <h3 className="font-serif font-bold text-xs uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1">
+            <h3 className="font-serif font-bold text-xs uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1" style={{ color: "#0F172A", borderColor: "#CBD5E1" }}>
               Education
             </h3>
             <div className="space-y-2 text-[11px]">
               {resumeData.educations.map((edu) => (
                 <div key={edu.id} className="space-y-0.5">
-                  <div className="font-bold text-slate-900">{edu.degree}</div>
-                  <div className="text-slate-600">{edu.institution}</div>
-                  <div className="text-slate-500 font-mono text-[10px]">
+                  <div className="font-bold text-slate-900" style={{ color: "#0F172A" }}>{edu.degree}</div>
+                  <div className="text-slate-600" style={{ color: "#475569" }}>{edu.institution}</div>
+                  <div className="text-slate-500 font-mono text-[10px]" style={{ color: "#64748B" }}>
                     {edu.year} {edu.score ? `• ${edu.score}` : ""}
                   </div>
                 </div>
@@ -1059,14 +1088,14 @@ export default function ResumeBuilderPage() {
       case "certifications":
         return resumeData.certifications.length > 0 ? (
           <div className="space-y-2">
-            <h3 className="font-serif font-bold text-xs uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1">
+            <h3 className="font-serif font-bold text-xs uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1" style={{ color: "#0F172A", borderColor: "#CBD5E1" }}>
               Certifications
             </h3>
             <div className="space-y-2 text-[11px]">
               {resumeData.certifications.map((cert) => (
                 <div key={cert.id} className="space-y-0.5">
-                  <div className="font-bold text-slate-900">{cert.title}</div>
-                  <div className="text-slate-600 text-[10px]">
+                  <div className="font-bold text-slate-900" style={{ color: "#0F172A" }}>{cert.title}</div>
+                  <div className="text-slate-600 text-[10px]" style={{ color: "#475569" }}>
                     {cert.issuer} {cert.year ? `(${cert.year})` : ""}
                   </div>
                 </div>
@@ -1085,10 +1114,10 @@ export default function ResumeBuilderPage() {
       case "summary":
         return resumeData.personal.summary ? (
           <div className="space-y-1.5">
-            <h3 className="font-serif font-bold text-sm text-slate-900 tracking-wide border-b border-slate-200 pb-1">
+            <h3 className="font-serif font-bold text-sm text-slate-900 tracking-wide border-b border-slate-200 pb-1" style={{ color: "#0F172A", borderColor: "#E2E8F0" }}>
               Executive Profile
             </h3>
-            <p className="text-xs text-slate-700 leading-relaxed font-sans">
+            <p className="text-xs text-slate-700 leading-relaxed font-sans" style={{ color: "#334155" }}>
               {resumeData.personal.summary}
             </p>
           </div>
@@ -1097,25 +1126,25 @@ export default function ResumeBuilderPage() {
       case "experience":
         return resumeData.experiences.length > 0 ? (
           <div className="space-y-3">
-            <h3 className="font-serif font-bold text-sm text-slate-900 tracking-wide border-b border-slate-200 pb-1">
+            <h3 className="font-serif font-bold text-sm text-slate-900 tracking-wide border-b border-slate-200 pb-1" style={{ color: "#0F172A", borderColor: "#E2E8F0" }}>
               Professional Career
             </h3>
-            <div className="space-y-3.5 font-sans">
+            <div className="space-y-3 font-sans">
               {resumeData.experiences.map((exp) => (
                 <div key={exp.id} className="space-y-1 text-xs">
                   <div className="flex flex-col sm:flex-row sm:items-baseline justify-between font-bold text-slate-900">
-                    <span className="font-serif text-sm font-semibold">{exp.role}</span>
-                    <span className="text-slate-500 font-mono text-[11px]">
+                    <span className="font-serif text-sm font-semibold" style={{ color: "#0F172A" }}>{exp.role}</span>
+                    <span className="text-slate-500 font-mono text-[11px]" style={{ color: "#64748B" }}>
                       {exp.startDate} – {exp.endDate}
                     </span>
                   </div>
-                  <div className="text-slate-600 font-medium text-[11px]">
+                  <div className="text-slate-600 font-medium text-[11px]" style={{ color: "#475569" }}>
                     {exp.company} {exp.location ? `• ${exp.location}` : ""}
                   </div>
                   {exp.points.length > 0 && (
-                    <ul className="list-disc list-inside space-y-1 text-slate-700 pt-0.5">
+                    <ul className="list-disc list-inside space-y-1 text-slate-700 pt-0.5" style={{ color: "#334155" }}>
                       {exp.points.map((pt, idx) => (
-                        <li key={idx} className="leading-snug">
+                        <li key={idx} className="leading-snug" style={{ color: "#334155" }}>
                           {pt}
                         </li>
                       ))}
@@ -1130,29 +1159,29 @@ export default function ResumeBuilderPage() {
       case "projects":
         return resumeData.projects.length > 0 ? (
           <div className="space-y-3">
-            <h3 className="font-serif font-bold text-sm text-slate-900 tracking-wide border-b border-slate-200 pb-1">
+            <h3 className="font-serif font-bold text-sm text-slate-900 tracking-wide border-b border-slate-200 pb-1" style={{ color: "#0F172A", borderColor: "#E2E8F0" }}>
               Key Technical Architectures
             </h3>
             <div className="space-y-3 font-sans">
               {resumeData.projects.map((proj) => (
                 <div key={proj.id} className="space-y-1 text-xs">
                   <div className="flex flex-col sm:flex-row sm:items-baseline justify-between font-bold text-slate-900">
-                    <span className="font-semibold text-slate-900">{proj.title}</span>
+                    <span className="font-semibold text-slate-900" style={{ color: "#0F172A" }}>{proj.title}</span>
                     {proj.liveUrl && (
-                      <span className="text-slate-600 font-mono text-[10px] underline">
+                      <span className="text-[#1E5EFF] font-mono text-[10px] underline" style={{ color: "#1E5EFF" }}>
                         {proj.liveUrl}
                       </span>
                     )}
                   </div>
                   {proj.techStack && (
-                    <div className="text-[11px] text-slate-500 italic">
+                    <div className="text-[11px] text-slate-600 italic" style={{ color: "#475569" }}>
                       {proj.techStack}
                     </div>
                   )}
                   {proj.points.length > 0 && (
-                    <ul className="list-disc list-inside space-y-1 text-slate-700">
+                    <ul className="list-disc list-inside space-y-1 text-slate-700" style={{ color: "#334155" }}>
                       {proj.points.map((pt, idx) => (
-                        <li key={idx} className="leading-snug">
+                        <li key={idx} className="leading-snug" style={{ color: "#334155" }}>
                           {pt}
                         </li>
                       ))}
@@ -1539,13 +1568,15 @@ export default function ResumeBuilderPage() {
                       />
                     </div>
                     <div>
-                      <label className="font-semibold text-slate-700 dark:text-slate-300">Phone Number</label>
+                      <label className="font-semibold text-slate-700 dark:text-slate-300">Phone Number (10 Digits)</label>
                       <input
                         type="tel"
-                        placeholder="+91 98765 43210"
+                        inputMode="numeric"
+                        maxLength={10}
+                        placeholder="9876543210"
                         value={resumeData.personal.phone}
-                        onChange={(e) => updatePersonal("phone", e.target.value)}
-                        className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2.5 text-xs outline-none focus:border-[#1E5EFF] dark:focus:border-blue-500 transition-colors"
+                        onChange={(e) => updatePersonal("phone", e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
+                        className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg text-slate-900 dark:text-white p-2.5 text-xs outline-none focus:border-[#1E5EFF] dark:focus:border-blue-500 transition-colors font-mono"
                       />
                     </div>
                   </div>
@@ -2207,60 +2238,65 @@ export default function ResumeBuilderPage() {
             <div className="w-full overflow-x-auto pb-6 flex justify-center">
               <div
                 id="printable-resume-sheet"
-                className="w-full max-w-[820px] transition-transform duration-200"
-                style={
-                  previewZoom === "fit"
+                className="w-full max-w-[820px] transition-transform duration-200 bg-white text-slate-900"
+                style={{
+                  backgroundColor: "#ffffff",
+                  color: "#0f172a",
+                  ...(previewZoom === "fit"
                     ? { transform: "scale(0.85)", transformOrigin: "top center" }
-                    : undefined
-                }
+                    : undefined),
+                }}
               >
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {/* TEMPLATE 1: MODERN TECH                                            */}
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {template === "modern" && (
-                  <div className="w-full min-h-[1123px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-[#1E5EFF] border border-slate-200 text-slate-800 space-y-5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans">
+                  <div
+                    className="w-full min-h-[1123px] print:min-h-0 print:h-auto bg-white p-6 sm:p-8 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-[#1E5EFF] border border-slate-200 text-slate-800 space-y-4 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans"
+                    style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
+                  >
                     {/* Header */}
-                    <div className="border-b border-slate-200 pb-4 space-y-2">
+                    <div className="border-b border-slate-200 pb-3 space-y-1.5" style={{ borderColor: "#e2e8f0" }}>
                       <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight" style={{ color: "#0f172a" }}>
                           {resumeData.personal.fullName || "Your Full Name"}
                         </h1>
                         {resumeData.personal.location && (
-                          <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
-                            <MapPin className="h-3.5 w-3.5 text-[#1E5EFF]" /> {resumeData.personal.location}
+                          <span className="text-xs font-medium text-slate-500 flex items-center gap-1" style={{ color: "#64748b" }}>
+                            <MapPin className="h-3.5 w-3.5 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.location}
                           </span>
                         )}
                       </div>
 
-                      <div className="text-sm font-bold text-[#1E5EFF]">
+                      <div className="text-sm font-bold text-[#1E5EFF]" style={{ color: "#1e5eff" }}>
                         {resumeData.personal.headline || "Target Engineering Headline"}
                       </div>
 
                       {/* Contact row with pills */}
-                      <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                      <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-xs">
                         {resumeData.personal.email && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-slate-600 border border-slate-200/80">
-                            <Mail className="h-3 w-3 text-[#1E5EFF]" /> {resumeData.personal.email}
+                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-slate-700 border border-slate-200" style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}>
+                            <Mail className="h-3 w-3 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.email}
                           </span>
                         )}
                         {resumeData.personal.phone && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-slate-600 border border-slate-200/80">
-                            <Phone className="h-3 w-3 text-[#1E5EFF]" /> {resumeData.personal.phone}
+                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-slate-700 border border-slate-200" style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}>
+                            <Phone className="h-3 w-3 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.phone}
                           </span>
                         )}
                         {resumeData.personal.linkedin && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-blue-50/70 px-2 py-0.5 text-[#1E5EFF] border border-blue-200/80 font-medium">
-                            <Link2 className="h-3 w-3" /> {resumeData.personal.linkedin}
+                          <span className="inline-flex items-center gap-1 rounded-md bg-blue-50/80 px-2 py-0.5 text-[#1E5EFF] border border-blue-200 font-medium" style={{ backgroundColor: "#eff6ff", borderColor: "#bfdbfe", color: "#1e5eff" }}>
+                            <Link2 className="h-3 w-3" style={{ color: "#1e5eff" }} /> {resumeData.personal.linkedin}
                           </span>
                         )}
                         {resumeData.personal.github && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-slate-800 border border-slate-300/80 font-medium">
-                            <Code2 className="h-3 w-3" /> {resumeData.personal.github}
+                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-slate-800 border border-slate-300 font-medium" style={{ backgroundColor: "#f1f5f9", borderColor: "#cbd5e1", color: "#1e293b" }}>
+                            <Code2 className="h-3 w-3" style={{ color: "#1e293b" }} /> {resumeData.personal.github}
                           </span>
                         )}
                         {resumeData.personal.portfolio && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-emerald-700 border border-emerald-200 font-medium">
-                            <Globe className="h-3 w-3" /> {resumeData.personal.portfolio}
+                          <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-emerald-800 border border-emerald-200 font-medium" style={{ backgroundColor: "#ecfdf5", borderColor: "#a7f3d0", color: "#065f46" }}>
+                            <Globe className="h-3 w-3" style={{ color: "#059669" }} /> {resumeData.personal.portfolio}
                           </span>
                         )}
                       </div>
@@ -2279,20 +2315,23 @@ export default function ResumeBuilderPage() {
                 {/* TEMPLATE 2: ATS MINIMALIST (Strict Classic Monochrome)              */}
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {template === "minimalist" && (
-                  <div className="w-full min-h-[1123px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border border-slate-200 text-black space-y-4 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans">
+                  <div
+                    className="w-full min-h-[1123px] print:min-h-0 print:h-auto bg-white p-6 sm:p-8 shadow-xl sm:shadow-2xl rounded-2xl border border-slate-200 text-black space-y-3.5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans"
+                    style={{ backgroundColor: "#ffffff", color: "#000000" }}
+                  >
                     {/* Centered Traditional ATS Header */}
-                    <div className="text-center pb-2 border-b border-black">
-                      <h1 className="text-2xl sm:text-3xl font-black uppercase text-black tracking-tight">
+                    <div className="text-center pb-2 border-b border-black" style={{ borderColor: "#000000" }}>
+                      <h1 className="text-2xl sm:text-3xl font-black uppercase text-black tracking-tight" style={{ color: "#000000" }}>
                         {resumeData.personal.fullName || "YOUR FULL NAME"}
                       </h1>
                       {resumeData.personal.headline && (
-                        <div className="text-xs font-bold text-black uppercase tracking-wider mt-1">
+                        <div className="text-xs font-bold text-black uppercase tracking-wider mt-1" style={{ color: "#000000" }}>
                           {resumeData.personal.headline}
                         </div>
                       )}
 
                       {/* Single Line Clean Pipe Separators */}
-                      <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-0.5 text-xs text-black pt-1.5 font-normal">
+                      <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-0.5 text-xs text-black pt-1.5 font-normal" style={{ color: "#000000" }}>
                         {resumeData.personal.email && <span>{resumeData.personal.email}</span>}
                         {resumeData.personal.phone && <span>• {resumeData.personal.phone}</span>}
                         {resumeData.personal.location && <span>• {resumeData.personal.location}</span>}
@@ -2315,13 +2354,16 @@ export default function ResumeBuilderPage() {
                 {/* TEMPLATE 3: EXECUTIVE PRO (Serif Two-Column Sidebar Layout)         */}
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {template === "executive" && (
-                  <div className="w-full min-h-[1123px] print:min-h-0 print:h-auto bg-white p-6 sm:p-10 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-slate-900 border border-slate-200 text-slate-900 space-y-5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-serif">
+                  <div
+                    className="w-full min-h-[1123px] print:min-h-0 print:h-auto bg-white p-6 sm:p-8 shadow-xl sm:shadow-2xl rounded-2xl border-t-8 border-t-slate-900 border border-slate-200 text-slate-900 space-y-4 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-serif"
+                    style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
+                  >
                     {/* Editorial Serif Header */}
-                    <div className="border-b-2 border-slate-900 pb-4">
-                      <h1 className="text-3xl sm:text-4xl font-normal tracking-wide text-slate-900">
+                    <div className="border-b-2 border-slate-900 pb-3" style={{ borderColor: "#0f172a" }}>
+                      <h1 className="text-3xl sm:text-4xl font-normal tracking-wide text-slate-900" style={{ color: "#0f172a" }}>
                         {resumeData.personal.fullName || "Your Full Name"}
                       </h1>
-                      <div className="mt-1 font-sans text-xs uppercase tracking-widest font-bold text-slate-600">
+                      <div className="mt-1 font-sans text-xs uppercase tracking-widest font-bold text-slate-600" style={{ color: "#475569" }}>
                         {resumeData.personal.headline || "Executive Engineering Leader"}
                       </div>
                     </div>
@@ -2329,46 +2371,46 @@ export default function ResumeBuilderPage() {
                     {/* 2-Column Asymmetrical Grid */}
                     <div className="grid grid-cols-12 gap-5 items-start font-sans">
                       {/* Left Column (4 Cols): Contact, Skills, Education, Certs */}
-                      <div className="col-span-12 sm:col-span-4 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 space-y-5 text-xs">
+                      <div className="col-span-12 sm:col-span-4 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 space-y-4 text-xs" style={{ backgroundColor: "#F8FAFC", borderColor: "#E2E8F0" }}>
                         {/* Contact */}
                         <div className="space-y-2">
-                          <h3 className="font-serif font-bold text-xs uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1">
+                          <h3 className="font-serif font-bold text-xs uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1" style={{ color: "#0F172A", borderColor: "#CBD5E1" }}>
                             Contact Info
                           </h3>
-                          <div className="space-y-1.5 text-slate-700 text-[11px]">
+                          <div className="space-y-1.5 text-slate-700 text-[11px]" style={{ color: "#334155" }}>
                             {resumeData.personal.email && (
-                              <div className="flex items-center gap-1.5">
-                                <Mail className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                              <div className="flex items-center gap-1.5" style={{ color: "#334155" }}>
+                                <Mail className="h-3.5 w-3.5 text-slate-500 shrink-0" style={{ color: "#64748B" }} />
                                 <span className="break-all">{resumeData.personal.email}</span>
                               </div>
                             )}
                             {resumeData.personal.phone && (
-                              <div className="flex items-center gap-1.5">
-                                <Phone className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                              <div className="flex items-center gap-1.5" style={{ color: "#334155" }}>
+                                <Phone className="h-3.5 w-3.5 text-slate-500 shrink-0" style={{ color: "#64748B" }} />
                                 <span>{resumeData.personal.phone}</span>
                               </div>
                             )}
                             {resumeData.personal.location && (
-                              <div className="flex items-center gap-1.5">
-                                <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                              <div className="flex items-center gap-1.5" style={{ color: "#334155" }}>
+                                <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" style={{ color: "#64748B" }} />
                                 <span>{resumeData.personal.location}</span>
                               </div>
                             )}
                             {resumeData.personal.linkedin && (
-                              <div className="flex items-center gap-1.5 text-slate-900 font-semibold">
-                                <Link2 className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                              <div className="flex items-center gap-1.5 text-slate-900 font-semibold" style={{ color: "#0F172A" }}>
+                                <Link2 className="h-3.5 w-3.5 text-slate-500 shrink-0" style={{ color: "#64748B" }} />
                                 <span className="break-all">{resumeData.personal.linkedin}</span>
                               </div>
                             )}
                             {resumeData.personal.github && (
-                              <div className="flex items-center gap-1.5 text-slate-900 font-semibold">
-                                <Code2 className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                              <div className="flex items-center gap-1.5 text-slate-900 font-semibold" style={{ color: "#0F172A" }}>
+                                <Code2 className="h-3.5 w-3.5 text-slate-500 shrink-0" style={{ color: "#64748B" }} />
                                 <span className="break-all">{resumeData.personal.github}</span>
                               </div>
                             )}
                             {resumeData.personal.portfolio && (
-                              <div className="flex items-center gap-1.5 text-slate-900 font-semibold">
-                                <Globe className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                              <div className="flex items-center gap-1.5 text-slate-900 font-semibold" style={{ color: "#0F172A" }}>
+                                <Globe className="h-3.5 w-3.5 text-slate-500 shrink-0" style={{ color: "#64748B" }} />
                                 <span className="break-all">{resumeData.personal.portfolio}</span>
                               </div>
                             )}
@@ -2386,7 +2428,7 @@ export default function ResumeBuilderPage() {
                       </div>
 
                       {/* Right Column (8 Cols): Dynamic Sections */}
-                      <div className="col-span-12 sm:col-span-8 space-y-5">
+                      <div className="col-span-12 sm:col-span-8 space-y-3.5">
                         {sectionOrder
                           .filter((secId) => ["summary", "experience", "projects"].includes(secId))
                           .map((secId) => (

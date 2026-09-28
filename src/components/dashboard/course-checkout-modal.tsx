@@ -69,13 +69,23 @@ export function CourseCheckoutModal({
     session?.name ||
     "";
 
-  // Editable student name and email with automatic detection
+  const detectedPhone =
+    session?.phone ||
+    (typeof window !== "undefined"
+      ? localStorage.getItem("jks_student_profile_phone_v3") ||
+        localStorage.getItem("jks_user_phone") ||
+        ""
+      : "");
+
+  // Editable student name, email, and phone with automatic detection
   const [studentName, setStudentName] = useState(detectedName);
   const [nameTouched, setNameTouched] = useState(false);
   const [accountEmail, setAccountEmail] = useState(detectedEmail);
   const [emailTouched, setEmailTouched] = useState(false);
-
-  const [phone, setPhone] = useState("9876543210");
+  const [phone, setPhone] = useState(
+    detectedPhone ? detectedPhone.replace(/[^0-9]/g, "").slice(0, 10) : ""
+  );
+  const [phoneTouched, setPhoneTouched] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState("Weekday Live Evening (7:00 PM - 8:30 PM IST)");
   const [paymentMode, setPaymentMode] = useState<PaymentMethod>("UPI");
   const [upiId, setUpiId] = useState("student@oksbi");
@@ -108,6 +118,7 @@ export function CourseCheckoutModal({
       // modal picks the signed-in account back up.
       setEmailTouched(false);
       setNameTouched(false);
+      setPhoneTouched(false);
     }
   }, [isOpen, course]);
 
@@ -120,7 +131,10 @@ export function CourseCheckoutModal({
     if (!nameTouched && detectedName) {
       setStudentName(detectedName);
     }
-  }, [detectedEmail, emailTouched, detectedName, nameTouched]);
+    if (!phoneTouched && detectedPhone) {
+      setPhone(detectedPhone.replace(/[^0-9]/g, "").slice(0, 10));
+    }
+  }, [detectedEmail, emailTouched, detectedName, nameTouched, detectedPhone, phoneTouched]);
 
   // Handle ESC key to close
   useEffect(() => {
@@ -172,6 +186,13 @@ export function CourseCheckoutModal({
       return;
     }
 
+    const cleanedPhone = phone.replace(/[^0-9]/g, "").slice(0, 10);
+    if (!cleanedPhone || cleanedPhone.length !== 10) {
+      setPhoneTouched(true);
+      setEnrollmentError("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
     if (isStudentOnHold) {
       setEnrollmentError(
         "Your account is currently on hold. You cannot enroll in courses at this time. Please contact support.",
@@ -189,7 +210,7 @@ export function CourseCheckoutModal({
       const invoice = await registerCourseOnline({
         studentName: trimmedName,
         studentEmail: effectiveEmail,
-        studentPhone: phone,
+        studentPhone: cleanedPhone,
         studentCity: "Bengaluru, India",
         courseSlug: course.slug,
         courseTitle: course.title,
@@ -210,8 +231,32 @@ export function CourseCheckoutModal({
       // Synchronize in-app course enrollment
       enrollStudentCourse(course.slug, effectiveEmail);
 
-      // Trigger sync events across pages
+      // Synchronize student profile details across local storage and broadcast updates
       if (typeof window !== "undefined") {
+        if (trimmedName && trimmedName.length >= 2) {
+          localStorage.setItem("jks_student_profile_name_v3", trimmedName);
+          localStorage.setItem(`jks_student_profile_name_v3_${effectiveEmail}`, trimmedName);
+          localStorage.setItem("jks_student_name", trimmedName);
+          localStorage.setItem("jks_user_name", trimmedName);
+        }
+        if (phone && phone.trim().length >= 10) {
+          localStorage.setItem("jks_student_profile_phone_v3", phone.trim());
+          localStorage.setItem(`jks_student_profile_phone_v3_${effectiveEmail}`, phone.trim());
+          localStorage.setItem("jks_student_phone", phone.trim());
+        }
+
+        const rawAuth = localStorage.getItem("jks_auth_user");
+        if (rawAuth) {
+          try {
+            const parsed = JSON.parse(rawAuth);
+            if (trimmedName) parsed.name = trimmedName;
+            if (phone) parsed.phone = phone.trim();
+            localStorage.setItem("jks_auth_user", JSON.stringify(parsed));
+          } catch {}
+        }
+
+        window.dispatchEvent(new Event("jks_profile_updated"));
+        window.dispatchEvent(new Event("jks-mock-session-change"));
         window.dispatchEvent(new Event("jks_enrollment_updated"));
         window.dispatchEvent(new Event("jks_video_progress_changed"));
       }
@@ -345,7 +390,7 @@ export function CourseCheckoutModal({
                 </div>
 
                 {/* Student Details Pre-filled Info */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   <div>
                     <label htmlFor="checkout-student-name" className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">
                       Student Name
@@ -361,6 +406,27 @@ export function CourseCheckoutModal({
                         setStudentName(e.target.value);
                       }}
                       className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-semibold text-slate-800 outline-none transition-colors focus:border-[#2563EB] focus:ring-1 focus:ring-blue-500 dark:border-slate-700 dark:bg-input-bg dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="checkout-student-phone" className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                      Mobile Number (10 Digits)
+                    </label>
+                    <input
+                      id="checkout-student-phone"
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={10}
+                      autoComplete="tel"
+                      placeholder="9876543210"
+                      value={phone}
+                      onChange={(e) => {
+                        const cleaned = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+                        setPhone(cleaned);
+                        setPhoneTouched(true);
+                      }}
+                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-semibold text-slate-800 outline-none transition-colors focus:border-[#2563EB] focus:ring-1 focus:ring-blue-500 dark:border-slate-700 dark:bg-input-bg dark:text-white dark:placeholder-slate-500 dark:focus:border-blue-500 font-mono"
                     />
                   </div>
 
@@ -396,7 +462,7 @@ export function CourseCheckoutModal({
                     >
                       {emailTouched && !isEmailValid
                         ? "Enter a valid email address."
-                        : "Enrollment access and the invoice go to this address."}
+                        : "Enrollment access and invoice destination."}
                     </p>
                   </div>
                 </div>

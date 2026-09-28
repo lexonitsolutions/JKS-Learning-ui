@@ -59,6 +59,10 @@ export default function RootLayout({
             signInUrl="/login"
             signUpUrl="/sign-up"
             afterSignOutUrl="/login"
+            signInFallbackRedirectUrl="/auth-redirect"
+            signUpFallbackRedirectUrl="/auth-redirect"
+            signInForceRedirectUrl="/auth-redirect"
+            signUpForceRedirectUrl="/auth-redirect"
           >
             <ClerkSessionSync />
             <ChunkErrorHandler />

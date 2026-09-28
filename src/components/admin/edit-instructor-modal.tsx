@@ -73,13 +73,19 @@ export function EditInstructorModal({
       return;
     }
 
+    const cleanedPhone = phone.replace(/[^0-9]/g, "").slice(0, 10);
+    if (phone.trim() && cleanedPhone.length !== 10) {
+      setError("Contact phone must be exactly 10 digits.");
+      return;
+    }
+
     setIsSaving(true);
     setError(null);
 
     const res = await updateInstructor(instructor.id, {
       name: name.trim(),
       email: email.trim().toLowerCase(),
-      phone: phone.trim() || undefined,
+      phone: cleanedPhone || undefined,
       password: newPassword.trim() || undefined,
       role: role.trim() || "Lead Technical Faculty",
       status,
@@ -99,7 +105,7 @@ export function EditInstructorModal({
         ...res.instructor,
         role: role.trim() || res.instructor.role,
         status,
-        phone: phone.trim() || undefined,
+        phone: cleanedPhone || undefined,
       });
       setIsSuccess(false);
       onClose();
@@ -180,14 +186,16 @@ export function EditInstructorModal({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                  <Phone className="h-3.5 w-3.5 text-slate-400" /> Contact Phone
+                  <Phone className="h-3.5 w-3.5 text-slate-400" /> Contact Phone (10 Digits)
                 </label>
                 <input
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 98765 43210 (optional)"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700 dark:bg-input-bg dark:text-white"
+                  onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
+                  placeholder="9876543210 (optional)"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700 dark:bg-input-bg dark:text-white font-mono"
                 />
               </div>
             </div>

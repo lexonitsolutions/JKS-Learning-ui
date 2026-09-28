@@ -229,13 +229,19 @@ export function WebsiteChatbot() {
     e.preventDefault();
     if (!leadForm.name || !leadForm.phone) return;
 
+    const cleanedPhone = leadForm.phone.replace(/[^0-9]/g, "").slice(0, 10);
+    if (cleanedPhone.length !== 10) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
     setIsSubmittingLead(true);
     try {
       addLead({
 
         name: leadForm.name,
         email: leadForm.email || `${leadForm.name.toLowerCase().replace(/\s+/g, ".")}@gmail.com`,
-        phone: leadForm.phone,
+        phone: cleanedPhone,
         interestedCourse: leadForm.course,
         source: "website_chatbot",
         status: "new",
@@ -510,14 +516,16 @@ export function WebsiteChatbot() {
                         </div>
 
                         <div>
-                          <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Mobile / WhatsApp *</label>
+                          <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Mobile / WhatsApp (10 Digits) *</label>
                           <input
                             type="tel"
+                            inputMode="numeric"
+                            maxLength={10}
                             required
-                            placeholder="+91 98765 43210"
+                            placeholder="9876543210"
                             value={leadForm.phone}
-                            onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
+                            onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value.replace(/[^0-9]/g, "").slice(0, 10) })}
+                            className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 font-mono"
                           />
                         </div>
 

@@ -43,6 +43,12 @@ export function EditStudentModal({ isOpen, student, onClose, onSaved }: EditStud
       return;
     }
 
+    const cleanedPhone = phone.replace(/[^0-9]/g, "").slice(0, 10);
+    if (phone.trim() && cleanedPhone.length !== 10) {
+      setErrorMsg("Mobile number must be exactly 10 digits.");
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMsg(null);
 
@@ -50,7 +56,7 @@ export function EditStudentModal({ isOpen, student, onClose, onSaved }: EditStud
       const res = await updateAdminStudent(student.id, {
         name: name.trim(),
         email: email.trim().toLowerCase(),
-        phone: phone.trim() || undefined,
+        phone: cleanedPhone || undefined,
         status,
       });
 
@@ -59,7 +65,7 @@ export function EditStudentModal({ isOpen, student, onClose, onSaved }: EditStud
           ...student,
           name: name.trim(),
           email: email.trim().toLowerCase(),
-          phone: phone.trim() || "N/A",
+          phone: cleanedPhone || "N/A",
           status,
         });
         onClose();
@@ -132,14 +138,16 @@ export function EditStudentModal({ isOpen, student, onClose, onSaved }: EditStud
 
           <div>
             <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
-              Phone Number
+              Mobile Number (10 Digits)
             </label>
             <input
-              type="text"
+              type="tel"
+              inputMode="numeric"
+              maxLength={10}
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+91 98765 43210"
-              className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+              onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
+              placeholder="9876543210"
+              className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-[#2563EB] font-mono"
             />
           </div>
 

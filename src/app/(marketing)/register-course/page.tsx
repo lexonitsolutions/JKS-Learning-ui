@@ -166,16 +166,17 @@ function CourseRegistrationContent() {
 
   const [showAuthGateModal, setShowAuthGateModal] = useState(false);
 
-  // Auto-prefill authenticated user's email and name
+  // Auto-prefill authenticated user's email, name, and phone
   React.useEffect(() => {
-    if (authenticatedEmail || authenticatedName) {
+    if (authenticatedEmail || authenticatedName || session?.phone) {
       setStudentInfo((prev) => ({
         ...prev,
         email: authenticatedEmail || prev.email,
         name: prev.name || authenticatedName,
+        phone: prev.phone || (session?.phone ? session.phone.replace(/[^0-9]/g, "").slice(0, 10) : ""),
       }));
     }
-  }, [authenticatedEmail, authenticatedName]);
+  }, [authenticatedEmail, authenticatedName, session?.phone]);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("ADMISSION10");
@@ -225,11 +226,18 @@ function CourseRegistrationContent() {
     setIsProcessing(true);
     setEnrollError(null);
 
+    const cleanedPhone = studentInfo.phone.replace(/[^0-9]/g, "").slice(0, 10);
+    if (cleanedPhone.length !== 10) {
+      setEnrollError("Please enter a valid 10-digit mobile number.");
+      setIsProcessing(false);
+      return;
+    }
+
     try {
       const invoice = await registerCourseOnline({
         studentName: studentInfo.name,
         studentEmail: studentInfo.email || authenticatedEmail,
-        studentPhone: studentInfo.phone,
+        studentPhone: cleanedPhone,
         studentCity: studentInfo.city,
         courseTitle: selectedCourse.title,
         courseSlug: selectedCourse.slug,
@@ -518,13 +526,15 @@ function CourseRegistrationContent() {
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 dark:text-slate-300">WhatsApp / Mobile Number (for batch alerts) *</label>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">WhatsApp / Mobile Number (10 Digits) *</label>
                   <input
                     type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
                     required
-                    placeholder="+91 98765 43210"
+                    placeholder="9876543210"
                     value={studentInfo.phone}
-                    onChange={(e) => setStudentInfo({ ...studentInfo, phone: e.target.value })}
+                    onChange={(e) => setStudentInfo({ ...studentInfo, phone: e.target.value.replace(/[^0-9]/g, "").slice(0, 10) })}
                     className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg p-3 text-text-heading dark:text-white outline-none focus:bg-white dark:focus:bg-input-bg focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 font-mono"
                   />
                 </div>
@@ -604,7 +614,7 @@ function CourseRegistrationContent() {
 
               <button
                 type="button"
-                disabled={!isUserAuthenticated || !studentInfo.name || !studentInfo.phone || !studentInfo.email}
+                disabled={!isUserAuthenticated || !studentInfo.name || studentInfo.phone.replace(/[^0-9]/g, "").length !== 10 || !studentInfo.email}
                 onClick={() => setStep(3)}
                 className="flex items-center justify-center gap-2 rounded-xl bg-primary-fill px-5 sm:px-7 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all disabled:opacity-40 cursor-pointer"
               >

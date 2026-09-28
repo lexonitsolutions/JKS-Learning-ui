@@ -63,9 +63,9 @@ export default function PublicRegistrationPage() {
       nextErrors.email = "Please enter a valid email address";
     }
 
-    const phoneClean = phone.replace(/[^0-9]/g, "");
-    if (!phone.trim() || phoneClean.length < 10) {
-      nextErrors.phone = "Please enter a valid mobile / WhatsApp number (min 10 digits)";
+    const phoneClean = phone.replace(/[^0-9]/g, "").slice(0, 10);
+    if (!phone.trim() || phoneClean.length !== 10) {
+      nextErrors.phone = "Please enter a valid 10-digit mobile number";
     }
 
     setErrors(nextErrors);
@@ -283,16 +283,18 @@ export default function PublicRegistrationPage() {
                     className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300"
                   >
                     <PhoneCall className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                    <span>Mobile / WhatsApp</span>
+                    <span>Mobile / WhatsApp (10 Digits)</span>
                     <span className="text-blue-500">*</span>
                   </label>
                   <input
                     id="reg-phone"
                     type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 transition-all"
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
+                    placeholder="9876543210"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 transition-all font-mono"
                   />
                   {errors.phone && (
                     <p className="mt-1 text-xs font-medium text-rose-600 dark:text-rose-400">

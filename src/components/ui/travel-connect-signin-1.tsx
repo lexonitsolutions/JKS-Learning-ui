@@ -278,8 +278,7 @@ const registerSchema = z
     email: z.string().email("Enter a valid email address"),
     phone: z
       .string()
-      .min(10, "Please enter a valid 10-digit mobile number")
-      .regex(/^[0-9+\s()-]+$/, "Enter a valid phone number"),
+      .regex(/^[0-9]{10}$/, "Please enter a valid 10-digit mobile number"),
     password: z.string().min(5, "Password must be at least 5 characters"),
     confirmPassword: z.string(),
   })
@@ -1182,15 +1181,21 @@ function RegisterFields({ onVerificationChange }: RegisterFieldsProps) {
 
       <div>
         <label htmlFor="register-phone" className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-          Mobile number <span className="text-blue-500">*</span>
+          Mobile number (10 Digits) <span className="text-blue-500">*</span>
         </label>
         <input
           id="register-phone"
           type="tel"
+          inputMode="numeric"
+          maxLength={10}
           autoComplete="tel"
-          placeholder="+91 98765 43210"
-          className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 transition-all"
-          {...register("phone")}
+          placeholder="9876543210"
+          className="w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-input-bg px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-surface-elevated focus:ring-4 focus:ring-blue-500/15 transition-all font-mono"
+          {...register("phone", {
+            onChange: (e) => {
+              e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+            },
+          })}
         />
         {errors.phone && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.phone.message}</p>}
       </div>
