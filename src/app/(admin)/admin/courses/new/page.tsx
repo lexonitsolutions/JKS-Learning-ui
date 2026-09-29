@@ -325,11 +325,18 @@ function AdminNewCourseContent() {
             const normalizedSections = rawSections.map((sec: any, idx: number) => {
               const asgType = canonicalizeAssessmentType(sec.assignment?.type);
               const rawQuestions = Array.isArray(sec.assignment?.questions) ? sec.assignment.questions : [];
-              const normalizedQuestions = rawQuestions.map((q: any, qIdx: number) => ({
-                id: q.id || `q-${Date.now()}-${qIdx}`,
-                prompt: q.prompt || "",
-                type: canonicalizeAssessmentType(q.type || asgType),
-                choices: Array.isArray(q.choices) && q.choices.length > 0 ? q.choices : ["Option A", "Option B", "Option C", "Option D"],
+              const normalizedQuestions = rawQuestions.map((q: any, qIdx: number) => {
+                const rawQType =
+                  q.type ||
+                  (Array.isArray(q.choices) && q.choices.length > 1 ? "Multiple Choice (MCQ)" : undefined) ||
+                  (q.starterCode || q.testCases ? "Coding Challenge / Test" : undefined) ||
+                  asgType;
+
+                return {
+                  id: q.id || `q-${Date.now()}-${qIdx}`,
+                  prompt: q.prompt || "",
+                  type: canonicalizeAssessmentType(rawQType),
+                  choices: Array.isArray(q.choices) && q.choices.length > 0 ? q.choices : ["Option A", "Option B", "Option C", "Option D"],
                 correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
                 modelAnswer: q.modelAnswer || "",
                 keywords: q.keywords || "",
@@ -345,7 +352,8 @@ function AdminNewCourseContent() {
                 minWords: typeof q.minWords === "number" ? q.minWords : 50,
                 maxPoints: typeof q.maxPoints === "number" ? q.maxPoints : 10,
                 explanation: q.explanation || "",
-              }));
+              };
+            });
 
               return {
                 id: sec.id || `sec-${Date.now()}-${idx}`,
@@ -2129,29 +2137,6 @@ function AdminNewCourseContent() {
                                 updated[secIdx].assignment.questions = [
                                   createDefaultQuestion(newType),
                                 ];
-                              } else {
-                                // Synchronize all questions in this section so they immediately match the new format!
-                                updated[secIdx].assignment.questions = currentQuestions.map((q) => {
-                                  const updatedQ = { ...q, type: newType };
-                                  if (newType === "Multiple Choice (MCQ)" && (!updatedQ.choices || updatedQ.choices.length === 0)) {
-                                    updatedQ.choices = ["Option A", "Option B", "Option C", "Option D"];
-                                    updatedQ.correctIndex = 0;
-                                    if (!updatedQ.maxPoints) updatedQ.maxPoints = 5;
-                                  } else if (newType === "Project / File Upload") {
-                                    if (!updatedQ.fileTypes) updatedQ.fileTypes = ".zip, .pdf, .docx";
-                                    if (!updatedQ.checklist) updatedQ.checklist = "- Source code archive (ZIP)\n- Execution screenshots / demo\n- Project documentation (PDF)";
-                                    if (!updatedQ.rubric) updatedQ.rubric = "- Architecture & Modularity: 40%\n- Functional Implementation: 40%\n- Documentation & Best Practices: 20%";
-                                    if (!updatedQ.maxFileSizeMb) updatedQ.maxFileSizeMb = 25;
-                                    if (!updatedQ.maxPoints) updatedQ.maxPoints = 50;
-                                  } else if (newType === "Long Answer / Comprehensive") {
-                                    if (!updatedQ.rubric) updatedQ.rubric = "- Concept & Architectural Clarity: 40%\n- Implementation & Technical Depth: 40%\n- Edge Cases & Best Practices: 20%";
-                                    if (!updatedQ.minWords) updatedQ.minWords = 100;
-                                    if (!updatedQ.maxPoints) updatedQ.maxPoints = 20;
-                                  } else if (newType === "Short Answer Question") {
-                                    if (!updatedQ.maxPoints) updatedQ.maxPoints = 10;
-                                  }
-                                  return updatedQ;
-                                });
                               }
                               setSections(updated);
                             }}
@@ -2330,6 +2315,7 @@ function AdminNewCourseContent() {
                                             <option value="Short Answer Question">Short Answer Question</option>
                                             <option value="Multiple Choice (MCQ)">Multiple Choice (MCQ)</option>
                                             <option value="Long Answer / Comprehensive">Long Answer / Comprehensive</option>
+                                            <option value="Coding Challenge / Test">Coding Challenge / Test</option>
                                             <option value="Project / File Upload">Project / File Upload</option>
                                           </select>
                                         </div>

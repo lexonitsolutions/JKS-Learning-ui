@@ -975,7 +975,7 @@ export default function AdminStudentDetailsPage() {
                     return (
                       <div className="space-y-3">
                         {asg.questions.map((q, qIdx) => {
-                          const kind = resolveAssessmentKind(q.type, asg.type);
+                          const kind = resolveAssessmentKind(q.type, asg.type, q);
                           const studentAns =
                             submittedAnswers[qIdx] ??
                             submittedAnswers[q.id || ""] ??

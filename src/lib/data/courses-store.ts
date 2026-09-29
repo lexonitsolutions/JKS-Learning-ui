@@ -67,7 +67,12 @@ export interface SectionAssignment {
 export function canonicalizeAssessmentType(raw?: string): string {
   if (!raw) return "Short Answer Question";
   const s = raw.toLowerCase().trim().replace(/[-_]+/g, " ");
-  if (s.includes("mcq") || s.includes("choice") || s === "multiple choice") {
+  if (
+    s.includes("mcq") ||
+    s.includes("choice") ||
+    s.includes("multiple answer") ||
+    s.includes("multi answer")
+  ) {
     return "Multiple Choice (MCQ)";
   }
   if (s.includes("code") || s.includes("coding")) {
@@ -90,38 +95,61 @@ export type AssessmentKind = "MCQ" | "SHORT_ANSWER" | "LONG_ANSWER" | "CODING" |
 
 /**
  * Resolve a question's kind from the human-readable label or internal key the builder stores.
+ * The question's own explicit type (raw) ALWAYS takes priority over the section-level fallback.
  */
-export function resolveAssessmentKind(raw?: string, fallback?: string): AssessmentKind {
-  const fallbackNorm = (fallback || "").toLowerCase().replace(/[-_]+/g, " ").trim();
-  const rawNorm = (raw || "").toLowerCase().replace(/[-_]+/g, " ").trim();
+export function resolveAssessmentKind(
+  raw?: string,
+  fallback?: string,
+  questionObj?: { choices?: any[]; starterCode?: string; testCases?: string }
+): AssessmentKind {
+  const parse = (str?: string): AssessmentKind | null => {
+    if (!str) return null;
+    const s = str.toLowerCase().replace(/[-_]+/g, " ").trim();
+    if (!s) return null;
+    if (
+      s.includes("mcq") ||
+      s.includes("choice") ||
+      s.includes("multiple answer") ||
+      s.includes("multi answer")
+    ) {
+      return "MCQ";
+    }
+    if (s.includes("long") || s.includes("comprehens")) {
+      return "LONG_ANSWER";
+    }
+    if (s.includes("code") || s.includes("coding")) {
+      return "CODING";
+    }
+    if (
+      s.includes("file") ||
+      s.includes("project") ||
+      s.includes("upload")
+    ) {
+      return "FILE_UPLOAD";
+    }
+    if (s.includes("short")) {
+      return "SHORT_ANSWER";
+    }
+    return null;
+  };
 
-  // If assignment type was set to Short Answer by Admin, or question is Short Answer:
-  if (fallbackNorm.includes("short") || rawNorm.includes("short")) {
-    return "SHORT_ANSWER";
+  // 1. Primary authority: The question's own explicitly selected type
+  const fromRaw = parse(raw);
+  if (fromRaw) return fromRaw;
+
+  // 2. Structural inference: if the question object contains choices or code templates
+  if (questionObj) {
+    if (Array.isArray(questionObj.choices) && questionObj.choices.length > 1) {
+      return "MCQ";
+    }
+    if (questionObj.starterCode || questionObj.testCases) {
+      return "CODING";
+    }
   }
 
-  if (fallbackNorm.includes("long") || fallbackNorm.includes("comprehens") || rawNorm.includes("long") || rawNorm.includes("comprehens")) {
-    return "LONG_ANSWER";
-  }
-
-  if (fallbackNorm.includes("cod") || rawNorm.includes("cod")) {
-    return "CODING";
-  }
-
-  if (
-    fallbackNorm.includes("file") ||
-    fallbackNorm.includes("project") ||
-    fallbackNorm.includes("upload") ||
-    rawNorm.includes("file") ||
-    rawNorm.includes("project") ||
-    rawNorm.includes("upload")
-  ) {
-    return "FILE_UPLOAD";
-  }
-
-  if (rawNorm.includes("mcq") || rawNorm.includes("choice") || fallbackNorm.includes("mcq") || fallbackNorm.includes("choice")) {
-    return "MCQ";
-  }
+  // 3. Fallback: Only consult section assignment type if the question type is unspecified
+  const fromFallback = parse(fallback);
+  if (fromFallback) return fromFallback;
 
   return "SHORT_ANSWER";
 }
@@ -568,7 +596,32 @@ export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
           // Preserve rich section materials if matching sectionsJson or build from modules
           let sections: Section[] = [];
           if (Array.isArray(dbc.sectionsJson) && dbc.sectionsJson.length > 0) {
-            sections = dbc.sectionsJson;
+            sections = dbc.sectionsJson.map((sec: any) => ({
+              ...sec,
+              assignment: sec.assignment
+                ? {
+                    ...sec.assignment,
+                    type: canonicalizeAssessmentType(sec.assignment.type),
+                    questions: Array.isArray(sec.assignment.questions)
+                      ? sec.assignment.questions.map((q: any) => {
+                          const rawType =
+                            q.type ||
+                            (Array.isArray(q.choices) && q.choices.length > 1
+                              ? "Multiple Choice (MCQ)"
+                              : undefined) ||
+                            (q.starterCode || q.testCases
+                              ? "Coding Challenge / Test"
+                              : undefined) ||
+                            sec.assignment?.type;
+                          return {
+                            ...q,
+                            type: canonicalizeAssessmentType(rawType),
+                          };
+                        })
+                      : [],
+                  }
+                : sec.assignment,
+            }));
           } else if (existing?.sections && existing.sections.length > 0) {
             sections = existing.sections;
           } else if (Array.isArray(dbc.modules) && dbc.modules.length > 0) {
@@ -759,28 +812,36 @@ export function normalizeDbCourse(dbCourse: any, existing?: FullCourse): FullCou
         typeof sec.assignment?.minPassingScore === "number" ? sec.assignment.minPassingScore : 70,
       modelAnswer: sec.assignment?.modelAnswer || "",
       questions: Array.isArray(sec.assignment?.questions)
-        ? sec.assignment.questions.map((q: any, qIdx: number) => ({
-            id: q.id || `q-${qIdx + 1}`,
-            prompt: q.prompt || "",
-            type: canonicalizeAssessmentType(q.type || sec.assignment?.type),
-            choices: Array.isArray(q.choices) ? q.choices : [],
-            correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
-            modelAnswer: q.modelAnswer || "",
-            keywords: q.keywords || "",
-            language: q.language || "JavaScript",
-            starterCode: q.starterCode || "",
-            testCases: q.testCases || "",
-            structuredTestCases: Array.isArray(q.structuredTestCases) ? q.structuredTestCases : [],
-            solutionCode: q.solutionCode || "",
-            fileTypes: q.fileTypes || "",
-            maxFileSizeMb: typeof q.maxFileSizeMb === "number" ? q.maxFileSizeMb : 25,
-            checklist: q.checklist || "",
-            rubric: q.rubric || "",
-            minWords: q.minWords,
-            maxPoints: typeof q.maxPoints === "number" ? q.maxPoints : 10,
-            explanation: q.explanation || "",
-            guidance: q.guidance || "",
-          }))
+        ? sec.assignment.questions.map((q: any, qIdx: number) => {
+            const rawType =
+              q.type ||
+              (Array.isArray(q.choices) && q.choices.length > 1 ? "Multiple Choice (MCQ)" : undefined) ||
+              (q.starterCode || q.testCases ? "Coding Challenge / Test" : undefined) ||
+              sec.assignment?.type;
+
+            return {
+              id: q.id || `q-${qIdx + 1}`,
+              prompt: q.prompt || "",
+              type: canonicalizeAssessmentType(rawType),
+              choices: Array.isArray(q.choices) ? q.choices : [],
+              correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
+              modelAnswer: q.modelAnswer || "",
+              keywords: q.keywords || "",
+              language: q.language || "JavaScript",
+              starterCode: q.starterCode || "",
+              testCases: q.testCases || "",
+              structuredTestCases: Array.isArray(q.structuredTestCases) ? q.structuredTestCases : [],
+              solutionCode: q.solutionCode || "",
+              fileTypes: q.fileTypes || "",
+              maxFileSizeMb: typeof q.maxFileSizeMb === "number" ? q.maxFileSizeMb : 25,
+              checklist: q.checklist || "",
+              rubric: q.rubric || "",
+              minWords: q.minWords,
+              maxPoints: typeof q.maxPoints === "number" ? q.maxPoints : 10,
+              explanation: q.explanation || "",
+              guidance: q.guidance || "",
+            };
+          })
         : [],
     },
   }));

@@ -460,7 +460,7 @@ export default function CourseLearningHubPage({
     answer: number | string | undefined,
     assignmentType?: string
   ): boolean => {
-    const kind = resolveAssessmentKind(q?.type, assignmentType);
+    const kind = resolveAssessmentKind(q?.type, assignmentType, q);
     if (kind === "MCQ") return typeof answer === "number";
     const text = typeof answer === "string" ? answer.trim() : "";
     if (!text) return false;
@@ -483,7 +483,7 @@ export default function CourseLearningHubPage({
     answer: any,
     assignmentType: string
   ): number => {
-    const kind = resolveAssessmentKind(q?.type, assignmentType);
+    const kind = resolveAssessmentKind(q?.type, assignmentType, q);
     if (kind === "MCQ") {
       const correctIdx = typeof q?.correctIndex === "number" ? q.correctIndex : 0;
       if (typeof answer === "number") {
@@ -2474,7 +2474,7 @@ export default function CourseLearningHubPage({
                       Assessment Questions ({questions.length})
                     </div>
                     {questions.map((q, qIdx) => {
-                      const kind = resolveAssessmentKind(q.type, activeAssignmentSection.assignment.type);
+                      const kind = resolveAssessmentKind(q.type, activeAssignmentSection.assignment.type, q);
                       const answer = activeQuizAnswers[qIdx];
                       const textAnswer = typeof answer === "string" ? answer : "";
                       return (

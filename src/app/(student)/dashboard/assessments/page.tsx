@@ -33,6 +33,7 @@ import {
   getStoredCourses,
   syncCoursesWithBackend,
   fetchLiveCourseBySlug,
+  resolveAssessmentKind,
   type FullCourse,
 } from "@/lib/data/courses-store";
 
@@ -61,11 +62,11 @@ interface AssessmentRow {
 function toTaskQuestions(assignment: FullCourse["sections"][number]["assignment"]): TaskQuestion[] {
   const raw = Array.isArray(assignment?.questions) ? assignment.questions : [];
   return raw.map((q, idx) => {
-    const label = (q.type || assignment?.type || "").toLowerCase();
+    const kind = resolveAssessmentKind(q.type, assignment?.type, q);
     let type: TaskQuestion["type"] = "SHORT_ANSWER";
-    if (label.includes("mcq") || label.includes("choice")) type = "MCQ";
-    else if (label.includes("file") || label.includes("project") || label.includes("upload")) type = "FILE_UPLOAD";
-    else if (label.includes("long") || label.includes("cod") || label.includes("comprehens")) type = "LONG_ANSWER";
+    if (kind === "MCQ") type = "MCQ";
+    else if (kind === "FILE_UPLOAD") type = "FILE_UPLOAD";
+    else if (kind === "LONG_ANSWER" || kind === "CODING") type = "LONG_ANSWER";
 
     return {
       id: q.id || `q-${idx + 1}`,
