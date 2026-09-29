@@ -199,11 +199,15 @@ export default function AssessmentsPage() {
     const target = assessments[activeIndex];
     if (!target) return;
 
+    const isPassed = score >= target.minPassingScore;
     if (typeof window !== "undefined") {
       try {
         const key = `jks_prog_${target.courseSlug}_${effectiveEmail || "student"}`;
         const existing = JSON.parse(localStorage.getItem(key) || "{}");
-        const completedIds = Array.from(new Set([...(existing.completedAssignmentIds || []), target.id]));
+        const existingCompleted = existing.completedAssignmentIds || [];
+        const completedIds = isPassed
+          ? Array.from(new Set([...existingCompleted, target.id]))
+          : existingCompleted.filter((id: string) => id !== target.id);
         const scores = { ...(existing.assignmentScores || {}), [target.id]: score };
         localStorage.setItem(
           key,
@@ -365,7 +369,7 @@ export default function AssessmentsPage() {
                       const isReviewed = t.status === "REVIEWED" || t.status === "COMPLETED";
 
                       return (
-                        <tr key={t.id} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-elevated/60">
+                        <tr key={t.id} className="transition-all duration-200 ease-out hover:bg-slate-100/70 dark:hover:bg-white/[0.04]">
                           <td className="py-4 pr-4 pl-0">
                             <div className="font-bold text-slate-900 dark:text-white leading-snug">{t.title}</div>
                             <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">{t.description}</div>
@@ -471,7 +475,7 @@ export default function AssessmentsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                     {assessments.map((a, idx) => (
-                      <tr key={a.uniqueKey || `${a.courseSlug}-${a.id}-${idx}`} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-elevated/60">
+                      <tr key={a.uniqueKey || `${a.courseSlug}-${a.id}-${idx}`} className="transition-all duration-200 ease-out hover:bg-slate-100/70 dark:hover:bg-white/[0.04]">
                         <td className="py-4 pr-4 pl-0 font-bold text-slate-900 dark:text-white whitespace-nowrap">{a.title}</td>
                         <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">{a.course}</td>
                         <td className="px-4 py-4 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">

@@ -38,6 +38,65 @@ import { fetchStudentEnrollments } from "@/lib/data/enrollments-api";
 import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
 import { apiFetch } from "@/lib/api/base-url";
 
+export function normalizeLinkedInUrl(rawUrl: string): string {
+  if (!rawUrl) return "";
+  let clean = rawUrl.trim();
+  clean = clean.replace(/^(?:linkedin|linked-in)\s*:\s*/i, "");
+  if (!clean) return "";
+  if (/^https?:\/\//i.test(clean)) return clean;
+  if (/^(?:www\.)?linkedin\.com/i.test(clean)) return `https://${clean}`;
+  if (/^\/?in\//i.test(clean)) return `https://www.linkedin.com/${clean.replace(/^\//, "")}`;
+  return `https://www.linkedin.com/in/${clean}`;
+}
+
+export function formatLinkedInDisplay(rawUrl: string): string {
+  if (!rawUrl) return "";
+  let clean = rawUrl.trim();
+  clean = clean.replace(/^(?:linkedin|linked-in)\s*:\s*/i, "");
+  clean = clean.replace(/^https?:\/\/(?:www\.)?linkedin\.com\/?/i, "");
+  const withoutQuery = clean.split(/[?#]/)[0].replace(/\/+$/, "");
+  if (withoutQuery.startsWith("in/")) {
+    return `linkedin.com/${withoutQuery}`;
+  }
+  if (withoutQuery) {
+    return `linkedin.com/in/${withoutQuery}`;
+  }
+  return "LinkedIn";
+}
+
+export function normalizeGithubUrl(rawUrl: string): string {
+  if (!rawUrl) return "";
+  let clean = rawUrl.trim();
+  clean = clean.replace(/^(?:github)\s*:\s*/i, "");
+  if (!clean) return "";
+  if (/^https?:\/\//i.test(clean)) return clean;
+  if (/^(?:www\.)?github\.com/i.test(clean)) return `https://${clean}`;
+  return `https://github.com/${clean.replace(/^\//, "")}`;
+}
+
+export function formatGithubDisplay(rawUrl: string): string {
+  if (!rawUrl) return "";
+  let clean = rawUrl.trim();
+  clean = clean.replace(/^(?:github)\s*:\s*/i, "");
+  clean = clean.replace(/^https?:\/\/(?:www\.)?github\.com\/?/i, "");
+  const withoutQuery = clean.split(/[?#]/)[0].replace(/\/+$/, "");
+  return withoutQuery ? `github.com/${withoutQuery}` : "GitHub";
+}
+
+export function normalizeWebUrl(rawUrl: string): string {
+  if (!rawUrl) return "";
+  const clean = rawUrl.trim();
+  if (!clean) return "";
+  if (/^https?:\/\//i.test(clean)) return clean;
+  return `https://${clean}`;
+}
+
+export function formatWebDisplay(rawUrl: string): string {
+  if (!rawUrl) return "";
+  const clean = rawUrl.trim().replace(/^https?:\/\/(?:www\.)?/i, "").split(/[?#]/)[0].replace(/\/+$/, "");
+  return clean || rawUrl;
+}
+
 interface ExperienceItem {
   id: string;
   role: string;
@@ -925,14 +984,16 @@ export default function ResumeBuilderPage() {
             <div className="space-y-2">
               {resumeData.experiences.map((exp) => (
                 <div key={exp.id} className="text-xs text-black space-y-0.5" style={{ color: "#000000" }}>
-                  <div className="flex justify-between items-baseline font-bold" style={{ color: "#000000" }}>
-                    <span style={{ color: "#000000" }}>
-                      {exp.role.toUpperCase()}, {exp.company}
-                      {exp.location && <span className="font-normal" style={{ color: "#000000" }}> — {exp.location}</span>}
-                    </span>
-                    <span className="font-mono text-[11px]" style={{ color: "#000000" }}>
-                      {exp.startDate} – {exp.endDate}
-                    </span>
+                  <div className="flex justify-between items-baseline gap-2 font-bold" style={{ color: "#000000" }}>
+                    <div className="min-w-0 flex-1" style={{ color: "#000000" }}>
+                      <span className="font-bold">{exp.role.toUpperCase()}</span>, <span>{exp.company}</span>
+                      {exp.location && <span className="font-normal text-neutral-700" style={{ color: "#333333" }}> — {exp.location}</span>}
+                    </div>
+                    {(exp.startDate || exp.endDate) && (
+                      <span className="font-mono text-[11px] shrink-0 text-right whitespace-nowrap" style={{ color: "#000000" }}>
+                        {exp.startDate}{exp.startDate && exp.endDate ? " – " : ""}{exp.endDate}
+                      </span>
+                    )}
                   </div>
                   {exp.points.length > 0 && (
                     <ul className="list-disc list-outside pl-4 space-y-0.5 text-black" style={{ color: "#000000" }}>
@@ -958,9 +1019,20 @@ export default function ResumeBuilderPage() {
             <div className="space-y-2">
               {resumeData.projects.map((proj) => (
                 <div key={proj.id} className="text-xs text-black space-y-0.5" style={{ color: "#000000" }}>
-                  <div className="flex justify-between items-baseline font-bold" style={{ color: "#000000" }}>
-                    <span style={{ color: "#000000" }}>{proj.title}</span>
-                    {proj.liveUrl && <span className="font-mono text-[11px] font-normal" style={{ color: "#000000" }}>{proj.liveUrl}</span>}
+                  <div className="flex justify-between items-baseline gap-2 font-bold" style={{ color: "#000000" }}>
+                    <span className="font-bold min-w-0 flex-1" style={{ color: "#000000" }}>{proj.title}</span>
+                    {proj.liveUrl && (
+                      <a
+                        href={normalizeWebUrl(proj.liveUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-[11px] font-normal underline hover:text-blue-700 shrink-0 text-right truncate max-w-[280px]"
+                        style={{ color: "#000000" }}
+                        title={proj.liveUrl}
+                      >
+                        {formatWebDisplay(proj.liveUrl)}
+                      </a>
+                    )}
                   </div>
                   {proj.techStack && (
                     <div className="text-[11px] italic text-neutral-800" style={{ color: "#262626" }}>
@@ -990,14 +1062,16 @@ export default function ResumeBuilderPage() {
             </h2>
             <div className="space-y-1.5">
               {resumeData.educations.map((edu) => (
-                <div key={edu.id} className="flex justify-between items-baseline text-xs text-black" style={{ color: "#000000" }}>
-                  <div>
+                <div key={edu.id} className="flex justify-between items-baseline gap-2 text-xs text-black" style={{ color: "#000000" }}>
+                  <div className="min-w-0 flex-1">
                     <span className="font-bold" style={{ color: "#000000" }}>{edu.degree}</span>, {edu.institution}
                     {edu.location && <span className="text-neutral-700" style={{ color: "#333333" }}> — {edu.location}</span>}
                   </div>
-                  <span className="font-mono text-[11px] shrink-0" style={{ color: "#000000" }}>
-                    {edu.year} {edu.score ? `(${edu.score})` : ""}
-                  </span>
+                  {(edu.year || edu.score) && (
+                    <span className="font-mono text-[11px] shrink-0 text-right whitespace-nowrap" style={{ color: "#000000" }}>
+                      {edu.year} {edu.score ? `(${edu.score})` : ""}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
@@ -1012,11 +1086,11 @@ export default function ResumeBuilderPage() {
             </h2>
             <div className="space-y-1 text-xs text-black" style={{ color: "#000000" }}>
               {resumeData.certifications.map((cert) => (
-                <div key={cert.id} className="flex justify-between items-baseline" style={{ color: "#000000" }}>
-                  <span className="font-medium" style={{ color: "#000000" }}>
-                    • {cert.title} — <span className="text-neutral-700" style={{ color: "#333333" }}>{cert.issuer}</span>
-                  </span>
-                  {cert.year && <span className="font-mono text-[11px] shrink-0" style={{ color: "#000000" }}>{cert.year}</span>}
+                <div key={cert.id} className="flex justify-between items-baseline gap-2" style={{ color: "#000000" }}>
+                  <div className="min-w-0 flex-1 font-medium" style={{ color: "#000000" }}>
+                    • <span className="font-semibold">{cert.title}</span> — <span className="text-neutral-700" style={{ color: "#333333" }}>{cert.issuer}</span>
+                  </div>
+                  {cert.year && <span className="font-mono text-[11px] shrink-0 text-right whitespace-nowrap" style={{ color: "#000000" }}>{cert.year}</span>}
                 </div>
               ))}
             </div>
@@ -1211,7 +1285,7 @@ export default function ResumeBuilderPage() {
             @media print {
               @page {
                 size: A4 portrait;
-                margin: 5mm 8mm !important;
+                margin: 8mm 10mm !important;
               }
               html, body {
                 margin: 0 !important;
@@ -1225,6 +1299,13 @@ export default function ResumeBuilderPage() {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 overflow: visible !important;
+              }
+              a, a:visited {
+                color: inherit !important;
+                text-decoration: none !important;
+              }
+              a[href]:after {
+                content: "" !important;
               }
               /* Strict light mode enforcement during print: no dark mode inversion */
               .dark, [data-theme="dark"], :root {
@@ -2234,11 +2315,11 @@ export default function ResumeBuilderPage() {
               </div>
             </div>
 
-            {/* Printable & Natural Scaled Preview Container (shown like before without inner scrollpane) */}
+            {/* Printable & Natural Scaled Preview Container (standard 794px A4 canvas with proportional scaling) */}
             <div className="w-full overflow-x-auto pb-6 flex justify-center">
               <div
                 id="printable-resume-sheet"
-                className="w-full max-w-[820px] transition-transform duration-200 bg-white text-slate-900"
+                className="w-[794px] min-w-[794px] max-w-[794px] transition-transform duration-200 bg-white text-slate-900 origin-top shadow-xl rounded-2xl overflow-hidden print:w-full print:min-w-0 print:max-w-none print:shadow-none print:rounded-none"
                 style={{
                   backgroundColor: "#ffffff",
                   color: "#0f172a",
@@ -2275,29 +2356,58 @@ export default function ResumeBuilderPage() {
                       {/* Contact row with pills */}
                       <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-xs">
                         {resumeData.personal.email && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-slate-700 border border-slate-200" style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}>
+                          <a
+                            href={`mailto:${resumeData.personal.email}`}
+                            className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-slate-700 border border-slate-200 hover:underline"
+                            style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}
+                          >
                             <Mail className="h-3 w-3 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.email}
-                          </span>
+                          </a>
                         )}
                         {resumeData.personal.phone && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-slate-700 border border-slate-200" style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}>
+                          <a
+                            href={`tel:${resumeData.personal.phone}`}
+                            className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-slate-700 border border-slate-200 hover:underline"
+                            style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}
+                          >
                             <Phone className="h-3 w-3 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.phone}
-                          </span>
+                          </a>
                         )}
                         {resumeData.personal.linkedin && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-blue-50/80 px-2 py-0.5 text-[#1E5EFF] border border-blue-200 font-medium" style={{ backgroundColor: "#eff6ff", borderColor: "#bfdbfe", color: "#1e5eff" }}>
-                            <Link2 className="h-3 w-3" style={{ color: "#1e5eff" }} /> {resumeData.personal.linkedin}
-                          </span>
+                          <a
+                            href={normalizeLinkedInUrl(resumeData.personal.linkedin)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-md bg-blue-50/80 px-2 py-0.5 text-[#1E5EFF] border border-blue-200 font-medium hover:underline cursor-pointer"
+                            style={{ backgroundColor: "#eff6ff", borderColor: "#bfdbfe", color: "#1e5eff" }}
+                            title={normalizeLinkedInUrl(resumeData.personal.linkedin)}
+                          >
+                            <Link2 className="h-3 w-3" style={{ color: "#1e5eff" }} /> {formatLinkedInDisplay(resumeData.personal.linkedin)}
+                          </a>
                         )}
                         {resumeData.personal.github && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-slate-800 border border-slate-300 font-medium" style={{ backgroundColor: "#f1f5f9", borderColor: "#cbd5e1", color: "#1e293b" }}>
-                            <Code2 className="h-3 w-3" style={{ color: "#1e293b" }} /> {resumeData.personal.github}
-                          </span>
+                          <a
+                            href={normalizeGithubUrl(resumeData.personal.github)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-slate-800 border border-slate-300 font-medium hover:underline cursor-pointer"
+                            style={{ backgroundColor: "#f1f5f9", borderColor: "#cbd5e1", color: "#1e293b" }}
+                            title={normalizeGithubUrl(resumeData.personal.github)}
+                          >
+                            <Code2 className="h-3 w-3" style={{ color: "#1e293b" }} /> {formatGithubDisplay(resumeData.personal.github)}
+                          </a>
                         )}
                         {resumeData.personal.portfolio && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-emerald-800 border border-emerald-200 font-medium" style={{ backgroundColor: "#ecfdf5", borderColor: "#a7f3d0", color: "#065f46" }}>
-                            <Globe className="h-3 w-3" style={{ color: "#059669" }} /> {resumeData.personal.portfolio}
-                          </span>
+                          <a
+                            href={normalizeWebUrl(resumeData.personal.portfolio)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-emerald-800 border border-emerald-200 font-medium hover:underline cursor-pointer"
+                            style={{ backgroundColor: "#ecfdf5", borderColor: "#a7f3d0", color: "#065f46" }}
+                            title={normalizeWebUrl(resumeData.personal.portfolio)}
+                          >
+                            <Globe className="h-3 w-3" style={{ color: "#059669" }} /> {formatWebDisplay(resumeData.personal.portfolio)}
+                          </a>
                         )}
                       </div>
                     </div>
@@ -2316,7 +2426,7 @@ export default function ResumeBuilderPage() {
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {template === "minimalist" && (
                   <div
-                    className="w-full min-h-[1123px] print:min-h-0 print:h-auto bg-white p-6 sm:p-8 shadow-xl sm:shadow-2xl rounded-2xl border border-slate-200 text-black space-y-3.5 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans"
+                    className="w-full min-h-[1123px] print:min-h-0 print:h-auto bg-white p-7 sm:p-9 shadow-xl sm:shadow-2xl rounded-2xl border border-slate-200 text-black space-y-3 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full font-sans leading-relaxed"
                     style={{ backgroundColor: "#ffffff", color: "#000000" }}
                   >
                     {/* Centered Traditional ATS Header */}
@@ -2332,12 +2442,73 @@ export default function ResumeBuilderPage() {
 
                       {/* Single Line Clean Pipe Separators */}
                       <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-0.5 text-xs text-black pt-1.5 font-normal" style={{ color: "#000000" }}>
-                        {resumeData.personal.email && <span>{resumeData.personal.email}</span>}
-                        {resumeData.personal.phone && <span>• {resumeData.personal.phone}</span>}
+                        {resumeData.personal.email && (
+                          <a
+                            href={`mailto:${resumeData.personal.email}`}
+                            className="hover:underline text-black font-normal"
+                            style={{ color: "#000000" }}
+                          >
+                            {resumeData.personal.email}
+                          </a>
+                        )}
+                        {resumeData.personal.phone && (
+                          <span>
+                            •{" "}
+                            <a
+                              href={`tel:${resumeData.personal.phone}`}
+                              className="hover:underline text-black font-normal"
+                              style={{ color: "#000000" }}
+                            >
+                              {resumeData.personal.phone}
+                            </a>
+                          </span>
+                        )}
                         {resumeData.personal.location && <span>• {resumeData.personal.location}</span>}
-                        {resumeData.personal.linkedin && <span>• {resumeData.personal.linkedin}</span>}
-                        {resumeData.personal.github && <span>• {resumeData.personal.github}</span>}
-                        {resumeData.personal.portfolio && <span>• {resumeData.personal.portfolio}</span>}
+                        {resumeData.personal.linkedin && (
+                          <span>
+                            •{" "}
+                            <a
+                              href={normalizeLinkedInUrl(resumeData.personal.linkedin)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline text-black font-normal"
+                              style={{ color: "#000000" }}
+                              title={normalizeLinkedInUrl(resumeData.personal.linkedin)}
+                            >
+                              {formatLinkedInDisplay(resumeData.personal.linkedin)}
+                            </a>
+                          </span>
+                        )}
+                        {resumeData.personal.github && (
+                          <span>
+                            •{" "}
+                            <a
+                              href={normalizeGithubUrl(resumeData.personal.github)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline text-black font-normal"
+                              style={{ color: "#000000" }}
+                              title={normalizeGithubUrl(resumeData.personal.github)}
+                            >
+                              {formatGithubDisplay(resumeData.personal.github)}
+                            </a>
+                          </span>
+                        )}
+                        {resumeData.personal.portfolio && (
+                          <span>
+                            •{" "}
+                            <a
+                              href={normalizeWebUrl(resumeData.personal.portfolio)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline text-black font-normal"
+                              style={{ color: "#000000" }}
+                              title={normalizeWebUrl(resumeData.personal.portfolio)}
+                            >
+                              {formatWebDisplay(resumeData.personal.portfolio)}
+                            </a>
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -2381,13 +2552,17 @@ export default function ResumeBuilderPage() {
                             {resumeData.personal.email && (
                               <div className="flex items-center gap-1.5" style={{ color: "#334155" }}>
                                 <Mail className="h-3.5 w-3.5 text-slate-500 shrink-0" style={{ color: "#64748B" }} />
-                                <span className="break-all">{resumeData.personal.email}</span>
+                                <a href={`mailto:${resumeData.personal.email}`} className="break-all hover:underline" style={{ color: "#334155" }}>
+                                  {resumeData.personal.email}
+                                </a>
                               </div>
                             )}
                             {resumeData.personal.phone && (
                               <div className="flex items-center gap-1.5" style={{ color: "#334155" }}>
                                 <Phone className="h-3.5 w-3.5 text-slate-500 shrink-0" style={{ color: "#64748B" }} />
-                                <span>{resumeData.personal.phone}</span>
+                                <a href={`tel:${resumeData.personal.phone}`} className="hover:underline" style={{ color: "#334155" }}>
+                                  {resumeData.personal.phone}
+                                </a>
                               </div>
                             )}
                             {resumeData.personal.location && (
@@ -2399,19 +2574,46 @@ export default function ResumeBuilderPage() {
                             {resumeData.personal.linkedin && (
                               <div className="flex items-center gap-1.5 text-slate-900 font-semibold" style={{ color: "#0F172A" }}>
                                 <Link2 className="h-3.5 w-3.5 text-slate-500 shrink-0" style={{ color: "#64748B" }} />
-                                <span className="break-all">{resumeData.personal.linkedin}</span>
+                                <a
+                                  href={normalizeLinkedInUrl(resumeData.personal.linkedin)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="break-all hover:underline"
+                                  style={{ color: "#0F172A" }}
+                                  title={normalizeLinkedInUrl(resumeData.personal.linkedin)}
+                                >
+                                  {formatLinkedInDisplay(resumeData.personal.linkedin)}
+                                </a>
                               </div>
                             )}
                             {resumeData.personal.github && (
                               <div className="flex items-center gap-1.5 text-slate-900 font-semibold" style={{ color: "#0F172A" }}>
                                 <Code2 className="h-3.5 w-3.5 text-slate-500 shrink-0" style={{ color: "#64748B" }} />
-                                <span className="break-all">{resumeData.personal.github}</span>
+                                <a
+                                  href={normalizeGithubUrl(resumeData.personal.github)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="break-all hover:underline"
+                                  style={{ color: "#0F172A" }}
+                                  title={normalizeGithubUrl(resumeData.personal.github)}
+                                >
+                                  {formatGithubDisplay(resumeData.personal.github)}
+                                </a>
                               </div>
                             )}
                             {resumeData.personal.portfolio && (
                               <div className="flex items-center gap-1.5 text-slate-900 font-semibold" style={{ color: "#0F172A" }}>
                                 <Globe className="h-3.5 w-3.5 text-slate-500 shrink-0" style={{ color: "#64748B" }} />
-                                <span className="break-all">{resumeData.personal.portfolio}</span>
+                                <a
+                                  href={normalizeWebUrl(resumeData.personal.portfolio)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="break-all hover:underline"
+                                  style={{ color: "#0F172A" }}
+                                  title={normalizeWebUrl(resumeData.personal.portfolio)}
+                                >
+                                  {formatWebDisplay(resumeData.personal.portfolio)}
+                                </a>
                               </div>
                             )}
                           </div>

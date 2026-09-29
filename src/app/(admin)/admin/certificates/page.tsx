@@ -34,7 +34,7 @@ import { useSearchParams } from "next/navigation";
 import { fetchDbCourses } from "@/lib/data/courses-api";
 import type { Course } from "@/lib/data/courses";
 
-export default function AdminCertificatesPage() {
+function AdminCertificatesContent() {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab") === "pending" ? "pending" : "issued";
 
@@ -437,11 +437,46 @@ export default function AdminCertificatesPage() {
         {/* Real-Time Certificates / Pending Completions Table */}
         <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
           {loading ? (
-            <div className="py-12 flex flex-col items-center justify-center space-y-3">
-              <Loader2 className="h-8 w-8 animate-spin text-primary-blue" />
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                Loading database certificates...
-              </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs min-w-[650px]">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
+                    <th className="pb-3 pr-4 pl-0">Student</th>
+                    <th className="px-4 pb-3">Course Completed</th>
+                    <th className="px-4 pb-3">Verification ID</th>
+                    <th className="px-4 pb-3">Issued Date</th>
+                    <th className="px-4 pb-3 text-center">Status</th>
+                    <th className="pr-0 pb-3 pl-4 text-right">Certificate</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="py-4 pr-4 pl-0">
+                        <div className="space-y-1.5">
+                          <div className="h-3.5 w-32 rounded-md bg-slate-200 dark:bg-slate-800" />
+                          <div className="h-2.5 w-44 rounded-md bg-slate-100 dark:bg-slate-800/60" />
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="h-3.5 w-52 rounded-md bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="h-3.5 w-36 rounded-md bg-blue-100 dark:bg-blue-950/40" />
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="h-3.5 w-20 rounded-md bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <div className="inline-block h-5 w-16 rounded-full bg-emerald-100/70 dark:bg-emerald-950/40" />
+                      </td>
+                      <td className="pr-0 py-4 pl-4 text-right">
+                        <div className="inline-block h-8 w-20 rounded-xl bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : activeTab === "pending" ? (
             /* Pending Course Completions Tab */
@@ -481,33 +516,33 @@ export default function AdminCertificatesPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs min-w-[700px]">
+                <table className="w-full text-left text-xs min-w-[700px] border-separate border-spacing-y-1.5">
                   <thead>
                     <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
-                      <th className="pb-3 pr-4 pl-0">Student</th>
+                      <th className="pb-3 pr-4 pl-4">Student</th>
                       <th className="px-4 pb-3">Course &amp; Track</th>
                       <th className="px-4 pb-3">Completed Lectures</th>
                       <th className="px-4 pb-3">Requested At</th>
                       <th className="px-4 pb-3 text-center">Status</th>
-                      <th className="pr-0 pb-3 pl-4 text-right">Approval Action</th>
+                      <th className="pr-4 pb-3 pl-4 text-right">Approval Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                  <tbody>
                     {filteredPendingCompletions.map((p) => (
                       <tr
                         key={p.enrollmentId}
-                        className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-hover"
+                        className="group transition-all duration-200 ease-out hover:bg-slate-100/60 dark:hover:bg-white/[0.035] hover:shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_2px_14px_rgba(0,0,0,0.3)]"
                       >
-                        <td className="py-4 pr-4 pl-0 font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                        <td className="py-3.5 pr-4 pl-4 font-bold text-slate-900 dark:text-white whitespace-nowrap first:rounded-l-2xl">
                           <div>
-                            <p className="font-bold text-slate-900 dark:text-white">{p.studentName}</p>
+                            <p className="font-bold text-slate-900 dark:text-white group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors">{p.studentName}</p>
                             <p className="text-[10px] text-slate-400 font-normal">{p.studentEmail}</p>
                             {p.userId && (
                               <p className="text-[9px] text-slate-400/80 font-mono font-normal">ID: {p.userId}</p>
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                        <td className="px-4 py-3.5 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
                           <div>
                             <p className="font-semibold text-slate-800 dark:text-white">{p.courseTitle}</p>
                             <span className="inline-block mt-0.5 rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.2 text-[10px] font-bold text-slate-600 dark:text-slate-400">
@@ -515,12 +550,12 @@ export default function AdminCertificatesPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="px-4 py-4 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        <td className="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 text-xs font-bold text-[#2563EB] dark:text-blue-400">
                             {p.completedLectures} Lectures Done
                           </span>
                         </td>
-                        <td className="px-4 py-4 font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        <td className="px-4 py-3.5 font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           {p.requestedAt
                             ? new Date(p.requestedAt).toLocaleDateString("en-IN", {
                                 day: "numeric",
@@ -529,12 +564,12 @@ export default function AdminCertificatesPage() {
                               })
                             : "Recent"}
                         </td>
-                        <td className="px-4 py-4 text-center whitespace-nowrap">
+                        <td className="px-4 py-3.5 text-center whitespace-nowrap">
                           <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">
                             Pending Admin Approval
                           </span>
                         </td>
-                        <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
+                        <td className="pr-4 py-3.5 pl-4 text-right whitespace-nowrap last:rounded-r-2xl">
                           <button
                             type="button"
                             onClick={() => handleApproveCompletion(p.enrollmentId, p.studentName, p.courseTitle)}
@@ -606,26 +641,26 @@ export default function AdminCertificatesPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs min-w-[650px]">
+              <table className="w-full text-left text-xs min-w-[650px] border-separate border-spacing-y-1.5">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
-                    <th className="pb-3 pr-4 pl-0">Student</th>
+                    <th className="pb-3 pr-4 pl-4">Student</th>
                     <th className="px-4 pb-3">Course Completed</th>
                     <th className="px-4 pb-3">Verification ID</th>
                     <th className="px-4 pb-3">Issued Date</th>
                     <th className="px-4 pb-3 text-center">Status</th>
-                    <th className="pr-0 pb-3 pl-4 text-right">Certificate</th>
+                    <th className="pr-4 pb-3 pl-4 text-right">Certificate</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                <tbody>
                   {filteredCertificates.map((c) => (
                     <tr
                       key={c.id || c.verificationId}
-                      className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-hover"
+                      className="group transition-all duration-200 ease-out hover:bg-slate-100/60 dark:hover:bg-white/[0.035] hover:shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_2px_14px_rgba(0,0,0,0.3)]"
                     >
-                      <td className="py-4 pr-4 pl-0 font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                      <td className="py-3.5 pr-4 pl-4 font-bold text-slate-900 dark:text-white whitespace-nowrap first:rounded-l-2xl">
                         <div>
-                          <p className="font-bold text-slate-900 dark:text-white">{c.studentName}</p>
+                          <p className="font-bold text-slate-900 dark:text-white group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors">{c.studentName}</p>
                           {c.studentEmail && (
                             <p className="text-[10px] text-slate-400 font-normal">{c.studentEmail}</p>
                           )}
@@ -634,13 +669,13 @@ export default function AdminCertificatesPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                      <td className="px-4 py-3.5 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
                         {c.courseTitle}
                       </td>
-                      <td className="px-4 py-4 font-mono font-bold text-[#2563EB] dark:text-blue-400 whitespace-nowrap">
+                      <td className="px-4 py-3.5 font-mono font-bold text-[#2563EB] dark:text-blue-400 whitespace-nowrap">
                         {c.verificationId}
                       </td>
-                      <td className="px-4 py-4 font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                      <td className="px-4 py-3.5 font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
                         {c.issuedAt
                           ? new Date(c.issuedAt).toLocaleDateString("en-IN", {
                               day: "numeric",
@@ -649,12 +684,12 @@ export default function AdminCertificatesPage() {
                             })
                           : "Verified"}
                       </td>
-                      <td className="px-4 py-4 text-center whitespace-nowrap">
+                      <td className="px-4 py-3.5 text-center whitespace-nowrap">
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
                           <ShieldCheck className="h-3 w-3" /> Valid
                         </span>
                       </td>
-                      <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
+                      <td className="pr-4 py-3.5 pl-4 text-right whitespace-nowrap last:rounded-r-2xl">
                         <button
                           type="button"
                           onClick={() =>
@@ -798,5 +833,13 @@ export default function AdminCertificatesPage() {
         onClose={() => setSelectedCert(null)}
       />
     </>
+  );
+}
+
+export default function AdminCertificatesPage() {
+  return (
+    <React.Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading certificates...</div>}>
+      <AdminCertificatesContent />
+    </React.Suspense>
   );
 }

@@ -213,18 +213,10 @@ export async function syncAllCourseProgress(params: {
         ...(params.assignmentScores || {}),
       };
 
-      const finalAssignmentIds = Array.from(
-        new Set([
-          ...(existingData.completedAssignmentIds || []),
-          ...(params.completedAssignmentIds || []),
-        ])
-      );
-
-      finalAssignmentIds.forEach((id) => {
-        if (typeof mergedScores[id] !== "number") {
-          mergedScores[id] = 85;
-        }
-      });
+      const finalAssignmentIds =
+        params.completedAssignmentIds !== undefined
+          ? params.completedAssignmentIds
+          : (existingData.completedAssignmentIds || []);
 
       localStorage.setItem(
         localKey,
@@ -587,8 +579,11 @@ export async function submitAssessment(params: {
       }),
     });
     if (res.ok) {
-      recordDailyActivity(effectiveEmail, "assignment");
-      return await res.json();
+      const data = await res.json();
+      if (data?.passed) {
+        recordDailyActivity(effectiveEmail, "assignment");
+      }
+      return data;
     }
   } catch (err) {
     console.warn("Failed to submit assessment to backend:", err);

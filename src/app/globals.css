@@ -13,7 +13,7 @@
   --surface: #ffffff;
   --surface-secondary: #f8fafc;
   --surface-elevated: #ffffff;
-  --surface-hover: #f1f5f9;
+  --surface-hover: rgba(15, 23, 42, 0.035);
   --surface-active: #e2e8f0;
   --input-bg: #ffffff;
   --border: #e2e8f0;
@@ -106,7 +106,7 @@
   --surface: #0e1421; /* sidebar, topbar, page chrome */
   --surface-secondary: #131c2c; /* cards, panels, table shells */
   --surface-elevated: #1a2438; /* dropdowns, modals, popovers, tooltips */
-  --surface-hover: #1f2b43; /* hovered rows / list items */
+  --surface-hover: rgba(255, 255, 255, 0.045); /* refined subtle translucent hover */
   --surface-active: #26334e; /* pressed / selected rows */
   --input-bg: #0f1725;
   --border: #26334d;
@@ -358,6 +358,12 @@ textarea {
   ::selection {
     background-color: color-mix(in srgb, var(--ring) 26%, transparent);
     color: var(--text-primary);
+  }
+
+  /* Classic, professional table row hover animation */
+  table tbody tr {
+    transition: background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Native form controls pick up the theme instead of staying white-on-white.

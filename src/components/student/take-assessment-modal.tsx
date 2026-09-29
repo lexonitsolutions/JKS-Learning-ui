@@ -155,17 +155,63 @@ export function TakeAssessmentModal({
 
         onSubmit(autoScore, { answers, uploadedFileName });
       } else if (customQuestions.length > 0) {
-        // Course milestone assignment authored by the admin. MCQs are scored
-        // against the configured answer key; anything else needs manual
-        // review, so it is recorded at the pass mark.
-        const score =
-          mcqQuestions.length > 0
-            ? Math.round(
-                (mcqQuestions.filter((q) => answers[q.id] === q.correctAnswer).length /
-                  mcqQuestions.length) *
-                  100
-              )
-            : passingScore ?? 85;
+        let totalEarned = 0;
+        customQuestions.forEach((q) => {
+          const ans = answers[q.id];
+          if (q.type === "MCQ") {
+            if (typeof ans === "number" && ans === q.correctAnswer) {
+              totalEarned += 1;
+            } else if (typeof ans === "string") {
+              const trimmed = ans.trim().toLowerCase();
+              const choices = q.choices || [];
+              const correctChoice =
+                typeof q.correctAnswer === "number" && choices[q.correctAnswer]
+                  ? choices[q.correctAnswer].trim().toLowerCase()
+                  : "";
+              if (trimmed === correctChoice || parseInt(trimmed, 10) === q.correctAnswer) {
+                totalEarned += 1;
+              }
+            }
+          } else {
+            // Written / Short Answer / Long Answer evaluation
+            const answerStr = typeof ans === "string" ? ans.trim() : "";
+            if (!answerStr) return;
+            const kwSet = new Set<string>();
+            if (q.modelAnswer) {
+              q.modelAnswer
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, "")
+                .split(/\s+/)
+                .filter((w) => w.length > 3)
+                .forEach((w) => kwSet.add(w));
+            }
+            if (kwSet.size === 0 && q.prompt) {
+              q.prompt
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, "")
+                .split(/\s+/)
+                .filter((w) => w.length > 3)
+                .forEach((w) => kwSet.add(w));
+            }
+            const kwList = Array.from(kwSet);
+            const lowerAns = answerStr.toLowerCase();
+            const isGibberish =
+              !/\s/.test(answerStr) && answerStr.length > 10 && !kwList.some((k) => lowerAns.includes(k));
+
+            if (!isGibberish && kwList.length > 0) {
+              let matched = 0;
+              for (const kw of kwList) {
+                if (lowerAns.includes(kw)) matched++;
+              }
+              const ratio = matched / kwList.length;
+              if (ratio >= 0.5) totalEarned += 1;
+              else if (ratio >= 0.25) totalEarned += 0.5;
+            } else if (!isGibberish && answerStr.length >= 10 && /\s/.test(answerStr)) {
+              totalEarned += 1;
+            }
+          }
+        });
+        const score = Math.round((totalEarned / customQuestions.length) * 100);
         onSubmit(score, { answers, uploadedFileName: uploadedFileName || undefined });
       } else {
         // No questions configured for this assignment — generic knowledge check.
@@ -173,10 +219,7 @@ export function TakeAssessmentModal({
           (acc, q, idx) => acc + (answers[`default-${idx + 1}`] === q.correctIndex ? 1 : 0),
           0
         );
-        const score = Math.min(
-          100,
-          Math.round(70 + (correctCount / DEFAULT_QUESTIONS.length) * 25)
-        );
+        const score = Math.round((correctCount / DEFAULT_QUESTIONS.length) * 100);
         onSubmit(score);
       }
       onClose();

@@ -24,7 +24,6 @@ import {
   Calendar,
   Menu,
   X,
-  Bell,
   Activity,
   type LucideIcon,
 } from "lucide-react";
@@ -49,7 +48,6 @@ const STUDENT_MAIN_NAV: NavItem[] = [
   { href: "/dashboard/assessments", label: "Assessments", icon: ClipboardCheck },
   { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit, badge: "Soon" },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
-  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
 ];
 
 
@@ -66,7 +64,6 @@ const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin/instructors", label: "Instructors", icon: GraduationCap },
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
-  { href: "/admin/notifications", label: "Notifications", icon: Bell },
   { href: "/admin/activity-logs", label: "Activity Logs", icon: Activity },
   { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone, badge: "Soon" },
   { href: "/admin/ai-interviews", label: "AI Interviews", icon: BrainCircuit, badge: "Soon" },
@@ -85,7 +82,6 @@ const INSTRUCTOR_MAIN_NAV: NavItem[] = [
   { href: "/instructor/students", label: "Students", icon: Users },
   { href: "/instructor/courses", label: "Courses", icon: BookOpen },
   { href: "/instructor/assessments", label: "Assessments", icon: ClipboardCheck, badge: "New" },
-  { href: "/instructor/notifications", label: "Notifications", icon: Bell },
   { href: "/instructor/analytics", label: "Analytics", icon: BarChart3 },
 ];
 

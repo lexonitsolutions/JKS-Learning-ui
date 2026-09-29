@@ -223,9 +223,49 @@ export default function AdminActivityLogsPage() {
         <Reveal>
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated shadow-xs overflow-hidden">
             {loading && logs.length === 0 ? (
-              <div className="p-12 text-center text-sm text-slate-400">
-                <RefreshCw className="h-6 w-6 animate-spin mx-auto text-blue-600 mb-3" />
-                Loading audit trail records...
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="px-4 py-3.5">Actor / User</th>
+                      <th className="px-4 py-3.5">Action</th>
+                      <th className="px-4 py-3.5">Event Details</th>
+                      <th className="px-4 py-3.5">Course / Batch</th>
+                      <th className="px-4 py-3.5">Time</th>
+                      <th className="px-4 py-3.5 text-right">Inspect</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td className="px-4 py-3.5">
+                          <div className="flex items-center gap-2.5">
+                            <div className="h-7 w-7 rounded-full bg-slate-200 dark:bg-slate-800" />
+                            <div className="space-y-1">
+                              <div className="h-3 w-28 rounded bg-slate-200 dark:bg-slate-800" />
+                              <div className="h-2.5 w-36 rounded bg-slate-100 dark:bg-slate-800/60" />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <div className="h-5 w-24 rounded-full bg-slate-200 dark:bg-slate-800" />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <div className="h-3.5 w-44 rounded bg-slate-200 dark:bg-slate-800" />
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="h-3.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <div className="h-3 w-16 rounded bg-slate-200 dark:bg-slate-800" />
+                        </td>
+                        <td className="px-4 py-3.5 text-right">
+                          <div className="inline-block h-6 w-14 rounded-md bg-slate-200 dark:bg-slate-800" />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : logs.length === 0 ? (
               <div className="p-12 text-center">
@@ -260,7 +300,7 @@ export default function AdminActivityLogsPage() {
                       return (
                         <tr
                           key={log.id}
-                          className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
+                          className="hover:bg-slate-100/70 dark:hover:bg-white/[0.04] transition-all duration-200 ease-out"
                         >
                           <td className="px-4 py-3.5 whitespace-nowrap">
                             <div className="flex items-center gap-2.5">

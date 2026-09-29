@@ -32,8 +32,13 @@ export default function AdminPaymentsPage() {
     batchTiming: "Weekday Morning (7:30 AM - 9:30 AM IST)",
   });
 
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    fetchInvoicesFromApi().then((list) => setInvoices(list));
+    setIsLoading(true);
+    fetchInvoicesFromApi()
+      .then((list) => setInvoices(list))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const refreshInvoices = async () => {
@@ -232,43 +237,82 @@ export default function AdminPaymentsPage() {
         {/* Invoices Data Table */}
         <div className="rounded-[20px] border border-white/70 bg-white/80 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs min-w-[700px]">
+            <table className="w-full text-left text-xs min-w-[700px] border-separate border-spacing-y-1.5">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
-                  <th className="pb-3 pr-4 pl-0">Invoice #</th>
+                  <th className="pb-3 pr-4 pl-4">Invoice #</th>
                   <th className="px-4 pb-3">Student Details</th>
                   <th className="px-4 pb-3">Course Track</th>
                   <th className="px-4 pb-3">Total Amount</th>
                   <th className="px-4 pb-3 text-center">Status</th>
-                  <th className="pr-0 pb-3 pl-4 text-right">Actions</th>
+                  <th className="pr-4 pb-3 pl-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
-                {filtered.map((inv) => (
-                  <tr key={inv.id} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-hover">
-                    <td className="py-4 pr-4 pl-0 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+              <tbody>
+                {isLoading ? (
+                  [1, 2, 3, 4, 5].map((i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="py-3.5 pr-4 pl-4 first:rounded-l-2xl">
+                        <div className="space-y-1.5">
+                          <div className="h-3.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+                          <div className="h-2.5 w-16 rounded bg-slate-100 dark:bg-slate-800/60" />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="space-y-1.5">
+                          <div className="h-3.5 w-32 rounded bg-slate-200 dark:bg-slate-800" />
+                          <div className="h-2.5 w-24 rounded bg-slate-100 dark:bg-slate-800/60" />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="h-3.5 w-44 rounded bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="h-3.5 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        <div className="inline-block h-5 w-16 rounded-full bg-emerald-100/70 dark:bg-emerald-950/40" />
+                      </td>
+                      <td className="pr-4 py-3.5 pl-4 text-right last:rounded-r-2xl">
+                        <div className="inline-block h-8 w-24 rounded-xl bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                    </tr>
+                  ))
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-slate-400 font-medium">
+                      No invoices found matching your criteria.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((inv) => (
+                    <tr
+                      key={inv.id}
+                      className="group transition-all duration-200 ease-out hover:bg-slate-100/60 dark:hover:bg-white/[0.035] hover:shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_2px_14px_rgba(0,0,0,0.3)] cursor-pointer"
+                    >
+                    <td className="py-3.5 pr-4 pl-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap first:rounded-l-2xl">
                       {inv.invoiceNumber}
                       <div className="text-[10px] text-slate-400 dark:text-slate-400 font-normal">
                         {new Date(inv.issueDate).toLocaleDateString("en-IN")}
                       </div>
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="font-bold text-slate-900 dark:text-white">{inv.studentName}</div>
+                    <td className="px-4 py-3.5 whitespace-nowrap">
+                      <div className="font-bold text-slate-900 dark:text-white group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors">{inv.studentName}</div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{inv.studentPhone}</div>
                     </td>
-                    <td className="px-4 py-4 font-medium text-slate-700 dark:text-slate-300">
+                    <td className="px-4 py-3.5 font-medium text-slate-700 dark:text-slate-300">
                       {inv.items[0]?.description || "Enrolled Course"}
                     </td>
-                    <td className="px-4 py-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                    <td className="px-4 py-3.5 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
                       ₹{inv.totalAmount.toLocaleString("en-IN")}
                     </td>
-                    <td className="px-4 py-4 text-center whitespace-nowrap">
+                    <td className="px-4 py-3.5 text-center whitespace-nowrap">
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 px-2.5 py-0.5 text-[11px] font-semibold">
                         <CheckCircle2 className="h-3 w-3" />
                         {inv.paymentStatus}
                       </span>
                     </td>
-                    <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
+                    <td className="pr-4 py-3.5 pl-4 text-right whitespace-nowrap last:rounded-r-2xl">
                       <button
                         type="button"
                         onClick={() => setSelectedInvoice(inv)}
@@ -278,7 +322,7 @@ export default function AdminPaymentsPage() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>

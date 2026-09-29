@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { CreditCard, CheckCircle2, XCircle, FileText, Download, Printer, Search, X, Layers, Filter } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
@@ -10,8 +10,14 @@ import { InvoiceModal } from "@/components/common/invoice-modal";
 import { CustomDropdown, type DropdownOption } from "@/components/ui/custom-dropdown";
 
 export default function PaymentsPage() {
+  const [isLoading, setIsLoading] = useState(true);
   const invoices = getStoredInvoices();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 200);
+    return () => clearTimeout(timer);
+  }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("All");
   const [selectedCourse, setSelectedCourse] = useState<string>("ALL");
@@ -169,7 +175,33 @@ export default function PaymentsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                {filtered.length === 0 ? (
+                {isLoading ? (
+                  [1, 2, 3].map((i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="py-4 pr-4 pl-0">
+                        <div className="space-y-1.5">
+                          <div className="h-3.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+                          <div className="h-2.5 w-16 rounded bg-slate-100 dark:bg-slate-800/60" />
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="h-3.5 w-44 rounded bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="h-3.5 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <div className="inline-block h-5 w-16 rounded-full bg-emerald-100/70 dark:bg-emerald-950/40" />
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="h-3.5 w-16 rounded bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                      <td className="pr-0 py-4 pl-4 text-right">
+                        <div className="inline-block h-8 w-24 rounded-xl bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                    </tr>
+                  ))
+                ) : filtered.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-8 text-center text-xs text-slate-400">
                       No invoices found matching your filters.
@@ -177,7 +209,7 @@ export default function PaymentsPage() {
                   </tr>
                 ) : (
                   filtered.map((inv) => (
-                    <tr key={inv.id} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-surface-elevated/60">
+                    <tr key={inv.id} className="transition-all duration-200 ease-out hover:bg-slate-100/70 dark:hover:bg-white/[0.04]">
                       <td className="py-4 pr-4 pl-0 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
                         {inv.invoiceNumber}
                         <div className="text-[10px] text-slate-400 font-normal">

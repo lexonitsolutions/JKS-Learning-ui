@@ -230,28 +230,37 @@ export default function QuizzesPage() {
 
     allCourses.forEach((course) => {
       (course.sections || []).forEach((sec) => {
-        if (sec.assignment && sec.assignment.questions && sec.assignment.questions.length > 0) {
-          list.push({
-            id: `quiz-${course.slug}-${sec.id}`,
-            title: sec.assignment.title || `${sec.title} Quiz`,
-            category: course.track,
-            bannerTitle: course.title.split(" ")[0] || "Track",
-            bannerSubtitle: sec.title,
-            bannerBg: course.slug.includes("java")
-              ? "from-blue-950 via-slate-900 to-indigo-950"
-              : course.slug.includes("frontend")
-              ? "from-cyan-950 via-slate-900 to-blue-950"
-              : "from-slate-950 via-purple-950 to-slate-900",
-            questionsCount: sec.assignment.questions.length,
-            passPercentage: sec.assignment.minPassingScore || 70,
-            durationMinutes: Math.max(5, sec.assignment.questions.length * 2),
-            questions: sec.assignment.questions.map((q) => ({
-              question: q.prompt,
-              options: q.choices && q.choices.length > 0 ? q.choices : ["True", "False"],
-              correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
-              explanation: `Review key principles in ${sec.title} to master this assessment requirement.`,
-            })),
-          });
+        if (sec.assignment && Array.isArray(sec.assignment.questions) && sec.assignment.questions.length > 0) {
+          const mcqQuestions = sec.assignment.questions.filter(
+            (q) => Array.isArray(q.choices) && q.choices.length >= 2
+          );
+          if (mcqQuestions.length > 0) {
+            list.push({
+              id: `quiz-${course.slug}-${sec.id}`,
+              title: sec.assignment.title || `${sec.title} Quiz`,
+              category: course.track,
+              bannerTitle: course.title.split(" ")[0] || "Track",
+              bannerSubtitle: sec.title,
+              bannerBg: course.slug.includes("java")
+                ? "from-blue-950 via-slate-900 to-indigo-950"
+                : course.slug.includes("frontend")
+                ? "from-cyan-950 via-slate-900 to-blue-950"
+                : "from-slate-950 via-purple-950 to-slate-900",
+              questionsCount: mcqQuestions.length,
+              passPercentage: sec.assignment.minPassingScore || 70,
+              durationMinutes: Math.max(5, mcqQuestions.length * 2),
+              questions: mcqQuestions.map((q) => ({
+                question: q.prompt,
+                options: q.choices || ["Option A", "Option B"],
+                correctIndex:
+                  typeof q.correctIndex === "number" && q.correctIndex >= 0 && q.correctIndex < (q.choices?.length || 2)
+                    ? q.correctIndex
+                    : 0,
+                explanation:
+                  q.explanation || `Review key concepts in ${sec.title} to master this assessment requirement.`,
+              })),
+            });
+          }
         }
       });
     });
@@ -315,7 +324,8 @@ export default function QuizzesPage() {
     if (!activeQuiz) return { score: 0, total: 0, percent: 0, passed: false };
     let correct = 0;
     activeQuiz.questions.forEach((q, idx) => {
-      if (selectedAnswers[idx] === q.correctIndex) {
+      const chosen = selectedAnswers[idx];
+      if (typeof chosen === "number" && chosen === q.correctIndex) {
         correct++;
       }
     });
@@ -577,6 +587,55 @@ export default function QuizzesPage() {
                             style={{ width: `${res.percent}%` }}
                           />
                         </div>
+                      </div>
+
+                      {/* Question by Question Review Breakdown */}
+                      <div className="mt-6 text-left space-y-3 max-h-60 overflow-y-auto pr-1">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Question Review &amp; Answer Key
+                        </h4>
+                        {activeQuiz.questions.map((q, idx) => {
+                          const userAnsIdx = selectedAnswers[idx];
+                          const isCorrect = typeof userAnsIdx === "number" && userAnsIdx === q.correctIndex;
+                          const userAnsText = typeof userAnsIdx === "number" && q.options[userAnsIdx] ? q.options[userAnsIdx] : "Not answered";
+                          const correctAnsText = q.options[q.correctIndex] || "N/A";
+
+                          return (
+                            <div
+                              key={idx}
+                              className={`rounded-xl border p-3 text-xs space-y-1.5 ${
+                                isCorrect
+                                  ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-800/60 dark:bg-emerald-950/20"
+                                  : "border-rose-200 bg-rose-50/50 dark:border-rose-800/60 dark:bg-rose-950/20"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between font-bold">
+                                <span className="text-slate-800 dark:text-slate-200">
+                                  Q{idx + 1}. {q.question}
+                                </span>
+                                <span
+                                  className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
+                                    isCorrect
+                                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300"
+                                      : "bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300"
+                                  }`}
+                                >
+                                  {isCorrect ? "Correct" : "Incorrect"}
+                                </span>
+                              </div>
+                              <div className="text-[11px] space-y-0.5 pt-1">
+                                <div className={isCorrect ? "text-emerald-800 dark:text-emerald-300" : "text-rose-800 dark:text-rose-300 font-medium"}>
+                                  <span className="font-bold">Your Answer:</span> {userAnsText}
+                                </div>
+                                {!isCorrect && (
+                                  <div className="text-emerald-700 dark:text-emerald-400 font-semibold">
+                                    <span className="font-bold">Correct Answer:</span> {correctAnsText}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
 
                       <div className="mt-8 flex justify-center gap-3">

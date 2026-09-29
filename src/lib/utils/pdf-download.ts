@@ -112,7 +112,7 @@ export async function downloadElementAsPdf(
       logging: false,
       scrollX: 0,
       scrollY: 0,
-      windowWidth: Math.max(element.scrollWidth || 800, 800),
+      windowWidth: 1280,
       imageTimeout: 15000,
       onclone: (clonedDoc, clonedElement) => {
         // 1. Force light theme on cloned document root and body
@@ -165,12 +165,17 @@ export async function downloadElementAsPdf(
             box-sizing: border-box !important;
           }
           #printable-resume-sheet {
+            width: 794px !important;
+            min-width: 794px !important;
+            max-width: 794px !important;
             background-color: #ffffff !important;
             color: #0f172a !important;
             transform: none !important;
             transition: none !important;
             box-shadow: none !important;
-            margin: 0 !important;
+            border: none !important;
+            border-radius: 0 !important;
+            margin: 0 auto !important;
           }
           #printable-resume-sheet .text-slate-900 { color: #0f172a !important; }
           #printable-resume-sheet .text-slate-800 { color: #1e293b !important; }
@@ -186,18 +191,46 @@ export async function downloadElementAsPdf(
         `;
         clonedDoc.head.appendChild(styleOverride);
 
-        // 3. Reset cloned element attributes
+        // 3. Reset cloned element attributes to canonical A4 dimensions (794px = 210mm at 96 DPI)
+        const A4_WIDTH_PX = 794;
+        clonedElement.style.width = `${A4_WIDTH_PX}px`;
+        clonedElement.style.minWidth = `${A4_WIDTH_PX}px`;
+        clonedElement.style.maxWidth = `${A4_WIDTH_PX}px`;
         clonedElement.style.backgroundColor = "#ffffff";
         clonedElement.style.color = "#0f172a";
         clonedElement.style.boxShadow = "none";
+        clonedElement.style.borderRadius = "0px";
+        clonedElement.style.border = "none";
         clonedElement.style.transform = "none";
         clonedElement.style.transition = "none";
+        clonedElement.style.margin = "0 auto";
+        clonedElement.style.boxSizing = "border-box";
+
+        let parent = clonedElement.parentElement;
+        while (parent && parent !== clonedDoc.body) {
+          parent.style.width = `${A4_WIDTH_PX}px`;
+          parent.style.minWidth = `${A4_WIDTH_PX}px`;
+          parent.style.maxWidth = `${A4_WIDTH_PX}px`;
+          parent.style.padding = "0";
+          parent.style.margin = "0 auto";
+          parent.style.overflow = "visible";
+          parent = parent.parentElement;
+        }
+        clonedDoc.body.style.width = `${A4_WIDTH_PX}px`;
+        clonedDoc.body.style.minWidth = `${A4_WIDTH_PX}px`;
+        clonedDoc.body.style.overflow = "visible";
 
         const clonedChild = clonedElement.firstElementChild as HTMLElement | null;
         if (clonedChild) {
           clonedChild.style.borderRadius = "0px";
           clonedChild.style.boxShadow = "none";
           clonedChild.style.transition = "none";
+          clonedChild.style.borderLeft = "none";
+          clonedChild.style.borderRight = "none";
+          clonedChild.style.borderBottom = "none";
+          if (!clonedChild.className.includes("border-t-")) {
+            clonedChild.style.borderTop = "none";
+          }
         }
 
         // 4. Intercept clonedDoc.defaultView.getComputedStyle to translate any remaining lab/oklch colors
@@ -233,6 +266,73 @@ export async function downloadElementAsPdf(
       },
     });
 
+    // Extract all clickable hyperlinks from the element for real PDF link annotations
+    interface ExtractedLink {
+      url: string;
+      relX: number;
+      relY: number;
+      relW: number;
+      relH: number;
+    }
+    const extractedLinks: ExtractedLink[] = [];
+    const elRect = element.getBoundingClientRect();
+    const aTags = Array.from(element.querySelectorAll<HTMLAnchorElement>("a[href]"));
+
+    aTags.forEach((a) => {
+      const href = a.getAttribute("href") || a.href;
+      if (!href || href === "#" || href.startsWith("javascript:")) return;
+      const rect = a.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0 || elRect.width <= 0 || elRect.height <= 0) return;
+
+      extractedLinks.push({
+        url: href,
+        relX: (rect.left - elRect.left) / elRect.width,
+        relY: (rect.top - elRect.top) / elRect.height,
+        relW: rect.width / elRect.width,
+        relH: rect.height / elRect.height,
+      });
+    });
+
+    // Extract text nodes for ATS searchable & selectable text layer
+    interface ExtractedText {
+      text: string;
+      relX: number;
+      relY: number;
+      fontSizePt: number;
+    }
+    const extractedTexts: ExtractedText[] = [];
+    if (typeof document !== "undefined") {
+      try {
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let node = walker.nextNode();
+        while (node) {
+          const text = node.textContent?.trim();
+          if (text && node.parentElement) {
+            const parent = node.parentElement;
+            const computed = window.getComputedStyle(parent);
+            if (computed.display !== "none" && computed.visibility !== "hidden") {
+              const range = document.createRange();
+              range.selectNode(node);
+              const rect = range.getBoundingClientRect();
+              if (rect.width > 0 && rect.height > 0 && elRect.width > 0 && elRect.height > 0) {
+                const fontSizePx = parseFloat(computed.fontSize) || 11;
+                const fontSizePt = Math.max(6, Math.min(22, fontSizePx * 0.75));
+                extractedTexts.push({
+                  text,
+                  relX: (rect.left - elRect.left) / elRect.width,
+                  relY: (rect.top - elRect.top + rect.height * 0.78) / elRect.height,
+                  fontSizePt,
+                });
+              }
+            }
+          }
+          node = walker.nextNode();
+        }
+      } catch {
+        // non-fatal
+      }
+    }
+
     let imgData: string;
     try {
       imgData = canvas.toDataURL("image/jpeg", 0.98);
@@ -250,38 +350,109 @@ export async function downloadElementAsPdf(
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
+    // Use full available width with balanced margins
     const printableWidth = pdfWidth - marginMm * 2;
     const printableHeight = pdfHeight - marginMm * 2;
 
-    const naturalImgWidth = printableWidth;
     const naturalImgHeight = (canvas.height * printableWidth) / canvas.width;
 
-    // Single-page proportional fit: If the content is within 1.35x of 1 A4 page (or explicitly requested),
-    // scale it proportionally so it fits completely and beautifully on 1 page with no text cut in half!
-    const shouldFitSinglePage =
-      options?.singlePageFit ?? (naturalImgHeight <= printableHeight * 1.35);
+    // Single-page fit check: if singlePageFit option is requested (default for resumes) or naturally fits
+    const shouldFitSinglePage = options?.singlePageFit ?? true;
 
-    if (shouldFitSinglePage) {
-      const scaleFactor = Math.min(1, printableHeight / naturalImgHeight);
-      const renderWidth = naturalImgWidth * scaleFactor;
-      const renderHeight = naturalImgHeight * scaleFactor;
+    if (shouldFitSinglePage || naturalImgHeight <= printableHeight * 1.05) {
+      // 1-page document: scale proportionally so full content fits on ONE single page
+      const fitScale = Math.min(1, printableHeight / naturalImgHeight);
+      const renderWidth = printableWidth * fitScale;
+      const renderHeight = naturalImgHeight * fitScale;
       const xOffset = marginMm + (printableWidth - renderWidth) / 2;
-      const yOffset = marginMm;
+      const yOffset = marginMm + (printableHeight - renderHeight) / 2;
 
-      pdf.addImage(imgData, "JPEG", xOffset, yOffset, renderWidth, renderHeight, undefined, "FAST");
+      pdf.addImage(
+        imgData,
+        "JPEG",
+        xOffset,
+        yOffset,
+        renderWidth,
+        renderHeight,
+        undefined,
+        "FAST"
+      );
+
+      // Embed clickable hyperlink annotations with exact scaled coordinates
+      extractedLinks.forEach((link) => {
+        const linkX = xOffset + link.relX * renderWidth;
+        const linkY = yOffset + link.relY * renderHeight;
+        const linkW = link.relW * renderWidth;
+        const linkH = link.relH * renderHeight;
+        try {
+          pdf.link(linkX, linkY, linkW, linkH, { url: link.url });
+        } catch {}
+      });
+
+      // Embed ATS selectable & searchable text with exact scaled coordinates
+      pdf.setFont("helvetica", "normal");
+      extractedTexts.forEach((t) => {
+        const textX = xOffset + t.relX * renderWidth;
+        const textY = yOffset + t.relY * renderHeight;
+        try {
+          pdf.setFontSize(Math.max(5, t.fontSizePt * fitScale));
+          pdf.text(t.text, textX, textY, { renderingMode: "invisible" });
+        } catch {}
+      });
     } else {
-      // Multi-page document handling for genuinely long multi-page resumes
+      // Multi-page document: slice page-by-page at printableHeight only when multi-page is explicitly allowed
       let heightLeft = naturalImgHeight;
-      let position = marginMm;
       let page = 0;
 
       while (heightLeft > 2) {
         if (page > 0) {
           pdf.addPage();
         }
-        pdf.addImage(imgData, "JPEG", marginMm, position, naturalImgWidth, naturalImgHeight, undefined, "FAST");
+        const pagePosition = marginMm - page * printableHeight;
+        pdf.addImage(
+          imgData,
+          "JPEG",
+          marginMm,
+          pagePosition,
+          printableWidth,
+          naturalImgHeight,
+          undefined,
+          "FAST"
+        );
+
+        // Add links that belong to this page
+        extractedLinks.forEach((link) => {
+          const totalY = marginMm + link.relY * naturalImgHeight;
+          const pageStartY = marginMm + page * printableHeight;
+          const pageEndY = pageStartY + printableHeight;
+          if (totalY >= pageStartY && totalY < pageEndY) {
+            const pageY = totalY - pageStartY + marginMm;
+            const linkX = marginMm + link.relX * printableWidth;
+            const linkW = link.relW * printableWidth;
+            const linkH = link.relH * naturalImgHeight;
+            try {
+              pdf.link(linkX, pageY, linkW, linkH, { url: link.url });
+            } catch {}
+          }
+        });
+
+        // Add ATS selectable text that belongs to this page
+        pdf.setFont("helvetica", "normal");
+        extractedTexts.forEach((t) => {
+          const totalY = marginMm + t.relY * naturalImgHeight;
+          const pageStartY = marginMm + page * printableHeight;
+          const pageEndY = pageStartY + printableHeight;
+          if (totalY >= pageStartY && totalY < pageEndY) {
+            const pageY = totalY - pageStartY + marginMm;
+            const textX = marginMm + t.relX * printableWidth;
+            try {
+              pdf.setFontSize(t.fontSizePt);
+              pdf.text(t.text, textX, pageY, { renderingMode: "invisible" });
+            } catch {}
+          }
+        });
+
         heightLeft -= printableHeight;
-        position -= printableHeight;
         page++;
       }
     }

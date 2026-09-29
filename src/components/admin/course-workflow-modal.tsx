@@ -26,7 +26,7 @@ export interface StageConfig {
   videoTitle: string;
   videoDuration: string;
   assignmentTitle: string;
-  assignmentType: "MCQ" | "Coding Challenge" | "Project Submission";
+  assignmentType: "MCQ" | "Project Submission";
   minPassingScore: number;
   antiSkipEnabled: boolean;
 }
@@ -440,13 +440,12 @@ export function CourseWorkflowModal({
                           value={stage.assignmentType}
                           onChange={(e) => {
                             const updated = [...stages];
-                            updated[idx].assignmentType = e.target.value as "MCQ" | "Coding Challenge" | "Project Submission";
+                            updated[idx].assignmentType = e.target.value as "MCQ" | "Project Submission";
                             setStages(updated);
                           }}
                           className="mt-1 w-full rounded-lg border border-slate-200 bg-white dark:border-slate-700/80 dark:bg-input-bg dark:text-white px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB]"
                         >
                           <option value="MCQ">MCQ Test</option>
-                          <option value="Coding Challenge">Coding Challenge</option>
                           <option value="Project Submission">Project Submission</option>
                         </select>
                       </div>

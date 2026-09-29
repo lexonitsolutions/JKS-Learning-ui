@@ -222,25 +222,67 @@ export default function InstructorStudentsPage() {
         {/* Desktop View: Full Data Table (>= 768px) */}
         <div className="hidden md:block rounded-[24px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-              <thead className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 border-separate border-spacing-y-1.5 p-3">
+              <thead className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <tr>
-                  <th className="px-5 py-4">Student</th>
-                  <th className="px-5 py-4">Course Track</th>
-                  <th className="px-5 py-4">Video Progress</th>
-                  <th className="px-5 py-4">Assignment Avg</th>
-                  <th className="px-5 py-4">Last Active</th>
-                  <th className="px-5 py-4">Status</th>
-                  <th className="px-5 py-4 text-right">Actions</th>
+                  <th className="px-5 py-3.5">Student</th>
+                  <th className="px-5 py-3.5">Course Track</th>
+                  <th className="px-5 py-3.5">Video Progress</th>
+                  <th className="px-5 py-3.5">Assignment Avg</th>
+                  <th className="px-5 py-3.5">Last Active</th>
+                  <th className="px-5 py-3.5">Status</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100/80 dark:divide-slate-800/80">
-                {filteredStudents.map((st) => (
-                  <tr
-                    key={st.id}
-                    className="hover:bg-blue-50/40 dark:hover:bg-surface-hover transition-colors group cursor-pointer"
-                  >
-                    <td className="px-5 py-4">
+              <tbody>
+                {isLoading ? (
+                  [1, 2, 3, 4, 5].map((i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="px-5 py-3.5 first:rounded-l-2xl">
+                        <div className="flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-xl bg-slate-200 dark:bg-slate-800 shrink-0" />
+                          <div className="space-y-1.5">
+                            <div className="h-3.5 w-28 rounded bg-slate-200 dark:bg-slate-800" />
+                            <div className="h-2.5 w-36 rounded bg-slate-100 dark:bg-slate-800/60" />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="space-y-1">
+                          <div className="h-2 w-28 rounded-full bg-slate-200 dark:bg-slate-800" />
+                          <div className="h-2.5 w-16 rounded bg-slate-100 dark:bg-slate-800/60" />
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="h-4 w-12 rounded bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="h-3.5 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="h-5 w-20 rounded-full bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                      <td className="px-5 py-3.5 text-right last:rounded-r-2xl">
+                        <div className="inline-block h-8 w-28 rounded-xl bg-slate-200 dark:bg-slate-800" />
+                      </td>
+                    </tr>
+                  ))
+                ) : filteredStudents.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
+                      No students found matching your criteria.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredStudents.map((st) => (
+                    <tr
+                      key={st.id}
+                      className="hover:bg-slate-100/60 dark:hover:bg-white/[0.035] hover:shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_2px_14px_rgba(0,0,0,0.3)] transition-all duration-200 ease-out group cursor-pointer"
+                    >
+                    <td className="px-5 py-3.5 first:rounded-l-2xl">
                       <Link
                         href={`/instructor/students/${st.slug}`}
                         className="flex items-center gap-3"
@@ -258,13 +300,13 @@ export default function InstructorStudentsPage() {
                       </Link>
                     </td>
 
-                    <td className="px-5 py-4 font-medium text-slate-800 dark:text-slate-200">
+                    <td className="px-5 py-3.5 font-medium text-slate-800 dark:text-slate-200">
                       <Link href={`/instructor/students/${st.slug}`} className="block">
                         {st.courseTitle}
                       </Link>
                     </td>
 
-                    <td className="px-5 py-4 min-w-[150px]">
+                    <td className="px-5 py-3.5 min-w-[150px]">
                       <Link href={`/instructor/students/${st.slug}`} className="block space-y-1">
                         <div className="flex justify-between text-[11px] font-bold">
                           <span className="text-slate-900 dark:text-white">{st.progressPercent}%</span>
@@ -287,7 +329,7 @@ export default function InstructorStudentsPage() {
                       </Link>
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-3.5">
                       <Link href={`/instructor/students/${st.slug}`} className="inline-block">
                         <span
                           className={`inline-flex items-center font-bold px-2 py-0.5 rounded ${
@@ -303,9 +345,9 @@ export default function InstructorStudentsPage() {
                       </Link>
                     </td>
 
-                    <td className="px-5 py-4 text-slate-500 dark:text-slate-400 font-medium">{st.lastActive}</td>
+                    <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 font-medium">{st.lastActive}</td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-3.5">
                       <Link href={`/instructor/students/${st.slug}`} className="inline-block">
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
@@ -323,7 +365,7 @@ export default function InstructorStudentsPage() {
                       </Link>
                     </td>
 
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-5 py-3.5 text-right last:rounded-r-2xl">
                       <Link
                         href={`/instructor/students/${st.slug}`}
                         className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-[#2563EB] hover:text-white dark:hover:bg-[#2563EB] dark:hover:text-white hover:border-[#2563EB] transition-all shadow-xs"
@@ -333,7 +375,8 @@ export default function InstructorStudentsPage() {
                       </Link>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>

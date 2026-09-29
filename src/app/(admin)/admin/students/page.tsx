@@ -536,22 +536,22 @@ export default function AdminStudentsPage() {
         {/* Students Table with Skeleton (Skull UI) Loading Animation */}
         <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs min-w-[760px]">
+            <table className="w-full text-left text-xs min-w-[760px] border-separate border-spacing-y-1.5">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
-                  <th className="pb-3 pr-4 pl-0">Student Profile</th>
+                  <th className="pb-3 pr-4 pl-4">Student Profile</th>
                   <th className="px-4 pb-3">Student Rating</th>
                   <th className="px-4 pb-3">Contact Details</th>
                   <th className="px-4 pb-3">Registration Date</th>
-                  <th className="pr-0 pb-3 pl-4 text-right">Actions</th>
+                  <th className="pr-4 pb-3 pl-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+              <tbody>
                 {/* SKELETON UI (SKULL LOADING ANIMATION) */}
                 {isLoading ? (
                   [1, 2, 3, 4, 5].map((i) => (
                     <tr key={i} className="animate-pulse">
-                      <td className="py-4 pr-4 pl-0">
+                      <td className="py-3.5 pr-4 pl-4 first:rounded-l-2xl">
                         <div className="flex items-center gap-3">
                           <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-800 shrink-0" />
                           <div className="space-y-1.5">
@@ -560,19 +560,19 @@ export default function AdminStudentsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3.5">
                         <div className="h-10 w-48 rounded-xl bg-slate-200 dark:bg-slate-800" />
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3.5">
                         <div className="h-3.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3.5">
                         <div className="space-y-1">
                           <div className="h-3.5 w-20 rounded bg-slate-200 dark:bg-slate-800" />
                           <div className="h-2.5 w-14 rounded bg-slate-100 dark:bg-surface-hover" />
                         </div>
                       </td>
-                      <td className="pr-0 py-4 pl-4 text-right">
+                      <td className="pr-4 py-3.5 pl-4 text-right last:rounded-r-2xl">
                         <div className="inline-block h-8 w-24 rounded-xl bg-slate-200 dark:bg-slate-800" />
                       </td>
                     </tr>
@@ -606,11 +606,11 @@ export default function AdminStudentsPage() {
                       <tr
                         key={s.id}
                         onClick={() => router.push(`/admin/students/${s.id}`)}
-                        className="group transition-colors hover:bg-blue-50/50 dark:hover:bg-surface-hover cursor-pointer"
+                        className="group transition-all duration-200 ease-out hover:bg-slate-100/60 dark:hover:bg-white/[0.035] hover:shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_2px_14px_rgba(0,0,0,0.3)] cursor-pointer"
                         title="Click to view full student profile & academic dossier"
                       >
                         {/* Student Name & Email */}
-                        <td className="py-4 pr-4 pl-0 whitespace-nowrap">
+                        <td className="py-3.5 pr-4 pl-4 whitespace-nowrap first:rounded-l-2xl">
                           <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/60 text-xs font-bold text-[#2563EB] dark:text-blue-400 group-hover:bg-[#2563EB] dark:group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-xs">
                               {initials}
@@ -644,7 +644,7 @@ export default function AdminStudentsPage() {
                         </td>
 
                         {/* Overall Student Rating (Calculated from entire courses average progress - No course names shown outside) */}
-                        <td className="px-4 py-4 whitespace-nowrap">
+                        <td className="px-4 py-3.5 whitespace-nowrap">
                           {s.enrollments && s.enrollments.length > 0 ? (
                             (() => {
                               const avgProgress = Math.round(
@@ -689,7 +689,7 @@ export default function AdminStudentsPage() {
                         </td>
 
                         {/* Phone & Contact */}
-                        <td className="px-4 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300 font-medium">
+                        <td className="px-4 py-3.5 whitespace-nowrap text-slate-600 dark:text-slate-300 font-medium">
                           <div className="flex items-center gap-1.5">
                             <Phone className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400 shrink-0" />
                             <span>
@@ -699,15 +699,17 @@ export default function AdminStudentsPage() {
                         </td>
 
                         {/* Registration Date */}
-                        <td className="px-4 py-4 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                        <td className="px-4 py-3.5 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
                             <Calendar className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400 shrink-0" />
                             <span>
-                              {new Date(s.registeredAt).toLocaleDateString("en-IN", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              })}
+                              {s.registeredAt
+                                ? new Date(s.registeredAt).toLocaleDateString("en-IN", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  })
+                                : "Recent"}
                             </span>
                           </div>
                           <div className="text-[10px] text-slate-400 dark:text-slate-400 pl-5">
@@ -719,7 +721,7 @@ export default function AdminStudentsPage() {
                         </td>
 
                         {/* Actions */}
-                        <td className="pr-0 py-4 pl-4 text-right whitespace-nowrap">
+                        <td className="pr-4 py-3.5 pl-4 text-right whitespace-nowrap last:rounded-r-2xl">
                           <div
                             className="flex items-center justify-end gap-1.5"
                             onClick={(e) => e.stopPropagation()}

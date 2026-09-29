@@ -79,6 +79,7 @@ function AdminNewCourseContent() {
 
   const [currentStep, setCurrentStep] = useState<StepNumber>(1);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isEditMode, setIsEditMode] = useState(false);
   const [existingCourseId, setExistingCourseId] = useState<string | null>(null);
   const [isLoadingEdit, setIsLoadingEdit] = useState(false);
@@ -87,6 +88,16 @@ function AdminNewCourseContent() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importSuccessMessage, setImportSuccessMessage] = useState<string | null>(null);
+
+  const clearFieldError = (fieldKey: string) => {
+    setFieldErrors((prev) => {
+      if (!prev[fieldKey]) return prev;
+      const next = { ...prev };
+      delete next[fieldKey];
+      return next;
+    });
+    setValidationError(null);
+  };
 
   const handleImportSections = (importedSections: Section[], replaceCurrent: boolean) => {
     if (!importedSections || importedSections.length === 0) return;
@@ -154,6 +165,52 @@ function AdminNewCourseContent() {
   const [summary, setSummary] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
 
+  const createDefaultQuestion = (qType: string) => {
+    const canonical = canonicalizeAssessmentType(qType);
+    let defaultChoices: string[] = [];
+    let defaultFileTypes = ".zip, .pdf, .docx";
+    let defaultChecklist = "";
+    let defaultRubric = "";
+    let defaultPoints = 10;
+
+    if (canonical === "Multiple Choice (MCQ)") {
+      defaultChoices = ["Option A", "Option B", "Option C", "Option D"];
+      defaultPoints = 5;
+    } else if (canonical === "Project / File Upload") {
+      defaultFileTypes = ".zip, .pdf, .docx";
+      defaultChecklist = "- Source code archive (ZIP)\n- Execution screenshots / demo\n- Project documentation (PDF)";
+      defaultRubric = "- Architecture & Modularity: 40%\n- Functional Implementation: 40%\n- Documentation & Best Practices: 20%";
+      defaultPoints = 50;
+    } else if (canonical === "Long Answer / Comprehensive") {
+      defaultRubric = "- Concept & Architectural Clarity: 40%\n- Implementation & Technical Depth: 40%\n- Edge Cases & Best Practices: 20%";
+      defaultPoints = 20;
+    } else {
+      defaultPoints = 10;
+    }
+
+    return {
+      id: `q-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      prompt: "",
+      type: canonical,
+      choices: defaultChoices,
+      correctIndex: 0,
+      modelAnswer: "",
+      keywords: "",
+      language: "JavaScript",
+      starterCode: "",
+      testCases: "",
+      structuredTestCases: [],
+      solutionCode: "",
+      fileTypes: defaultFileTypes,
+      maxFileSizeMb: 25,
+      checklist: defaultChecklist,
+      rubric: defaultRubric,
+      minWords: 50,
+      maxPoints: defaultPoints,
+      explanation: "",
+    };
+  };
+
   // Step 2 & Step 3 & Step 4: Sections Builder State
   const [sections, setSections] = useState<Section[]>([
     {
@@ -170,7 +227,29 @@ function AdminNewCourseContent() {
         type: "Short Answer Question",
         minPassingScore: 70,
         modelAnswer: "",
-        questions: [],
+        questions: [
+          {
+            id: `q-${Date.now()}-init`,
+            prompt: "",
+            type: "Short Answer Question",
+            choices: [],
+            correctIndex: 0,
+            modelAnswer: "",
+            keywords: "",
+            language: "JavaScript",
+            starterCode: "",
+            testCases: "",
+            structuredTestCases: [],
+            solutionCode: "",
+            fileTypes: ".zip, .pdf, .docx",
+            maxFileSizeMb: 25,
+            checklist: "",
+            rubric: "",
+            minWords: 50,
+            maxPoints: 10,
+            explanation: "",
+          },
+        ],
       },
     },
   ]);
@@ -311,31 +390,111 @@ function AdminNewCourseContent() {
     };
   }, [editSlug]);
 
-  // Sequential Stage Validation
-  const validateStep = (step: StepNumber): { valid: boolean; message: string } => {
+  // Sequential Stage Validation with Field Targeting
+  interface StepValidation {
+    valid: boolean;
+    message: string;
+    fieldId?: string;
+    fieldKey?: string;
+    step: StepNumber;
+  }
+
+  const validateStepWithField = (step: StepNumber): StepValidation => {
     if (step === 1) {
-      if (!title.trim() || title.trim().length < 3) {
-        return { valid: false, message: "Please enter a valid course title (at least 3 characters) before proceeding." };
+      if (!title.trim()) {
+        return {
+          valid: false,
+          message: "Please enter a valid course title (at least 3 characters) before proceeding.",
+          fieldId: "field-course-title",
+          fieldKey: "title",
+          step: 1,
+        };
       }
-      if (!slug.trim() || slug.trim().length < 2) {
-        return { valid: false, message: "Please provide a valid URL slug for the course." };
+      if (title.trim().length < 3) {
+        return {
+          valid: false,
+          message: `Course title must have at least 3 characters (currently ${title.trim().length}).`,
+          fieldId: "field-course-title",
+          fieldKey: "title",
+          step: 1,
+        };
       }
-      if (!summary.trim() || summary.trim().length < 10) {
-        return { valid: false, message: "Please provide a course summary (at least 10 characters) explaining the course." };
+      if (!slug.trim()) {
+        return {
+          valid: false,
+          message: "Please provide a valid URL slug for the course.",
+          fieldId: "field-course-slug",
+          fieldKey: "slug",
+          step: 1,
+        };
+      }
+      if (slug.trim().length < 2) {
+        return {
+          valid: false,
+          message: `URL slug must have at least 2 characters (currently ${slug.trim().length}).`,
+          fieldId: "field-course-slug",
+          fieldKey: "slug",
+          step: 1,
+        };
       }
       if (price === "" || Number(price) < 0 || isNaN(Number(price))) {
-        return { valid: false, message: "Please enter a valid course price (₹0 or higher)." };
+        return {
+          valid: false,
+          message: "Please enter a valid course price (₹0 or higher).",
+          fieldId: "field-course-price",
+          fieldKey: "price",
+          step: 1,
+        };
       }
-      return { valid: true, message: "" };
+      if (!summary.trim()) {
+        return {
+          valid: false,
+          message: "Please provide a course summary (at least 10 characters) explaining the course.",
+          fieldId: "field-course-summary",
+          fieldKey: "summary",
+          step: 1,
+        };
+      }
+      if (summary.trim().length < 10) {
+        return {
+          valid: false,
+          message: `Course summary must have at least 10 characters (currently ${summary.trim().length}).`,
+          fieldId: "field-course-summary",
+          fieldKey: "summary",
+          step: 1,
+        };
+      }
+      return { valid: true, message: "", step: 1 };
     }
 
     if (step === 2) {
       if (!sections || sections.length === 0) {
-        return { valid: false, message: "Please add at least one curriculum section." };
+        return {
+          valid: false,
+          message: "Please add at least one curriculum section.",
+          fieldId: "field-add-section-btn",
+          fieldKey: "sections",
+          step: 2,
+        };
       }
       for (let i = 0; i < sections.length; i++) {
-        if (!sections[i].title.trim() || sections[i].title.trim().length < 2) {
-          return { valid: false, message: `Section ${i + 1} requires a descriptive title before proceeding.` };
+        if (!sections[i].title.trim()) {
+          return {
+            valid: false,
+            message: `Section ${i + 1} requires a descriptive title before proceeding.`,
+            fieldId: `field-section-title-${i}`,
+            fieldKey: `section-title-${i}`,
+            step: 2,
+          };
+        }
+        if (sections[i].title.trim().length < 2) {
+          return {
+            valid: false,
+            message: `Section ${i + 1} title must be at least 2 characters (currently ${sections[i].title.trim().length}).`,
+            fieldId: `field-section-title-${i}`,
+            fieldKey: `section-title-${i}`,
+            step: 2,
+          };
         }
       }
       const totalVideosCount = sections.reduce((acc, s) => {
@@ -345,38 +504,86 @@ function AdminNewCourseContent() {
         return acc + subVids + dirVids;
       }, 0);
       if (totalVideosCount < 1) {
-        return { valid: false, message: "Please add at least one video lecture to the curriculum before moving forward." };
+        return {
+          valid: false,
+          message: "Please add at least one video lecture to the curriculum before moving forward.",
+          fieldId: "field-section-videos-0",
+          fieldKey: "section-videos-0",
+          step: 2,
+        };
       }
-      return { valid: true, message: "" };
+      return { valid: true, message: "", step: 2 };
     }
 
     if (step === 3) {
       for (let i = 0; i < sections.length; i++) {
         const sec = sections[i];
         if (!sec.assignment.title.trim()) {
-          return { valid: false, message: `Please enter an Assignment Title for Section ${i + 1} requirement.` };
+          return {
+            valid: false,
+            message: `Please enter an Assignment Title for Section ${i + 1} requirement.`,
+            fieldId: `field-assignment-title-${i}`,
+            fieldKey: `assignment-title-${i}`,
+            step: 3,
+          };
         }
         if (
           typeof sec.assignment.minPassingScore !== "number" ||
           sec.assignment.minPassingScore < 40 ||
           sec.assignment.minPassingScore > 100
         ) {
-          return { valid: false, message: `Section ${i + 1} passing mark must be between 40% and 100%.` };
+          return {
+            valid: false,
+            message: `Section ${i + 1} passing mark must be between 40% and 100%.`,
+            fieldId: `field-assignment-passmark-${i}`,
+            fieldKey: `assignment-passmark-${i}`,
+            step: 3,
+          };
         }
       }
-      return { valid: true, message: "" };
+      return { valid: true, message: "", step: 3 };
     }
 
     if (step === 4) {
-      return { valid: true, message: "" };
+      return { valid: true, message: "", step: 4 };
     }
 
-    return { valid: true, message: "" };
+    return { valid: true, message: "", step: 5 };
+  };
+
+  const validateStep = (step: StepNumber): { valid: boolean; message: string } => {
+    const res = validateStepWithField(step);
+    return { valid: res.valid, message: res.message };
+  };
+
+  const scrollToAndHighlightField = (fieldId: string, fieldKey: string, message: string, targetStep: StepNumber) => {
+    setFieldErrors((prev) => ({ ...prev, [fieldKey]: message }));
+    setValidationError(message);
+
+    const executeScroll = () => {
+      const el = document.getElementById(fieldId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        const focusable = el.querySelector("input, textarea, select") as HTMLElement | null;
+        if (focusable) {
+          setTimeout(() => focusable.focus(), 250);
+        } else if ("focus" in el) {
+          setTimeout(() => (el as HTMLElement).focus(), 250);
+        }
+      }
+    };
+
+    if (targetStep !== currentStep) {
+      setCurrentStep(targetStep);
+      setTimeout(executeScroll, 200);
+    } else {
+      executeScroll();
+    }
   };
 
   const isStepAccessible = (targetStep: StepNumber): boolean => {
     for (let s = 1; s < targetStep; s++) {
-      const check = validateStep(s as StepNumber);
+      const check = validateStepWithField(s as StepNumber);
       if (!check.valid) return false;
     }
     return true;
@@ -390,9 +597,13 @@ function AdminNewCourseContent() {
       return;
     }
     for (let s = 1; s < targetStep; s++) {
-      const check = validateStep(s as StepNumber);
+      const check = validateStepWithField(s as StepNumber);
       if (!check.valid) {
-        setValidationError(check.message);
+        if (check.fieldId && check.fieldKey) {
+          scrollToAndHighlightField(check.fieldId, check.fieldKey, check.message, check.step);
+        } else {
+          setValidationError(check.message);
+        }
         return;
       }
     }
@@ -401,9 +612,13 @@ function AdminNewCourseContent() {
   };
 
   const handleNextStep = () => {
-    const check = validateStep(currentStep);
+    const check = validateStepWithField(currentStep);
     if (!check.valid) {
-      setValidationError(check.message);
+      if (check.fieldId && check.fieldKey) {
+        scrollToAndHighlightField(check.fieldId, check.fieldKey, check.message, check.step);
+      } else {
+        setValidationError(check.message);
+      }
       return;
     }
     setValidationError(null);
@@ -439,7 +654,8 @@ function AdminNewCourseContent() {
         description: "",
         type: "Short Answer Question",
         minPassingScore: 70,
-        questions: [],
+        modelAnswer: "",
+        questions: [createDefaultQuestion("Short Answer Question")],
       },
     };
     setSections([...sections, newSec]);
@@ -561,55 +777,9 @@ function AdminNewCourseContent() {
     const currentQuestions = asg.questions || [];
     const qType = canonicalizeAssessmentType(asg.type);
 
-    let defaultChoices = ["Option A", "Option B", "Option C", "Option D"];
-    let defaultStarterCode = "";
-    let defaultTestCases = "";
-    let defaultFileTypes = ".zip, .pdf, .docx";
-    let defaultChecklist = "";
-    let defaultRubric = "";
-    let defaultPoints = 10;
-
-    if (qType === "Multiple Choice (MCQ)") {
-      defaultChoices = ["Option A", "Option B", "Option C", "Option D"];
-      defaultPoints = 5;
-    } else if (qType === "Coding Challenge / Test") {
-      defaultStarterCode = "// Write your solution function here\nfunction solution(input) {\n  // Your code here\n  return input;\n}\n";
-      defaultTestCases = "Input: solution([1, 2, 3]) => Expected Output: 6\nInput: solution([4, 5]) => Expected Output: 9";
-      defaultPoints = 25;
-    } else if (qType === "Project / File Upload") {
-      defaultFileTypes = ".zip, .pdf, .docx";
-      defaultChecklist = "- Source code archive (ZIP)\n- Execution screenshots / demo\n- Project documentation (PDF)";
-      defaultPoints = 50;
-    } else if (qType === "Long Answer / Comprehensive") {
-      defaultRubric = "- Concept & Architectural Clarity: 40%\n- Implementation & Technical Depth: 40%\n- Edge Cases & Best Practices: 20%";
-      defaultPoints = 20;
-    } else {
-      defaultPoints = 10;
-    }
-
     asg.questions = [
       ...currentQuestions,
-      {
-        id: `q-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        prompt: "",
-        type: qType,
-        choices: defaultChoices,
-        correctIndex: 0,
-        modelAnswer: "",
-        keywords: "",
-        language: "JavaScript",
-        starterCode: defaultStarterCode,
-        testCases: defaultTestCases,
-        structuredTestCases: [],
-        solutionCode: "",
-        fileTypes: defaultFileTypes,
-        maxFileSizeMb: 25,
-        checklist: defaultChecklist,
-        rubric: defaultRubric,
-        minWords: 50,
-        maxPoints: defaultPoints,
-        explanation: "",
-      },
+      createDefaultQuestion(qType),
     ];
     setSections(updated);
   };
@@ -795,6 +965,19 @@ function AdminNewCourseContent() {
 
   // Save & Publish
   const handlePublishCourse = async (status: "Published" | "Draft" = "Published") => {
+    // Validate stages 1 to 3 before submitting
+    for (let s = 1; s <= 3; s++) {
+      const check = validateStepWithField(s as StepNumber);
+      if (!check.valid) {
+        if (check.fieldId && check.fieldKey) {
+          scrollToAndHighlightField(check.fieldId, check.fieldKey, check.message, check.step);
+        } else {
+          setValidationError(check.message);
+        }
+        return;
+      }
+    }
+
     setIsPublishing(true);
     setSaveError(null);
 
@@ -1013,31 +1196,69 @@ function AdminNewCourseContent() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                      Course Title
-                    </label>
+                  {/* Course Title Field */}
+                  <div id="field-course-title" className="transition-all">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Course Title <span className="text-rose-500">*</span>
+                      </label>
+                      <span className={`text-[11px] font-semibold transition-colors ${title.trim().length >= 3 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-400"}`}>
+                        {title.trim().length}/3 min chars
+                      </span>
+                    </div>
                     <input
                       type="text"
                       value={title}
-                      onChange={(e) => handleTitleChange(e.target.value)}
+                      onChange={(e) => {
+                        handleTitleChange(e.target.value);
+                        if (e.target.value.trim().length >= 3) clearFieldError("title");
+                      }}
                       placeholder="e.g. Enterprise Distributed Systems & Cloud Architecture"
-                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/40"
+                      className={`mt-1.5 w-full rounded-xl border px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none transition-all duration-200 ${
+                        fieldErrors.title
+                          ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/40"
+                      }`}
                     />
+                    {fieldErrors.title && (
+                      <p className="mt-1.5 flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 animate-in fade-in slide-in-from-top-1">
+                        <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                        <span>{fieldErrors.title}</span>
+                      </p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                        URL Slug
-                      </label>
+                    {/* URL Slug Field */}
+                    <div id="field-course-slug" className="transition-all">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                          URL Slug <span className="text-rose-500">*</span>
+                        </label>
+                        <span className={`text-[11px] font-semibold transition-colors ${slug.trim().length >= 2 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-400"}`}>
+                          {slug.trim().length}/2 min chars
+                        </span>
+                      </div>
                       <input
                         type="text"
                         value={slug}
-                        onChange={(e) => setSlug(e.target.value)}
+                        onChange={(e) => {
+                          setSlug(e.target.value);
+                          if (e.target.value.trim().length >= 2) clearFieldError("slug");
+                        }}
                         placeholder="e.g. enterprise-distributed-systems"
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-surface-elevated px-3.5 py-2 text-xs font-mono text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
+                        className={`mt-1.5 w-full rounded-xl border px-3.5 py-2 text-xs font-mono text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none transition-all duration-200 ${
+                          fieldErrors.slug
+                            ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
+                            : "border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-surface-elevated focus:border-[#2563EB]"
+                        }`}
                       />
+                      {fieldErrors.slug && (
+                        <p className="mt-1.5 flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 animate-in fade-in slide-in-from-top-1">
+                          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                          <span>{fieldErrors.slug}</span>
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1145,33 +1366,67 @@ function AdminNewCourseContent() {
                       />
                     </div>
 
-                    <div>
+                    {/* Course Fee Field */}
+                    <div id="field-course-price" className="transition-all">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                        Course Fee (₹)
+                        Course Fee (₹) <span className="text-rose-500">*</span>
                       </label>
                       <input
                         type="number"
                         min="0"
                         step="500"
                         value={price}
-                        onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                        onChange={(e) => {
+                          const val = e.target.value === "" ? "" : Number(e.target.value);
+                          setPrice(val);
+                          if (val !== "" && Number(val) >= 0) clearFieldError("price");
+                        }}
                         placeholder="e.g. 19999"
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
+                        className={`mt-1.5 w-full rounded-xl border px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none transition-all duration-200 ${
+                          fieldErrors.price
+                            ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
+                            : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB]"
+                        }`}
                       />
+                      {fieldErrors.price && (
+                        <p className="mt-1.5 flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 animate-in fade-in slide-in-from-top-1">
+                          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                          <span>{fieldErrors.price}</span>
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                      Course Summary & Objectives
-                    </label>
+                  {/* Course Summary Field */}
+                  <div id="field-course-summary" className="transition-all">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Course Summary & Objectives <span className="text-rose-500">*</span>
+                      </label>
+                      <span className={`text-[11px] font-semibold transition-colors ${summary.trim().length >= 10 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-400"}`}>
+                        {summary.trim().length}/10 min chars
+                      </span>
+                    </div>
                     <textarea
                       rows={2}
                       value={summary}
-                      onChange={(e) => setSummary(e.target.value)}
+                      onChange={(e) => {
+                        setSummary(e.target.value);
+                        if (e.target.value.trim().length >= 10) clearFieldError("summary");
+                      }}
                       placeholder="e.g. Deep dive into cloud-native microservices, event-driven architectures with Kafka, and resilient backend design..."
-                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-3 text-xs font-medium text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
+                      className={`mt-1.5 w-full rounded-xl border p-3 text-xs font-medium text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none transition-all duration-200 ${
+                        fieldErrors.summary
+                          ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB]"
+                      }`}
                     />
+                    {fieldErrors.summary && (
+                      <p className="mt-1.5 flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 animate-in fade-in slide-in-from-top-1">
+                        <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                        <span>{fieldErrors.summary}</span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Thumbnail / Media Upload Box */}
@@ -1244,21 +1499,34 @@ function AdminNewCourseContent() {
                     >
                       {/* Section Top Header */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-                        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                          <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-xs font-bold text-white shrink-0">
+                        <div id={`field-section-title-${secIdx}`} className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0 transition-all">
+                          <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-xs font-bold text-white shrink-0 mt-0.5">
                             {secIdx + 1}
                           </span>
-                          <input
-                            type="text"
-                            value={section.title}
-                            onChange={(e) => {
-                              const updated = [...sections];
-                              updated[secIdx].title = e.target.value;
-                              setSections(updated);
-                            }}
-                            placeholder={`Section ${secIdx + 1} Title`}
-                            className="flex-1 min-w-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs sm:text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                          />
+                          <div className="flex-1 min-w-0">
+                            <input
+                              type="text"
+                              value={section.title}
+                              onChange={(e) => {
+                                const updated = [...sections];
+                                updated[secIdx].title = e.target.value;
+                                setSections(updated);
+                                if (e.target.value.trim().length >= 2) clearFieldError(`section-title-${secIdx}`);
+                              }}
+                              placeholder={`Section ${secIdx + 1} Title (at least 2 chars)`}
+                              className={`w-full rounded-lg border bg-white dark:bg-input-bg px-3 py-1.5 text-xs sm:text-sm font-bold text-slate-900 dark:text-white outline-none transition-all duration-200 ${
+                                fieldErrors[`section-title-${secIdx}`]
+                                  ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
+                                  : "border-slate-200 dark:border-slate-700 focus:border-[#2563EB]"
+                              }`}
+                            />
+                            {fieldErrors[`section-title-${secIdx}`] && (
+                              <p className="mt-1 flex items-center gap-1.5 text-[11px] font-bold text-rose-600 dark:text-rose-400 animate-in fade-in slide-in-from-top-1">
+                                <AlertCircle className="h-3 w-3 shrink-0" />
+                                <span>{fieldErrors[`section-title-${secIdx}`]}</span>
+                              </p>
+                            )}
+                          </div>
                         </div>
 
                         <div className="flex items-center justify-end gap-1.5 shrink-0">
@@ -1555,7 +1823,14 @@ function AdminNewCourseContent() {
                       </div>
 
                       {/* DIRECT SECTION VIDEOS */}
-                      <div className="space-y-3">
+                      <div
+                        id={`field-section-videos-${secIdx}`}
+                        className={`space-y-3 rounded-2xl transition-all ${
+                          fieldErrors[`section-videos-${secIdx}`]
+                            ? "border-2 border-rose-500 ring-4 ring-rose-500/20 p-3 bg-rose-50/40 dark:bg-rose-950/25"
+                            : ""
+                        }`}
+                      >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-white">
                             <Video className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
@@ -1563,12 +1838,22 @@ function AdminNewCourseContent() {
                           </div>
                           <button
                             type="button"
-                            onClick={() => addDirectVideo(secIdx)}
+                            onClick={() => {
+                              addDirectVideo(secIdx);
+                              clearFieldError(`section-videos-${secIdx}`);
+                            }}
                             className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
                           >
                             <Plus className="h-3 w-3" /> Add Video
                           </button>
                         </div>
+
+                        {fieldErrors[`section-videos-${secIdx}`] && (
+                          <div className="flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 p-2.5 text-xs font-bold text-rose-700 dark:text-rose-300 animate-in fade-in slide-in-from-top-1">
+                            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                            <span>{fieldErrors[`section-videos-${secIdx}`]}</span>
+                          </div>
+                        )}
 
                         {section.directVideos?.map((vid, vidIdx) => (
                           <div
@@ -1799,9 +2084,9 @@ function AdminNewCourseContent() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                        <div className="sm:col-span-8">
+                        <div id={`field-assignment-title-${secIdx}`} className="sm:col-span-8 transition-all">
                           <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                            ASSIGNMENT TITLE
+                            ASSIGNMENT TITLE <span className="text-rose-500">*</span>
                           </label>
                           <input
                             type="text"
@@ -1810,10 +2095,21 @@ function AdminNewCourseContent() {
                               const updated = [...sections];
                               updated[secIdx].assignment.title = e.target.value;
                               setSections(updated);
+                              if (e.target.value.trim().length > 0) clearFieldError(`assignment-title-${secIdx}`);
                             }}
-                            placeholder="e.g. Stage 1 MCQ Assessment or Coding Test"
-                            className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-semibold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
+                            placeholder="e.g. Stage 1 MCQ Assessment or Capstone Project"
+                            className={`mt-1 w-full rounded-lg border px-3.5 py-2 text-xs font-semibold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none transition-all duration-200 ${
+                              fieldErrors[`assignment-title-${secIdx}`]
+                                ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
+                                : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB]"
+                            }`}
                           />
+                          {fieldErrors[`assignment-title-${secIdx}`] && (
+                            <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-rose-600 dark:text-rose-400 animate-in fade-in slide-in-from-top-1">
+                              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                              <span>{fieldErrors[`assignment-title-${secIdx}`]}</span>
+                            </p>
+                          )}
                         </div>
 
                         <div className="sm:col-span-4">
@@ -1826,26 +2122,25 @@ function AdminNewCourseContent() {
                               const newType = canonicalizeAssessmentType(e.target.value);
                               const updated = [...sections];
                               updated[secIdx].assignment.type = newType;
-                              // Synchronize all questions in this section so they immediately match!
-                              if (Array.isArray(updated[secIdx].assignment.questions)) {
-                                updated[secIdx].assignment.questions = updated[secIdx].assignment.questions.map((q) => {
+                              const currentQuestions = updated[secIdx].assignment.questions || [];
+
+                              if (currentQuestions.length === 0) {
+                                // Automatically initialize the first question in the selected format!
+                                updated[secIdx].assignment.questions = [
+                                  createDefaultQuestion(newType),
+                                ];
+                              } else {
+                                // Synchronize all questions in this section so they immediately match the new format!
+                                updated[secIdx].assignment.questions = currentQuestions.map((q) => {
                                   const updatedQ = { ...q, type: newType };
                                   if (newType === "Multiple Choice (MCQ)" && (!updatedQ.choices || updatedQ.choices.length === 0)) {
                                     updatedQ.choices = ["Option A", "Option B", "Option C", "Option D"];
                                     updatedQ.correctIndex = 0;
                                     if (!updatedQ.maxPoints) updatedQ.maxPoints = 5;
-                                  } else if (newType === "Coding Challenge / Test") {
-                                    if (!updatedQ.starterCode) {
-                                      updatedQ.starterCode = "// Write your solution function here\nfunction solution(input) {\n  // Your code here\n  return input;\n}\n";
-                                    }
-                                    if (!updatedQ.testCases) {
-                                      updatedQ.testCases = "Input: solution([1, 2, 3]) => Expected Output: 6\nInput: solution([4, 5]) => Expected Output: 9";
-                                    }
-                                    if (!updatedQ.language) updatedQ.language = "JavaScript";
-                                    if (!updatedQ.maxPoints) updatedQ.maxPoints = 25;
                                   } else if (newType === "Project / File Upload") {
                                     if (!updatedQ.fileTypes) updatedQ.fileTypes = ".zip, .pdf, .docx";
                                     if (!updatedQ.checklist) updatedQ.checklist = "- Source code archive (ZIP)\n- Execution screenshots / demo\n- Project documentation (PDF)";
+                                    if (!updatedQ.rubric) updatedQ.rubric = "- Architecture & Modularity: 40%\n- Functional Implementation: 40%\n- Documentation & Best Practices: 20%";
                                     if (!updatedQ.maxFileSizeMb) updatedQ.maxFileSizeMb = 25;
                                     if (!updatedQ.maxPoints) updatedQ.maxPoints = 50;
                                   } else if (newType === "Long Answer / Comprehensive") {
@@ -1865,7 +2160,6 @@ function AdminNewCourseContent() {
                             <option value="Short Answer Question">Short Answer Question</option>
                             <option value="Multiple Choice (MCQ)">Multiple Choice (MCQ)</option>
                             <option value="Long Answer / Comprehensive">Long Answer / Comprehensive</option>
-                            <option value="Coding Challenge / Test">Coding Challenge / Test</option>
                             <option value="Project / File Upload">Project / File Upload</option>
                           </select>
                         </div>
@@ -1906,17 +2200,24 @@ function AdminNewCourseContent() {
                       </div>
 
                       {/* PASSING OUT MARK THRESHOLD */}
-                      <div className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50/80 dark:bg-surface-elevated p-4 border border-slate-200/90 dark:border-slate-800">
+                      <div
+                        id={`field-assignment-passmark-${secIdx}`}
+                        className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl p-4 border transition-all ${
+                          fieldErrors[`assignment-passmark-${secIdx}`]
+                            ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
+                            : "bg-slate-50/80 dark:bg-surface-elevated border-slate-200/90 dark:border-slate-800"
+                        }`}
+                      >
                         <div className="flex items-center gap-3">
                           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 shrink-0">
                             <Sliders className="h-4 w-4" />
                           </div>
                           <div>
                             <div className="text-xs font-bold text-slate-900 dark:text-white">
-                              Minimum Passing Mark to Unlock Next Stage
+                              Minimum Passing Mark to Unlock Next Stage <span className="text-rose-500">*</span>
                             </div>
                             <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                              Score required for the student to pass this milestone
+                              Score required for the student to pass this milestone (40% - 100%)
                             </div>
                           </div>
                         </div>
@@ -1928,15 +2229,27 @@ function AdminNewCourseContent() {
                             max="100"
                             value={section.assignment.minPassingScore}
                             onChange={(e) => {
+                              const val = Number(e.target.value);
                               const updated = [...sections];
-                              updated[secIdx].assignment.minPassingScore = Number(e.target.value);
+                              updated[secIdx].assignment.minPassingScore = val;
                               setSections(updated);
+                              if (val >= 40 && val <= 100) clearFieldError(`assignment-passmark-${secIdx}`);
                             }}
-                            className="w-16 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1.5 text-center text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                            className={`w-16 rounded-lg border px-2.5 py-1.5 text-center text-xs font-bold text-slate-900 dark:text-white outline-none transition-all duration-200 ${
+                              fieldErrors[`assignment-passmark-${secIdx}`]
+                                ? "border-2 border-rose-500 ring-2 ring-rose-500/20 bg-white dark:bg-input-bg"
+                                : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB]"
+                            }`}
                           />
                           <span className="text-xs font-bold text-slate-500 dark:text-slate-400">%</span>
                         </div>
                       </div>
+                      {fieldErrors[`assignment-passmark-${secIdx}`] && (
+                        <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
+                          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                          <span>{fieldErrors[`assignment-passmark-${secIdx}`]}</span>
+                        </p>
+                      )}
 
                       {/* ASSIGNMENT QUESTIONS BUILDER */}
                       <div className="space-y-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated/70 p-4 sm:p-5">
@@ -2017,7 +2330,6 @@ function AdminNewCourseContent() {
                                             <option value="Short Answer Question">Short Answer Question</option>
                                             <option value="Multiple Choice (MCQ)">Multiple Choice (MCQ)</option>
                                             <option value="Long Answer / Comprehensive">Long Answer / Comprehensive</option>
-                                            <option value="Coding Challenge / Test">Coding Challenge / Test</option>
                                             <option value="Project / File Upload">Project / File Upload</option>
                                           </select>
                                         </div>

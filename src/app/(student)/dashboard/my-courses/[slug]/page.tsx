@@ -478,11 +478,95 @@ export default function CourseLearningHubPage({
     setActiveQuizAnswers((prev) => ({ ...prev, [qIdx]: text }));
   };
 
+  const gradeQuestionAnswer = (
+    q: any,
+    answer: any,
+    assignmentType: string
+  ): number => {
+    const kind = resolveAssessmentKind(q?.type, assignmentType);
+    if (kind === "MCQ") {
+      const correctIdx = typeof q?.correctIndex === "number" ? q.correctIndex : 0;
+      if (typeof answer === "number") {
+        return answer === correctIdx ? 1 : 0;
+      }
+      if (typeof answer === "string") {
+        const trimmed = answer.trim().toLowerCase();
+        const choices = q?.choices || [];
+        const correctChoice = choices[correctIdx] ? choices[correctIdx].trim().toLowerCase() : "";
+        if (trimmed === correctChoice || parseInt(trimmed, 10) === correctIdx) {
+          return 1;
+        }
+      }
+      return 0;
+    }
+
+    // Written answers: Short Answer, Long Answer, etc.
+    const answerStr = typeof answer === "string" ? answer.trim() : "";
+    if (!answerStr) return 0;
+
+    const stopWords = new Set([
+      "what", "when", "where", "which", "who", "whom", "whose", "why", "how",
+      "that", "this", "these", "those", "then", "than", "them", "they",
+      "with", "from", "into", "during", "including", "until", "against", "among",
+      "throughout", "despite", "towards", "upon", "concerning", "about", "above",
+      "below", "between", "under", "again", "further", "once", "here", "there",
+      "your", "yours", "yourself", "yourselves", "have", "having", "been",
+      "does", "doing", "would", "should", "could", "ought", "cannot", "will",
+    ]);
+
+    const keywords = new Set<string>();
+    if (q?.keywords) {
+      q.keywords
+        .toLowerCase()
+        .split(/[,;\s]+/)
+        .map((w: string) => w.trim())
+        .filter((w: string) => w.length > 2)
+        .forEach((w: string) => keywords.add(w));
+    }
+    if (q?.modelAnswer) {
+      q.modelAnswer
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, "")
+        .split(/\s+/)
+        .filter((w: string) => w.length > 3 && !stopWords.has(w))
+        .forEach((w: string) => keywords.add(w));
+    }
+    if (keywords.size === 0 && q?.prompt) {
+      q.prompt
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, "")
+        .split(/\s+/)
+        .filter((w: string) => w.length > 3 && !stopWords.has(w))
+        .forEach((w: string) => keywords.add(w));
+    }
+
+    const lowerAns = answerStr.toLowerCase();
+    const kwList = Array.from(keywords);
+
+    // Reject obvious random gibberish (e.g. dsryguuijklmjgcg, z8uygvhioiknm)
+    const isGibberish =
+      !/\s/.test(answerStr) && answerStr.length > 10 && !kwList.some((k) => lowerAns.includes(k));
+
+    if (isGibberish) return 0;
+
+    if (kwList.length > 0) {
+      let matched = 0;
+      for (const kw of kwList) {
+        if (lowerAns.includes(kw)) matched++;
+      }
+      const ratio = matched / kwList.length;
+      if (ratio >= 0.5) return 1;
+      if (ratio >= 0.25) return 0.5;
+      return 0;
+    }
+
+    return answerStr.length >= 10 && /\s/.test(answerStr) ? 1 : 0;
+  };
+
   const handleSubmitAssignment = async (sec: Section) => {
     if (isSubmittingAssessment || enrollmentStatus === "ON_HOLD") return;
 
-    // Belt and braces: the button is disabled, but never grade a partial
-    // attempt if something else manages to call this.
+    // Belt and braces: verify all questions answered
     const pending = (sec.assignment.questions || []).filter(
       (q, i) => !isQuestionAnswered(q, activeQuizAnswers[i], sec.assignment.type)
     ).length;
@@ -494,31 +578,43 @@ export default function CourseLearningHubPage({
       const questions = sec.assignment.questions || [];
       const minPass = sec.assignment.minPassingScore || 70;
 
-      // Every question carries equal weight. MCQs are graded against the
-      // admin's answer key; written, coding and file questions cannot be
-      // auto-graded, so a genuine submission earns the credit and an empty one
-      // earns nothing. Previously every kind was compared to `correctIndex`,
-      // which meant a typed answer never matched and always scored zero.
+      // Authoritative evaluation:
+      // MCQs are graded against answer key.
+      // Short / Long answers are checked for model keywords / concepts; gibberish or empty scores 0.
       let calculatedScore = 0;
       if (questions.length > 0) {
         let earned = 0;
         questions.forEach((q, idx) => {
           const answer = activeQuizAnswers[idx];
-          const kind = resolveAssessmentKind(q.type, sec.assignment.type);
-          if (kind === "MCQ") {
-            const correctIdx = typeof q.correctIndex === "number" ? q.correctIndex : 0;
-            if (answer === correctIdx) earned++;
-          } else if (isQuestionAnswered(q, answer, sec.assignment.type)) {
-            earned++;
-          }
+          earned += gradeQuestionAnswer(q, answer, sec.assignment.type);
         });
         calculatedScore = Math.round((earned / questions.length) * 100);
       } else {
-        // Default challenge / practical submission score
-        calculatedScore = 85;
+        calculatedScore = 0;
       }
 
-      const passed = calculatedScore >= minPass;
+      // Persist real assessment submission to backend DB and receive authoritative backend grading
+      let backendRes: any = null;
+      try {
+        backendRes = await submitAssessment({
+          courseSlug: slug,
+          assessmentId: asgId,
+          studentEmail: effectiveEmail,
+          answers: activeQuizAnswers,
+          score: calculatedScore,
+        });
+      } catch (err) {
+        console.warn("Failed to persist assessment submission to backend:", err);
+      }
+
+      if (backendRes && typeof backendRes.score === "number") {
+        calculatedScore = backendRes.score;
+      }
+
+      const passed =
+        backendRes && typeof backendRes.passed === "boolean"
+          ? backendRes.passed
+          : calculatedScore >= minPass;
       const cooldownDurationMs = 180 * 1000; // 3 minutes cooldown timer on fail
       const cooldownExpiry = passed ? 0 : Date.now() + cooldownDurationMs;
 
