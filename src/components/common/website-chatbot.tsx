@@ -126,7 +126,7 @@ export function WebsiteChatbot() {
     return null;
   }
 
-  const handleSendMessage = (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string) => {
     const text = textToSend || inputValue.trim();
     if (!text) return;
 
@@ -141,88 +141,54 @@ export function WebsiteChatbot() {
     if (!textToSend) setInputValue("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      generateBotResponse(text);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+      const res = await fetch(`${apiUrl}/ai/chatbot/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          conversationHistory: messages.slice(-6).map((m) => ({
+            role: m.sender === "user" ? ("user" as const) : ("assistant" as const),
+            content: m.text,
+          })),
+          visitorInfo: leadForm.name ? { name: leadForm.name, email: leadForm.email, phone: leadForm.phone } : undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`AI service returned HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const botMsg: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        sender: "bot",
+        text: data.reply || "Thank you for reaching out! How else can I assist your learning journey?",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        options: data.suggestedCourses?.map((c: any) => `${c.title} (₹${c.price})`) || [
+          "Explore Courses 🚀",
+          "Fee & Scholarships 💰",
+          "Talk to Live Counselor 📞",
+        ],
+        isLeadForm: !data.leadCaptured && (text.toLowerCase().includes("call") || text.toLowerCase().includes("contact") || text.toLowerCase().includes("counselor")),
+      };
+
+      setMessages((prev) => [...prev, botMsg]);
+    } catch {
+      // Graceful offline/network fallback
+      const fallbackMsg: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        sender: "bot",
+        text: "Thank you for reaching out to JKS Learning! We offer comprehensive enterprise cohorts in Full Stack Development, Frontend, SAP S/4HANA, and .NET 9. Leave your contact details below or email contact@jkslearning.com for an immediate counseling session.",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        options: ["Talk to Live Counselor 📞", "Explore Courses 🚀"],
+        isLeadForm: true,
+      };
+      setMessages((prev) => [...prev, fallbackMsg]);
+    } finally {
       setIsTyping(false);
-    }, 800);
-  };
-
-  const generateBotResponse = (userQuery: string) => {
-    const q = userQuery.toLowerCase();
-    let replyText = "";
-    let options: string[] | undefined;
-    let isLeadForm = false;
-
-    if (q.includes("course") || q.includes("syllabus") || q.includes("program")) {
-      replyText =
-        "We offer 4 premier enterprise certification tracks:\n\n1. ☕ **Java Full Stack Mastery** (Spring Boot 3, Microservices, React 19, AWS)\n2. ⚛️ **Modern Frontend Engineering** (Next.js 16, TypeScript, Three.js 3D)\n3. 🏢 **SAP S/4HANA Enterprise Systems** (FI/CO, MM, SD & ABAP on Cloud)\n4. 🔷 **.NET 9 Enterprise Microservices** (C# 13, ASP.NET Core, Azure Cloud)\n\nWhich technology aligns with your career target?";
-      options = [
-        "Java Full Stack Details ☕",
-        "Frontend Engineering ⚛️",
-        "SAP S/4HANA 🏢",
-        ".NET 9 Cloud 🔷",
-      ];
-    } else if (q.includes("fee") || q.includes("scholarship") || q.includes("discount") || q.includes("price") || q.includes("cost")) {
-      replyText =
-        "💎 Course Tuition starts from **₹29,999** (inclusive of live cohort classes, hands-on capstone projects, placement assistance, and tax invoice).\n\n🎉 **Early Admission Discount:** Use coupon `ADMISSION10` during registration for an instant 10% scholarship!\n\nWould you like to speak to an admissions advisor or register online?";
-      options = [
-        "Register for Cohort 📝",
-        "Talk to Admissions Advisor 📞",
-        "Check Placement Record 💼",
-      ];
-    } else if (q.includes("placement") || q.includes("job") || q.includes("salary") || q.includes("package") || q.includes("hike")) {
-      replyText =
-        "📈 **JKS Learning Placement Highlights:**\n• **94.8%** Verified Placement Rate within 180 days\n• **₹12.4 LPA** Average Starting Package for Full Stack graduates\n• **₹28.5 LPA** Highest CTC secured at Tier-1 MNCs & Product firms\n• 150+ Hiring Partners (Infosys, TCS, Cognizant, Wipro, Accenture, Thoughtworks)\n\nWould you like our career team to review your resume?";
-      options = [
-        "Book Free Career Call 📞",
-        "Explore Course Tracks 🚀",
-        "WhatsApp Direct 💬",
-      ];
-    } else if (q.includes("counselor") || q.includes("advisor") || q.includes("call") || q.includes("contact") || q.includes("talk")) {
-      replyText =
-        "Awesome! Our senior admissions counselors Sneha and Kavita can provide personalized 1-on-1 batch selection, syllabus breakdown, and scholarship advice.\n\nPlease fill out your details below to schedule an immediate call:";
-      isLeadForm = true;
-    } else if (q.includes("java")) {
-      replyText =
-        "🔥 **Java Full Stack Developer Mastery** is our flagship 24-week cohort.\n\n• Core Java 21, Spring Boot 3, Hibernate\n• Distributed Microservices, Kafka, Redis\n• React 19, Tailwind CSS, TypeScript\n• AWS Cloud Deployment & CI/CD Pipelines\n• 4 Production Grade Capstone Projects\n\nNext Cohort starts **Monday (Morning & Weekend Batches Available)**.";
-      options = [
-        "Register with Scholarship 📝",
-        "Schedule Syllabus Walkthrough 📞",
-      ];
-    } else if (q.includes("frontend")) {
-      replyText =
-        "⚡ **Modern Frontend Engineering** covers:\n• React 19, Next.js 16 App Router, Server Actions\n• TypeScript strict typing, Tailwind CSS v4\n• Interactive Three.js / WebGL 3D experiences & Framer Motion\n• High performance state management & GraphQL\n\nPerfect for junior to mid-level engineers targeting product companies.";
-      options = [
-        "Register for Frontend 📝",
-        "Talk to Admissions Team 📞",
-      ];
-    } else if (q.includes("register") || q.includes("admission") || q.includes("enroll")) {
-      replyText =
-        "You can register online directly through our automated enrollment portal! You'll select your batch timing, apply your discount coupon, and receive an instant GST Tax Invoice receipt.";
-      options = [
-        "Open Registration Portal 📝",
-        "Talk to Counselor First 📞",
-      ];
-    } else {
-      replyText =
-        "Thank you for reaching out! I can help you with course curriculums, batch timings, early-bird scholarships, and scheduling a direct consultation with our academic team.\n\nWhat would you like to explore?";
-      options = [
-        "Explore Courses 🚀",
-        "Fee & Scholarships 💰",
-        "Speak to Advisor 📞",
-      ];
     }
-
-    const botMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      sender: "bot",
-      text: replyText,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      options,
-      isLeadForm,
-    };
-
-    setMessages((prev) => [...prev, botMsg]);
   };
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
