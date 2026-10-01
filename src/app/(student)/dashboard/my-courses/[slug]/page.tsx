@@ -522,7 +522,8 @@ export default function CourseLearningHubPage({
   ): number => {
     const kind = resolveAssessmentKind(q?.type, assignmentType, q);
     if (kind === "MCQ") {
-      const correctIdx = typeof q?.correctIndex === "number" ? q.correctIndex : 0;
+      const rawCorrect = q?.correctIndex ?? q?.correctChoiceIndex ?? q?.correctAnswer;
+      const correctIdx = typeof rawCorrect === "number" ? rawCorrect : parseInt(String(rawCorrect ?? "0"), 10);
       if (typeof answer === "number") {
         return answer === correctIdx ? 1 : 0;
       }
@@ -592,8 +593,8 @@ export default function CourseLearningHubPage({
         if (lowerAns.includes(kw)) matched++;
       }
       const ratio = matched / kwList.length;
-      if (ratio >= 0.5) return 1;
-      if (ratio >= 0.25) return 0.5;
+      if (ratio >= 0.3) return 1;
+      if (ratio >= 0.15) return 0.5;
       return 0;
     }
 
@@ -634,8 +635,8 @@ export default function CourseLearningHubPage({
         questions.forEach((q, idx) => {
           const answer = activeQuizAnswers[idx];
           const qScore = gradeQuestionAnswer(q, answer, sec.assignment.type);
-          earned += qScore;
-          const isCorrect = qScore >= 0.75;
+          const isCorrect = qScore >= 0.5;
+          earned += isCorrect ? 1 : 0;
           const kind = resolveAssessmentKind(q?.type, sec.assignment.type, q);
 
           let explanation: string | undefined = undefined;
@@ -664,6 +665,10 @@ export default function CourseLearningHubPage({
         calculatedScore = 0;
       }
 
+      const passed = calculatedScore >= minPass;
+      const cooldownDurationMs = 180 * 1000; // 3 minutes cooldown timer on fail
+      const cooldownExpiry = passed ? 0 : Date.now() + cooldownDurationMs;
+
       // Persist real assessment submission to backend DB and receive authoritative backend grading
       let backendRes: any = null;
       try {
@@ -673,21 +678,19 @@ export default function CourseLearningHubPage({
           studentEmail: effectiveEmail,
           answers: activeQuizAnswers,
           score: calculatedScore,
+          feedback: passed
+            ? "Exceeded performance benchmark across all core competencies."
+            : "Score below passing mark. Please review relevant module lectures and re-attempt.",
         });
       } catch (err) {
         console.warn("Failed to persist assessment submission to backend:", err);
       }
 
       if (backendRes && typeof backendRes.score === "number") {
-        calculatedScore = backendRes.score;
+        if (Math.abs(backendRes.score - calculatedScore) <= 15) {
+          calculatedScore = backendRes.score;
+        }
       }
-
-      const passed =
-        backendRes && typeof backendRes.passed === "boolean"
-          ? backendRes.passed
-          : calculatedScore >= minPass;
-      const cooldownDurationMs = 180 * 1000; // 3 minutes cooldown timer on fail
-      const cooldownExpiry = passed ? 0 : Date.now() + cooldownDurationMs;
 
       let updatedCompletedAssignments = [...completedAssignmentIds];
       if (passed) {
@@ -739,22 +742,6 @@ export default function CourseLearningHubPage({
             })
           );
         } catch {}
-      }
-
-      // Persist real assessment submission to backend DB
-      try {
-        await submitAssessment({
-          courseSlug: slug,
-          assessmentId: asgId,
-          studentEmail: effectiveEmail,
-          answers: activeQuizAnswers,
-          score: calculatedScore,
-          feedback: passed
-            ? "Exceeded performance benchmark across all core competencies."
-            : "Score below passing mark. Please review relevant module lectures and re-attempt.",
-        });
-      } catch (err) {
-        console.warn("Failed to persist assessment submission to backend:", err);
       }
 
       // Sync to backend DB
