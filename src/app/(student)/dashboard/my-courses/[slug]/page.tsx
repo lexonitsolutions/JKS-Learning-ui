@@ -179,7 +179,23 @@ export default function CourseLearningHubPage({
     minPass: number;
     passed: boolean;
     cooldownUntil?: number;
+    section?: Section;
   } | null>(null);
+  const [savedQuizAnswers, setSavedQuizAnswers] = useState<Record<string, Record<number, any>>>({});
+  const [assignmentBreakdowns, setAssignmentBreakdowns] = useState<
+    Record<
+      string,
+      Array<{
+        questionIndex: number;
+        prompt: string;
+        kind: string;
+        studentAnswer: any;
+        isCorrect: boolean;
+        correctAnswerText?: string;
+        explanation?: string;
+      }>
+    >
+  >({});
   const [showCertModal, setShowCertModal] = useState(false);
   const [showLockedRequirementsModal, setShowLockedRequirementsModal] = useState(false);
 
@@ -274,6 +290,12 @@ export default function CourseLearningHubPage({
                 }
                 if (parsed.assignmentCooldowns) {
                   cooldowns = parsed.assignmentCooldowns;
+                }
+                if (parsed.savedQuizAnswers) {
+                  setSavedQuizAnswers(parsed.savedQuizAnswers);
+                }
+                if (parsed.assignmentBreakdowns) {
+                  setAssignmentBreakdowns(parsed.assignmentBreakdowns);
                 }
               }
             } catch {}
@@ -443,7 +465,8 @@ export default function CourseLearningHubPage({
 
   const handleOpenAssignment = (sec: Section) => {
     setActiveAssignmentSection(sec);
-    setActiveQuizAnswers({});
+    const existing = savedQuizAnswers[sec.assignment.id];
+    setActiveQuizAnswers(existing ? { ...existing } : {});
   };
 
   const countWords = (text: string) =>
@@ -471,11 +494,25 @@ export default function CourseLearningHubPage({
   };
 
   const handleSelectQuizAnswer = (qIdx: number, choiceIdx: number) => {
-    setActiveQuizAnswers((prev) => ({ ...prev, [qIdx]: choiceIdx }));
+    const asgId = activeAssignmentSection?.assignment.id;
+    setActiveQuizAnswers((prev) => {
+      const updated = { ...prev, [qIdx]: choiceIdx };
+      if (asgId) {
+        setSavedQuizAnswers((sPrev) => ({ ...sPrev, [asgId]: updated }));
+      }
+      return updated;
+    });
   };
 
   const handleWriteQuizAnswer = (qIdx: number, text: string) => {
-    setActiveQuizAnswers((prev) => ({ ...prev, [qIdx]: text }));
+    const asgId = activeAssignmentSection?.assignment.id;
+    setActiveQuizAnswers((prev) => {
+      const updated = { ...prev, [qIdx]: text };
+      if (asgId) {
+        setSavedQuizAnswers((sPrev) => ({ ...sPrev, [asgId]: updated }));
+      }
+      return updated;
+    });
   };
 
   const gradeQuestionAnswer = (
@@ -581,12 +618,54 @@ export default function CourseLearningHubPage({
       // Authoritative evaluation:
       // MCQs are graded against answer key.
       // Short / Long answers are checked for model keywords / concepts; gibberish or empty scores 0.
+      const breakdownList: Array<{
+        questionIndex: number;
+        prompt: string;
+        kind: string;
+        studentAnswer: any;
+        isCorrect: boolean;
+        correctAnswerText?: string;
+        explanation?: string;
+      }> = [];
+
       let calculatedScore = 0;
       if (questions.length > 0) {
         let earned = 0;
         questions.forEach((q, idx) => {
           const answer = activeQuizAnswers[idx];
-          earned += gradeQuestionAnswer(q, answer, sec.assignment.type);
+          const qScore = gradeQuestionAnswer(q, answer, sec.assignment.type);
+          earned += qScore;
+          const isCorrect = qScore >= 0.75;
+          const kind = resolveAssessmentKind(q?.type, sec.assignment.type, q);
+
+          let correctAnswerText: string | undefined = undefined;
+          let explanation: string | undefined = undefined;
+
+          if (kind === "MCQ") {
+            const correctIdx = typeof q?.correctIndex === "number" ? q.correctIndex : 0;
+            const choices = q.choices || [];
+            correctAnswerText = choices[correctIdx] || `Option ${String.fromCharCode(65 + correctIdx)}`;
+            explanation = isCorrect
+              ? "Correct answer selected!"
+              : `Incorrect choice. The correct option is ${String.fromCharCode(65 + correctIdx)}: "${correctAnswerText}".`;
+          } else {
+            correctAnswerText = q.guidance || q.modelAnswer || undefined;
+            explanation = isCorrect
+              ? "Answer verified and matches evaluation criteria."
+              : q.guidance
+              ? `Key required concepts: ${q.guidance}`
+              : "Response did not sufficiently cover expected technical benchmark keywords.";
+          }
+
+          breakdownList.push({
+            questionIndex: idx,
+            prompt: q.prompt || `Question ${idx + 1}`,
+            kind,
+            studentAnswer: answer,
+            isCorrect,
+            correctAnswerText,
+            explanation,
+          });
         });
         calculatedScore = Math.round((earned / questions.length) * 100);
       } else {
@@ -637,9 +716,20 @@ export default function CourseLearningHubPage({
         updatedCooldowns[asgId] = cooldownExpiry;
       }
 
+      const newBreakdowns = {
+        ...assignmentBreakdowns,
+        [asgId]: breakdownList,
+      };
+      const newSavedAnswers = {
+        ...savedQuizAnswers,
+        [asgId]: activeQuizAnswers,
+      };
+
       setCompletedAssignmentIds(updatedCompletedAssignments);
       setAssignmentScores(updatedScores);
       setAssignmentCooldowns(updatedCooldowns);
+      setAssignmentBreakdowns(newBreakdowns);
+      setSavedQuizAnswers(newSavedAnswers);
 
       // Save to local cache
       if (typeof window !== "undefined") {
@@ -652,6 +742,8 @@ export default function CourseLearningHubPage({
               completedAssignmentIds: updatedCompletedAssignments,
               assignmentScores: updatedScores,
               assignmentCooldowns: updatedCooldowns,
+              savedQuizAnswers: newSavedAnswers,
+              assignmentBreakdowns: newBreakdowns,
             })
           );
         } catch {}
@@ -687,7 +779,6 @@ export default function CourseLearningHubPage({
       }
 
       setActiveAssignmentSection(null);
-      setActiveQuizAnswers({});
       setEvaluationResult({
         sectionId: sec.id,
         asgId,
@@ -696,6 +787,7 @@ export default function CourseLearningHubPage({
         minPass,
         passed,
         cooldownUntil: passed ? undefined : cooldownExpiry,
+        section: sec,
       });
     } finally {
       setIsSubmittingAssessment(false);
@@ -880,8 +972,12 @@ export default function CourseLearningHubPage({
                 <div className="min-w-0">
                   <h2 className="text-sm sm:text-base font-bold text-slate-900 truncate dark:text-white">{activeVideo.title}</h2>
                   <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                    <span>Duration: {activeVideo.durationFormatted}</span>
-                    <span>•</span>
+                    {activeVideo.durationFormatted && activeVideo.durationFormatted !== "0:00" && activeVideo.durationFormatted !== "0" && (
+                      <>
+                        <span>Duration: {activeVideo.durationFormatted}</span>
+                        <span>•</span>
+                      </>
+                    )}
                     <span className="font-mono text-[11px] uppercase text-[#2563EB] dark:text-blue-400">
                       {activeVideo.videoType === "upload" ? "Uploaded Lecture" : "Stream Video"}
                     </span>
@@ -1059,9 +1155,11 @@ export default function CourseLearningHubPage({
                                       )}
                                       <span className="truncate">{vid.title}</span>
                                     </div>
-                                    <span className="text-[11px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
-                                      {vid.durationFormatted}
-                                    </span>
+                                    {vid.durationFormatted && vid.durationFormatted !== "0:00" && vid.durationFormatted !== "0" && (
+                                      <span className="text-[11px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
+                                        {vid.durationFormatted}
+                                      </span>
+                                    )}
                                   </button>
                                 );
                               })}
@@ -1108,9 +1206,11 @@ export default function CourseLearningHubPage({
                                             )}
                                             <span className="truncate">{vid.title}</span>
                                           </div>
-                                          <span className="text-[11px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
-                                            {vid.durationFormatted}
-                                          </span>
+                                          {vid.durationFormatted && vid.durationFormatted !== "0:00" && vid.durationFormatted !== "0" && (
+                                            <span className="text-[11px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
+                                              {vid.durationFormatted}
+                                            </span>
+                                          )}
                                         </button>
                                       );
                                     })}
@@ -2076,9 +2176,11 @@ export default function CourseLearningHubPage({
                               )}
                               <span className="truncate">{vid.title}</span>
                             </div>
-                            <span className="text-[10px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
-                              {vid.durationFormatted}
-                            </span>
+                            {vid.durationFormatted && vid.durationFormatted !== "0:00" && vid.durationFormatted !== "0" && (
+                              <span className="text-[10px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
+                                {vid.durationFormatted}
+                              </span>
+                            )}
                           </button>
                         );
                       })}
@@ -2123,9 +2225,11 @@ export default function CourseLearningHubPage({
                                     )}
                                     <span className="truncate">{vid.title}</span>
                                   </div>
-                                  <span className="text-[10px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
-                                    {vid.durationFormatted}
-                                  </span>
+                                  {vid.durationFormatted && vid.durationFormatted !== "0:00" && vid.durationFormatted !== "0" && (
+                                    <span className="text-[10px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
+                                      {vid.durationFormatted}
+                                    </span>
+                                  )}
                                 </button>
                               );
                             })}
@@ -2419,74 +2523,113 @@ export default function CourseLearningHubPage({
         ).length;
         const allQuestionsAnswered = questions.length === 0 || answeredCount === questions.length;
 
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-            <div className="relative w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 shadow-2xl space-y-5 my-8 dark:border-slate-800/80 dark:bg-surface-secondary">
-              <button
-                type="button"
-                onClick={() => setActiveAssignmentSection(null)}
-                className="absolute top-5 right-5 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer dark:bg-slate-800 dark:text-slate-400"
-              >
-                <X className="h-4 w-4" />
-              </button>
+        const currentBreakdown = assignmentBreakdowns[asgId];
+        const hasBreakdown = Boolean(currentBreakdown && currentBreakdown.length > 0);
 
-              <div className="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-400">
-                  <ClipboardCheck className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    {activeAssignmentSection.assignment.title}
-                  </h3>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    Section Assessment · Passing Threshold: <strong className="text-slate-800 dark:text-slate-200">{minPass}% Score</strong>
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-5 backdrop-blur-xs">
+            <div className="relative flex flex-col w-full max-w-2xl max-h-[92vh] rounded-3xl border border-slate-200 bg-white shadow-2xl overflow-hidden dark:border-slate-800/80 dark:bg-surface-secondary animate-in fade-in zoom-in-95 duration-200">
+              {/* PINNED HEADER - Never cut off */}
+              <div className="shrink-0 flex items-center justify-between border-b border-slate-100 p-5 sm:p-6 bg-white dark:bg-surface-secondary dark:border-slate-800 z-10">
+                <div className="flex items-center gap-3 min-w-0 pr-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-400">
+                    <ClipboardCheck className="h-6 w-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-base font-bold text-slate-900 truncate dark:text-white">
+                      {activeAssignmentSection.assignment.title}
+                    </h3>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                      Section Assessment · Passing Threshold: <strong className="text-slate-800 dark:text-slate-200">{minPass}% Score</strong>
+                    </div>
                   </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveAssignmentSection(null)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer dark:bg-slate-800 dark:text-slate-400 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
 
-              {/* COOLDOWN WARNING BANNER */}
-              {isCooldownActive && (
-                <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs space-y-2 dark:border-amber-800 dark:bg-amber-950/40">
-                  <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-300">
-                    <Timer className="h-4 w-4 animate-spin text-amber-600 dark:text-amber-400" />
-                    <span>Retake Cooldown in Progress</span>
+              {/* SCROLLABLE BODY */}
+              <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
+                {/* COOLDOWN WARNING BANNER */}
+                {isCooldownActive && (
+                  <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs space-y-2 dark:border-amber-800 dark:bg-amber-950/40">
+                    <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-300">
+                      <Timer className="h-4 w-4 animate-spin text-amber-600 dark:text-amber-400" />
+                      <span>Retake Cooldown in Progress ({formatCooldown(secondsRemaining)})</span>
+                    </div>
+                    <p className="text-amber-800 dark:text-amber-300">
+                      You scored {assignmentScores[asgId] ?? 0}% on your previous attempt (minimum passing requirement is {minPass}%). Carefully review your answers and the mistakes highlighted in red below. When the cooldown ends, you will be able to edit your answers and re-submit.
+                    </p>
+                    <div className="flex items-center gap-2 pt-1 font-mono text-xs font-bold text-amber-950 dark:text-amber-200">
+                      <span>Time until retake unlocked:</span>
+                      <span className="rounded-lg bg-amber-200/80 px-2.5 py-1 text-sm text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+                        {formatCooldown(secondsRemaining)}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-amber-800 dark:text-amber-300">
-                    You did not achieve the required {minPass}% passing mark on your previous attempt. You must wait for the cooldown timelimit to expire before submitting again.
-                  </p>
-                  <div className="flex items-center gap-2 pt-1 font-mono text-xs font-bold text-amber-950 dark:text-amber-200">
-                    <span>Available to submit in:</span>
-                    <span className="rounded-lg bg-amber-200/80 px-2.5 py-1 text-sm text-amber-900 dark:bg-amber-900 dark:text-amber-100">
-                      {formatCooldown(secondsRemaining)}
-                    </span>
-                  </div>
-                </div>
-              )}
+                )}
 
-              <div className="space-y-4 text-xs text-slate-700 dark:text-slate-300">
-                <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100 font-medium leading-relaxed dark:bg-surface-elevated dark:border-slate-800">
+                <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100 font-medium text-xs leading-relaxed text-slate-700 dark:bg-surface-elevated dark:border-slate-800 dark:text-slate-300">
                   {activeAssignmentSection.assignment.description}
                 </div>
 
                 {questions.length > 0 ? (
                   <div className="space-y-4">
-                    <div className="text-xs font-bold text-slate-900 uppercase tracking-wider dark:text-white">
-                      Assessment Questions ({questions.length})
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-bold text-slate-900 uppercase tracking-wider dark:text-white">
+                        Assessment Questions ({questions.length})
+                      </div>
+                      {hasBreakdown && (
+                        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                          Previous Score: {assignmentScores[asgId] ?? 0}%
+                        </span>
+                      )}
                     </div>
+
                     {questions.map((q, qIdx) => {
                       const kind = resolveAssessmentKind(q.type, activeAssignmentSection.assignment.type, q);
                       const answer = activeQuizAnswers[qIdx];
                       const textAnswer = typeof answer === "string" ? answer : "";
+                      const qBreakdown = currentBreakdown ? currentBreakdown[qIdx] : null;
+                      const hasReviewed = Boolean(qBreakdown);
+
                       return (
-                      <div key={qIdx} className="space-y-2.5 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-surface-elevated/60">
+                      <div
+                        key={qIdx}
+                        className={`space-y-3 rounded-2xl border p-4.5 sm:p-5 shadow-2xs transition-all ${
+                          hasReviewed
+                            ? qBreakdown?.isCorrect
+                              ? "border-emerald-300 bg-emerald-50/20 dark:border-emerald-900/60 dark:bg-emerald-950/15"
+                              : "border-rose-300 bg-rose-50/25 dark:border-rose-900/60 dark:bg-rose-950/20"
+                            : "border-slate-200 bg-white dark:border-slate-800 dark:bg-surface-elevated/60"
+                        }`}
+                      >
                         <div className="flex items-start justify-between gap-3">
                           <div className="font-bold text-slate-900 text-xs sm:text-sm dark:text-white">
                             <span className="text-[#2563EB] dark:text-blue-400 mr-1.5">Q{qIdx + 1}.</span>
                             {q.prompt?.trim() || `Question ${qIdx + 1}`}
                           </div>
-                          <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-300">
-                            {assessmentKindLabel(kind)}
-                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-300">
+                              {assessmentKindLabel(kind)}
+                            </span>
+                            {hasReviewed && (
+                              qBreakdown?.isCorrect ? (
+                                <span className="flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                                  <CheckCircle2 className="h-3 w-3" /> Correct
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 rounded-full bg-rose-100 dark:bg-rose-950/60 px-2.5 py-0.5 text-[11px] font-bold text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                                  <XCircle className="h-3 w-3" /> Incorrect
+                                </span>
+                              )
+                            )}
+                          </div>
                         </div>
 
                         {q.guidance && (
@@ -2498,28 +2641,53 @@ export default function CourseLearningHubPage({
                           <div className="space-y-2 pt-1">
                             {(q.choices || []).map((choice, cIdx) => {
                               const isSelected = answer === cIdx;
+                              const isCorrectChoice = (q.correctIndex ?? 0) === cIdx;
+                              const isWrongUserSelection = hasReviewed && !qBreakdown?.isCorrect && isSelected;
+                              const isRightChoice = hasReviewed && isCorrectChoice;
+
+                              let choiceClass = "border-slate-200 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-surface-secondary dark:text-slate-300 dark:hover:bg-surface-hover";
+                              if (isRightChoice) {
+                                choiceClass = "border-emerald-500 bg-emerald-50/80 font-bold text-emerald-900 shadow-xs dark:bg-emerald-950/50 dark:border-emerald-500 dark:text-emerald-200";
+                              } else if (isWrongUserSelection) {
+                                choiceClass = "border-rose-400 bg-rose-50/80 font-bold text-rose-900 shadow-xs dark:bg-rose-950/50 dark:border-rose-500 dark:text-rose-200";
+                              } else if (isSelected) {
+                                choiceClass = "border-[#2563EB] bg-blue-50/70 font-semibold text-[#2563EB] shadow-xs dark:bg-blue-950/40 dark:border-blue-500 dark:text-blue-300";
+                              }
+
                               return (
                                 <button
                                   key={cIdx}
                                   type="button"
                                   disabled={isCooldownActive}
                                   onClick={() => handleSelectQuizAnswer(qIdx, cIdx)}
-                                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left text-xs transition-all cursor-pointer ${
-                                    isCooldownActive
-                                      ? "opacity-60 cursor-not-allowed bg-slate-50 border-slate-200 dark:bg-slate-900 dark:border-slate-800"
-                                      : isSelected
-                                      ? "border-[#2563EB] bg-blue-50/70 font-semibold text-[#2563EB] shadow-xs dark:bg-blue-950/40 dark:border-blue-500 dark:text-blue-300"
-                                      : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-surface-secondary dark:text-slate-300 dark:hover:bg-surface-hover"
-                                  }`}
+                                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left text-xs transition-all ${
+                                    isCooldownActive ? "cursor-not-allowed opacity-90" : "cursor-pointer"
+                                  } ${choiceClass}`}
                                 >
                                   <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
-                                    isSelected
+                                    isRightChoice
+                                      ? "border-emerald-600 bg-emerald-600 text-white"
+                                      : isWrongUserSelection
+                                      ? "border-rose-600 bg-rose-600 text-white"
+                                      : isSelected
                                       ? "border-[#2563EB] bg-[#2563EB] text-white dark:border-blue-400 dark:bg-blue-500"
                                       : "border-slate-300 text-slate-500 dark:border-slate-600 dark:text-slate-400"
                                   }`}>
                                     {String.fromCharCode(65 + cIdx)}
                                   </div>
-                                  <span className="flex-1">{choice}</span>
+                                  <div className="flex-1 flex items-center justify-between gap-2">
+                                    <span className={isWrongUserSelection ? "line-through decoration-rose-500" : ""}>{choice}</span>
+                                    {isRightChoice && (
+                                      <span className="shrink-0 text-[10px] font-bold text-emerald-800 bg-emerald-100 dark:bg-emerald-900/60 dark:text-emerald-300 px-2 py-0.5 rounded-full">
+                                        ✓ Correct Answer
+                                      </span>
+                                    )}
+                                    {isWrongUserSelection && (
+                                      <span className="shrink-0 text-[10px] font-bold text-rose-800 bg-rose-100 dark:bg-rose-900/60 dark:text-rose-300 px-2 py-0.5 rounded-full">
+                                        Your Choice (Wrong)
+                                      </span>
+                                    )}
+                                  </div>
                                 </button>
                               );
                             })}
@@ -2528,30 +2696,50 @@ export default function CourseLearningHubPage({
 
                         {/* SHORT ANSWER */}
                         {kind === "SHORT_ANSWER" && (
-                          <input
-                            type="text"
-                            value={textAnswer}
-                            disabled={isCooldownActive}
-                            onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.value)}
-                            placeholder="Type your answer…"
-                            className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-60 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
-                          />
+                          <div className="space-y-2">
+                            <input
+                              type="text"
+                              value={textAnswer}
+                              disabled={isCooldownActive}
+                              onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.value)}
+                              placeholder="Type your answer…"
+                              className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-85 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                            />
+                            {hasReviewed && !qBreakdown?.isCorrect && (
+                              <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-3 text-xs text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200 space-y-1">
+                                <div className="font-bold flex items-center gap-1.5 text-[11px] text-rose-700 dark:text-rose-300">
+                                  <AlertCircle className="h-3.5 w-3.5" />
+                                  <span>Review Feedback</span>
+                                </div>
+                                <p>{qBreakdown?.explanation}</p>
+                              </div>
+                            )}
+                          </div>
                         )}
 
                         {/* LONG ANSWER */}
                         {kind === "LONG_ANSWER" && (
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <textarea
                               rows={5}
                               value={textAnswer}
                               disabled={isCooldownActive}
                               onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.value)}
                               placeholder="Write a detailed response…"
-                              className="w-full rounded-xl border border-slate-200 p-3 text-xs leading-relaxed text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-60 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                              className="w-full rounded-xl border border-slate-200 p-3 text-xs leading-relaxed text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-85 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                             />
                             {typeof q.minWords === "number" && q.minWords > 0 && (
                               <div className="text-[10px] font-medium text-slate-400">
                                 {countWords(textAnswer)} / {q.minWords} words minimum
+                              </div>
+                            )}
+                            {hasReviewed && !qBreakdown?.isCorrect && (
+                              <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-3 text-xs text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200 space-y-1">
+                                <div className="font-bold flex items-center gap-1.5 text-[11px] text-rose-700 dark:text-rose-300">
+                                  <AlertCircle className="h-3.5 w-3.5" />
+                                  <span>Review Feedback</span>
+                                </div>
+                                <p>{qBreakdown?.explanation}</p>
                               </div>
                             )}
                           </div>
@@ -2559,7 +2747,7 @@ export default function CourseLearningHubPage({
 
                         {/* CODING CHALLENGE */}
                         {kind === "CODING" && (
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">
                               <Code2 className="h-3.5 w-3.5" />
                               <span>{q.language || "Code"}</span>
@@ -2570,11 +2758,20 @@ export default function CourseLearningHubPage({
                               value={textAnswer || q.starterCode || ""}
                               disabled={isCooldownActive}
                               onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.value)}
-                              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-[11px] leading-relaxed text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-60 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-[11px] leading-relaxed text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-85 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                             />
                             {q.testCases && (
                               <div className="rounded-lg bg-slate-50 p-2.5 font-mono text-[10px] text-slate-500 dark:bg-surface-elevated dark:text-slate-400">
                                 Test cases: {q.testCases}
+                              </div>
+                            )}
+                            {hasReviewed && !qBreakdown?.isCorrect && (
+                              <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-3 text-xs text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200 space-y-1">
+                                <div className="font-bold flex items-center gap-1.5 text-[11px] text-rose-700 dark:text-rose-300">
+                                  <AlertCircle className="h-3.5 w-3.5" />
+                                  <span>Review Feedback</span>
+                                </div>
+                                <p>{qBreakdown?.explanation}</p>
                               </div>
                             )}
                           </div>
@@ -2623,20 +2820,21 @@ export default function CourseLearningHubPage({
                     />
                   </div>
                 )}
+
+                {!allQuestionsAnswered && !isCooldownActive && (
+                  <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[11px] font-semibold text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span>
+                      Answer all {questions.length} questions to enable submission — {questions.length - answeredCount} still
+                      {questions.length - answeredCount === 1 ? " needs" : " need"} a response.
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {!allQuestionsAnswered && !isCooldownActive && (
-                <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[11px] font-semibold text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  <span>
-                    Answer all {questions.length} questions to enable submission — {questions.length - answeredCount} still
-                    {questions.length - answeredCount === 1 ? " needs" : " need"} a response.
-                  </span>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
-                <div className="text-[11px] text-slate-400">
+              {/* PINNED FOOTER */}
+              <div className="shrink-0 flex items-center justify-between border-t border-slate-100 p-4 sm:p-5 bg-slate-50/80 dark:bg-surface-elevated/80 dark:border-slate-800">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                   {questions.length > 0
                     ? `${answeredCount} of ${questions.length} answered`
                     : "Ready for evaluation"}
@@ -2645,7 +2843,7 @@ export default function CourseLearningHubPage({
                   <button
                     type="button"
                     onClick={() => setActiveAssignmentSection(null)}
-                    className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 cursor-pointer dark:text-slate-400 dark:hover:bg-surface-hover"
+                    className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200/60 cursor-pointer dark:text-slate-400 dark:hover:bg-surface-hover transition-colors"
                   >
                     Close
                   </button>
@@ -2689,7 +2887,7 @@ export default function CourseLearningHubPage({
         );
       })()}
 
-      {/* EVALUATION FEEDBACK MODAL (Shows Real Pass/Fail + Cooldown Explanation) */}
+      {/* EVALUATION FEEDBACK MODAL (Shows Real Pass/Fail + Cooldown Explanation + Review Action) */}
       {evaluationResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
           <div className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 shadow-2xl space-y-4 text-center dark:border-slate-800/80 dark:bg-surface-secondary">
@@ -2731,15 +2929,25 @@ export default function CourseLearningHubPage({
                 : "Your score was below the minimum required passing mark. In accordance with course standards, the certificate remains locked until you retake and pass this assessment. A 3-minute cooldown timer has been initiated."}
             </p>
 
-            <div className="pt-2">
+            <div className="pt-2 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (evaluationResult.section) {
+                    setActiveAssignmentSection(evaluationResult.section);
+                  }
+                  setEvaluationResult(null);
+                }}
+                className="w-full rounded-xl py-2.5 text-xs font-bold text-white bg-[#2563EB] hover:bg-blue-700 shadow-xs cursor-pointer transition-colors"
+              >
+                Review Answers & Mistakes
+              </button>
               <button
                 type="button"
                 onClick={() => setEvaluationResult(null)}
-                className={`w-full rounded-xl py-2.5 text-xs font-bold text-white shadow-xs cursor-pointer ${
-                  evaluationResult.passed ? "bg-emerald-600 hover:bg-emerald-700" : "bg-[#2563EB] hover:bg-blue-700"
-                }`}
+                className="w-full rounded-xl py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer transition-colors"
               >
-                {evaluationResult.passed ? "Continue Learning" : "Understood, Review Lectures"}
+                {evaluationResult.passed ? "Continue Learning" : "Close and Study Lectures"}
               </button>
             </div>
           </div>

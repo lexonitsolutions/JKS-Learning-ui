@@ -722,17 +722,27 @@ function AdminNewCourseContent() {
     const sec = updated[sectionIndex];
     const currentVideos = sec.directVideos || [];
     const newOrder = currentVideos.length + 1;
+    const newVidId = `v-${Date.now()}`;
     const newVid: VideoItem = {
-      id: `v-${Date.now()}`,
+      id: newVidId,
       title: "",
       durationSeconds: 0,
-      durationFormatted: "0:00",
+      durationFormatted: "",
       videoType: "upload",
       videoUrl: "",
       order: newOrder,
     };
     sec.directVideos = [...currentVideos, newVid];
     setSections(updated);
+
+    setTimeout(() => {
+      const el = document.getElementById(`video-card-${newVidId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-[#2563EB]");
+        setTimeout(() => el.classList.remove("ring-2", "ring-[#2563EB]"), 1800);
+      }
+    }, 120);
   };
 
   const removeDirectVideo = (sectionIndex: number, videoId: string) => {
@@ -751,17 +761,27 @@ function AdminNewCourseContent() {
     const sub = updated[sectionIndex].subsections?.[subsectionIndex];
     if (!sub) return;
     const newOrder = sub.videos.length + 1;
+    const newVidId = `v-${Date.now()}`;
     const newVid: VideoItem = {
-      id: `v-${Date.now()}`,
+      id: newVidId,
       title: "",
       durationSeconds: 0,
-      durationFormatted: "0:00",
+      durationFormatted: "",
       videoType: "upload",
       videoUrl: "",
       order: newOrder,
     };
     sub.videos = [...sub.videos, newVid];
     setSections(updated);
+
+    setTimeout(() => {
+      const el = document.getElementById(`video-card-${newVidId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-[#2563EB]");
+        setTimeout(() => el.classList.remove("ring-2", "ring-[#2563EB]"), 1800);
+      }
+    }, 120);
   };
 
   const removeVideoFromSubsection = (
@@ -784,12 +804,23 @@ function AdminNewCourseContent() {
     const asg = updated[sectionIndex].assignment;
     const currentQuestions = asg.questions || [];
     const qType = canonicalizeAssessmentType(asg.type);
+    const newQId = `q-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const newQ = {
+      ...createDefaultQuestion(qType),
+      id: newQId,
+    };
 
-    asg.questions = [
-      ...currentQuestions,
-      createDefaultQuestion(qType),
-    ];
+    asg.questions = [...currentQuestions, newQ];
     setSections(updated);
+
+    setTimeout(() => {
+      const el = document.getElementById(`question-card-${newQId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-[#2563EB]");
+        setTimeout(() => el.classList.remove("ring-2", "ring-[#2563EB]"), 1800);
+      }
+    }, 120);
   };
 
   const removeQuestionFromAssignment = (sectionIndex: number, questionIndex: number) => {
@@ -926,14 +957,50 @@ function AdminNewCourseContent() {
     >
   >({});
 
+  const getVideoDurationFromFile = (file: File): Promise<{ seconds: number; formatted: string }> => {
+    return new Promise((resolve) => {
+      try {
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        const url = URL.createObjectURL(file);
+        video.onloadedmetadata = () => {
+          URL.revokeObjectURL(url);
+          const sec = Math.round(video.duration || 0);
+          const h = Math.floor(sec / 3600);
+          const m = Math.floor((sec % 3600) / 60);
+          const s = Math.floor(sec % 60);
+          const formatted = h > 0
+            ? `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
+            : `${m}:${s.toString().padStart(2, "0")}`;
+          resolve({ seconds: sec, formatted });
+        };
+        video.onerror = () => {
+          URL.revokeObjectURL(url);
+          resolve({ seconds: 0, formatted: "" });
+        };
+        video.src = url;
+      } catch {
+        resolve({ seconds: 0, formatted: "" });
+      }
+    });
+  };
+
   // Direct Bunny Stream video file upload handler
   const handleVideoFileUpload = async (
     videoId: string,
     videoTitle: string,
     file: File | undefined,
-    onSetUrl: (url: string) => void
+    onSetUrl: (url: string, durationSeconds?: number, durationFormatted?: string) => void
   ) => {
     if (!file) return;
+
+    let detectedSeconds = 0;
+    let detectedFormatted = "";
+    try {
+      const meta = await getVideoDurationFromFile(file);
+      detectedSeconds = meta.seconds;
+      detectedFormatted = meta.formatted;
+    } catch {}
 
     setUploadProgress((prev) => ({
       ...prev,
@@ -954,7 +1021,7 @@ function AdminNewCourseContent() {
       });
 
       const finalUrl = res.iframeEmbedUrl || res.playbackUrl || ticket.uploadUrl;
-      onSetUrl(finalUrl);
+      onSetUrl(finalUrl, detectedSeconds, detectedFormatted);
 
       setUploadProgress((prev) => ({
         ...prev,
@@ -963,7 +1030,7 @@ function AdminNewCourseContent() {
     } catch (err: any) {
       console.warn("Bunny Stream direct upload fallback to local preview object URL:", err);
       const fallbackUrl = URL.createObjectURL(file);
-      onSetUrl(fallbackUrl);
+      onSetUrl(fallbackUrl, detectedSeconds, detectedFormatted);
       setUploadProgress((prev) => ({
         ...prev,
         [videoId]: { status: "ready", percent: 100, fileName: file.name },
@@ -1644,7 +1711,8 @@ function AdminNewCourseContent() {
                                   {sub.videos.map((vid, vidIdx) => (
                                     <div
                                       key={vid.id}
-                                      className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-3 space-y-2.5 text-xs shadow-2xs"
+                                      id={`video-card-${vid.id}`}
+                                      className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-3 space-y-2.5 text-xs shadow-2xs transition-all duration-300"
                                     >
                                       <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -1682,6 +1750,10 @@ function AdminNewCourseContent() {
                                                 const updated = [...sections];
                                                 const currentVid = updated[secIdx].subsections![subIdx].videos[vidIdx];
                                                 currentVid.videoType = newType;
+                                                if (newType !== "upload") {
+                                                  currentVid.durationSeconds = 0;
+                                                  currentVid.durationFormatted = "";
+                                                }
                                                 if (newType === "upload" && (currentVid.videoUrl.includes("youtube.com") || currentVid.videoUrl.includes("drive.google.com") || currentVid.videoUrl.includes("onedrive"))) {
                                                   currentVid.videoUrl = "";
                                                 }
@@ -1747,9 +1819,12 @@ function AdminNewCourseContent() {
                                                     onChange={(e) => {
                                                       const file = e.target.files?.[0];
                                                       if (file) {
-                                                        handleVideoFileUpload(vid.id, vid.title, file, (url) => {
+                                                        handleVideoFileUpload(vid.id, vid.title, file, (url, sec, formatted) => {
                                                           const updated = [...sections];
-                                                          updated[secIdx].subsections![subIdx].videos[vidIdx].videoUrl = url;
+                                                          const target = updated[secIdx].subsections![subIdx].videos[vidIdx];
+                                                          target.videoUrl = url;
+                                                          if (sec !== undefined) target.durationSeconds = sec;
+                                                          if (formatted !== undefined) target.durationFormatted = formatted;
                                                           setSections(updated);
                                                         });
                                                       }
@@ -1765,7 +1840,7 @@ function AdminNewCourseContent() {
                                                 ) : vid.videoUrl ? (
                                                   <div className="flex items-center gap-1.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
                                                     <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                                    <span>✓ Video Uploaded (Ready)</span>
+                                                    <span>✓ Video Uploaded {vid.durationFormatted ? `(${vid.durationFormatted})` : "(Ready)"}</span>
                                                   </div>
                                                 ) : (
                                                   <span className="text-[10px] text-slate-400 dark:text-slate-400">
@@ -1866,7 +1941,8 @@ function AdminNewCourseContent() {
                         {section.directVideos?.map((vid, vidIdx) => (
                           <div
                             key={vid.id}
-                            className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-surface-elevated p-3 sm:p-3.5 space-y-2.5"
+                            id={`video-card-${vid.id}`}
+                            className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-surface-elevated p-3 sm:p-3.5 space-y-2.5 transition-all duration-300"
                           >
                             <div className="flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -1905,6 +1981,10 @@ function AdminNewCourseContent() {
                                     const updated = [...sections];
                                     const currentVid = updated[secIdx].directVideos![vidIdx];
                                     currentVid.videoType = newType;
+                                    if (newType !== "upload") {
+                                      currentVid.durationSeconds = 0;
+                                      currentVid.durationFormatted = "";
+                                    }
                                     if (newType === "upload" && (currentVid.videoUrl.includes("youtube.com") || currentVid.videoUrl.includes("drive.google.com") || currentVid.videoUrl.includes("onedrive"))) {
                                       currentVid.videoUrl = "";
                                     }
@@ -1970,11 +2050,14 @@ function AdminNewCourseContent() {
                                           onChange={(e) => {
                                             const file = e.target.files?.[0];
                                             if (file) {
-                                              handleVideoFileUpload(vid.id, vid.title, file, (url) => {
-                                                const updated = [...sections];
-                                                updated[secIdx].directVideos![vidIdx].videoUrl = url;
-                                                setSections(updated);
-                                              });
+                                              handleVideoFileUpload(vid.id, vid.title, file, (url, sec, formatted) => {
+                                                  const updated = [...sections];
+                                                  const target = updated[secIdx].directVideos![vidIdx];
+                                                  target.videoUrl = url;
+                                                  if (sec !== undefined) target.durationSeconds = sec;
+                                                  if (formatted !== undefined) target.durationFormatted = formatted;
+                                                  setSections(updated);
+                                                });
                                             }
                                           }}
                                         />
@@ -1988,7 +2071,7 @@ function AdminNewCourseContent() {
                                       ) : vid.videoUrl ? (
                                         <div className="flex items-center gap-1.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
                                           <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                          <span>Uploaded to Bunny Stream (Ready)</span>
+                                          <span>Uploaded {vid.durationFormatted ? `(${vid.durationFormatted})` : "to Bunny Stream (Ready)"}</span>
                                         </div>
                                       ) : (
                                         <span className="text-[10px] text-slate-400 dark:text-slate-400">
@@ -2283,7 +2366,8 @@ function AdminNewCourseContent() {
                               return (
                                 <div
                                   key={q.id || qIdx}
-                                  className="rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-4 sm:p-5 space-y-4 shadow-2xs"
+                                  id={`question-card-${q.id || qIdx}`}
+                                  className="rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-4 sm:p-5 space-y-4 shadow-2xs transition-all duration-300"
                                 >
                                   <div className="flex items-start justify-between gap-3">
                                     <div className="flex items-start gap-2.5 flex-1 min-w-0">

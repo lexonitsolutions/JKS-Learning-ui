@@ -365,7 +365,7 @@ export async function downloadElementAsPdf(
       const renderWidth = printableWidth * fitScale;
       const renderHeight = naturalImgHeight * fitScale;
       const xOffset = marginMm + (printableWidth - renderWidth) / 2;
-      const yOffset = marginMm + (printableHeight - renderHeight) / 2;
+      const yOffset = marginMm;
 
       pdf.addImage(
         imgData,
