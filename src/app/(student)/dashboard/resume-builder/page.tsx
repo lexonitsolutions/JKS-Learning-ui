@@ -38,54 +38,58 @@ import { fetchStudentEnrollments } from "@/lib/data/enrollments-api";
 import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
 import { apiFetch } from "@/lib/api/base-url";
 
-export function normalizeLinkedInUrl(rawUrl: string): string {
+export function extractLinkedInHandle(rawUrl: string): string {
   if (!rawUrl) return "";
   let clean = rawUrl.trim();
   clean = clean.replace(/^(?:linkedin|linked-in)\s*:\s*/i, "");
-  if (!clean) return "";
-  if (/^https?:\/\//i.test(clean)) return clean;
-  if (/^(?:www\.)?linkedin\.com/i.test(clean)) return `https://${clean}`;
-  if (/^\/?in\//i.test(clean)) return `https://www.linkedin.com/${clean.replace(/^\//, "")}`;
-  return `https://www.linkedin.com/in/${clean}`;
+  // Repeatedly strip any domain or path prefixes if duplicated
+  while (/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/?(?:in\/)?/i.test(clean)) {
+    const stripped = clean.replace(/^(?:https?:\/\/)?(?:www\.)?linkedin\.com\/?(?:in\/)?/i, "");
+    if (stripped === clean) break;
+    clean = stripped;
+  }
+  clean = clean.replace(/^\/?in\//i, "");
+  clean = clean.split(/[?#]/)[0].replace(/\/+$/, "");
+  return clean;
+}
+
+export function normalizeLinkedInUrl(rawUrl: string): string {
+  const handle = extractLinkedInHandle(rawUrl);
+  return handle ? `https://www.linkedin.com/in/${handle}` : "";
 }
 
 export function formatLinkedInDisplay(rawUrl: string): string {
+  const handle = extractLinkedInHandle(rawUrl);
+  return handle ? `linkedin.com/in/${handle}` : "LinkedIn";
+}
+
+export function extractGithubHandle(rawUrl: string): string {
   if (!rawUrl) return "";
   let clean = rawUrl.trim();
-  clean = clean.replace(/^(?:linkedin|linked-in)\s*:\s*/i, "");
-  clean = clean.replace(/^https?:\/\/(?:www\.)?linkedin\.com\/?/i, "");
-  const withoutQuery = clean.split(/[?#]/)[0].replace(/\/+$/, "");
-  if (withoutQuery.startsWith("in/")) {
-    return `linkedin.com/${withoutQuery}`;
+  clean = clean.replace(/^(?:github)\s*:\s*/i, "");
+  while (/(?:https?:\/\/)?(?:www\.)?github\.com\/?/i.test(clean)) {
+    const stripped = clean.replace(/^(?:https?:\/\/)?(?:www\.)?github\.com\/?/i, "");
+    if (stripped === clean) break;
+    clean = stripped;
   }
-  if (withoutQuery) {
-    return `linkedin.com/in/${withoutQuery}`;
-  }
-  return "LinkedIn";
+  clean = clean.split(/[?#]/)[0].replace(/\/+$/, "");
+  return clean;
 }
 
 export function normalizeGithubUrl(rawUrl: string): string {
-  if (!rawUrl) return "";
-  let clean = rawUrl.trim();
-  clean = clean.replace(/^(?:github)\s*:\s*/i, "");
-  if (!clean) return "";
-  if (/^https?:\/\//i.test(clean)) return clean;
-  if (/^(?:www\.)?github\.com/i.test(clean)) return `https://${clean}`;
-  return `https://github.com/${clean.replace(/^\//, "")}`;
+  const handle = extractGithubHandle(rawUrl);
+  return handle ? `https://github.com/${handle}` : "";
 }
 
 export function formatGithubDisplay(rawUrl: string): string {
-  if (!rawUrl) return "";
-  let clean = rawUrl.trim();
-  clean = clean.replace(/^(?:github)\s*:\s*/i, "");
-  clean = clean.replace(/^https?:\/\/(?:www\.)?github\.com\/?/i, "");
-  const withoutQuery = clean.split(/[?#]/)[0].replace(/\/+$/, "");
-  return withoutQuery ? `github.com/${withoutQuery}` : "GitHub";
+  const handle = extractGithubHandle(rawUrl);
+  return handle ? `github.com/${handle}` : "GitHub";
 }
 
 export function normalizeWebUrl(rawUrl: string): string {
   if (!rawUrl) return "";
-  const clean = rawUrl.trim();
+  let clean = rawUrl.trim();
+  clean = clean.replace(/^(?:website|portfolio)\s*:\s*/i, "");
   if (!clean) return "";
   if (/^https?:\/\//i.test(clean)) return clean;
   return `https://${clean}`;
@@ -93,7 +97,9 @@ export function normalizeWebUrl(rawUrl: string): string {
 
 export function formatWebDisplay(rawUrl: string): string {
   if (!rawUrl) return "";
-  const clean = rawUrl.trim().replace(/^https?:\/\/(?:www\.)?/i, "").split(/[?#]/)[0].replace(/\/+$/, "");
+  let clean = rawUrl.trim();
+  clean = clean.replace(/^(?:website|portfolio)\s*:\s*/i, "");
+  clean = clean.replace(/^https?:\/\/(?:www\.)?/i, "").split(/[?#]/)[0].replace(/\/+$/, "");
   return clean || rawUrl;
 }
 
@@ -807,14 +813,14 @@ export default function ResumeBuilderPage() {
             <div className="space-y-2 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.experiences.map((exp) => (
                 <div key={exp.id} className="space-y-0.5 text-xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between font-bold text-slate-900">
-                    <span style={{ color: "#0F172A" }}>
+                  <div className="flex flex-row items-baseline justify-between gap-3 font-bold text-slate-900">
+                    <span className="min-w-0" style={{ color: "#0F172A" }}>
                       {exp.role} — <span className="text-[#1E5EFF]" style={{ color: "#1E5EFF" }}>{exp.company}</span>
                       {exp.location && <span className="text-slate-500 font-normal" style={{ color: "#64748B" }}> ({exp.location})</span>}
                     </span>
                     {(exp.startDate || exp.endDate) && (
-                      <span className="text-slate-600 font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded border border-slate-200/80" style={{ color: "#475569", backgroundColor: "#F1F5F9", borderColor: "#E2E8F0" }}>
-                        {exp.startDate} - {exp.endDate}
+                      <span className="shrink-0 text-slate-600 font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded border border-slate-200/80 whitespace-nowrap" style={{ color: "#475569", backgroundColor: "#F1F5F9", borderColor: "#E2E8F0" }}>
+                        {exp.startDate}{exp.startDate && exp.endDate ? " - " : ""}{exp.endDate}
                       </span>
                     )}
                   </div>
@@ -843,10 +849,10 @@ export default function ResumeBuilderPage() {
             <div className="space-y-2 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.projects.map((proj) => (
                 <div key={proj.id} className="space-y-0.5 text-xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between font-bold text-slate-900">
-                    <span className="font-semibold text-slate-900" style={{ color: "#0F172A" }}>{proj.title}</span>
+                  <div className="flex flex-row items-baseline justify-between gap-3 font-bold text-slate-900">
+                    <span className="font-semibold text-slate-900 min-w-0" style={{ color: "#0F172A" }}>{proj.title}</span>
                     {proj.liveUrl && (
-                      <span className="text-[#1E5EFF] font-mono text-[11px] underline" style={{ color: "#1E5EFF" }}>
+                      <span className="shrink-0 text-[#1E5EFF] font-mono text-[11px] underline whitespace-nowrap" style={{ color: "#1E5EFF" }}>
                         {proj.liveUrl}
                       </span>
                     )}
@@ -881,11 +887,13 @@ export default function ResumeBuilderPage() {
             <div className="space-y-1.5 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.educations.map((edu) => (
                 <div key={edu.id} className="text-xs">
-                  <div className="font-bold text-slate-900" style={{ color: "#0F172A" }}>{edu.degree}</div>
-                  <div className="text-slate-700" style={{ color: "#334155" }}>{edu.institution}</div>
-                  <div className="text-slate-500 text-[11px]" style={{ color: "#64748B" }}>
-                    {edu.year} {edu.score ? `• ${edu.score}` : ""}
+                  <div className="flex flex-row items-baseline justify-between gap-3 font-bold text-slate-900">
+                    <div style={{ color: "#0F172A" }}>{edu.degree}</div>
+                    <div className="shrink-0 text-slate-500 font-mono text-[11px] whitespace-nowrap" style={{ color: "#64748B" }}>
+                      {edu.year}{edu.score ? ` • ${edu.score}` : ""}
+                    </div>
                   </div>
+                  <div className="text-slate-700" style={{ color: "#334155" }}>{edu.institution}{edu.location ? ` (${edu.location})` : ""}</div>
                 </div>
               ))}
             </div>
@@ -901,14 +909,21 @@ export default function ResumeBuilderPage() {
             </h2>
             <div className="space-y-1 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.certifications.map((cert) => (
-                <div key={cert.id} className="text-xs text-slate-800 flex items-start gap-1.5" style={{ color: "#1E293B" }}>
-                  <Award className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" style={{ color: "#059669" }} />
-                  <div>
-                    <div className="font-semibold text-slate-900" style={{ color: "#0F172A" }}>{cert.title}</div>
-                    <div className="text-[11px] text-slate-500" style={{ color: "#64748B" }}>
-                      {cert.issuer} {cert.year ? `• ${cert.year}` : ""}
+                <div key={cert.id} className="text-xs text-slate-800 flex items-start justify-between gap-3" style={{ color: "#1E293B" }}>
+                  <div className="flex items-start gap-1.5 min-w-0">
+                    <Award className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" style={{ color: "#059669" }} />
+                    <div>
+                      <div className="font-semibold text-slate-900" style={{ color: "#0F172A" }}>{cert.title}</div>
+                      <div className="text-[11px] text-slate-500" style={{ color: "#64748B" }}>
+                        {cert.issuer}
+                      </div>
                     </div>
                   </div>
+                  {cert.year && (
+                    <div className="shrink-0 text-[11px] text-slate-500 font-mono whitespace-nowrap mt-0.5" style={{ color: "#64748B" }}>
+                      {cert.year}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -2338,12 +2353,12 @@ export default function ResumeBuilderPage() {
                   >
                     {/* Header */}
                     <div className="border-b border-slate-200 pb-3 space-y-1.5" style={{ borderColor: "#e2e8f0" }}>
-                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                      <div className="flex flex-row items-baseline justify-between gap-3">
                         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight" style={{ color: "#0f172a" }}>
                           {resumeData.personal.fullName || "Your Full Name"}
                         </h1>
                         {resumeData.personal.location && (
-                          <span className="text-xs font-medium text-slate-500 flex items-center gap-1" style={{ color: "#64748b" }}>
+                          <span className="text-xs font-medium text-slate-500 flex items-center gap-1 shrink-0 whitespace-nowrap" style={{ color: "#64748b" }}>
                             <MapPin className="h-3.5 w-3.5 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.location}
                           </span>
                         )}
@@ -2354,11 +2369,11 @@ export default function ResumeBuilderPage() {
                       </div>
 
                       {/* Contact row with pills */}
-                      <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-xs">
+                      <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
                         {resumeData.personal.email && (
                           <a
                             href={`mailto:${resumeData.personal.email}`}
-                            className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-slate-700 border border-slate-200 hover:underline"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2.5 py-1 text-[11px] text-slate-700 border border-slate-200 hover:underline"
                             style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}
                           >
                             <Mail className="h-3 w-3 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.email}
@@ -2367,7 +2382,7 @@ export default function ResumeBuilderPage() {
                         {resumeData.personal.phone && (
                           <a
                             href={`tel:${resumeData.personal.phone}`}
-                            className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-slate-700 border border-slate-200 hover:underline"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2.5 py-1 text-[11px] text-slate-700 border border-slate-200 hover:underline"
                             style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}
                           >
                             <Phone className="h-3 w-3 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.phone}
@@ -2378,7 +2393,7 @@ export default function ResumeBuilderPage() {
                             href={normalizeLinkedInUrl(resumeData.personal.linkedin)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md bg-blue-50/80 px-2 py-0.5 text-[#1E5EFF] border border-blue-200 font-medium hover:underline cursor-pointer"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-blue-50/80 px-2.5 py-1 text-[11px] text-[#1E5EFF] border border-blue-200 font-medium hover:underline cursor-pointer"
                             style={{ backgroundColor: "#eff6ff", borderColor: "#bfdbfe", color: "#1e5eff" }}
                             title={normalizeLinkedInUrl(resumeData.personal.linkedin)}
                           >
@@ -2390,7 +2405,7 @@ export default function ResumeBuilderPage() {
                             href={normalizeGithubUrl(resumeData.personal.github)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-slate-800 border border-slate-300 font-medium hover:underline cursor-pointer"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] text-slate-800 border border-slate-300 font-medium hover:underline cursor-pointer"
                             style={{ backgroundColor: "#f1f5f9", borderColor: "#cbd5e1", color: "#1e293b" }}
                             title={normalizeGithubUrl(resumeData.personal.github)}
                           >
@@ -2402,7 +2417,7 @@ export default function ResumeBuilderPage() {
                             href={normalizeWebUrl(resumeData.personal.portfolio)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-emerald-800 border border-emerald-200 font-medium hover:underline cursor-pointer"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1 text-[11px] text-emerald-800 border border-emerald-200 font-medium hover:underline cursor-pointer"
                             style={{ backgroundColor: "#ecfdf5", borderColor: "#a7f3d0", color: "#065f46" }}
                             title={normalizeWebUrl(resumeData.personal.portfolio)}
                           >

@@ -231,46 +231,50 @@ export function TakeAssessmentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-slate-950/80 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-slate-950/80 p-3 sm:p-5 backdrop-blur-xs">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96 }}
-        className="relative w-full max-w-2xl rounded-[24px] border border-white/70 bg-white/95 p-6 sm:p-8 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-surface-secondary max-h-[88vh] overflow-y-auto"
+        className="relative flex flex-col w-full max-w-2xl max-h-[92vh] rounded-[24px] border border-white/70 bg-white/95 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-surface-secondary overflow-hidden"
       >
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 font-bold">
-            <ClipboardCheck className="h-5 w-5" />
+        {/* PINNED HEADER */}
+        <div className="shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 p-5 sm:p-6 bg-white dark:bg-surface-secondary z-10">
+          <div className="flex items-center gap-3 min-w-0 pr-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 font-bold">
+              <ClipboardCheck className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-base font-bold text-slate-900 truncate dark:text-white">{title}</h3>
+              <p className="text-xs font-medium text-slate-400">{course}</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">{title}</h3>
-            <p className="text-xs font-medium text-slate-400">{course}</p>
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 dark:bg-slate-800 dark:hover:text-slate-200 cursor-pointer transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
-        {effectiveInstructions && (
-          <div className="mt-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 p-3 text-xs text-blue-900 dark:text-blue-200">
-            <strong>Instructions:</strong> {effectiveInstructions}
-          </div>
-        )}
+        {/* SCROLLABLE BODY */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
+          {effectiveInstructions && (
+            <div className="rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 p-3 text-xs text-blue-900 dark:text-blue-200">
+              <strong>Instructions:</strong> {effectiveInstructions}
+            </div>
+          )}
 
-        {validationError && (
-          <div className="mt-3 flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 p-3 text-xs font-semibold text-rose-700 dark:text-rose-300">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            <span>{validationError}</span>
-          </div>
-        )}
+          {validationError && (
+            <div className="flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 p-3 text-xs font-semibold text-rose-700 dark:text-rose-300">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{validationError}</span>
+            </div>
+          )}
 
-        {/* QUESTIONS CONTAINER */}
-        <div className="mt-5 space-y-6 text-xs text-slate-700 dark:text-slate-300">
+          {/* QUESTIONS CONTAINER */}
+          <div className="space-y-6 text-xs text-slate-700 dark:text-slate-300">
           {customQuestions.length > 0 ? (
             customQuestions.map((q, qIdx) => (
               <div
@@ -425,11 +429,12 @@ export function TakeAssessmentModal({
               </div>
             </div>
           )}
+          </div>
         </div>
 
-        {/* MODAL FOOTER */}
-        <div className="mt-8 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
-          <div className="text-[11px] text-slate-400">
+        {/* MODAL FOOTER - PINNED */}
+        <div className="shrink-0 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 p-4 sm:p-5 bg-slate-50/80 dark:bg-surface-elevated/80">
+          <div className="text-[11px] text-slate-400 font-medium">
             {customQuestions.length > 0 && (
               <span>
                 {answeredCount}/{customQuestions.length} answered
@@ -441,7 +446,7 @@ export function TakeAssessmentModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-surface-hover cursor-pointer"
+              className="rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:bg-surface-hover cursor-pointer transition-colors"
             >
               Cancel
             </button>
