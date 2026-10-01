@@ -638,23 +638,16 @@ export default function CourseLearningHubPage({
           const isCorrect = qScore >= 0.75;
           const kind = resolveAssessmentKind(q?.type, sec.assignment.type, q);
 
-          let correctAnswerText: string | undefined = undefined;
           let explanation: string | undefined = undefined;
 
           if (kind === "MCQ") {
-            const correctIdx = typeof q?.correctIndex === "number" ? q.correctIndex : 0;
-            const choices = q.choices || [];
-            correctAnswerText = choices[correctIdx] || `Option ${String.fromCharCode(65 + correctIdx)}`;
             explanation = isCorrect
               ? "Correct answer selected!"
-              : `Incorrect choice. The correct option is ${String.fromCharCode(65 + correctIdx)}: "${correctAnswerText}".`;
+              : "Incorrect choice selected. Please review course lectures and try again.";
           } else {
-            correctAnswerText = q.guidance || q.modelAnswer || undefined;
             explanation = isCorrect
-              ? "Answer verified and matches evaluation criteria."
-              : q.guidance
-              ? `Key required concepts: ${q.guidance}`
-              : "Response did not sufficiently cover expected technical benchmark keywords.";
+              ? "Answer verified and meets evaluation criteria."
+              : "Response did not meet passing criteria. Please review the relevant course lectures.";
           }
 
           breakdownList.push({
@@ -663,7 +656,6 @@ export default function CourseLearningHubPage({
             kind,
             studentAnswer: answer,
             isCorrect,
-            correctAnswerText,
             explanation,
           });
         });
@@ -2641,15 +2633,14 @@ export default function CourseLearningHubPage({
                           <div className="space-y-2 pt-1">
                             {(q.choices || []).map((choice, cIdx) => {
                               const isSelected = answer === cIdx;
-                              const isCorrectChoice = (q.correctIndex ?? 0) === cIdx;
                               const isWrongUserSelection = hasReviewed && !qBreakdown?.isCorrect && isSelected;
-                              const isRightChoice = hasReviewed && isCorrectChoice;
+                              const isRightUserSelection = hasReviewed && qBreakdown?.isCorrect && isSelected;
 
                               let choiceClass = "border-slate-200 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-surface-secondary dark:text-slate-300 dark:hover:bg-surface-hover";
-                              if (isRightChoice) {
-                                choiceClass = "border-emerald-500 bg-emerald-50/80 font-bold text-emerald-900 shadow-xs dark:bg-emerald-950/50 dark:border-emerald-500 dark:text-emerald-200";
-                              } else if (isWrongUserSelection) {
+                              if (isWrongUserSelection) {
                                 choiceClass = "border-rose-400 bg-rose-50/80 font-bold text-rose-900 shadow-xs dark:bg-rose-950/50 dark:border-rose-500 dark:text-rose-200";
+                              } else if (isRightUserSelection) {
+                                choiceClass = "border-emerald-500 bg-emerald-50/80 font-bold text-emerald-900 shadow-xs dark:bg-emerald-950/50 dark:border-emerald-500 dark:text-emerald-200";
                               } else if (isSelected) {
                                 choiceClass = "border-[#2563EB] bg-blue-50/70 font-semibold text-[#2563EB] shadow-xs dark:bg-blue-950/40 dark:border-blue-500 dark:text-blue-300";
                               }
@@ -2665,10 +2656,10 @@ export default function CourseLearningHubPage({
                                   } ${choiceClass}`}
                                 >
                                   <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
-                                    isRightChoice
-                                      ? "border-emerald-600 bg-emerald-600 text-white"
-                                      : isWrongUserSelection
+                                    isWrongUserSelection
                                       ? "border-rose-600 bg-rose-600 text-white"
+                                      : isRightUserSelection
+                                      ? "border-emerald-600 bg-emerald-600 text-white"
                                       : isSelected
                                       ? "border-[#2563EB] bg-[#2563EB] text-white dark:border-blue-400 dark:bg-blue-500"
                                       : "border-slate-300 text-slate-500 dark:border-slate-600 dark:text-slate-400"
@@ -2677,11 +2668,6 @@ export default function CourseLearningHubPage({
                                   </div>
                                   <div className="flex-1 flex items-center justify-between gap-2">
                                     <span className={isWrongUserSelection ? "line-through decoration-rose-500" : ""}>{choice}</span>
-                                    {isRightChoice && (
-                                      <span className="shrink-0 text-[10px] font-bold text-emerald-800 bg-emerald-100 dark:bg-emerald-900/60 dark:text-emerald-300 px-2 py-0.5 rounded-full">
-                                        ✓ Correct Answer
-                                      </span>
-                                    )}
                                     {isWrongUserSelection && (
                                       <span className="shrink-0 text-[10px] font-bold text-rose-800 bg-rose-100 dark:bg-rose-900/60 dark:text-rose-300 px-2 py-0.5 rounded-full">
                                         Your Choice (Wrong)
