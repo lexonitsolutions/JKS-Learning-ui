@@ -27,6 +27,7 @@ import { CourseCheckoutModal, type CheckoutCourseItem } from "@/components/dashb
 import { useUser } from "@clerk/nextjs";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useStudentOwnedCourses } from "@/lib/data/courses-store";
+import { useCourseReviews } from "@/lib/data/reviews-store";
 import type { Course } from "@/lib/data/courses";
 
 interface CourseDetailViewProps {
@@ -37,6 +38,10 @@ export function CourseDetailView({ course }: CourseDetailViewProps) {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [lockedTopicPrompt, setLockedTopicPrompt] = useState<string | null>(null);
+
+  const { reviews: reviewsList, stats: reviewStats } = useCourseReviews(course.slug);
+  const liveRating = reviewStats.totalRatings > 0 ? reviewStats.averageRating : (course.rating || 5.0);
+  const liveRatingCount = reviewStats.totalRatings > 0 ? reviewStats.totalRatings : ((course as any).ratingCount || 0);
 
   const session = useMockSession();
   const { user: clerkUser } = useUser();
@@ -97,8 +102,13 @@ export function CourseDetailView({ course }: CourseDetailViewProps) {
             <p className="mt-3 max-w-2xl text-text-body">{course.summary}</p>
 
             <div className="mt-4 flex flex-wrap items-center gap-5 text-body-sm text-text-body">
-              <span className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-warning text-warning" /> {course.rating} rating
+              <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
+                <Star className="h-4 w-4 fill-warning text-warning" /> {liveRating} rating
+                {liveRatingCount > 0 && (
+                  <span className="text-text-muted font-normal">
+                    ({liveRatingCount.toLocaleString()} {liveRatingCount === 1 ? "review" : "reviews"})
+                  </span>
+                )}
               </span>
               <span className="flex items-center gap-1">
                 <Users className="h-4 w-4" /> {course.studentsEnrolled.toLocaleString()} enrolled
@@ -246,6 +256,117 @@ export function CourseDetailView({ course }: CourseDetailViewProps) {
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-success" /> {item}
                 </li>
               ))}
+            </Reveal>
+
+            {/* Real-time Student Reviews & Ratings */}
+            <Reveal variant="fade-up" className="mt-12 space-y-5">
+              <div className="flex flex-wrap items-center justify-between border-b border-border dark:border-slate-800 pb-4 gap-3">
+                <div>
+                  <h3 className="text-xl font-bold text-text-heading">Student Reviews & Rating</h3>
+                  <p className="text-xs text-text-body mt-0.5">Authentic feedback from verified students</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 font-black text-amber-500 text-lg">
+                    <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                    <span>{liveRating}</span>
+                  </div>
+                  <span className="text-xs text-text-muted">
+                    ({liveRatingCount} {liveRatingCount === 1 ? "rating" : "ratings"})
+                  </span>
+                </div>
+              </div>
+
+              {/* Reviews distribution if ratings exist */}
+              {reviewStats.totalRatings > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl border border-border bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-surface-elevated/40">
+                  <div className="flex flex-col items-center justify-center p-3 text-center border-b sm:border-b-0 sm:border-r border-border dark:border-slate-800">
+                    <span className="text-4xl font-black text-slate-900 dark:text-white">{reviewStats.averageRating}</span>
+                    <div className="flex items-center gap-1 my-1.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < Math.round(reviewStats.averageRating)
+                              ? "fill-amber-400 text-amber-400"
+                              : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Average Course Rating</span>
+                  </div>
+
+                  <div className="space-y-1.5 py-1">
+                    {[5, 4, 3, 2, 1].map((star) => (
+                      <div key={star} className="flex items-center gap-2 text-xs">
+                        <span className="w-7 text-slate-600 dark:text-slate-400 font-medium">{star} ★</span>
+                        <div className="flex-1 h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                          <div
+                            className="h-full bg-amber-400 rounded-full"
+                            style={{ width: `${reviewStats.percentages[star as 1 | 2 | 3 | 4 | 5] || 0}%` }}
+                          />
+                        </div>
+                        <span className="w-8 text-right text-[11px] text-slate-400">
+                          {reviewStats.percentages[star as 1 | 2 | 3 | 4 | 5] || 0}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Student reviews list */}
+              {reviewsList.length > 0 ? (
+                <div className="space-y-3">
+                  {reviewsList.slice(0, 5).map((rev) => (
+                    <div
+                      key={rev.id}
+                      className="rounded-2xl border border-border bg-white p-4 space-y-2 dark:border-slate-800 dark:bg-surface-elevated shadow-2xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 text-white font-bold text-xs">
+                            {rev.studentName.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                              {rev.studentName}
+                            </span>
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                              Verified Enrolled Student
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[11px] text-slate-400">{rev.formattedDate}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1 pt-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-3 w-3 ${
+                              i < rev.rating
+                                ? "fill-amber-400 text-amber-400"
+                                : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"
+                            }`}
+                          />
+                        ))}
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 ml-1.5">
+                          {rev.title}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-300">
+                        {rev.reviewText}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-text-muted">
+                  No written reviews yet. Enrolled students can rate and review this course from their learning dashboard.
+                </div>
+              )}
             </Reveal>
           </div>
         </div>

@@ -813,14 +813,15 @@ export default function CourseLearningHubPage({
     setActiveReplyQuestionId(null);
   };
 
-  const handleSubmitReview = (e: React.FormEvent) => {
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewTitle.trim() || !reviewComment.trim()) return;
     setIsSubmittingReview(true);
     try {
-      addReview({
+      await addReview({
         studentName,
         studentEmail: effectiveEmail,
+        studentAvatar: clerkUser?.imageUrl || undefined,
         rating: reviewRating,
         title: reviewTitle,
         reviewText: reviewComment,

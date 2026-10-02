@@ -189,6 +189,7 @@ export interface FullCourse {
   durationWeeks: number;
   price: number;
   rating: number;
+  ratingCount?: number;
   studentsEnrolled: number;
   summary: string;
   thumbnail?: string;
@@ -670,6 +671,7 @@ export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
             durationWeeks: dbc.durationWeeks || existing?.durationWeeks || 12,
             price,
             rating: typeof dbc.rating === "number" ? dbc.rating : existing?.rating || 5.0,
+            ratingCount: typeof dbc.ratingCount === "number" ? dbc.ratingCount : (existing as any)?.ratingCount || 0,
             studentsEnrolled: typeof dbc.studentsEnrolled === "number" ? dbc.studentsEnrolled : existing?.studentsEnrolled || 0,
             summary: dbc.summary || existing?.summary || "",
             thumbnail: dbc.thumbnail || existing?.thumbnail || "",
@@ -861,6 +863,7 @@ export function normalizeDbCourse(dbCourse: any, existing?: FullCourse): FullCou
     durationWeeks: dbCourse?.durationWeeks || existing?.durationWeeks || 12,
     price,
     rating: typeof dbCourse?.rating === "number" ? dbCourse.rating : existing?.rating || 5.0,
+    ratingCount: typeof dbCourse?.ratingCount === "number" ? dbCourse.ratingCount : (existing as any)?.ratingCount || 0,
     studentsEnrolled:
       typeof dbCourse?.studentsEnrolled === "number"
         ? dbCourse.studentsEnrolled
