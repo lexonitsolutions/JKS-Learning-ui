@@ -26,6 +26,7 @@ interface InAppVideoPlayerProps {
   durationFormatted?: string;
   antiSkip?: boolean;
   onVideoCompleted?: () => void;
+  onVideoEnded?: () => void;
   onProgressChange?: (percent: number) => void;
   autoPlay?: boolean;
   isPaused?: boolean;
@@ -119,6 +120,7 @@ export function InAppVideoPlayer({
   durationFormatted = "3:00",
   antiSkip = false,
   onVideoCompleted,
+  onVideoEnded,
   onProgressChange,
   autoPlay = false,
   isPaused = false,
@@ -190,15 +192,49 @@ export function InAppVideoPlayer({
     }
   }, [isPaused]);
 
-  // Reset when videoUrl or title changes
+  // Reset and trigger autoPlay when videoUrl, title, or autoPlay changes
   useEffect(() => {
-    if (!isPaused) {
-      setIsPlaying(autoPlay);
-    }
     setProgressPercent(0);
     setCurrentTime(0);
     setIsCompleted(false);
-  }, [videoUrl, title, autoPlay, isPaused]);
+
+    if (!isPaused) {
+      setIsPlaying(autoPlay);
+      if (autoPlay) {
+        if (isExternalEmbed) {
+          setSimulationTimerActive(true);
+        } else if (videoRef.current) {
+          videoRef.current.play().catch((err) => {
+            console.warn("Autoplay was prevented by browser policy:", err);
+          });
+        }
+      }
+    }
+  }, [videoUrl, title, autoPlay, isPaused, isExternalEmbed]);
+
+  // Listen for YouTube/Vimeo postMessages indicating completion
+  useEffect(() => {
+    const handleWindowMessage = (event: MessageEvent) => {
+      try {
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        // YouTube API infoDelivery playerState: 0 (ENDED)
+        if (data?.event === "infoDelivery" && data?.info?.playerState === 0) {
+          setIsCompleted(true);
+          onVideoCompleted?.();
+          onVideoEnded?.();
+        }
+        // Vimeo finish event
+        if (data?.event === "finish") {
+          setIsCompleted(true);
+          onVideoCompleted?.();
+          onVideoEnded?.();
+        }
+      } catch {}
+    };
+
+    window.addEventListener("message", handleWindowMessage);
+    return () => window.removeEventListener("message", handleWindowMessage);
+  }, [onVideoCompleted, onVideoEnded]);
 
   // Simulation progress timer for external embedded frames
   useEffect(() => {
@@ -213,6 +249,7 @@ export function InAppVideoPlayer({
             setIsCompleted(true);
             setSimulationTimerActive(false);
             onVideoCompleted?.();
+            onVideoEnded?.();
           }
           return next;
         });
@@ -221,7 +258,7 @@ export function InAppVideoPlayer({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isExternalEmbed, simulationTimerActive, progressPercent, onProgressChange, onVideoCompleted]);
+  }, [isExternalEmbed, simulationTimerActive, progressPercent, onProgressChange, onVideoCompleted, onVideoEnded]);
 
   // HTML5 native video time update handler
   const handleTimeUpdate = () => {
@@ -487,6 +524,7 @@ export function InAppVideoPlayer({
             cleanedUrl ||
             "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
           }
+          autoPlay={autoPlay}
           onTimeUpdate={handleTimeUpdate}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
@@ -494,6 +532,7 @@ export function InAppVideoPlayer({
             setIsCompleted(true);
             setIsPlaying(false);
             onVideoCompleted?.();
+            onVideoEnded?.();
           }}
           playsInline
           className="h-full w-full object-contain"

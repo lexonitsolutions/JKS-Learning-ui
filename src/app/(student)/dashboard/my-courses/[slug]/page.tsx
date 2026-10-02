@@ -47,6 +47,7 @@ import {
   XCircle,
   Loader2,
   Upload,
+  Eye,
 } from "lucide-react";
 import {
   getFullCourseBySlug,
@@ -198,6 +199,8 @@ export default function CourseLearningHubPage({
   >({});
   const [showCertModal, setShowCertModal] = useState(false);
   const [showLockedRequirementsModal, setShowLockedRequirementsModal] = useState(false);
+  const [isRetakeMode, setIsRetakeMode] = useState<boolean>(false);
+  const [autoPlayNext, setAutoPlayNext] = useState<boolean>(false);
 
   // Live timer tick for real-time cooldown countdowns
   useEffect(() => {
@@ -417,7 +420,28 @@ export default function CourseLearningHubPage({
   const completedMilestones = completedVideosCount + passedAssignmentsCount;
   const overallPercent = totalMilestones > 0 ? Math.min(100, Math.round((completedMilestones / totalMilestones) * 100)) : 0;
 
-  const handleVideoCompleted = async (vidId: string) => {
+  const handleAutoAdvance = (vidId: string) => {
+    const currentIndex = allVideos.findIndex((v) => v.id === vidId);
+    if (currentIndex !== -1 && currentIndex < allVideos.length - 1) {
+      const nextVid = allVideos[currentIndex + 1];
+      let nextSecId = activeSectionId;
+      for (const sec of allSections) {
+        if (sec.directVideos?.some((v) => v.id === nextVid.id)) {
+          nextSecId = sec.id;
+          break;
+        }
+        if (sec.subsections?.some((sub) => sub.videos?.some((v) => v.id === nextVid.id))) {
+          nextSecId = sec.id;
+          break;
+        }
+      }
+      setAutoPlayNext(true);
+      setActiveVideo(nextVid);
+      setActiveSectionId(nextSecId);
+    }
+  };
+
+  const handleVideoCompleted = async (vidId: string, autoAdvance: boolean = false) => {
     const isNew = !completedVideoIds.includes(vidId);
     const updatedVideos = isNew
       ? [...completedVideoIds, vidId]
@@ -456,17 +480,23 @@ export default function CourseLearningHubPage({
     } catch (err) {
       console.warn("Failed to persist video progress to backend:", err);
     }
+
+    if (autoAdvance) {
+      handleAutoAdvance(vidId);
+    }
   };
 
   const handleSelectVideo = (vid: VideoItem, secId: string) => {
+    setAutoPlayNext(true);
     setActiveVideo(vid);
     setActiveSectionId(secId);
   };
 
-  const handleOpenAssignment = (sec: Section) => {
+  const handleOpenAssignment = (sec: Section, retake: boolean = false) => {
     setActiveAssignmentSection(sec);
     const existing = savedQuizAnswers[sec.assignment.id];
     setActiveQuizAnswers(existing ? { ...existing } : {});
+    setIsRetakeMode(retake);
   };
 
   const countWords = (text: string) =>
@@ -836,7 +866,7 @@ export default function CourseLearningHubPage({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-transparent text-slate-800 dark:text-slate-100 overflow-x-hidden">
+    <div className="flex min-h-screen flex-col bg-transparent text-slate-800 dark:text-slate-100 overflow-x-clip">
       {/* Static Top Header across every page */}
       <DashboardTopbar
         title={course.title}
@@ -845,7 +875,7 @@ export default function CourseLearningHubPage({
       />
 
       {/* Top Learning Hub Navigation Bar */}
-      <header className="sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-transparent bg-transparent px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md dark:border-transparent dark:bg-transparent">
+      <header className="relative sm:sticky sm:top-0 z-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-transparent bg-transparent px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md dark:border-transparent dark:bg-transparent">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <Link
             href={
@@ -894,7 +924,7 @@ export default function CourseLearningHubPage({
       </header>
 
       {/* Main Learning Hub Grid */}
-      <div className="flex flex-1 min-w-0 flex-col lg:flex-row overflow-x-hidden">
+      <div className="flex flex-1 min-w-0 flex-col lg:flex-row overflow-x-clip">
         {/* LEFT COLUMN: In-App Video Viewport & Udemy Bottom Sections */}
         <div className="flex flex-1 min-w-0 flex-col p-3 sm:p-5 lg:p-6 space-y-5">
           {/* IN-APP VIDEO PLAYER OR ENROLLMENT-ACCESS OVERLAY */}
@@ -935,17 +965,28 @@ export default function CourseLearningHubPage({
               </Link>
             </div>
           ) : activeVideo ? (
-            <div className="space-y-3">
-              <InAppVideoPlayer
-                key={activeVideo.id}
-                title={activeVideo.title}
-                videoUrl={activeVideo.videoUrl}
-                videoType={activeVideo.videoType}
-                durationFormatted={activeVideo.durationFormatted}
-                antiSkip={true}
-                isPaused={Boolean(activeAssignmentSection)}
-                onVideoCompleted={() => handleVideoCompleted(activeVideo.id)}
-              />
+            <div className="space-y-4">
+              {/* STICKY RESPONSIVE VIDEO VIEWPORT - Stays firmly pinned when scrolling up/down on mobile & desktop */}
+              <div className="sticky top-0 sm:top-16 z-30 -mx-3 sm:-mx-5 lg:-mx-6 px-3 sm:px-5 lg:px-6 pt-1 pb-3 bg-white/95 dark:bg-surface-secondary/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 shadow-2xs transition-all">
+                <div className="max-w-5xl mx-auto w-full">
+                  <InAppVideoPlayer
+                    key={activeVideo.id}
+                    title={activeVideo.title}
+                    videoUrl={activeVideo.videoUrl}
+                    videoType={activeVideo.videoType}
+                    durationFormatted={activeVideo.durationFormatted}
+                    antiSkip={true}
+                    autoPlay={autoPlayNext}
+                    isPaused={Boolean(activeAssignmentSection)}
+                    onVideoCompleted={() => handleVideoCompleted(activeVideo.id, false)}
+                    onVideoEnded={() => {
+                      handleVideoCompleted(activeVideo.id, false);
+                      handleAutoAdvance(activeVideo.id);
+                    }}
+                    className="max-h-[35vh] sm:max-h-[45vh] lg:max-h-[60vh] mx-auto w-full"
+                  />
+                </div>
+              </div>
 
               {/* Video Title Bar & Completion Toggle */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800/80 dark:bg-surface-secondary">
@@ -972,10 +1013,13 @@ export default function CourseLearningHubPage({
                   ) : (
                     <button
                       type="button"
-                      onClick={() => handleVideoCompleted(activeVideo.id)}
+                      onClick={() => {
+                        handleVideoCompleted(activeVideo.id, false);
+                        handleAutoAdvance(activeVideo.id);
+                      }}
                       className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
                     >
-                      <CheckCircle2 className="h-4 w-4" /> Mark Completed
+                      <CheckCircle2 className="h-4 w-4" /> Mark Completed &amp; Next
                     </button>
                   )}
                 </div>
@@ -1217,19 +1261,71 @@ export default function CourseLearningHubPage({
                                 </span>
                               )}
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => handleOpenAssignment(sec)}
-                              className={`font-bold hover:underline cursor-pointer ${
-                                isPassed
-                                  ? "text-emerald-600 dark:text-emerald-400"
-                                  : isCooldownActive
-                                  ? "text-amber-600 dark:text-amber-400"
-                                  : "text-[#2563EB] dark:text-blue-400"
-                              }`}
-                            >
-                              {isPassed ? "Review" : isCooldownActive ? "View Cooldown" : "Take Assessment →"}
-                            </button>
+                            <div className="flex items-center gap-2">
+                              {isPassed ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAssignment(sec, false)}
+                                    className="font-bold text-emerald-600 hover:underline dark:text-emerald-400 cursor-pointer flex items-center gap-1"
+                                  >
+                                    <Eye className="h-3.5 w-3.5" /> Preview Answers
+                                  </button>
+                                  <span className="text-slate-300 dark:text-slate-700">•</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAssignment(sec, true)}
+                                    className="font-bold text-[#2563EB] hover:underline dark:text-blue-400 cursor-pointer flex items-center gap-1"
+                                  >
+                                    <RotateCcw className="h-3 w-3" /> Retake
+                                  </button>
+                                </>
+                              ) : isCooldownActive ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAssignment(sec, false)}
+                                    className="font-bold text-slate-600 hover:underline dark:text-slate-400 cursor-pointer flex items-center gap-1"
+                                  >
+                                    <Eye className="h-3.5 w-3.5" /> Preview Answers
+                                  </button>
+                                  <span className="text-slate-300 dark:text-slate-700">•</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAssignment(sec, false)}
+                                    className="font-bold text-amber-600 hover:underline dark:text-amber-400 cursor-pointer"
+                                  >
+                                    View Cooldown
+                                  </button>
+                                </>
+                              ) : typeof score === "number" ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAssignment(sec, false)}
+                                    className="font-bold text-slate-600 hover:underline dark:text-slate-400 cursor-pointer flex items-center gap-1"
+                                  >
+                                    <Eye className="h-3.5 w-3.5" /> Preview Answers
+                                  </button>
+                                  <span className="text-slate-300 dark:text-slate-700">•</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAssignment(sec, true)}
+                                    className="font-bold text-[#2563EB] hover:underline dark:text-blue-400 cursor-pointer flex items-center gap-1"
+                                  >
+                                    <RotateCcw className="h-3 w-3" /> Retake
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenAssignment(sec, true)}
+                                  className="font-bold text-[#2563EB] hover:underline dark:text-blue-400 cursor-pointer"
+                                >
+                                  Take Assessment →
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       );
@@ -2059,26 +2155,65 @@ export default function CourseLearningHubPage({
                       )}
                     </div>
 
-                    <div>
+                    <div className="flex flex-wrap items-center gap-2">
                       {isPassed ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs">
-                          <CheckCircle2 className="h-4 w-4" /> Passed ({score ?? 85}%)
-                        </span>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAssignment(sec, false)}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-all cursor-pointer hover:scale-105"
+                          >
+                            <Eye className="h-3.5 w-3.5" /> Preview Answers ({score ?? 100}%)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAssignment(sec, true)}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-surface-elevated dark:hover:bg-surface-hover px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition-all cursor-pointer hover:scale-105"
+                          >
+                            <RotateCcw className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" /> Retake
+                          </button>
+                        </>
                       ) : isCooldownActive ? (
-                        <button
-                          type="button"
-                          onClick={() => handleOpenAssignment(sec)}
-                          className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-amber-600 transition-all cursor-pointer"
-                        >
-                          <Timer className="h-4 w-4" /> Cooldown ({formatCooldown(secondsRemaining)})
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAssignment(sec, false)}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-surface-elevated dark:hover:bg-surface-hover px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition-all cursor-pointer"
+                          >
+                            <Eye className="h-3.5 w-3.5" /> Preview Answers
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAssignment(sec, false)}
+                            className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-amber-600 transition-all cursor-pointer"
+                          >
+                            <Timer className="h-4 w-4" /> Cooldown ({formatCooldown(secondsRemaining)})
+                          </button>
+                        </>
+                      ) : typeof score === "number" ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAssignment(sec, false)}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-surface-elevated dark:hover:bg-surface-hover px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition-all cursor-pointer"
+                          >
+                            <Eye className="h-3.5 w-3.5" /> Preview Answers ({score}%)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAssignment(sec, true)}
+                            className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-all hover:scale-105 cursor-pointer"
+                          >
+                            <RotateCcw className="h-4 w-4" /> Retake Assessment
+                          </button>
+                        </>
                       ) : (
                         <button
                           type="button"
-                          onClick={() => handleOpenAssignment(sec)}
+                          onClick={() => handleOpenAssignment(sec, true)}
                           className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-all hover:scale-105 cursor-pointer"
                         >
-                          <FileCheck className="h-4 w-4" /> {typeof score === "number" ? "Retake Assessment" : "Take Assignment"}
+                          <FileCheck className="h-4 w-4" /> Take Assignment
                         </button>
                       )}
                     </div>
@@ -2505,6 +2640,9 @@ export default function CourseLearningHubPage({
 
         const currentBreakdown = assignmentBreakdowns[asgId];
         const hasBreakdown = Boolean(currentBreakdown && currentBreakdown.length > 0);
+        const hasPreviousAttempt = typeof assignmentScores[asgId] === "number" || hasBreakdown || Boolean(savedQuizAnswers[asgId]);
+        const previousScore = assignmentScores[asgId];
+        const isPassedAssessment = typeof previousScore === "number" && previousScore >= minPass;
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-5 backdrop-blur-xs">
@@ -2533,6 +2671,39 @@ export default function CourseLearningHubPage({
                 </button>
               </div>
 
+              {/* SUBMISSION / RETAKE MODE SWITCHER TABS */}
+              {hasPreviousAttempt && (
+                <div className="shrink-0 flex items-center gap-2 border-b border-slate-100 bg-slate-50/80 p-2 sm:px-6 dark:border-slate-800 dark:bg-surface-elevated/80 z-10">
+                  <button
+                    type="button"
+                    onClick={() => setIsRetakeMode(false)}
+                    className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-bold transition-all cursor-pointer ${
+                      !isRetakeMode
+                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 dark:bg-surface-secondary dark:text-white dark:border-slate-700"
+                        : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    }`}
+                  >
+                    <Eye className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
+                    <span>Preview Answers {typeof previousScore === "number" ? `(${previousScore}%)` : ""}</span>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isCooldownActive}
+                    onClick={() => setIsRetakeMode(true)}
+                    className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-bold transition-all cursor-pointer ${
+                      isRetakeMode
+                        ? "bg-[#2563EB] text-white shadow-xs"
+                        : isCooldownActive
+                        ? "opacity-60 cursor-not-allowed text-slate-400"
+                        : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    }`}
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    <span>Retake Assessment</span>
+                  </button>
+                </div>
+              )}
+
               {/* SCROLLABLE BODY */}
               <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
                 {/* COOLDOWN WARNING BANNER */}
@@ -2551,6 +2722,64 @@ export default function CourseLearningHubPage({
                         {formatCooldown(secondsRemaining)}
                       </span>
                     </div>
+                  </div>
+                )}
+
+                {/* PREVIEW MODE STATUS BANNER */}
+                {!isRetakeMode && hasPreviousAttempt && !isCooldownActive && (
+                  <div className={`rounded-2xl border p-4 text-xs space-y-2 ${
+                    isPassedAssessment
+                      ? "border-emerald-300 bg-emerald-50/80 text-emerald-950 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+                      : "border-blue-200 bg-blue-50/80 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200"
+                  }`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 font-bold text-sm">
+                        {isPassedAssessment ? (
+                          <>
+                            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                            <span>Passed Assessment Preview ({previousScore}%)</span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            <span>Previous Submission Preview ({previousScore ?? 0}%)</span>
+                          </>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsRetakeMode(true)}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1.5 text-xs font-bold shadow-xs hover:opacity-90 cursor-pointer transition-all"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" /> Retake Now
+                      </button>
+                    </div>
+                    <p className="text-xs opacity-90 leading-relaxed">
+                      {isPassedAssessment
+                        ? `Congratulations! You passed this section milestone with ${previousScore}%. Below is the complete preview of all questions and your answered choices.`
+                        : `You scored ${previousScore ?? 0}% (Passing requirement: ${minPass}%). Below is a preview of all questions you answered, showing any incorrect questions in red.`}
+                    </p>
+                  </div>
+                )}
+
+                {/* RETAKE MODE ACTIVE BANNER */}
+                {isRetakeMode && (
+                  <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-xs flex items-center justify-between gap-3 dark:border-blue-900/60 dark:bg-blue-950/30">
+                    <div className="flex items-center gap-2 text-blue-950 dark:text-blue-200">
+                      <RotateCcw className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                      <span className="font-semibold">
+                        Retake Mode: You can modify your answers and click <strong>Submit &amp; Evaluate Score</strong> when ready.
+                      </span>
+                    </div>
+                    {hasPreviousAttempt && (
+                      <button
+                        type="button"
+                        onClick={() => setIsRetakeMode(false)}
+                        className="text-xs font-bold text-[#2563EB] hover:underline dark:text-blue-400 shrink-0 cursor-pointer"
+                      >
+                        Back to Preview
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -2637,10 +2866,10 @@ export default function CourseLearningHubPage({
                                 <button
                                   key={cIdx}
                                   type="button"
-                                  disabled={isCooldownActive}
+                                  disabled={isCooldownActive || (!isRetakeMode && hasPreviousAttempt)}
                                   onClick={() => handleSelectQuizAnswer(qIdx, cIdx)}
                                   className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left text-xs transition-all ${
-                                    isCooldownActive ? "cursor-not-allowed opacity-90" : "cursor-pointer"
+                                    isCooldownActive || (!isRetakeMode && hasPreviousAttempt) ? "cursor-default opacity-95" : "cursor-pointer"
                                   } ${choiceClass}`}
                                 >
                                   <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
@@ -2656,11 +2885,19 @@ export default function CourseLearningHubPage({
                                   </div>
                                   <div className="flex-1 flex items-center justify-between gap-2">
                                     <span className={isWrongUserSelection ? "line-through decoration-rose-500" : ""}>{choice}</span>
-                                    {isWrongUserSelection && (
+                                    {isWrongUserSelection ? (
                                       <span className="shrink-0 text-[10px] font-bold text-rose-800 bg-rose-100 dark:bg-rose-900/60 dark:text-rose-300 px-2 py-0.5 rounded-full">
                                         Your Choice (Wrong)
                                       </span>
-                                    )}
+                                    ) : isRightUserSelection ? (
+                                      <span className="shrink-0 text-[10px] font-bold text-emerald-800 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 px-2 py-0.5 rounded-full">
+                                        Your Choice (Correct)
+                                      </span>
+                                    ) : isSelected && !isRetakeMode ? (
+                                      <span className="shrink-0 text-[10px] font-bold text-blue-800 bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                                        Your Answer
+                                      </span>
+                                    ) : null}
                                   </div>
                                 </button>
                               );
@@ -2674,7 +2911,7 @@ export default function CourseLearningHubPage({
                             <input
                               type="text"
                               value={textAnswer}
-                              disabled={isCooldownActive}
+                              disabled={isCooldownActive || (!isRetakeMode && hasPreviousAttempt)}
                               onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.value)}
                               placeholder="Type your answer…"
                               className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-85 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
@@ -2697,7 +2934,7 @@ export default function CourseLearningHubPage({
                             <textarea
                               rows={5}
                               value={textAnswer}
-                              disabled={isCooldownActive}
+                              disabled={isCooldownActive || (!isRetakeMode && hasPreviousAttempt)}
                               onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.value)}
                               placeholder="Write a detailed response…"
                               className="w-full rounded-xl border border-slate-200 p-3 text-xs leading-relaxed text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-85 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
@@ -2730,7 +2967,7 @@ export default function CourseLearningHubPage({
                               rows={8}
                               spellCheck={false}
                               value={textAnswer || q.starterCode || ""}
-                              disabled={isCooldownActive}
+                              disabled={isCooldownActive || (!isRetakeMode && hasPreviousAttempt)}
                               onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.value)}
                               className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-[11px] leading-relaxed text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-85 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                             />
@@ -2757,7 +2994,7 @@ export default function CourseLearningHubPage({
                             <input
                               type="file"
                               id={`asg-file-${qIdx}`}
-                              disabled={isCooldownActive}
+                              disabled={isCooldownActive || (!isRetakeMode && hasPreviousAttempt)}
                               accept={q.fileTypes || undefined}
                               onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.files?.[0]?.name || "")}
                               className="hidden"
@@ -2788,14 +3025,14 @@ export default function CourseLearningHubPage({
                     </label>
                     <textarea
                       rows={3}
-                      disabled={isCooldownActive}
+                      disabled={isCooldownActive || (!isRetakeMode && hasPreviousAttempt)}
                       defaultValue="https://github.com/student-workspace/jks-milestone-solution"
                       className="w-full rounded-xl border border-slate-200 p-3 text-xs font-mono text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                     />
                   </div>
                 )}
 
-                {!allQuestionsAnswered && !isCooldownActive && (
+                {!allQuestionsAnswered && !isCooldownActive && isRetakeMode && (
                   <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[11px] font-semibold text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300">
                     <AlertCircle className="h-4 w-4 shrink-0" />
                     <span>
@@ -2809,11 +3046,13 @@ export default function CourseLearningHubPage({
               {/* PINNED FOOTER */}
               <div className="shrink-0 flex items-center justify-between border-t border-slate-100 p-4 sm:p-5 bg-slate-50/80 dark:bg-surface-elevated/80 dark:border-slate-800">
                 <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                  {questions.length > 0
+                  {!isRetakeMode && hasPreviousAttempt
+                    ? `Previewing submitted answers · Score: ${previousScore ?? 0}%`
+                    : questions.length > 0
                     ? `${answeredCount} of ${questions.length} answered`
                     : "Ready for evaluation"}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setActiveAssignmentSection(null)}
@@ -2821,39 +3060,67 @@ export default function CourseLearningHubPage({
                   >
                     Close
                   </button>
-                  <button
-                    type="button"
-                    disabled={isCooldownActive || isSubmittingAssessment || !allQuestionsAnswered}
-                    title={
-                      !allQuestionsAnswered
-                        ? "Answer every question before submitting."
-                        : undefined
-                    }
-                    onClick={() => handleSubmitAssignment(activeAssignmentSection)}
-                    className={`flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all ${
-                      isCooldownActive || isSubmittingAssessment || !allQuestionsAnswered
-                        ? "bg-slate-400 cursor-not-allowed opacity-60 dark:bg-slate-700"
-                        : "bg-emerald-600 hover:bg-emerald-700 cursor-pointer hover:scale-105"
-                    }`}
-                  >
-                    {isSubmittingAssessment ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Evaluating Score...</span>
-                      </>
-                    ) : (
-                      <>
-                        <FileCheck className="h-4 w-4" />
-                        <span>
-                          {isCooldownActive
-                            ? `Cooldown (${formatCooldown(secondsRemaining)})`
-                            : !allQuestionsAnswered
-                            ? `Answer all ${questions.length} questions`
-                            : "Submit & Evaluate Score"}
-                        </span>
-                      </>
-                    )}
-                  </button>
+
+                  {!isRetakeMode && hasPreviousAttempt ? (
+                    <button
+                      type="button"
+                      disabled={isCooldownActive}
+                      onClick={() => setIsRetakeMode(true)}
+                      className={`flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all ${
+                        isCooldownActive
+                          ? "bg-slate-400 cursor-not-allowed opacity-60 dark:bg-slate-700"
+                          : "bg-[#2563EB] hover:bg-blue-700 cursor-pointer hover:scale-105"
+                      }`}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      <span>{isCooldownActive ? `Cooldown (${formatCooldown(secondsRemaining)})` : "Retake Assessment"}</span>
+                    </button>
+                  ) : (
+                    <>
+                      {hasPreviousAttempt && (
+                        <button
+                          type="button"
+                          onClick={() => setIsRetakeMode(false)}
+                          className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-surface-elevated dark:text-slate-200 cursor-pointer transition-colors flex items-center gap-1"
+                        >
+                          <Eye className="h-3.5 w-3.5" /> Preview Answers
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        disabled={isCooldownActive || isSubmittingAssessment || !allQuestionsAnswered}
+                        title={
+                          !allQuestionsAnswered
+                            ? "Answer every question before submitting."
+                            : undefined
+                        }
+                        onClick={() => handleSubmitAssignment(activeAssignmentSection)}
+                        className={`flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all ${
+                          isCooldownActive || isSubmittingAssessment || !allQuestionsAnswered
+                            ? "bg-slate-400 cursor-not-allowed opacity-60 dark:bg-slate-700"
+                            : "bg-emerald-600 hover:bg-emerald-700 cursor-pointer hover:scale-105"
+                        }`}
+                      >
+                        {isSubmittingAssessment ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Evaluating Score...</span>
+                          </>
+                        ) : (
+                          <>
+                            <FileCheck className="h-4 w-4" />
+                            <span>
+                              {isCooldownActive
+                                ? `Cooldown (${formatCooldown(secondsRemaining)})`
+                                : !allQuestionsAnswered
+                                ? `Answer all ${questions.length} questions`
+                                : "Submit & Evaluate Score"}
+                            </span>
+                          </>
+                        )}
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -2908,13 +3175,13 @@ export default function CourseLearningHubPage({
                 type="button"
                 onClick={() => {
                   if (evaluationResult.section) {
-                    setActiveAssignmentSection(evaluationResult.section);
+                    handleOpenAssignment(evaluationResult.section, false);
                   }
                   setEvaluationResult(null);
                 }}
                 className="w-full rounded-xl py-2.5 text-xs font-bold text-white bg-[#2563EB] hover:bg-blue-700 shadow-xs cursor-pointer transition-colors"
               >
-                Review Answers & Mistakes
+                Preview Answered Questions & Mistakes
               </button>
               <button
                 type="button"
