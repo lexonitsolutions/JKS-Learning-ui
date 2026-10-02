@@ -238,7 +238,7 @@ export function WebsiteChatbot() {
   return (
     <>
       {/* Floating Launcher Button */}
-      <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-2.5">
         {/* Auto-fading speech bubble tooltip (shows for 3.5s on load, or when hovered) */}
         <AnimatePresence>
           {!isOpen && (showGuidanceTooltip || isHovered) && (
@@ -247,12 +247,12 @@ export function WebsiteChatbot() {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 10, scale: 0.95 }}
               transition={{ duration: 0.25 }}
-              className="hidden sm:flex items-center gap-2.5 rounded-2xl border border-blue-100 dark:border-slate-800 bg-white/95 dark:bg-surface-secondary/95 px-4 py-2.5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.6)] backdrop-blur-md cursor-pointer hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-500 transition-all group"
+              className="hidden sm:flex items-center gap-2 rounded-2xl border border-blue-100 dark:border-slate-800 bg-white/95 dark:bg-surface-secondary/95 px-3 py-2 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.6)] backdrop-blur-md cursor-pointer hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-500 transition-all group"
               onClick={() => setIsOpen(true)}
             >
-              <div className="relative flex h-2.5 w-2.5 shrink-0">
+              <div className="relative flex h-2 w-2 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </div>
               <div className="text-left">
                 <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1">
@@ -271,15 +271,15 @@ export function WebsiteChatbot() {
           onClick={() => setIsOpen(!isOpen)}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          className="group relative flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full shadow-[0_10px_35px_rgba(37,99,235,0.45)] hover:shadow-[0_15px_40px_rgba(37,99,235,0.65)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer ring-4 ring-white/90 dark:ring-slate-800 hover:ring-cyan-300 bg-slate-900"
+          className="group relative flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center rounded-full shadow-[0_6px_20px_rgba(37,99,235,0.35)] hover:shadow-[0_10px_28px_rgba(37,99,235,0.5)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer ring-2 sm:ring-3 ring-white/90 dark:ring-slate-800 hover:ring-cyan-300 bg-slate-900"
           aria-label="Toggle Course Advisor Chatbot"
         >
           {/* Subtle Outer Pulse Glow */}
-          <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-blue-500 via-cyan-400 to-indigo-500 opacity-40 blur-sm group-hover:opacity-80 transition-opacity" />
+          <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-blue-500 via-cyan-400 to-indigo-500 opacity-40 blur-xs group-hover:opacity-80 transition-opacity" />
 
           {isOpen ? (
             <div className="relative z-10 flex h-full w-full items-center justify-center rounded-full bg-slate-950 text-white">
-              <X className="h-6 w-6 transition-transform group-hover:rotate-90 duration-200" />
+              <X className="h-4.5 w-4.5 transition-transform group-hover:rotate-90 duration-200" />
             </div>
           ) : (
             <div className="relative z-10 h-full w-full overflow-hidden rounded-full">
@@ -287,7 +287,7 @@ export function WebsiteChatbot() {
                 src="/software-agent.png"
                 alt="JKS AI Career Advisor"
                 fill
-                sizes="64px"
+                sizes="52px"
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
               />
               <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/20" />
@@ -296,15 +296,15 @@ export function WebsiteChatbot() {
 
           {/* Green Online Beacon */}
           {!isOpen && (
-            <span className="absolute bottom-0 right-0 z-20 flex h-4 w-4">
+            <span className="absolute bottom-0 right-0 z-20 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white dark:border-slate-900 shadow-xs" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-white dark:border-slate-900 shadow-xs" />
             </span>
           )}
 
           {/* Unread Pill Badge */}
           {hasUnread && !isOpen && (
-            <span className="absolute -top-1 -right-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white border-2 border-white dark:border-slate-900 shadow-md">
+            <span className="absolute -top-1 -right-1 z-20 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8.5px] font-black text-white border-2 border-white dark:border-slate-900 shadow-md">
               1
             </span>
           )}
@@ -315,56 +315,56 @@ export function WebsiteChatbot() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.94 }}
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.94 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-24 right-4 sm:right-6 z-50 flex h-[620px] max-h-[85vh] w-[calc(100vw-2rem)] max-w-sm sm:max-w-[430px] flex-col overflow-hidden rounded-[28px] border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-surface-secondary shadow-[0_25px_60px_-15px_rgba(15,23,42,0.35),0_0_0_1px_rgba(255,255,255,0.8)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] backdrop-blur-2xl"
+            exit={{ opacity: 0, y: 12, scale: 0.96 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed bottom-16 right-3 sm:right-6 sm:bottom-20 z-50 flex h-[390px] sm:h-[430px] max-h-[68vh] sm:max-h-[72vh] w-[calc(100vw-1.5rem)] max-w-[325px] sm:max-w-[345px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-[0_16px_40px_-10px_rgba(15,23,42,0.3)] dark:shadow-[0_16px_40px_-10px_rgba(0,0,0,0.7)] backdrop-blur-xl"
           >
             {/* Chatbot Luxury Header */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-4 text-white shrink-0 border-b border-white/10">
+            <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-2.5 sm:p-3 text-white shrink-0 border-b border-white/10">
               {/* Ambient radial glow */}
-              <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-blue-600/30 blur-2xl pointer-events-none" />
-              <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-cyan-500/20 blur-2xl pointer-events-none" />
+              <div className="absolute -top-10 -right-10 h-24 w-24 rounded-full bg-blue-600/30 blur-2xl pointer-events-none" />
+              <div className="absolute -bottom-10 -left-10 h-24 w-24 rounded-full bg-cyan-500/20 blur-2xl pointer-events-none" />
 
               <div className="relative z-10 flex items-center justify-between">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl overflow-hidden bg-gradient-to-tr from-blue-600 to-cyan-400 p-[1.5px] shadow-lg shadow-blue-500/30 ring-1 ring-white/20">
-                    <div className="relative h-full w-full rounded-[14px] overflow-hidden bg-slate-900">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-gradient-to-tr from-blue-600 to-cyan-400 p-[1px] shadow-sm shadow-blue-500/25 ring-1 ring-white/20">
+                    <div className="relative h-full w-full rounded-[7px] overflow-hidden bg-slate-900">
                       <Image
                         src="/software-agent.png"
                         alt="JKS AI Career Advisor"
                         fill
-                        sizes="44px"
+                        sizes="32px"
                         className="h-full w-full object-cover"
                       />
                     </div>
-                    <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-slate-950 bg-emerald-500 shadow-xs" />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-slate-950 bg-emerald-500 shadow-2xs" />
                   </div>
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <h3 className="text-sm font-black tracking-tight truncate">JKS AI Career Advisor</h3>
-                      <span className="inline-flex items-center rounded-full bg-blue-500/20 px-2 py-0.5 text-[9px] font-extrabold text-cyan-300 border border-cyan-400/30 shrink-0">
+                      <h3 className="text-xs font-bold tracking-tight truncate">JKS AI Career Advisor</h3>
+                      <span className="inline-flex items-center rounded-full bg-blue-500/20 px-1 py-0.2 text-[8px] font-extrabold text-cyan-300 border border-cyan-400/30 shrink-0">
                         AI 2.0
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-medium">
-                      <span className="relative flex h-2 w-2">
+                    <div className="flex items-center gap-1 text-[9.5px] text-emerald-400 font-medium">
+                      <span className="relative flex h-1.5 w-1.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                       </span>
-                      <span>Admissions Team Online</span>
+                      <span>Online Advisor</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1 shrink-0">
                   <a
                     href="https://wa.me/919876543210?text=Hi%20JKS%20Learning,%20I%20want%20to%20know%20more%20about%20your%20courses."
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-1 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500 hover:text-white transition-all shadow-xs"
+                    className="flex items-center gap-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 text-[9.5px] font-bold text-emerald-300 hover:bg-emerald-500 hover:text-white transition-all shadow-xs"
                     title="Direct WhatsApp"
                   >
                     WhatsApp
@@ -373,67 +373,67 @@ export function WebsiteChatbot() {
                     type="button"
                     onClick={() => setMessages(INITIAL_BOT_MESSAGES)}
                     title="Restart Conversation"
-                    className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white transition-colors cursor-pointer"
+                    className="flex h-6.5 w-6.5 items-center justify-center rounded-lg bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white transition-colors cursor-pointer"
                   >
-                    <Clock className="h-4 w-4" />
+                    <Clock className="h-3 w-3" />
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
                     aria-label="Close Chat"
-                    className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-slate-300 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
+                    className="flex h-6.5 w-6.5 items-center justify-center rounded-lg bg-white/10 text-slate-300 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>
 
               {/* Sub-Header Notice Strip */}
-              <div className="relative z-10 mt-3 flex items-center justify-between rounded-xl bg-white/5 border border-white/10 px-3 py-1.5 text-[11px] text-slate-300">
-                <span className="flex items-center gap-1.5">
-                  <Sparkles className="h-3 w-3 text-amber-300" />
-                  <span>Ask fees, syllabus, or placement records</span>
+              <div className="relative z-10 mt-2 flex items-center justify-between rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-[10px] text-slate-300">
+                <span className="flex items-center gap-1 truncate">
+                  <Sparkles className="h-2.5 w-2.5 text-amber-300 shrink-0" />
+                  <span className="truncate">Ask fees, syllabus, or placement records</span>
                 </span>
-                <span className="text-[10px] text-cyan-300 font-semibold">24/7 Live</span>
+                <span className="text-[9px] text-cyan-300 font-semibold shrink-0 ml-1">24/7 Live</span>
               </div>
             </div>
 
             {/* Chat Body & Scroll Container */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-slate-50/90 via-slate-50/50 to-white dark:from-surface dark:via-surface-secondary dark:to-surface-secondary">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-gradient-to-b from-slate-50/90 via-slate-50/50 to-white dark:from-surface dark:via-surface-secondary dark:to-surface-secondary">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex items-end gap-2 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex items-end gap-1.5 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                 >
                   {/* Bot Micro-Avatar */}
                   {msg.sender === "bot" && (
-                    <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0 ring-1 ring-slate-200 dark:ring-slate-700 shadow-xs mb-1">
+                    <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0 ring-1 ring-slate-200 dark:ring-slate-700 shadow-2xs mb-0.5">
                       <Image
                         src="/software-agent.png"
                         alt="AI"
                         fill
-                        sizes="28px"
+                        sizes="24px"
                         className="h-full w-full object-cover"
                       />
                     </div>
                   )}
 
-                  <div className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"} max-w-[85%]`}>
+                  <div className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"} max-w-[88%]`}>
                     <div
-                      className={`rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs ${
+                      className={`rounded-2xl px-3 py-2 text-xs leading-relaxed shadow-2xs ${
                         msg.sender === "user"
                           ? "bg-gradient-to-r from-[#2563EB] to-blue-600 text-white rounded-br-xs shadow-blue-500/20"
-                          : "bg-white dark:bg-surface-elevated text-slate-800 dark:text-slate-100 border border-slate-100 dark:border-slate-800/80 rounded-bl-xs shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                          : "bg-white dark:bg-surface-elevated text-slate-800 dark:text-slate-100 border border-slate-100 dark:border-slate-800/80 rounded-bl-xs shadow-[0_1px_4px_rgba(0,0,0,0.03)]"
                       }`}
                     >
-                      <div className="whitespace-pre-line font-medium">{msg.text}</div>
+                      <div className="whitespace-pre-line font-medium text-[11.5px] sm:text-xs">{msg.text}</div>
                     </div>
 
-                    <span className="mt-1 text-[10px] text-slate-400 dark:text-slate-400 px-1 font-medium">{msg.timestamp}</span>
+                    <span className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-400 px-1 font-medium">{msg.timestamp}</span>
 
                     {/* Interactive Quick Action Pills */}
                     {msg.options && (
-                      <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      <div className="mt-2 flex flex-wrap gap-1">
                         {msg.options.map((opt) => (
                           <button
                             key={opt}
@@ -450,7 +450,7 @@ export function WebsiteChatbot() {
                                 handleSendMessage(opt);
                               }
                             }}
-                            className="rounded-full border border-blue-200 dark:border-blue-800/60 bg-white dark:bg-surface-elevated px-3.5 py-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 shadow-2xs hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-xs transition-all active:scale-95 cursor-pointer"
+                            className="rounded-full border border-blue-200 dark:border-blue-800/60 bg-white dark:bg-surface-elevated px-2.5 py-1 text-[10.5px] font-bold text-[#2563EB] dark:text-blue-400 shadow-2xs hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-xs transition-all active:scale-95 cursor-pointer"
                           >
                             {opt}
                           </button>
@@ -462,27 +462,27 @@ export function WebsiteChatbot() {
                     {msg.isLeadForm && !leadSubmitted && (
                       <form
                         onSubmit={handleLeadSubmit}
-                        className="mt-3 w-full rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-gradient-to-br from-white via-blue-50/40 to-indigo-50/40 dark:from-surface-secondary dark:via-surface-elevated dark:to-surface-hover p-4 shadow-md shadow-blue-500/10 space-y-3 text-xs"
+                        className="mt-2 w-full rounded-xl border border-blue-200 dark:border-blue-900/60 bg-gradient-to-br from-white via-blue-50/40 to-indigo-50/40 dark:from-surface-secondary dark:via-surface-elevated dark:to-surface-hover p-3 shadow-sm shadow-blue-500/10 space-y-2 text-xs"
                       >
-                        <div className="font-black text-slate-900 dark:text-white flex items-center gap-1.5 text-sm">
-                          <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
+                          <Sparkles className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                           <span>Instant Advisor Callback</span>
                         </div>
 
                         <div>
-                          <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Full Name *</label>
+                          <label className="text-[10px] font-bold text-slate-700 dark:text-slate-300">Full Name *</label>
                           <input
                             type="text"
                             required
                             placeholder="e.g. Ramesh Kumar"
                             value={leadForm.name}
                             onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
+                            className="mt-0.5 w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900/30"
                           />
                         </div>
 
                         <div>
-                          <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Mobile / WhatsApp (10 Digits) *</label>
+                          <label className="text-[10px] font-bold text-slate-700 dark:text-slate-300">Mobile / WhatsApp *</label>
                           <input
                             type="tel"
                             inputMode="numeric"
@@ -491,16 +491,16 @@ export function WebsiteChatbot() {
                             placeholder="9876543210"
                             value={leadForm.phone}
                             onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value.replace(/[^0-9]/g, "").slice(0, 10) })}
-                            className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 font-mono"
+                            className="mt-0.5 w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900/30 font-mono"
                           />
                         </div>
 
                         <div>
-                          <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Preferred Course Track</label>
+                          <label className="text-[10px] font-bold text-slate-700 dark:text-slate-300">Preferred Track</label>
                           <select
                             value={leadForm.course}
                             onChange={(e) => setLeadForm({ ...leadForm, course: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
+                            className="mt-0.5 w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg p-2 text-[11px] text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900/30"
                           >
                             <option>Java Full Stack Developer Mastery</option>
                             <option>Modern Frontend Engineering (React 19 & Next.js)</option>
@@ -512,10 +512,10 @@ export function WebsiteChatbot() {
                         <button
                           type="submit"
                           disabled={isSubmittingLead}
-                          className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#2563EB] to-blue-600 py-3 text-xs font-bold text-white shadow-md shadow-blue-500/25 hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer disabled:opacity-50 active:scale-98"
+                          className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#2563EB] to-blue-600 py-2 text-xs font-bold text-white shadow-xs hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer disabled:opacity-50 active:scale-98"
                         >
-                          {isSubmittingLead ? "Submitting Request..." : "Request Instant Callback"}
-                          <ArrowRight className="h-3.5 w-3.5" />
+                          {isSubmittingLead ? "Submitting..." : "Request Instant Callback"}
+                          <ArrowRight className="h-3 w-3" />
                         </button>
                       </form>
                     )}
@@ -524,21 +524,21 @@ export function WebsiteChatbot() {
               ))}
 
               {isTyping && (
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0 ring-1 ring-slate-200 dark:ring-slate-700 shadow-xs">
+                <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                  <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0 ring-1 ring-slate-200 dark:ring-slate-700 shadow-2xs">
                     <Image
                       src="/software-agent.png"
                       alt="AI"
                       fill
-                      sizes="28px"
+                      sizes="24px"
                       className="h-full w-full object-cover"
                     />
                   </div>
-                  <div className="flex items-center gap-1.5 bg-white dark:bg-surface-elevated border border-slate-200/80 dark:border-slate-800/80 rounded-2xl px-3.5 py-2.5 shadow-2xs">
-                    <span className="h-2 w-2 rounded-full bg-blue-600 animate-bounce" />
-                    <span className="h-2 w-2 rounded-full bg-cyan-500 animate-bounce delay-150" />
-                    <span className="h-2 w-2 rounded-full bg-indigo-600 animate-bounce delay-300" />
-                    <span className="text-[11px] text-slate-400 dark:text-slate-400 ml-1 font-medium">Advisor is typing...</span>
+                  <div className="flex items-center gap-1 bg-white dark:bg-surface-elevated border border-slate-200/80 dark:border-slate-800/80 rounded-2xl px-2.5 py-1.5 shadow-2xs">
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-bounce" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 animate-bounce delay-150" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 animate-bounce delay-300" />
+                    <span className="text-[10px] text-slate-400 dark:text-slate-400 ml-1 font-medium">Advisor is typing...</span>
                   </div>
                 </div>
               )}
@@ -547,31 +547,31 @@ export function WebsiteChatbot() {
             </div>
 
             {/* Input Bar & Footer */}
-            <div className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-secondary p-3.5 space-y-2">
+            <div className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-secondary p-2.5 space-y-1.5">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSendMessage();
                 }}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1.5"
               >
                 <input
                   type="text"
                   placeholder="Ask about syllabus, fees, scholarships..."
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-input-bg px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-surface-elevated focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-400 font-medium"
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-input-bg px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-surface-elevated focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-400 font-medium"
                 />
                 <button
                   type="submit"
                   disabled={!inputValue.trim()}
-                  className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#2563EB] to-cyan-500 text-white shadow-md shadow-blue-500/25 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer shrink-0"
+                  className="flex h-8.5 w-8.5 items-center justify-center rounded-xl bg-gradient-to-tr from-[#2563EB] to-cyan-500 text-white shadow-xs hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer shrink-0"
                 >
-                  <Send className="h-4 w-4" />
+                  <Send className="h-3.5 w-3.5" />
                 </button>
               </form>
 
-              <div className="flex items-center justify-center text-[10px] text-slate-400 dark:text-slate-400 font-medium">
+              <div className="flex items-center justify-center text-[9.5px] text-slate-400 dark:text-slate-400 font-medium">
                 <span>⚡ Instant AI Career Guidance · JKS Learning</span>
               </div>
             </div>

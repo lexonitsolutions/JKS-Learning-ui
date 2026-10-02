@@ -13,6 +13,10 @@ import {
   ExternalLink,
   Film,
   Sparkles,
+  ChevronDown,
+  ChevronUp,
+  HelpCircle,
+  ClipboardCheck,
 } from "lucide-react";
 import { FullCourse, Section, VideoItem, saveCourseAsync } from "@/lib/data/courses-store";
 import type { Track } from "@/lib/data/courses";
@@ -37,6 +41,7 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
   const [thumbnail, setThumbnail] = useState("");
   const [summary, setSummary] = useState("");
   const [sections, setSections] = useState<Section[]>([]);
+  const [expandedVideoKey, setExpandedVideoKey] = useState<string | null>(null);
 
   // Feedback State
   const [isSaving, setIsSaving] = useState(false);
@@ -146,6 +151,65 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
       };
       setSections(updated);
     }
+  };
+
+  const handleAddVideoInterviewQuestion = (sIdx: number, vIdx: number) => {
+    const updated = [...sections];
+    const video = updated[sIdx].directVideos![vIdx];
+    const list = video.interviewQuestions || [];
+    video.interviewQuestions = [
+      ...list,
+      {
+        id: `iq-${Date.now()}-${list.length + 1}`,
+        question: "",
+        answer: "",
+      },
+    ];
+    setSections(updated);
+  };
+
+  const handleUpdateVideoInterviewQuestion = (
+    sIdx: number,
+    vIdx: number,
+    qIdx: number,
+    field: "question" | "answer",
+    val: string
+  ) => {
+    const updated = [...sections];
+    const video = updated[sIdx].directVideos![vIdx];
+    if (video.interviewQuestions && video.interviewQuestions[qIdx]) {
+      video.interviewQuestions[qIdx][field] = val;
+      setSections(updated);
+    }
+  };
+
+  const handleRemoveVideoInterviewQuestion = (sIdx: number, vIdx: number, qIdx: number) => {
+    const updated = [...sections];
+    const video = updated[sIdx].directVideos![vIdx];
+    if (video.interviewQuestions) {
+      video.interviewQuestions = video.interviewQuestions.filter((_, i) => i !== qIdx);
+      setSections(updated);
+    }
+  };
+
+  const handleUpdateVideoTask = (
+    sIdx: number,
+    vIdx: number,
+    field: "title" | "description" | "instructions" | "submissionType" | "points",
+    val: any
+  ) => {
+    const updated = [...sections];
+    const video = updated[sIdx].directVideos![vIdx];
+    video.task = {
+      title: video.task?.title || "",
+      description: video.task?.description || "",
+      instructions: video.task?.instructions || "",
+      submissionType: video.task?.submissionType || "text",
+      points: video.task?.points || 100,
+      ...video.task,
+      [field]: val,
+    };
+    setSections(updated);
   };
 
   const handleSaveCourse = async () => {
@@ -479,58 +543,217 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
                         </button>
                       </div>
 
-                      {(section.directVideos || []).map((video, vIdx) => (
-                        <div
-                          key={video.id || vIdx}
-                          className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-2.5 shadow-2xs"
-                        >
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                              {vIdx + 1}
-                            </span>
-                            <input
-                              type="text"
-                              value={video.title}
-                              onChange={(e) => handleUpdateVideo(sIdx, vIdx, "title", e.target.value)}
-                              placeholder="Video Title (e.g. Setting up Next.js 15)"
-                              className="w-full text-xs font-semibold text-slate-800 dark:text-white bg-transparent border-b border-transparent focus:border-[#2563EB] outline-none"
-                            />
+                      {(section.directVideos || []).map((video, vIdx) => {
+                        const videoKey = `${sIdx}-${vIdx}`;
+                        const isExpanded = expandedVideoKey === videoKey;
+                        const iqCount = video.interviewQuestions?.length || 0;
+                        const hasTask = Boolean(video.task?.title?.trim());
+
+                        return (
+                          <div
+                            key={video.id || vIdx}
+                            className="rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-3 shadow-2xs space-y-2.5 transition-all"
+                          >
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                  {vIdx + 1}
+                                </span>
+                                <input
+                                  type="text"
+                                  value={video.title}
+                                  onChange={(e) => handleUpdateVideo(sIdx, vIdx, "title", e.target.value)}
+                                  placeholder="Video Title (e.g. Setting up Next.js 15)"
+                                  className="w-full text-xs font-semibold text-slate-800 dark:text-white bg-transparent border-b border-transparent focus:border-[#2563EB] outline-none"
+                                />
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                {/* Duration */}
+                                <input
+                                  type="text"
+                                  value={video.durationFormatted || "10:00"}
+                                  onChange={(e) =>
+                                    handleUpdateVideo(sIdx, vIdx, "durationFormatted", e.target.value)
+                                  }
+                                  placeholder="10:00"
+                                  title="Duration (MM:SS)"
+                                  className="w-16 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-input-bg px-2 py-1 text-center text-[11px] font-mono font-medium text-slate-700 dark:text-slate-300 outline-none"
+                                />
+
+                                {/* Video URL */}
+                                <input
+                                  type="text"
+                                  value={video.videoUrl}
+                                  onChange={(e) => handleUpdateVideo(sIdx, vIdx, "videoUrl", e.target.value)}
+                                  placeholder="Video URL (YouTube/MP4/embed)"
+                                  className="w-36 sm:w-52 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-input-bg px-2.5 py-1 text-[11px] text-slate-700 dark:text-slate-300 outline-none"
+                                />
+
+                                {/* Toggle Interview & Task Accordion */}
+                                <button
+                                  type="button"
+                                  onClick={() => setExpandedVideoKey(isExpanded ? null : videoKey)}
+                                  className={`rounded-lg px-2 py-1 text-[10.5px] font-bold flex items-center gap-1 border transition-all cursor-pointer ${
+                                    isExpanded || iqCount > 0 || hasTask
+                                      ? "bg-blue-50 border-blue-200 text-[#2563EB] dark:bg-blue-950/50 dark:border-blue-800/80 dark:text-blue-400"
+                                      : "bg-slate-50 border-slate-200 text-slate-600 dark:bg-surface-elevated dark:border-slate-700 dark:text-slate-400"
+                                  }`}
+                                  title="Configure attached interview questions and practical task"
+                                >
+                                  <span>Q&amp;A &amp; Task</span>
+                                  {iqCount > 0 && (
+                                    <span className="rounded-full bg-blue-200 dark:bg-blue-900 px-1 text-[9px]">
+                                      {iqCount}
+                                    </span>
+                                  )}
+                                  {hasTask && (
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                  )}
+                                  {isExpanded ? (
+                                    <ChevronUp className="h-3 w-3" />
+                                  ) : (
+                                    <ChevronDown className="h-3 w-3" />
+                                  )}
+                                </button>
+
+                                {/* Remove Video */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveVideo(sIdx, vIdx)}
+                                  className="rounded-lg p-1 text-slate-400 hover:text-red-500 transition-colors"
+                                  title="Delete Video"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* EXPANDABLE VIDEO CONFIGURATION: Interview Questions & Task */}
+                            {isExpanded && (
+                              <div className="rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/20 dark:bg-blue-950/20 p-3 space-y-4 text-xs">
+                                {/* 1. Interview Questions */}
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                                      <HelpCircle className="h-3.5 w-3.5 text-[#2563EB]" />
+                                      Video Interview Questions ({iqCount})
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddVideoInterviewQuestion(sIdx, vIdx)}
+                                      className="rounded-md bg-white dark:bg-surface-elevated border border-blue-200 dark:border-blue-800 px-2 py-0.5 text-[10.5px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
+                                    >
+                                      + Add Interview Question
+                                    </button>
+                                  </div>
+
+                                  {iqCount === 0 ? (
+                                    <p className="text-[11px] text-slate-400 italic">
+                                      No interview questions attached to this video yet. Click &ldquo;+ Add Interview Question&rdquo; to attach technical questions for this lecture.
+                                    </p>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      {(video.interviewQuestions || []).map((iq, qIdx) => (
+                                        <div
+                                          key={iq.id || qIdx}
+                                          className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-2.5 space-y-1.5 shadow-2xs"
+                                        >
+                                          <div className="flex items-center justify-between gap-2">
+                                            <span className="font-bold text-slate-700 dark:text-slate-300 text-[10.5px]">
+                                              Question #{qIdx + 1}
+                                            </span>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleRemoveVideoInterviewQuestion(sIdx, vIdx, qIdx)}
+                                              className="text-slate-400 hover:text-red-500 cursor-pointer"
+                                            >
+                                              <Trash2 className="h-3 w-3" />
+                                            </button>
+                                          </div>
+                                          <input
+                                            type="text"
+                                            value={iq.question}
+                                            onChange={(e) =>
+                                              handleUpdateVideoInterviewQuestion(sIdx, vIdx, qIdx, "question", e.target.value)
+                                            }
+                                            placeholder="Interview Question (e.g. What is the difference between Hot and Cold Observables?)"
+                                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                          />
+                                          <textarea
+                                            rows={2}
+                                            value={iq.answer || ""}
+                                            onChange={(e) =>
+                                              handleUpdateVideoInterviewQuestion(sIdx, vIdx, qIdx, "answer", e.target.value)
+                                            }
+                                            placeholder="Expected model answer or key evaluation points..."
+                                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                          />
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* 2. Video Task / Practical Challenge */}
+                                <div className="space-y-2 pt-2 border-t border-blue-100 dark:border-blue-900/50">
+                                  <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                                    <ClipboardCheck className="h-3.5 w-3.5 text-[#2563EB]" />
+                                    Attached Video Task / Practical Assignment
+                                  </span>
+
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    <div className="sm:col-span-2">
+                                      <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                        Task Title
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={video.task?.title || ""}
+                                        onChange={(e) => handleUpdateVideoTask(sIdx, vIdx, "title", e.target.value)}
+                                        placeholder="e.g. Mini-Project: Implement Authentication Middleware"
+                                        className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                        Submission Type
+                                      </label>
+                                      <select
+                                        value={video.task?.submissionType || "text"}
+                                        onChange={(e) =>
+                                          handleUpdateVideoTask(sIdx, vIdx, "submissionType", e.target.value)
+                                        }
+                                        className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                      >
+                                        <option value="text">Text / Code Submission</option>
+                                        <option value="file">File Upload (.zip, .pdf)</option>
+                                        <option value="link">Project Link (GitHub / Deploy)</option>
+                                      </select>
+                                    </div>
+                                  </div>
+
+                                  <div>
+                                    <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                      Task Instructions &amp; Submission Criteria
+                                    </label>
+                                    <textarea
+                                      rows={2}
+                                      value={video.task?.instructions || video.task?.description || ""}
+                                      onChange={(e) => {
+                                        handleUpdateVideoTask(sIdx, vIdx, "instructions", e.target.value);
+                                        handleUpdateVideoTask(sIdx, vIdx, "description", e.target.value);
+                                      }}
+                                      placeholder="Explain the task deliverables, edge cases to handle, or upload requirements..."
+                                      className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            {/* Duration */}
-                            <input
-                              type="text"
-                              value={video.durationFormatted || "10:00"}
-                              onChange={(e) =>
-                                handleUpdateVideo(sIdx, vIdx, "durationFormatted", e.target.value)
-                              }
-                              placeholder="10:00"
-                              title="Duration (MM:SS)"
-                              className="w-16 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-input-bg px-2 py-1 text-center text-[11px] font-mono font-medium text-slate-700 dark:text-slate-300 outline-none"
-                            />
-
-                            {/* Video URL */}
-                            <input
-                              type="text"
-                              value={video.videoUrl}
-                              onChange={(e) => handleUpdateVideo(sIdx, vIdx, "videoUrl", e.target.value)}
-                              placeholder="Video URL (YouTube/MP4/embed)"
-                              className="w-40 sm:w-56 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-input-bg px-2.5 py-1 text-[11px] text-slate-700 dark:text-slate-300 outline-none"
-                            />
-
-                            {/* Remove Video */}
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveVideo(sIdx, vIdx)}
-                              className="rounded-lg p-1 text-slate-400 hover:text-red-500 transition-colors"
-                              title="Delete Video"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 ))

@@ -100,7 +100,7 @@ function YoutubeIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-type TabType = "overview" | "curriculum" | "qa" | "notes" | "announcements" | "reviews" | "tools";
+type TabType = "overview" | "interview" | "video-task" | "curriculum" | "qa" | "notes" | "announcements" | "reviews" | "tools";
 
 function formatCooldown(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -201,6 +201,12 @@ export default function CourseLearningHubPage({
   const [showLockedRequirementsModal, setShowLockedRequirementsModal] = useState(false);
   const [isRetakeMode, setIsRetakeMode] = useState<boolean>(false);
   const [autoPlayNext, setAutoPlayNext] = useState<boolean>(false);
+  const [revealedInterviewQuestions, setRevealedInterviewQuestions] = useState<Record<string, boolean>>({});
+  const [videoTaskSubmissions, setVideoTaskSubmissions] = useState<
+    Record<string, { text: string; fileName?: string; submitted: boolean; submittedAt?: string }>
+  >({});
+  const [currentVideoTaskText, setCurrentVideoTaskText] = useState<string>("");
+  const [currentVideoTaskFile, setCurrentVideoTaskFile] = useState<string>("");
 
   // Live timer tick for real-time cooldown countdowns
   useEffect(() => {
@@ -1039,7 +1045,19 @@ export default function CourseLearningHubPage({
             <div className="flex items-center gap-1 border-b border-slate-200 px-4 sm:px-6 overflow-x-auto bg-slate-50/50 dark:border-slate-800 dark:bg-surface-elevated">
               {[
                 { id: "curriculum", label: "Curriculum & Lessons", icon: FolderTree, mobileOnly: true },
-                { id: "overview", label: "Overview", icon: BookOpen },
+                { id: "overview", label: "Video Preview", icon: BookOpen },
+                {
+                  id: "interview",
+                  label: "Interview Questions",
+                  icon: HelpCircle,
+                  badge: (activeVideo?.interviewQuestions?.length || 0) > 0 ? `${activeVideo?.interviewQuestions?.length} Qs` : undefined,
+                },
+                {
+                  id: "video-task",
+                  label: "Task / Upload Task",
+                  icon: ClipboardCheck,
+                  badge: activeVideo?.task?.title ? "Task" : undefined,
+                },
                 { id: "qa", label: "Q&A", icon: MessageSquare },
                 { id: "notes", label: "Notes", icon: FileText },
                 { id: "announcements", label: "Announcements", icon: Bell },
@@ -1063,6 +1081,11 @@ export default function CourseLearningHubPage({
                   >
                     <Icon className="h-3.5 w-3.5" />
                     <span>{tab.label}</span>
+                    {tab.badge && (
+                      <span className="rounded-full bg-blue-100 dark:bg-blue-950/80 px-1.5 py-0.2 text-[9.5px] font-black text-[#2563EB] dark:text-blue-400">
+                        {tab.badge}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -1589,6 +1612,296 @@ export default function CourseLearningHubPage({
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* TAB: VIDEO INTERVIEW QUESTIONS */}
+              {activeTab === "interview" && activeVideo && (
+                <div className="space-y-6 max-w-4xl animate-in fade-in duration-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-blue-100 dark:bg-blue-950/60 px-2.5 py-0.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
+                          Interview Preparation
+                        </span>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                          Questions for &ldquo;{activeVideo.title}&rdquo;
+                        </h2>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium mt-1 dark:text-slate-400">
+                        Frequently asked technical screening questions and interview scenarios for this lecture topic.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const allKeys: Record<string, boolean> = {};
+                          const qList =
+                            activeVideo.interviewQuestions && activeVideo.interviewQuestions.length > 0
+                              ? activeVideo.interviewQuestions
+                              : [0, 1, 2];
+                          qList.forEach((_, idx) => {
+                            allKeys[`${activeVideo.id}-${idx}`] = true;
+                          });
+                          setRevealedInterviewQuestions(allKeys);
+                        }}
+                        className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 cursor-pointer"
+                      >
+                        Reveal All Answers
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Questions List */}
+                  <div className="space-y-4">
+                    {(activeVideo.interviewQuestions && activeVideo.interviewQuestions.length > 0
+                      ? activeVideo.interviewQuestions
+                      : [
+                          {
+                            id: "iq-def-1",
+                            question: `Explain the fundamental concept and primary design objectives of ${activeVideo.title}.`,
+                            answer: `In modern software architecture, ${activeVideo.title} establishes clean modular separation, predictable state flow, and low coupling between components to ensure high testability, fault tolerance, and developer productivity.`,
+                          },
+                          {
+                            id: "iq-def-2",
+                            question: "What are the common concurrency pitfalls and performance bottlenecks to guard against in this implementation?",
+                            answer: "Avoid shared mutable state without proper locking/atomics, prevent unbounded memory queue accumulation, configure proper connection pooling timeouts, and minimize expensive serialization operations in latency-sensitive critical paths.",
+                          },
+                          {
+                            id: "iq-def-3",
+                            question: "How would you write unit and integration tests to validate this functionality under load?",
+                            answer: "Use mock dependencies to isolate core business rules in fast unit tests, followed by integration tests that run against lightweight containerized dependencies to verify end-to-end contract compliance under simulated concurrency.",
+                          },
+                        ]
+                    ).map((iq, idx) => {
+                      const itemKey = `${activeVideo.id}-${idx}`;
+                      const isRevealed = Boolean(revealedInterviewQuestions[itemKey]);
+
+                      return (
+                        <div
+                          key={iq.id || idx}
+                          className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-secondary p-4 sm:p-5 shadow-xs space-y-3 transition-all"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-3">
+                              <span className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 font-black text-xs shrink-0 mt-0.5">
+                                Q{idx + 1}
+                              </span>
+                              <div>
+                                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                                  {iq.question}
+                                </h3>
+                                {iq.tags && (
+                                  <span className="mt-1 inline-block rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+                                    {iq.tags}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setRevealedInterviewQuestions((prev) => ({
+                                  ...prev,
+                                  [itemKey]: !isRevealed,
+                                }))
+                              }
+                              className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                                isRevealed
+                                  ? "bg-slate-100 text-slate-700 dark:bg-surface-elevated dark:text-slate-300"
+                                  : "bg-[#2563EB] text-white shadow-xs hover:bg-blue-700"
+                              }`}
+                            >
+                              {isRevealed ? (
+                                <>
+                                  <Eye className="h-3.5 w-3.5" />
+                                  <span>Hide Answer</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="h-3.5 w-3.5" />
+                                  <span>Show Model Answer</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+
+                          {isRevealed && (
+                            <div className="rounded-xl border border-blue-100 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 p-3.5 text-xs text-slate-800 dark:text-slate-200 space-y-1.5 animate-in fade-in slide-in-from-top-1">
+                              <div className="flex items-center gap-1.5 font-bold text-[#2563EB] dark:text-blue-400 text-[11px] uppercase tracking-wider">
+                                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                                <span>Model Technical Answer &amp; Talking Points</span>
+                              </div>
+                              <div className="whitespace-pre-line leading-relaxed font-medium">
+                                {iq.answer ||
+                                  "Focus on explaining the underlying data structure, runtime complexity, and practical edge-case handling in production environments."}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: VIDEO TASK / UPLOAD TASK */}
+              {activeTab === "video-task" && activeVideo && (
+                <div className="space-y-6 max-w-4xl animate-in fade-in duration-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                          Video Practical Exercise
+                        </span>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                          {activeVideo.task?.title || `${activeVideo.title} Practical Task`}
+                        </h2>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium mt-1 dark:text-slate-400">
+                        Complete and submit the hands-on assignment configured directly for this video lecture.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-xl bg-slate-100 dark:bg-surface-elevated px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                        Marks: {activeVideo.task?.points || 100} Points
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Task Brief */}
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated/50 p-5 space-y-3">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                      <ClipboardCheck className="h-4 w-4 text-[#2563EB]" />
+                      <span>Task Brief &amp; Requirements</span>
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium whitespace-pre-line">
+                      {activeVideo.task?.instructions ||
+                        activeVideo.task?.description ||
+                        `Apply the core principles demonstrated in "${activeVideo.title}". Implement the working solution, account for edge cases, and submit your code implementation or archive file below for faculty evaluation.`}
+                    </p>
+                  </div>
+
+                  {/* Student Submission Card */}
+                  {videoTaskSubmissions[activeVideo.id]?.submitted ? (
+                    <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/20 p-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                          <span>Task Submitted Successfully!</span>
+                        </div>
+                        <span className="text-xs text-slate-500">
+                          {videoTaskSubmissions[activeVideo.id].submittedAt}
+                        </span>
+                      </div>
+
+                      {videoTaskSubmissions[activeVideo.id].fileName && (
+                        <div className="text-xs text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                          <FileText className="h-4 w-4 text-[#2563EB]" />
+                          <span>
+                            Submitted File: <strong>{videoTaskSubmissions[activeVideo.id].fileName}</strong>
+                          </span>
+                        </div>
+                      )}
+
+                      {videoTaskSubmissions[activeVideo.id].text && (
+                        <div className="rounded-xl border border-emerald-200 dark:border-emerald-900 bg-white dark:bg-surface-secondary p-3 text-xs text-slate-800 dark:text-slate-200 font-mono whitespace-pre-line max-h-40 overflow-y-auto">
+                          {videoTaskSubmissions[activeVideo.id].text}
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setVideoTaskSubmissions((prev) => ({
+                            ...prev,
+                            [activeVideo.id]: { ...prev[activeVideo.id], submitted: false },
+                          }))
+                        }
+                        className="text-xs font-bold text-[#2563EB] hover:underline cursor-pointer pt-1"
+                      >
+                        Edit / Resubmit Task Solution
+                      </button>
+                    </div>
+                  ) : (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!currentVideoTaskText.trim() && !currentVideoTaskFile) {
+                          alert("Please type your answer or select a file before submitting.");
+                          return;
+                        }
+                        setVideoTaskSubmissions((prev) => ({
+                          ...prev,
+                          [activeVideo.id]: {
+                            text: currentVideoTaskText,
+                            fileName: currentVideoTaskFile || undefined,
+                            submitted: true,
+                            submittedAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                          },
+                        }));
+                        setCurrentVideoTaskText("");
+                        setCurrentVideoTaskFile("");
+                      }}
+                      className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-5 space-y-4 shadow-xs"
+                    >
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        Submit Your Solution
+                      </h4>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                          Implementation Code / Answer Notes
+                        </label>
+                        <textarea
+                          rows={5}
+                          value={currentVideoTaskText}
+                          onChange={(e) => setCurrentVideoTaskText(e.target.value)}
+                          placeholder="Type your code, explain your implementation approach, or paste your GitHub repository link..."
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-input-bg p-3 text-xs font-mono text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                          Upload Task Artifact / Project Archive (.zip, .pdf, .java, .py)
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <label className="flex items-center gap-2 rounded-xl border border-dashed border-blue-400 bg-blue-50/60 dark:bg-blue-950/40 px-4 py-2.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 transition-colors cursor-pointer">
+                            <Upload className="h-4 w-4" />
+                            <span>{currentVideoTaskFile ? "Replace File" : "Choose Solution File"}</span>
+                            <input
+                              type="file"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) setCurrentVideoTaskFile(file.name);
+                              }}
+                            />
+                          </label>
+                          {currentVideoTaskFile && (
+                            <span className="text-xs text-slate-600 dark:text-slate-300 font-semibold truncate max-w-xs">
+                              Selected: {currentVideoTaskFile}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end pt-2">
+                        <button
+                          type="submit"
+                          className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-all cursor-pointer"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span>Submit Task for Evaluation</span>
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               )}
 

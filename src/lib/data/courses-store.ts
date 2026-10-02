@@ -8,6 +8,26 @@ import { fetchStudentEnrollments, getClientSessionEmail } from "./enrollments-ap
 
 export type VideoSourceType = "upload" | "url" | "gdrive" | "onedrive";
 
+export interface VideoInterviewQuestion {
+  id: string;
+  question: string;
+  answer?: string;
+  tags?: string;
+}
+
+export interface VideoTask {
+  title: string;
+  description: string;
+  instructions?: string;
+  submissionType?: "text" | "file" | "link";
+  points?: number;
+  requiredFiles?: string;
+  completed?: boolean;
+  submittedAt?: string;
+  submissionContent?: string;
+  submissionFileUrl?: string;
+}
+
 export interface VideoItem {
   id: string;
   title: string;
@@ -19,6 +39,8 @@ export interface VideoItem {
   isFreeDemo?: boolean;
   completed?: boolean;
   notes?: string;
+  interviewQuestions?: VideoInterviewQuestion[];
+  task?: VideoTask;
 }
 
 export interface SubSection {
