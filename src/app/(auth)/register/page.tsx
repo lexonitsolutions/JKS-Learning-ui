@@ -14,6 +14,7 @@ import {
   Sparkles,
   ShieldCheck,
   Building2,
+  X,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { JksLogo } from "@/components/common/jks-logo";
@@ -133,9 +134,19 @@ export default function PublicRegistrationPage() {
       transition={{ duration: 0.4 }}
       className="w-full max-w-xl"
     >
-      <div className="overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-surface-secondary/95 p-6 sm:p-8 md:p-10 shadow-2xl backdrop-blur-xl transition-all">
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-surface-secondary/95 p-6 sm:p-8 md:p-10 shadow-2xl backdrop-blur-xl transition-all">
+        {/* Top-right Close / Back to Home Button */}
+        <Link
+          href="/"
+          title="Close and return to home"
+          aria-label="Close"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100/90 hover:bg-slate-200 text-slate-500 hover:text-slate-900 dark:bg-slate-800/90 dark:hover:bg-slate-700 dark:text-slate-400 dark:hover:text-white transition-all shadow-xs cursor-pointer border border-slate-200/60 dark:border-slate-700"
+        >
+          <X className="h-4 w-4" />
+        </Link>
+
         {/* Header Branding */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-5 mb-6">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-5 mb-6 pr-10">
           <JksLogo size="md" />
           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 px-3 py-1 text-xs font-bold text-blue-600 dark:text-blue-400 shadow-xs">
             <span className="relative flex h-2 w-2">

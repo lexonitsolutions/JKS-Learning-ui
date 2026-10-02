@@ -34,6 +34,7 @@ import {
   Sparkles,
   Lock,
   ArrowLeft,
+  X,
 } from "lucide-react";
 
 export type AuthMode = "login" | "register";
@@ -410,8 +411,18 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
     return (
       <motion.div
         {...cardMotion}
-        className="mx-auto flex w-full max-w-md flex-col items-center justify-center rounded-3xl bg-white dark:bg-surface-secondary p-8 text-center shadow-2xl border border-slate-100 dark:border-slate-800/80"
+        className="relative mx-auto flex w-full max-w-md flex-col items-center justify-center rounded-3xl bg-white dark:bg-surface-secondary p-8 text-center shadow-2xl border border-slate-100 dark:border-slate-800/80"
       >
+        {/* Top-right Close / Back to Home Button */}
+        <Link
+          href="/"
+          title="Close and return to home"
+          aria-label="Close"
+          className="absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100/90 hover:bg-slate-200 text-slate-500 hover:text-slate-900 dark:bg-slate-800/90 dark:hover:bg-slate-700 dark:text-slate-400 dark:hover:text-white transition-all cursor-pointer border border-slate-200/50 dark:border-slate-700/50"
+        >
+          <X className="h-4 w-4" />
+        </Link>
+
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 mb-4">
           <CheckCircle2 className="h-8 w-8 text-[#2563EB] dark:text-blue-400" />
         </div>
@@ -445,8 +456,18 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   return (
     <motion.div
       {...cardMotion}
-      className="mx-auto flex w-full max-w-4xl flex-col md:flex-row overflow-hidden rounded-3xl bg-white dark:bg-surface-secondary shadow-2xl border border-slate-100 dark:border-slate-800/80"
+      className="relative mx-auto flex w-full max-w-4xl flex-col md:flex-row overflow-hidden rounded-3xl bg-white dark:bg-surface-secondary shadow-2xl border border-slate-100 dark:border-slate-800/80"
     >
+      {/* Top-right Close / Back to Home Button */}
+      <Link
+        href="/"
+        title="Close and return to home"
+        aria-label="Close"
+        className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100/90 hover:bg-slate-200 text-slate-500 hover:text-slate-900 dark:bg-slate-800/90 dark:hover:bg-slate-700 dark:text-slate-400 dark:hover:text-white transition-all shadow-xs backdrop-blur-xs cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
+      >
+        <X className="h-4 w-4" />
+      </Link>
+
       {/* Desktop Left side — animated dot map + brand */}
       <div className="relative hidden h-[620px] w-1/2 overflow-hidden border-r border-slate-100 dark:border-slate-800/80 md:block">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/70 dark:from-background dark:via-surface-secondary dark:to-surface-elevated">
@@ -481,7 +502,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
       {/* Right side — form */}
       <div className="flex w-full flex-col justify-center bg-white dark:bg-surface-secondary p-6 sm:p-8 md:w-1/2 md:p-10">
         <FadeIn reducedMotion={reducedMotion} delay={0} y={20}>
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex items-center justify-between gap-2 pr-9 sm:pr-10">
             <JksLogo size="md" />
             <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-800/60 px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
               <span className="relative flex h-2 w-2">

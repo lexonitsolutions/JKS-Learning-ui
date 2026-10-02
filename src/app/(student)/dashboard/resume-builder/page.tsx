@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   FileText,
   Printer,
@@ -294,7 +294,13 @@ export default function ResumeBuilderPage() {
   const [template, setTemplate] = useState<"modern" | "minimalist" | "executive">("modern");
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving">("saved");
-  const [previewZoom, setPreviewZoom] = useState<"100" | "fit">("100");
+  const [previewZoom, setPreviewZoom] = useState<"100" | "fit">("fit");
+
+  // Dynamic A4 fit-to-screen scale & dimensions measurement
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const [fitScale, setFitScale] = useState<number>(0.72);
+  const [sheetHeight, setSheetHeight] = useState<number>(1123);
 
   // Section collapse states for clean mobile/desktop accordion
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -373,6 +379,45 @@ export default function ResumeBuilderPage() {
       localStorage.setItem(SECTION_ORDER_STORAGE_KEY, JSON.stringify(DEFAULT_SECTION_ORDER));
     } catch {}
   };
+
+  // Dynamically compute the exact fit scale factor so A4 (794px) fits seamlessly
+  // without any clipping or horizontal scrollbars in "fit" mode
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (previewContainerRef.current) {
+        const containerWidth = previewContainerRef.current.clientWidth;
+        // Available width accounting for 24px padding (12px each side)
+        const availableWidth = Math.max(280, containerWidth - 24);
+        const calculated = Math.min(1, Math.max(0.35, availableWidth / 794));
+        setFitScale(Number(calculated.toFixed(3)));
+      }
+      if (sheetRef.current) {
+        const actualH = sheetRef.current.offsetHeight;
+        if (actualH > 0) {
+          setSheetHeight(actualH);
+        }
+      }
+    };
+
+    updateDimensions();
+
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(() => updateDimensions())
+        : null;
+
+    if (resizeObserver) {
+      if (previewContainerRef.current) resizeObserver.observe(previewContainerRef.current);
+      if (sheetRef.current) resizeObserver.observe(sheetRef.current);
+    }
+
+    window.addEventListener("resize", updateDimensions);
+
+    return () => {
+      if (resizeObserver) resizeObserver.disconnect();
+      window.removeEventListener("resize", updateDimensions);
+    };
+  }, [resumeData, template, sectionOrder, mobileTab]);
 
   // Auto-fill from student profile and real enrolled courses
   const handleAutoFillFromProfile = useCallback(async () => {
@@ -2301,25 +2346,25 @@ export default function ResumeBuilderPage() {
                 <div className="flex items-center gap-1 bg-slate-100 dark:bg-surface-elevated p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
                   <button
                     type="button"
+                    onClick={() => setPreviewZoom("fit")}
+                    className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                      previewZoom === "fit"
+                        ? "bg-white dark:bg-surface-secondary text-[#1E5EFF] dark:text-blue-400 shadow-2xs"
+                        : "text-slate-500 hover:text-slate-900 dark:text-slate-400"
+                    }`}
+                  >
+                    Fit Screen {previewZoom === "fit" ? `(${Math.round(fitScale * 100)}%)` : ""}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setPreviewZoom("100")}
-                    className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
                       previewZoom === "100"
                         ? "bg-white dark:bg-surface-secondary text-[#1E5EFF] dark:text-blue-400 shadow-2xs"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-400"
                     }`}
                   >
                     100%
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewZoom("fit")}
-                    className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
-                      previewZoom === "fit"
-                        ? "bg-white dark:bg-surface-secondary text-[#1E5EFF] dark:text-blue-400 shadow-2xs"
-                        : "text-slate-500 hover:text-slate-900 dark:text-slate-400"
-                    }`}
-                  >
-                    Fit Screen
                   </button>
                 </div>
 
@@ -2331,18 +2376,42 @@ export default function ResumeBuilderPage() {
             </div>
 
             {/* Printable & Natural Scaled Preview Container (standard 794px A4 canvas with proportional scaling) */}
-            <div className="w-full overflow-x-auto pb-6 flex justify-center">
+            <div
+              ref={previewContainerRef}
+              className="w-full overflow-x-auto pb-8 pt-1"
+            >
               <div
-                id="printable-resume-sheet"
-                className="w-[794px] min-w-[794px] max-w-[794px] transition-transform duration-200 bg-white text-slate-900 origin-top shadow-xl rounded-2xl overflow-hidden print:w-full print:min-w-0 print:max-w-none print:shadow-none print:rounded-none"
-                style={{
-                  backgroundColor: "#ffffff",
-                  color: "#0f172a",
-                  ...(previewZoom === "fit"
-                    ? { transform: "scale(0.85)", transformOrigin: "top center" }
-                    : undefined),
-                }}
+                className="transition-all duration-300 mx-auto"
+                style={
+                  previewZoom === "fit"
+                    ? {
+                        width: `${Math.round(794 * fitScale)}px`,
+                        height: `${Math.round(sheetHeight * fitScale)}px`,
+                        position: "relative",
+                      }
+                    : {
+                        width: "794px",
+                        minWidth: "794px",
+                      }
+                }
               >
+                <div
+                  id="printable-resume-sheet"
+                  ref={sheetRef}
+                  className="w-[794px] min-w-[794px] max-w-[794px] bg-white text-slate-900 shadow-xl rounded-2xl overflow-hidden print:w-full print:min-w-0 print:max-w-none print:shadow-none print:rounded-none"
+                  style={{
+                    backgroundColor: "#ffffff",
+                    color: "#0f172a",
+                    transformOrigin: "top left",
+                    ...(previewZoom === "fit"
+                      ? {
+                          transform: `scale(${fitScale})`,
+                        }
+                      : {
+                          transform: "none",
+                        }),
+                  }}
+                >
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {/* TEMPLATE 1: MODERN TECH                                            */}
                 {/* ─────────────────────────────────────────────────────────────────── */}
@@ -2662,6 +2731,7 @@ export default function ResumeBuilderPage() {
           </div>
         </div>
       </div>
+    </div>
 
       {/* Floating Mobile Action Button (Switch to Preview) */}
       {mobileTab === "edit" && (
