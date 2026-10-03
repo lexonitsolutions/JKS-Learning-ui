@@ -49,14 +49,26 @@ export default function MyCoursesPage() {
       const activeEnrollments = data.filter((c: any) => c.status !== "REMOVED");
       const enriched = activeEnrollments.map((c) => {
         const exact = getExactStudentCourseProgress(c.slug, userEmail);
-        const prog = Math.max(c.progress || 0, exact.overallPercent || 0);
-        const completedVideos = Math.max(c.completedVideosCount || 0, exact.completedVideoIds.length);
+        let prog = typeof c.progress === "number" ? c.progress : (exact.overallPercent || 0);
+        // If exact progress calculated from current course content is lower (e.g. content added or assignments incomplete), reflect it accurately
+        if (typeof exact.overallPercent === "number" && exact.overallPercent < prog) {
+          prog = exact.overallPercent;
+        }
+        if (exact.totalAssignments > 0 && exact.completedAssignmentIds.length < exact.totalAssignments) {
+          if (prog >= 100) prog = 99;
+        }
+        if (exact.totalVideos > 0 && exact.completedVideoIds.length < exact.totalVideos) {
+          if (prog >= 100) prog = 99;
+        }
+        const completedVideos = exact.completedVideoIds.length;
         const totalLessons = exact.totalVideos > 0
           ? exact.totalVideos
           : ((c.totalLessons && c.totalLessons > 0) ? c.totalLessons : (exact.totalMilestones || 1));
         const totalSections = exact.totalSections > 0
           ? exact.totalSections
           : (c.totalSections || 1);
+        const isCompleted = prog >= 100 && (c.completionApproved === true);
+        const instructorName = c.instructorName && c.instructorName !== "Dr. Rohit Kapoor" ? c.instructorName : "Davood Khan";
         return {
           ...c,
           progress: prog,
@@ -64,7 +76,8 @@ export default function MyCoursesPage() {
           completedVideosCount: completedVideos,
           totalLessons,
           totalSections,
-          isCompleted: prog >= 100,
+          instructorName,
+          isCompleted,
         };
       });
       setCourses(enriched);
@@ -85,9 +98,11 @@ export default function MyCoursesPage() {
     };
 
     window.addEventListener("jks_video_progress_changed", handleProgressChange);
+    window.addEventListener("jks-courses-store-change", handleProgressChange);
     window.addEventListener("focus", handleProgressChange);
     return () => {
       window.removeEventListener("jks_video_progress_changed", handleProgressChange);
+      window.removeEventListener("jks-courses-store-change", handleProgressChange);
       window.removeEventListener("focus", handleProgressChange);
     };
   }, [loadEnrollments]);

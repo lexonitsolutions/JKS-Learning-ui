@@ -24,6 +24,7 @@ import {
   Square,
   Users,
   Repeat,
+  ChevronDown,
 } from "lucide-react";
 import {
   batchAssignAdminTasks,
@@ -31,8 +32,9 @@ import {
   type TaskQuestion,
   type IndividualTask,
   type ReusableAssessment,
-  getStoredMasterAssessments,
   saveStoredMasterAssessment,
+  getStoredMasterAssessments,
+  fetchAllReusableAssessments,
   recordAssessmentAssigned,
 } from "@/lib/data/tasks-api";
 import { fetchAdminStudents, type AdminStudentRecord } from "@/lib/data/students-api";
@@ -45,6 +47,7 @@ interface CreateTaskModalProps {
   onCreated: (task: IndividualTask) => void;
   onBatchCreated?: (tasks: IndividualTask[]) => void;
   initialAssessment?: ReusableAssessment | null;
+  isReuseMode?: boolean;
 }
 
 interface CourseItem {
@@ -61,15 +64,16 @@ export function CreateTaskModal({
   onCreated,
   onBatchCreated,
   initialAssessment,
+  isReuseMode,
 }: CreateTaskModalProps) {
-  const [mode, setMode] = useState<"REUSE" | "NEW">("REUSE");
-  const [reusableList, setReusableList] = useState<ReusableAssessment[]>([]);
-  const [selectedReusableId, setSelectedReusableId] = useState<string>("");
-
   const [students, setStudents] = useState<AdminStudentRecord[]>([]);
   const [studentSearch, setStudentSearch] = useState("");
   const [selectedStudentEmails, setSelectedStudentEmails] = useState<string[]>([]);
   
+  const [availableTemplates, setAvailableTemplates] = useState<ReusableAssessment[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [templateSearch, setTemplateSearch] = useState<string>("");
+
   const [allCourses, setAllCourses] = useState<CourseItem[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("");
@@ -97,19 +101,81 @@ export function CreateTaskModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Load students, courses, and stored reusable assessments
+  // Filter templates based on optional search
+  const filteredTemplates = useMemo(() => {
+    if (!templateSearch.trim()) return availableTemplates;
+    const q = templateSearch.toLowerCase().trim();
+    return availableTemplates.filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        (t.courseTitle && t.courseTitle.toLowerCase().includes(q)) ||
+        (t.description && t.description.toLowerCase().includes(q))
+    );
+  }, [availableTemplates, templateSearch]);
+
+  // Group templates by Course Name for the dropdown
+  const groupedTemplates = useMemo(() => {
+    const map = new Map<string, ReusableAssessment[]>();
+    filteredTemplates.forEach((t) => {
+      const groupKey = t.courseTitle || "General Track / Standalone";
+      const list = map.get(groupKey) || [];
+      list.push(t);
+      map.set(groupKey, list);
+    });
+    return Array.from(map.entries()).map(([courseName, items]) => ({
+      courseName,
+      items,
+    }));
+  }, [filteredTemplates]);
+
+  const selectedTemplate = useMemo(() => {
+    return availableTemplates.find((t) => t.id === selectedTemplateId);
+  }, [availableTemplates, selectedTemplateId]);
+
+  // Load students, courses, and apply template if passed
   useEffect(() => {
     if (!isOpen) return;
 
-    // Load reusable assessments
-    const masterList = getStoredMasterAssessments();
-    setReusableList(masterList);
+    // 1. Immediately populate from local cache
+    const initialTemplates = getStoredMasterAssessments();
+    setAvailableTemplates(initialTemplates);
+
+    // 2. Asynchronously fetch live real course assessments & past tasks
+    fetchAllReusableAssessments().then((liveTemplates) => {
+      if (liveTemplates && liveTemplates.length > 0) {
+        setAvailableTemplates(liveTemplates);
+        if (initialAssessment) {
+          const matched = liveTemplates.find(
+            (t) =>
+              t.id === initialAssessment.id ||
+              t.title.toLowerCase().trim() === initialAssessment.title.toLowerCase().trim()
+          );
+          if (matched) {
+            setSelectedTemplateId(matched.id);
+            applyAssessmentTemplate(matched);
+          }
+        }
+      }
+    });
 
     if (initialAssessment) {
+      setSelectedTemplateId(initialAssessment.id);
       applyAssessmentTemplate(initialAssessment);
-      setMode("REUSE");
-    } else if (masterList.length > 0 && !title) {
-      applyAssessmentTemplate(masterList[0]);
+    } else {
+      setSelectedTemplateId("");
+      setTitle("");
+      setDescription("");
+      setInstructions("");
+      setDueDate("");
+      setQuestions([
+        {
+          id: `q-${Date.now()}`,
+          type: "SHORT_ANSWER",
+          prompt: "",
+          maxPoints: 100,
+          modelAnswer: "",
+        },
+      ]);
     }
 
     // Fetch Students
@@ -131,34 +197,42 @@ export function CreateTaskModal({
 
       const map = new Map<string, CourseItem>();
 
-      stored.forEach((c) => {
-        const topics = (c.sections || []).map((s) => s.title).filter(Boolean);
-        map.set(c.id, {
-          id: c.id,
-          title: c.title,
-          slug: c.slug,
+      (stored || []).forEach((c, idx) => {
+        if (!c) return;
+        const cid = c.id || c.slug || `stored-${idx}`;
+        const topics = (c.sections || []).map((s: any) => s.title).filter(Boolean);
+        map.set(cid, {
+          id: cid,
+          title: c.title || "Untitled Course",
+          slug: c.slug || cid,
           track: c.track || "Full Stack",
           topics,
         });
       });
 
-      liveDb.forEach((c) => {
-        const existing = map.get(c.id);
+      (liveDb || []).forEach((c, idx) => {
+        if (!c) return;
+        const cid = c.id || c.slug || `db-${idx}`;
+        const existing = map.get(cid);
         const dbTopics = (c.modules || []).map((m: any) => m.title).filter(Boolean);
         if (existing) {
           existing.topics = Array.from(new Set([...existing.topics, ...dbTopics]));
         } else {
-          map.set(c.id, {
-            id: c.id,
-            title: c.title,
-            slug: c.slug,
+          map.set(cid, {
+            id: cid,
+            title: c.title || "Untitled Course",
+            slug: c.slug || cid,
             track: c.track || "Full Stack",
             topics: dbTopics,
           });
         }
       });
 
-      setAllCourses(Array.from(map.values()));
+      const uniqueCoursesList = Array.from(map.values()).filter(
+        (c, index, self) => index === self.findIndex((t) => t.id === c.id)
+      );
+
+      setAllCourses(uniqueCoursesList);
     };
 
     loadCoursesData();
@@ -166,7 +240,6 @@ export function CreateTaskModal({
 
   // Apply template values from a reusable assessment
   const applyAssessmentTemplate = (tpl: ReusableAssessment) => {
-    setSelectedReusableId(tpl.id);
     setTitle(tpl.title);
     setDescription(tpl.description || "");
     setInstructions(tpl.instructions || "");
@@ -179,17 +252,53 @@ export function CreateTaskModal({
     if (tpl.questions && tpl.questions.length > 0) {
       setQuestions(tpl.questions);
       setPrimaryType(tpl.questions[0].type);
+      const totalPoints = tpl.questions.reduce((sum, q) => sum + (q.maxPoints || 0), 0);
+      if (totalPoints > 0) {
+        setTaskMarks(totalPoints);
+      }
     }
-    if (tpl.courseId) {
-      setSelectedCourseId(tpl.courseId);
+    if (tpl.courseId || tpl.courseTitle) {
+      const match = allCourses.find(
+        (c) =>
+          (tpl.courseId && (c.id === tpl.courseId || c.slug === tpl.courseId)) ||
+          (tpl.courseTitle && c.title.toLowerCase().trim() === tpl.courseTitle.toLowerCase().trim())
+      );
+      if (match) {
+        setSelectedCourseId(match.id);
+      } else if (tpl.courseId) {
+        setSelectedCourseId(tpl.courseId);
+      }
     }
   };
 
-  const handleSelectReusable = (id: string) => {
-    const found = reusableList.find((r) => r.id === id);
-    if (found) {
-      applyAssessmentTemplate(found);
+  const handleSelectTemplate = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    if (!templateId) {
+      handleResetToBlank();
+      return;
     }
+    const tpl = availableTemplates.find((t) => t.id === templateId);
+    if (tpl) {
+      applyAssessmentTemplate(tpl);
+    }
+  };
+
+  const handleResetToBlank = () => {
+    setSelectedTemplateId("");
+    setTitle("");
+    setDescription("");
+    setInstructions("");
+    setDueDate("");
+    setSelectedCourseId("");
+    setQuestions([
+      {
+        id: `q-${Date.now()}`,
+        type: "SHORT_ANSWER",
+        prompt: "",
+        maxPoints: 100,
+        modelAnswer: "",
+      },
+    ]);
   };
 
   // Current selected course object
@@ -422,61 +531,34 @@ export function CreateTaskModal({
           </div>
         </div>
 
-        {/* Reusable Assessment Selector Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 dark:bg-surface-elevated/70 p-2.5 border border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setMode("REUSE")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                mode === "REUSE"
-                  ? "bg-[#2563EB] text-white shadow-xs"
-                  : "bg-white dark:bg-surface text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-              }`}
-            >
-              Reuse Existing Assessment
-            </button>
+        {initialAssessment && (
+          <div className="flex items-center justify-between rounded-xl bg-blue-50 dark:bg-blue-950/40 p-3 border border-blue-200 dark:border-blue-800 text-xs">
+            <span className="text-blue-800 dark:text-blue-300 font-medium">
+              Assigning from template: <strong>{initialAssessment.title}</strong>
+            </span>
             <button
               type="button"
               onClick={() => {
-                setMode("NEW");
                 setTitle("");
                 setDescription("");
+                setInstructions("");
+                setDueDate("");
                 setQuestions([
                   {
                     id: `q-${Date.now()}`,
                     type: "SHORT_ANSWER",
                     prompt: "",
                     maxPoints: 100,
+                    modelAnswer: "",
                   },
                 ]);
               }}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                mode === "NEW"
-                  ? "bg-[#2563EB] text-white shadow-xs"
-                  : "bg-white dark:bg-surface text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-              }`}
+              className="text-xs font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 underline cursor-pointer"
             >
-              + Create New Assessment
+              Reset to Blank
             </button>
           </div>
-
-          {mode === "REUSE" && reusableList.length > 0 && (
-            <div className="flex-1 min-w-[220px]">
-              <select
-                value={selectedReusableId}
-                onChange={(e) => handleSelectReusable(e.target.value)}
-                className="w-full rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-bold text-[#2563EB] dark:text-blue-300 outline-none"
-              >
-                {reusableList.map((tpl) => (
-                  <option key={tpl.id} value={tpl.id}>
-                    📋 {tpl.title} ({tpl.questions?.length || 0} Qs) · Assigned {tpl.timesAssigned}x
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
+        )}
 
         {errorMessage && (
           <div className="flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 p-3 text-xs font-semibold text-rose-700 dark:text-rose-300">
@@ -496,6 +578,129 @@ export function CreateTaskModal({
               <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
                 ✓ Available for unlimited reuse
               </span>
+            </div>
+
+            {/* Quick Reuse Existing Assignment Selector */}
+            <div
+              className={`rounded-2xl border transition-all p-3.5 sm:p-4 space-y-3 ${
+                isReuseMode || selectedTemplateId
+                  ? "border-blue-400 dark:border-blue-700 bg-gradient-to-br from-blue-50/90 via-indigo-50/50 to-white dark:from-blue-950/50 dark:via-surface-secondary dark:to-surface-secondary shadow-md shadow-blue-500/5 ring-2 ring-blue-500/20"
+                  : "border-blue-200/90 dark:border-blue-800/80 bg-gradient-to-r from-blue-50/70 via-indigo-50/30 to-white dark:from-blue-950/30 dark:via-surface-secondary dark:to-surface-secondary shadow-2xs"
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#2563EB] text-white shadow-xs">
+                    <Repeat className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-blue-950 dark:text-blue-100 flex items-center gap-1.5">
+                      <span>Reuse Existing Assignment</span>
+                      <span className="rounded-full bg-blue-100 dark:bg-blue-900/60 px-2 py-0.5 text-[10px] font-black text-blue-700 dark:text-blue-300">
+                        {availableTemplates.length} Available
+                      </span>
+                    </label>
+                    <p className="text-[10.5px] text-blue-700/80 dark:text-blue-400">
+                      Auto-fill questions and curriculum requirements from your created assignments
+                    </p>
+                  </div>
+                </div>
+
+                {selectedTemplateId && (
+                  <button
+                    type="button"
+                    onClick={handleResetToBlank}
+                    className="inline-flex items-center gap-1 rounded-lg bg-white dark:bg-surface-elevated px-2.5 py-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shadow-2xs cursor-pointer hover:bg-slate-50 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                    <span>Clear / Start Blank</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Search Filter for Dropdown (if multiple templates) */}
+              {availableTemplates.length > 5 && (
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-blue-400" />
+                  <input
+                    type="text"
+                    placeholder="Search existing assignments by title, course, or questions..."
+                    value={templateSearch}
+                    onChange={(e) => setTemplateSearch(e.target.value)}
+                    className="w-full rounded-xl border border-blue-200 dark:border-blue-800/80 bg-white/90 dark:bg-surface-elevated pl-8 pr-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 placeholder:text-slate-400"
+                  />
+                  {templateSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setTemplateSearch("")}
+                      className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Grouped Select Dropdown */}
+              <div className="relative">
+                <select
+                  value={selectedTemplateId}
+                  onChange={(e) => handleSelectTemplate(e.target.value)}
+                  className="w-full appearance-none rounded-xl border border-blue-300 dark:border-blue-700 bg-white dark:bg-surface-elevated px-3.5 py-2.5 pr-10 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-500/20 shadow-xs cursor-pointer transition-all"
+                >
+                  <option value="">
+                    {availableTemplates.length === 0
+                      ? "-- Loading created assignments... --"
+                      : "-- Choose an Existing Assignment to Auto-Fill (Optional) --"}
+                  </option>
+                  {groupedTemplates.map((group) => (
+                    <optgroup key={group.courseName} label={`📚 ${group.courseName} (${group.items.length})`}>
+                      {group.items.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.title} — ({t.questions?.length || 0} question{t.questions?.length === 1 ? "" : "s"})
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-3 h-4 w-4 text-blue-500 dark:text-blue-400" />
+              </div>
+
+              {/* Active Selection Details Card */}
+              {selectedTemplate && (
+                <div className="rounded-xl bg-white dark:bg-surface-secondary border border-emerald-300/80 dark:border-emerald-800/80 p-3 space-y-1.5 shadow-2xs animate-in fade-in">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>Loaded Assignment: &ldquo;{selectedTemplate.title}&rdquo;</span>
+                    </div>
+                    <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 px-2.5 py-0.5 text-[10.5px] font-black shrink-0 border border-emerald-200 dark:border-emerald-800/60">
+                      {selectedTemplate.questions?.length || 0} Questions Ready
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2 italic">
+                    {selectedTemplate.description}
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <span>
+                      Course Track:{" "}
+                      <strong className="text-slate-700 dark:text-slate-200">
+                        {selectedTemplate.courseTitle || "General Track"}
+                      </strong>
+                    </span>
+                    {selectedTemplate.timesAssigned > 0 && (
+                      <span>
+                        Previously Assigned:{" "}
+                        <strong className="text-slate-700 dark:text-slate-200">
+                          {selectedTemplate.timesAssigned} time(s)
+                        </strong>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -523,8 +728,8 @@ export function CreateTaskModal({
                   className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                 >
                   <option value="">-- General / Independent Track --</option>
-                  {allCourses.map((c) => (
-                    <option key={c.id} value={c.id}>
+                  {allCourses.map((c, idx) => (
+                    <option key={`${c.id || c.slug || 'crs'}-${idx}`} value={c.id}>
                       {c.title} ({c.track})
                     </option>
                   ))}

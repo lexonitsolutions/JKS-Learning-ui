@@ -107,6 +107,196 @@ import { EditStudentModal } from "@/components/admin/edit-student-modal";
 
 type HubTabType = "overview" | "qa" | "notes" | "announcements" | "reviews" | "tools";
 
+interface ParsedQuestionItem {
+  questionIndex: number;
+  prompt: string;
+  type: "MCQ" | "SHORT_ANSWER" | "LONG_ANSWER" | "FILE_UPLOAD" | "CODING";
+  choices?: string[];
+  correctAnswer?: any;
+  correctIndex?: number;
+  studentAnswer?: any;
+  selectedChoiceText?: string;
+  isCorrect?: boolean;
+  earned?: number;
+  max?: number;
+  modelAnswer?: string;
+  keywords?: string;
+  rubric?: string;
+  fileUrl?: string;
+  fileName?: string;
+}
+
+interface ParsedSubmissionDetails {
+  isMultiQuestion: boolean;
+  score?: number;
+  maxMarks?: number;
+  passed?: boolean;
+  minPass?: number;
+  attemptCount?: number;
+  isRetake?: boolean;
+  questions: ParsedQuestionItem[];
+}
+
+function normalizeQuestionType(
+  rawType?: string,
+  studentAnswer?: any,
+  choices?: any[]
+): "MCQ" | "SHORT_ANSWER" | "LONG_ANSWER" | "FILE_UPLOAD" | "CODING" {
+  const upper = String(rawType || "").toUpperCase().trim();
+  if (upper.includes("MCQ") || upper.includes("CHOICE")) return "MCQ";
+  if (upper.includes("LONG") || upper.includes("COMPREHENS") || upper.includes("ESSAY")) return "LONG_ANSWER";
+  if (upper.includes("FILE") || upper.includes("UPLOAD")) return "FILE_UPLOAD";
+  if (upper.includes("CODE") || upper.includes("CODING") || upper.includes("PROGRAM")) return "CODING";
+  if (upper.includes("SHORT")) return "SHORT_ANSWER";
+
+  if (typeof studentAnswer === "number") return "MCQ";
+  if (Array.isArray(choices) && choices.length > 1 && (typeof studentAnswer !== "string" || studentAnswer.length < 15)) {
+    return "MCQ";
+  }
+  if (
+    typeof studentAnswer === "string" &&
+    (studentAnswer.startsWith("http") ||
+      studentAnswer.endsWith(".zip") ||
+      studentAnswer.endsWith(".pdf") ||
+      studentAnswer.endsWith(".docx"))
+  ) {
+    return "FILE_UPLOAD";
+  }
+  if (typeof studentAnswer === "string" && (studentAnswer.length > 120 || studentAnswer.split(/\s+/).length > 25)) {
+    return "LONG_ANSWER";
+  }
+  return "SHORT_ANSWER";
+}
+
+function parseTaskSubmissionDetails(task: CourseTaskItem): ParsedSubmissionDetails {
+  // 1. If backend already provided structured submissionDetails
+  if (task.submissionDetails?.questions && task.submissionDetails.questions.length > 0) {
+    const questions: ParsedQuestionItem[] = task.submissionDetails.questions.map((q, idx) => {
+      const normType = normalizeQuestionType(q.type, q.studentAnswer, q.choices);
+      return {
+        questionIndex: q.questionIndex ?? idx,
+        prompt: q.prompt || `Question ${idx + 1}`,
+        type: normType,
+        choices: normType === "MCQ" && Array.isArray(q.choices) && q.choices.length > 0 ? q.choices : undefined,
+        correctAnswer: q.correctAnswer,
+        correctIndex: (q as any).correctIndex,
+        studentAnswer: q.studentAnswer,
+        selectedChoiceText: q.selectedChoiceText,
+        isCorrect: q.isCorrect,
+        earned: q.earned ?? (q.isCorrect ? 1 : 0),
+        max: q.max ?? 1,
+        modelAnswer: (q as any).modelAnswer,
+        keywords: (q as any).keywords,
+        rubric: (q as any).rubric,
+        fileUrl: (q as any).fileUrl || task.submissionFileUrl,
+        fileName: (q as any).fileName || task.submissionFileName,
+      };
+    });
+
+    return {
+      isMultiQuestion:
+        questions.length > 1 ||
+        Boolean(questions[0]?.choices) ||
+        typeof questions[0]?.studentAnswer === "number" ||
+        questions[0]?.type !== "MCQ",
+      score: task.submissionDetails.score ?? task.marks,
+      maxMarks: task.submissionDetails.maxMarks ?? task.maxMarks ?? 100,
+      passed: task.submissionDetails.passed,
+      minPass: task.submissionDetails.minPass ?? 70,
+      attemptCount: task.submissionDetails.attemptCount,
+      isRetake: task.submissionDetails.isRetake,
+      questions,
+    };
+  }
+
+  // 2. Parse from answersJson or studentAnswer JSON string
+  let rawJsonObj: any = null;
+  if (task.answersJson && typeof task.answersJson === "object") {
+    rawJsonObj = task.answersJson;
+  } else if (
+    task.studentAnswer &&
+    typeof task.studentAnswer === "string" &&
+    (task.studentAnswer.trim().startsWith("{") || task.studentAnswer.trim().startsWith("["))
+  ) {
+    try {
+      rawJsonObj = JSON.parse(task.studentAnswer);
+    } catch {
+      rawJsonObj = null;
+    }
+  }
+
+  if (rawJsonObj && typeof rawJsonObj === "object") {
+    const rawAnswers =
+      rawJsonObj.answers && typeof rawJsonObj.answers === "object" ? rawJsonObj.answers : rawJsonObj;
+    const detailsList: any[] = Array.isArray(rawJsonObj.details) ? rawJsonObj.details : [];
+    const numericKeys = Object.keys(rawAnswers)
+      .filter((k) => !isNaN(Number(k)))
+      .map(Number)
+      .sort((a, b) => a - b);
+
+    if (numericKeys.length > 0 || detailsList.length > 0) {
+      const allIndices = Array.from(
+        new Set([...numericKeys, ...detailsList.map((d: any) => Number(d.questionIndex || 0))])
+      ).sort((a, b) => a - b);
+
+      const questions: ParsedQuestionItem[] = allIndices.map((qIdx) => {
+        const studentAns = rawAnswers[String(qIdx)] ?? rawAnswers[qIdx];
+        const detail = detailsList.find((d: any) => d.questionIndex === qIdx);
+        const normType = normalizeQuestionType(detail?.type, studentAns, detail?.choices);
+        const isNum = typeof studentAns === "number";
+        const isCorrect = detail?.isCorrect !== undefined ? Boolean(detail.isCorrect) : undefined;
+        const prompt =
+          detail?.prompt ||
+          (qIdx === 0 && allIndices.length === 1
+            ? task.question || task.topicName
+            : `Question ${qIdx + 1}`);
+
+        return {
+          questionIndex: qIdx,
+          prompt,
+          type: normType,
+          choices: normType === "MCQ" && Array.isArray(detail?.choices) ? detail.choices : undefined,
+          correctAnswer: detail?.correctAnswer,
+          correctIndex: detail?.correctIndex,
+          studentAnswer: studentAns,
+          selectedChoiceText: isNum
+            ? `Option ${String.fromCharCode(65 + studentAns)}`
+            : typeof studentAns === "string"
+            ? studentAns
+            : undefined,
+          isCorrect,
+          earned: detail?.earned ?? (isCorrect ? 1 : 0),
+          max: detail?.max ?? 1,
+          modelAnswer: detail?.modelAnswer,
+          keywords: detail?.keywords,
+          rubric: detail?.rubric,
+          fileUrl: detail?.fileUrl || task.submissionFileUrl,
+          fileName: detail?.fileName || task.submissionFileName,
+        };
+      });
+
+      return {
+        isMultiQuestion:
+          questions.length > 1 || typeof questions[0]?.studentAnswer === "number" || questions[0]?.type !== "MCQ",
+        score: typeof rawJsonObj.score === "number" ? rawJsonObj.score : task.marks,
+        maxMarks: task.maxMarks || 100,
+        passed: rawJsonObj.passed,
+        minPass: rawJsonObj.minPass || 70,
+        attemptCount: rawJsonObj.attemptCount,
+        isRetake: rawJsonObj.isRetake,
+        questions,
+      };
+    }
+  }
+
+  return {
+    isMultiQuestion: false,
+    score: task.marks,
+    maxMarks: task.maxMarks || 100,
+    questions: [],
+  };
+}
+
 export default function AdminStudentDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -456,7 +646,7 @@ export default function AdminStudentDetailsPage() {
       totalItems > 0 ? Math.min(100, Math.round((completedCount / totalItems) * 100)) : inspectingCourse.progress || 11;
 
     return (
-      <div className="flex flex-1 flex-col w-full min-w-0 bg-[#F8FAFC] dark:bg-background text-slate-800 dark:text-slate-100 overflow-x-hidden">
+      <div className="flex flex-1 flex-col w-full min-w-0 bg-[#F8FAFC] dark:bg-background text-slate-800 dark:text-slate-100">
         {/* Persistent Top Header matching student workspace course view */}
         <DashboardTopbar
           title={inspectingCourse.courseTitle}
@@ -465,7 +655,7 @@ export default function AdminStudentDetailsPage() {
         />
 
         {/* Top Learning Hub Navigation Bar matching student workspace */}
-        <header className="sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-transparent bg-transparent px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md dark:border-transparent dark:bg-transparent">
+        <header className="relative z-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-transparent bg-transparent px-4 py-3 sm:py-0 sm:px-6 sm:h-16 gap-3 backdrop-blur-md dark:border-transparent dark:bg-transparent">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <button
               type="button"
@@ -532,10 +722,10 @@ export default function AdminStudentDetailsPage() {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 p-4 sm:p-6 w-full min-w-0">
           {/* LEFT COLUMN: In-App Video Player & Tabs (8 cols on desktop) */}
           <div className="xl:col-span-8 flex flex-col min-w-0 space-y-4">
-            {/* IN-APP VIDEO PLAYER */}
+            {/* FIXED / STICKY IN-APP VIDEO PLAYER - Locked at top when scrolling */}
             {activeVideo ? (
-              <div className="space-y-3">
-                <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-md bg-black flex items-center justify-center border border-slate-200 dark:border-slate-800">
+              <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-2 pb-3 bg-[#F8FAFC]/95 dark:bg-[#020617]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs transition-all space-y-3">
+                <div className="w-full aspect-video max-h-[35vh] sm:max-h-[42vh] lg:max-h-[48vh] mx-auto rounded-2xl overflow-hidden shadow-md bg-black flex items-center justify-center border border-slate-200 dark:border-slate-800">
                   <InAppVideoPlayer
                     key={activeVideo.id}
                     title={activeVideo.title}
@@ -564,7 +754,7 @@ export default function AdminStudentDetailsPage() {
                 </div>
 
                 {/* Video Title Bar & Completion Status */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-4 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-3.5 sm:p-4 shadow-xs">
                   <div className="min-w-0">
                     <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
                       {activeVideo.title}
@@ -1760,10 +1950,10 @@ export default function AdminStudentDetailsPage() {
               const hasAssessments = assessmentsList.length > 0;
               const avgScore = hasAssessments
                 ? Math.round(assessmentsList.reduce((acc, a) => acc + (a.score || 0), 0) / assessmentsList.length)
-                : 90;
+                : null;
               const avgAuthenticity = hasAssessments
-                ? (assessmentsList.reduce((acc, a) => acc + (a.aiAuthenticityScore || 96.5), 0) / assessmentsList.length).toFixed(1)
-                : "94.8";
+                ? (assessmentsList.reduce((acc, a) => acc + (a.aiAuthenticityScore || 100), 0) / assessmentsList.length).toFixed(1)
+                : null;
 
               return (
                 <div className="space-y-6">
@@ -1783,12 +1973,14 @@ export default function AdminStudentDetailsPage() {
                       <div className="rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 p-4 space-y-2">
                         <div className="flex justify-between items-center text-xs font-bold text-emerald-900 dark:text-emerald-200">
                           <span>Human Authenticity Score</span>
-                          <span className="text-emerald-700 dark:text-emerald-300 text-sm font-black">{avgAuthenticity}% Authentic</span>
+                          <span className="text-emerald-700 dark:text-emerald-300 text-sm font-black">
+                            {avgAuthenticity !== null ? `${avgAuthenticity}% Authentic` : "N/A (No submissions)"}
+                          </span>
                         </div>
                         <div className="h-2 w-full rounded-full bg-emerald-200 dark:bg-emerald-900/60 overflow-hidden">
                           <div
                             className="h-full bg-emerald-600 dark:bg-emerald-500 rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min(100, Math.max(10, parseFloat(avgAuthenticity)))}%` }}
+                            style={{ width: `${avgAuthenticity !== null ? Math.min(100, Math.max(10, parseFloat(avgAuthenticity))) : 0}%` }}
                           />
                         </div>
                         <p className="text-[11px] text-emerald-800 dark:text-emerald-300">
@@ -1803,7 +1995,9 @@ export default function AdminStudentDetailsPage() {
                         </div>
                         <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
                           <span className="text-slate-500 dark:text-slate-400">Average Submission Score</span>
-                          <span className="font-bold text-slate-800 dark:text-slate-200">{avgScore}% (Pass mark: 70%)</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">
+                            {avgScore !== null ? `${avgScore}% (Pass mark: 70%)` : "N/A"}
+                          </span>
                         </div>
                         <div className="flex justify-between py-1.5">
                           <span className="text-slate-500 dark:text-slate-400">Proctored Assessment Rank</span>
@@ -1997,13 +2191,42 @@ export default function AdminStudentDetailsPage() {
                 );
               });
 
+              // Identify tasks that have actually been submitted / answered
+              const submittedTasks = courseTasks.filter((t) => {
+                const isSubmitted =
+                  t.status === "Submitted" ||
+                  t.status === "Graded" ||
+                  t.status === "Completed" ||
+                  t.status === "Reviewed" ||
+                  t.source === "submission";
+                const hasValidAnswer =
+                  t.studentAnswer &&
+                  t.studentAnswer !== "Not submitted yet" &&
+                  t.studentAnswer !== "Pending submission";
+                return isSubmitted || Boolean(t.submittedAt) || Boolean(hasValidAnswer);
+              });
+
+              const gradedTasks = submittedTasks.filter(
+                (t) => typeof t.outOf5 === "number" && t.outOf5 > 0
+              );
               const avgScore =
-                courseTasks.length > 0
+                gradedTasks.length > 0
                   ? (
-                      courseTasks.reduce((acc, t) => acc + (t.outOf5 || 0), 0) /
-                      courseTasks.length
+                      gradedTasks.reduce((acc, t) => acc + (t.outOf5 || 0), 0) /
+                      gradedTasks.length
                     ).toFixed(1)
-                  : "5.0";
+                  : null;
+
+              // Calculate authentic verified submissions
+              const aiScores = (student.submissions || student.assessments || [])
+                .map((s) => s.aiAuthenticityScore)
+                .filter((score): score is number => typeof score === "number" && score > 0);
+              const avgAiScore =
+                aiScores.length > 0
+                  ? `${Math.round(aiScores.reduce((a, b) => a + b, 0) / aiScores.length)}%`
+                  : submittedTasks.length > 0
+                  ? "100%"
+                  : null;
 
               return (
                 <div className="space-y-6">
@@ -2082,8 +2305,10 @@ export default function AdminStudentDetailsPage() {
                           Total Answered
                         </span>
                         <div className="mt-1 text-lg font-black text-slate-900 dark:text-white">
-                          {courseTasks.length}{" "}
-                          <span className="text-xs font-normal text-slate-400">tasks</span>
+                          {submittedTasks.length}{" "}
+                          <span className="text-xs font-normal text-slate-400">
+                            {submittedTasks.length === 1 ? "task" : "tasks"}
+                          </span>
                         </div>
                       </div>
                       <div className="rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 p-3 border border-emerald-200/50 dark:border-emerald-800/30">
@@ -2091,7 +2316,15 @@ export default function AdminStudentDetailsPage() {
                           Average Grade
                         </span>
                         <div className="mt-1 text-lg font-black text-emerald-700 dark:text-emerald-300">
-                          {avgScore} <span className="text-xs font-semibold">/ 5.0</span>
+                          {avgScore !== null ? (
+                            <>
+                              {avgScore} <span className="text-xs font-semibold">/ 5.0</span>
+                            </>
+                          ) : (
+                            <span className="text-slate-400 dark:text-slate-500 text-sm font-semibold">
+                              N/A
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="rounded-xl bg-blue-50/70 dark:bg-blue-950/40 p-3 border border-blue-200/50 dark:border-blue-800/30">
@@ -2099,7 +2332,15 @@ export default function AdminStudentDetailsPage() {
                           AI Authenticity
                         </span>
                         <div className="mt-1 text-lg font-black text-blue-700 dark:text-blue-300">
-                          96.5% <span className="text-xs font-semibold">Verified</span>
+                          {avgAiScore !== null ? (
+                            <>
+                              {avgAiScore} <span className="text-xs font-semibold">Verified</span>
+                            </>
+                          ) : (
+                            <span className="text-slate-400 dark:text-slate-500 text-sm font-semibold">
+                              N/A
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="rounded-xl bg-purple-50/70 dark:bg-purple-950/40 p-3 border border-purple-200/50 dark:border-purple-800/30">
@@ -2299,6 +2540,12 @@ export default function AdminStudentDetailsPage() {
                                         </div>
 
                                         <div className="flex items-center gap-2 shrink-0">
+                                          {task.isRetake && (
+                                            <span className="rounded-full bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/40 px-2.5 py-0.5 text-[10px] font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1">
+                                              <RefreshCw className="h-3 w-3" />
+                                              Retake (Attempt #{task.attemptsCount || 2})
+                                            </span>
+                                          )}
                                           <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                                             {task.assignmentType || "Short Answer"}
                                           </span>
@@ -2316,94 +2563,444 @@ export default function AdminStudentDetailsPage() {
                                         </div>
                                       </div>
 
-                                      {/* Question Prompt */}
-                                      <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated/40 p-3.5 space-y-1">
-                                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                                          <HelpCircle className="h-3 w-3 text-blue-500" />
-                                          <span>Question / Assignment Prompt</span>
-                                        </div>
-                                        <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
-                                          {task.question || task.whyUsing || task.topicName}
-                                        </p>
-                                      </div>
+                                      {(() => {
+                                        const parsedSubmission = parseTaskSubmissionDetails(task);
+                                        return (
+                                          <>
+                                            {/* Question Prompt */}
+                                            <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated/40 p-3.5 space-y-1">
+                                              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                                <HelpCircle className="h-3 w-3 text-blue-500" />
+                                                <span>Question / Assignment Prompt</span>
+                                              </div>
+                                              <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                                {task.question || task.whyUsing || task.topicName}
+                                              </p>
+                                            </div>
 
-                                      {/* Student Submission / Answer */}
-                                      <div className="rounded-xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/30 dark:bg-blue-950/20 p-3.5 space-y-2">
-                                        <div className="text-[10px] font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
-                                          <FileCheck className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                                          <span>Student's Actual Answer / Submission</span>
-                                        </div>
-
-                                        {/* MCQ Answer View */}
-                                        {Array.isArray(task.options) && task.options.length > 0 ? (
-                                          <div className="space-y-1.5 mt-2">
-                                            {task.options.map((opt, oIdx) => {
-                                              const letter = String.fromCharCode(65 + oIdx);
-                                              const isSelected =
-                                                task.studentAnswer?.includes(opt) ||
-                                                task.studentAnswer === letter ||
-                                                task.studentAnswer === String(oIdx);
-                                              const isCorrect =
-                                                task.correctAnswer === opt ||
-                                                task.correctAnswer === letter ||
-                                                task.correctAnswer === String(oIdx);
-
-                                              return (
-                                                <div
-                                                  key={oIdx}
-                                                  className={`flex items-center justify-between rounded-lg p-2 text-xs border ${
-                                                    isSelected
-                                                      ? isCorrect
-                                                        ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200"
-                                                        : "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200"
-                                                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary text-slate-700 dark:text-slate-300"
-                                                  }`}
-                                                >
+                                            {/* Student Submission / Answer */}
+                                            <div className="rounded-xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/30 dark:bg-blue-950/20 p-3.5 space-y-3">
+                                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                                <div className="text-[10px] font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                                                  <FileCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                                                  <span>Student's Actual Answer / Submission</span>
+                                                </div>
+                                                {parsedSubmission.isMultiQuestion && parsedSubmission.questions.length > 0 && (
                                                   <div className="flex items-center gap-2">
-                                                    <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-200 dark:bg-slate-700 text-[10px] font-bold">
-                                                      {letter}
+                                                    <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                                      {parsedSubmission.questions.length} Questions
                                                     </span>
-                                                    <span className="font-medium">{opt}</span>
+                                                    {parsedSubmission.passed !== undefined && (
+                                                      <span
+                                                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                                                          parsedSubmission.passed
+                                                            ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800"
+                                                            : "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800"
+                                                        }`}
+                                                      >
+                                                        {parsedSubmission.passed ? "Passed" : "Needs Review"} (
+                                                        {parsedSubmission.score ?? task.marks}%)
+                                                      </span>
+                                                    )}
                                                   </div>
-                                                  {isSelected && (
-                                                    <span className="rounded bg-blue-600 text-white px-2 py-0.5 text-[10px] font-bold">
-                                                      Student's Selection
-                                                    </span>
+                                                )}
+                                              </div>
+
+                                              {/* 1. Multi-Question Submission Breakdown */}
+                                              {parsedSubmission.isMultiQuestion && parsedSubmission.questions.length > 0 ? (
+                                                <div className="space-y-3 pt-1">
+                                                  {parsedSubmission.questions.map((q, qIdx) => {
+                                                    const isMcq = q.type === "MCQ";
+                                                    const isShortAnswer = q.type === "SHORT_ANSWER";
+                                                    const isLongAnswer = q.type === "LONG_ANSWER";
+                                                    const isFileUpload = q.type === "FILE_UPLOAD";
+                                                    const isCoding = q.type === "CODING";
+
+                                                    const typeBadgeColor = isMcq
+                                                      ? "bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                                                      : isShortAnswer
+                                                      ? "bg-teal-100 text-teal-800 dark:bg-teal-950/70 dark:text-teal-300 border-teal-200 dark:border-teal-800"
+                                                      : isLongAnswer
+                                                      ? "bg-purple-100 text-purple-800 dark:bg-purple-950/70 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                                                      : isFileUpload
+                                                      ? "bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                                                      : "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/70 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800";
+
+                                                    const typeLabel = isMcq
+                                                      ? "Multiple Choice"
+                                                      : isShortAnswer
+                                                      ? "Short Answer"
+                                                      : isLongAnswer
+                                                      ? "Long Answer"
+                                                      : isFileUpload
+                                                      ? "File Upload"
+                                                      : isCoding
+                                                      ? "Coding Solution"
+                                                      : q.type;
+
+                                                    const studentAnswerText =
+                                                      typeof q.studentAnswer === "string" ? q.studentAnswer.trim() : "";
+                                                    const wordCount = studentAnswerText
+                                                      ? studentAnswerText.split(/\s+/).filter(Boolean).length
+                                                      : 0;
+
+                                                    return (
+                                                      <div
+                                                        key={qIdx}
+                                                        className="rounded-xl bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-800 p-3.5 space-y-2.5 shadow-xs"
+                                                      >
+                                                        {/* Question Header */}
+                                                        <div className="flex flex-wrap items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
+                                                          <div className="flex items-start gap-2 min-w-0 flex-1">
+                                                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 text-[10px] font-bold mt-0.5">
+                                                              {qIdx + 1}
+                                                            </span>
+                                                            <div className="min-w-0 flex-1">
+                                                              <span className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                                                                {q.prompt || `Question ${qIdx + 1}`}
+                                                              </span>
+                                                            </div>
+                                                          </div>
+
+                                                          <div className="flex items-center gap-1.5 shrink-0">
+                                                            <span
+                                                              className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border ${typeBadgeColor}`}
+                                                            >
+                                                              {typeLabel}
+                                                            </span>
+
+                                                            {q.isCorrect !== undefined && (
+                                                              <span
+                                                                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold shrink-0 border ${
+                                                                  q.isCorrect
+                                                                    ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                                                                    : "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                                                                }`}
+                                                              >
+                                                                {q.isCorrect ? (
+                                                                  <>
+                                                                    <CheckCircle className="h-2.5 w-2.5" />
+                                                                    <span>
+                                                                      Correct ({q.earned ?? 1}/{q.max ?? 1} pt)
+                                                                    </span>
+                                                                  </>
+                                                                ) : (
+                                                                  <>
+                                                                    <XCircle className="h-2.5 w-2.5" />
+                                                                    <span>
+                                                                      Incorrect ({q.earned ?? 0}/{q.max ?? 1} pt)
+                                                                    </span>
+                                                                  </>
+                                                                )}
+                                                              </span>
+                                                            )}
+                                                          </div>
+                                                        </div>
+
+                                                        {/* 1. MCQ TYPE */}
+                                                        {isMcq ? (
+                                                          Array.isArray(q.choices) && q.choices.length > 0 ? (
+                                                            <div className="space-y-1.5 pt-0.5">
+                                                              {q.choices.map((choiceText, cIdx) => {
+                                                                const letter = String.fromCharCode(65 + cIdx);
+                                                                const isSelected =
+                                                                  q.studentAnswer === cIdx ||
+                                                                  q.studentAnswer === letter ||
+                                                                  q.studentAnswer === choiceText ||
+                                                                  q.selectedChoiceText === choiceText ||
+                                                                  (typeof q.studentAnswer === "string" &&
+                                                                    q.studentAnswer.toLowerCase() === choiceText.toLowerCase());
+
+                                                                const isAnsCorrect =
+                                                                  q.correctIndex === cIdx ||
+                                                                  q.correctAnswer === cIdx ||
+                                                                  q.correctAnswer === letter ||
+                                                                  q.correctAnswer === choiceText ||
+                                                                  (typeof q.correctAnswer === "string" &&
+                                                                    q.correctAnswer.toLowerCase() === choiceText.toLowerCase());
+
+                                                                return (
+                                                                  <div
+                                                                    key={cIdx}
+                                                                    className={`flex items-center justify-between rounded-lg p-2.5 text-xs border transition-all ${
+                                                                      isSelected
+                                                                        ? isAnsCorrect
+                                                                          ? "border-emerald-400 dark:border-emerald-700 bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 font-semibold"
+                                                                          : "border-blue-400 dark:border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-950 dark:text-blue-100 font-semibold"
+                                                                        : isAnsCorrect
+                                                                        ? "border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/30 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300 font-medium"
+                                                                        : "border-slate-200 dark:border-slate-800/80 bg-slate-50/40 dark:bg-surface-elevated/40 text-slate-700 dark:text-slate-300"
+                                                                    }`}
+                                                                  >
+                                                                    <div className="flex items-center gap-2.5">
+                                                                      <span
+                                                                        className={`flex h-5 w-5 items-center justify-center rounded-md text-[10px] font-bold ${
+                                                                          isSelected
+                                                                            ? isAnsCorrect
+                                                                              ? "bg-emerald-600 text-white"
+                                                                              : "bg-blue-600 text-white"
+                                                                            : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                                                                        }`}
+                                                                      >
+                                                                        {letter}
+                                                                      </span>
+                                                                      <span className="leading-snug">{choiceText}</span>
+                                                                    </div>
+
+                                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                                      {isAnsCorrect && (
+                                                                        <span className="rounded-md bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 px-2 py-0.5 text-[9px] font-bold">
+                                                                          Correct Key
+                                                                        </span>
+                                                                      )}
+                                                                      {isSelected && (
+                                                                        <span className="rounded-md bg-blue-600 text-white px-2 py-0.5 text-[9px] font-bold shadow-xs">
+                                                                          Student's Selection
+                                                                        </span>
+                                                                      )}
+                                                                    </div>
+                                                                  </div>
+                                                                );
+                                                              })}
+                                                            </div>
+                                                          ) : typeof q.studentAnswer === "number" ? (
+                                                            <div className="flex items-center gap-2 rounded-lg bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-2.5 text-xs">
+                                                              <span className="font-semibold text-blue-900 dark:text-blue-200">
+                                                                Student's Selected Choice:
+                                                              </span>
+                                                              <span className="font-bold text-blue-700 dark:text-blue-400">
+                                                                Option {String.fromCharCode(65 + q.studentAnswer)} (Choice #{q.studentAnswer + 1})
+                                                              </span>
+                                                            </div>
+                                                          ) : (
+                                                            <div className="rounded-lg bg-slate-50/80 dark:bg-surface-elevated/50 border border-slate-200 dark:border-slate-800 p-3 text-xs text-slate-800 dark:text-slate-200 font-sans">
+                                                              {studentAnswerText || "No answer provided."}
+                                                            </div>
+                                                          )
+                                                        ) : isShortAnswer ? (
+                                                          /* 2. SHORT ANSWER TYPE */
+                                                          <div className="space-y-2">
+                                                            <div className="rounded-xl border border-slate-200/90 dark:border-slate-700/70 bg-slate-50/60 dark:bg-slate-900/40 p-3 space-y-1.5">
+                                                              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                                                <span>Student Written Answer</span>
+                                                                {wordCount > 0 && (
+                                                                  <span className="font-mono text-slate-400">
+                                                                    {wordCount} {wordCount === 1 ? "word" : "words"}
+                                                                  </span>
+                                                                )}
+                                                              </div>
+                                                              <div className="text-xs text-slate-900 dark:text-slate-100 whitespace-pre-wrap leading-relaxed font-sans font-medium">
+                                                                {studentAnswerText || (
+                                                                  <span className="italic text-slate-400">No written answer submitted.</span>
+                                                                )}
+                                                              </div>
+                                                            </div>
+
+                                                            {q.modelAnswer && (
+                                                              <div className="rounded-xl border border-emerald-200/70 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20 p-2.5 space-y-1 text-xs">
+                                                                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                                                                  <CheckCircle className="h-3 w-3" />
+                                                                  <span>Benchmark / Model Answer</span>
+                                                                </div>
+                                                                <div className="text-slate-700 dark:text-slate-300 leading-relaxed font-sans text-xs">
+                                                                  {q.modelAnswer}
+                                                                </div>
+                                                              </div>
+                                                            )}
+
+                                                            {q.keywords && (
+                                                              <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-[10px]">
+                                                                <span className="font-semibold text-slate-500 dark:text-slate-400">
+                                                                  Key Concepts:
+                                                                </span>
+                                                                {q.keywords.split(/[,;\s]+/).filter(Boolean).map((kw, kwIdx) => (
+                                                                  <span
+                                                                    key={kwIdx}
+                                                                    className="rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 font-mono"
+                                                                  >
+                                                                    {kw}
+                                                                  </span>
+                                                                ))}
+                                                              </div>
+                                                            )}
+                                                          </div>
+                                                        ) : isLongAnswer ? (
+                                                          /* 3. LONG ANSWER TYPE */
+                                                          <div className="space-y-2.5">
+                                                            <div className="rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-slate-900/50 p-3.5 space-y-2 shadow-xs">
+                                                              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300">
+                                                                <span>Comprehensive Submission</span>
+                                                                {wordCount > 0 && (
+                                                                  <span className="font-mono text-slate-400">
+                                                                    {wordCount} words · {studentAnswerText.length} chars
+                                                                  </span>
+                                                                )}
+                                                              </div>
+                                                              <div className="text-xs text-slate-900 dark:text-slate-100 whitespace-pre-wrap leading-relaxed font-sans font-medium selection:bg-purple-100">
+                                                                {studentAnswerText || (
+                                                                  <span className="italic text-slate-400">No comprehensive answer submitted.</span>
+                                                                )}
+                                                              </div>
+                                                            </div>
+
+                                                            {q.rubric && (
+                                                              <div className="rounded-xl border border-blue-200/70 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-950/20 p-2.5 text-xs space-y-1">
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 block">
+                                                                  Rubric &amp; Evaluation Criteria
+                                                                </span>
+                                                                <div className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap text-xs leading-relaxed">
+                                                                  {q.rubric}
+                                                                </div>
+                                                              </div>
+                                                            )}
+
+                                                            {q.modelAnswer && (
+                                                              <div className="rounded-xl border border-emerald-200/70 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20 p-2.5 space-y-1 text-xs">
+                                                                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                                                                  <CheckCircle className="h-3 w-3" />
+                                                                  <span>Reference / Model Solution</span>
+                                                                </div>
+                                                                <div className="text-slate-700 dark:text-slate-300 leading-relaxed font-sans text-xs">
+                                                                  {q.modelAnswer}
+                                                                </div>
+                                                              </div>
+                                                            )}
+                                                          </div>
+                                                        ) : isFileUpload ? (
+                                                          /* 4. FILE UPLOAD TYPE */
+                                                          <div className="space-y-2">
+                                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/30 dark:bg-amber-950/20 p-3">
+                                                              <div className="flex items-center gap-3 min-w-0">
+                                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300">
+                                                                  <FileText className="h-5 w-5" />
+                                                                </div>
+                                                                <div className="min-w-0 flex-1">
+                                                                  <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                                                    {q.fileName || q.studentAnswer || task.submissionFileName || "Attached Project Solution"}
+                                                                  </div>
+                                                                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                                                                    Uploaded deliverable file / submission artifact
+                                                                  </div>
+                                                                </div>
+                                                              </div>
+
+                                                              {(q.fileUrl || task.submissionFileUrl) && (
+                                                                <a
+                                                                  href={q.fileUrl || task.submissionFileUrl}
+                                                                  target="_blank"
+                                                                  rel="noopener noreferrer"
+                                                                  download
+                                                                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-1.5 text-xs font-bold transition-colors shrink-0 shadow-xs"
+                                                                >
+                                                                  <Download className="h-3.5 w-3.5" />
+                                                                  <span>Download Deliverable</span>
+                                                                </a>
+                                                              )}
+                                                            </div>
+
+                                                            {studentAnswerText && studentAnswerText !== q.fileName && !studentAnswerText.startsWith("http") && (
+                                                              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 p-2.5 text-xs text-slate-700 dark:text-slate-300">
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                                                                  Student Notes / Explanations
+                                                                </span>
+                                                                <div className="whitespace-pre-wrap">{studentAnswerText}</div>
+                                                              </div>
+                                                            )}
+                                                          </div>
+                                                        ) : isCoding ? (
+                                                          /* 5. CODING SOLUTION TYPE */
+                                                          <div className="space-y-2">
+                                                            <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs font-mono text-emerald-400 whitespace-pre-wrap overflow-x-auto shadow-inner">
+                                                              {studentAnswerText || "// No code submitted."}
+                                                            </div>
+                                                          </div>
+                                                        ) : (
+                                                          /* GENERAL TEXT FALLBACK */
+                                                          <div className="rounded-xl bg-slate-50/80 dark:bg-surface-elevated/50 border border-slate-200 dark:border-slate-800 p-3 text-xs text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed font-sans">
+                                                            {studentAnswerText || "No answer submitted."}
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </div>
+                                              ) : Array.isArray(task.options) &&
+                                                task.options.length > 0 &&
+                                                (task.assignmentType?.toUpperCase().includes("MCQ") || typeof task.studentAnswer === "number") ? (
+                                                /* Single MCQ Answer View */
+                                                <div className="space-y-1.5 mt-2">
+                                                  {task.options.map((opt, oIdx) => {
+                                                    const letter = String.fromCharCode(65 + oIdx);
+                                                    const isSelected =
+                                                      task.studentAnswer?.includes(opt) ||
+                                                      task.studentAnswer === letter ||
+                                                      task.studentAnswer === String(oIdx);
+                                                    const isCorrect =
+                                                      task.correctAnswer === opt ||
+                                                      task.correctAnswer === letter ||
+                                                      task.correctAnswer === String(oIdx);
+
+                                                    return (
+                                                      <div
+                                                        key={oIdx}
+                                                        className={`flex items-center justify-between rounded-lg p-2.5 text-xs border ${
+                                                          isSelected
+                                                            ? isCorrect
+                                                              ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-medium"
+                                                              : "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 font-medium"
+                                                            : "border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary text-slate-700 dark:text-slate-300"
+                                                        }`}
+                                                      >
+                                                        <div className="flex items-center gap-2">
+                                                          <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-200 dark:bg-slate-700 text-[10px] font-bold">
+                                                            {letter}
+                                                          </span>
+                                                          <span className="font-medium">{opt}</span>
+                                                        </div>
+                                                        {isSelected && (
+                                                          <span className="rounded bg-blue-600 text-white px-2 py-0.5 text-[10px] font-bold">
+                                                            Student's Selection
+                                                          </span>
+                                                        )}
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </div>
+                                              ) : task.submissionFileUrl || task.assignmentType?.toUpperCase().includes("FILE") ? (
+                                                /* File Upload Answer View */
+                                                <div className="flex items-center justify-between rounded-xl border border-blue-200 dark:border-blue-800 bg-white dark:bg-surface-secondary p-3.5">
+                                                  <div className="flex items-center gap-2.5">
+                                                    <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                                    <div>
+                                                      <div className="text-xs font-bold text-slate-900 dark:text-white">
+                                                        {task.submissionFileName || "Student Project Archive"}
+                                                      </div>
+                                                      <div className="text-[10px] text-slate-400">Attached student deliverable file</div>
+                                                    </div>
+                                                  </div>
+                                                  {task.submissionFileUrl && (
+                                                    <a
+                                                      href={task.submissionFileUrl}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      download
+                                                      className="flex items-center gap-1.5 rounded-xl bg-blue-600 text-white px-3 py-1.5 text-xs font-bold hover:bg-blue-700 transition-colors"
+                                                    >
+                                                      <Download className="h-3.5 w-3.5" />
+                                                      <span>Download File</span>
+                                                    </a>
                                                   )}
                                                 </div>
-                                              );
-                                            })}
-                                          </div>
-                                        ) : task.submissionFileUrl ? (
-                                          /* File Upload Answer View */
-                                          <div className="flex items-center justify-between rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-surface-secondary p-3">
-                                            <div className="flex items-center gap-2.5">
-                                              <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                              <div>
-                                                <div className="text-xs font-bold text-slate-900 dark:text-white">
-                                                  {task.submissionFileName || "Student Project Archive"}
+                                              ) : (
+                                                /* Text / Short / Long Answer / Code Answer View */
+                                                <div className="rounded-xl bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-800 p-3.5 text-xs text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed font-sans font-medium">
+                                                  {task.studentAnswer || task.examplesCaseStudy || "No written response submitted yet."}
                                                 </div>
-                                                <div className="text-[10px] text-slate-400">Attached student deliverable file</div>
-                                              </div>
+                                              )}
                                             </div>
-                                            <a
-                                              href={task.submissionFileUrl}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              download
-                                              className="flex items-center gap-1.5 rounded-lg bg-blue-600 text-white px-3 py-1.5 text-xs font-bold hover:bg-blue-700 transition-colors"
-                                            >
-                                              <Download className="h-3.5 w-3.5" />
-                                              <span>Download File</span>
-                                            </a>
-                                          </div>
-                                        ) : (
-                                          /* Text / Code Answer View */
-                                          <div className="rounded-lg bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-800 p-3 text-xs text-slate-800 dark:text-slate-200 whitespace-pre-wrap font-sans">
-                                            {task.studentAnswer || task.examplesCaseStudy || "No written response submitted yet."}
-                                          </div>
-                                        )}
-                                      </div>
+                                          </>
+                                        );
+                                      })()}
 
                                       {/* Evaluation Footer */}
                                       <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800/60">
@@ -2518,14 +3115,26 @@ export default function AdminStudentDetailsPage() {
                                     <div className="line-clamp-2 text-[10px]">{t.flow}</div>
                                   </td>
                                   <td className="p-3 text-center whitespace-nowrap">
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-xs font-black">
-                                      ★ {typeof t.outOf5 === "number" ? t.outOf5.toFixed(1) : "5.0"}
-                                    </span>
+                                    {typeof t.outOf5 === "number" && t.outOf5 > 0 ? (
+                                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-xs font-black">
+                                        ★ {t.outOf5.toFixed(1)}
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-400 dark:text-slate-500 font-mono">—</span>
+                                    )}
                                   </td>
                                   <td className="p-3 whitespace-nowrap">
-                                    <span className="rounded-full bg-blue-100 dark:bg-blue-950/70 border border-blue-300 dark:border-blue-800/60 text-blue-800 dark:text-blue-300 px-2 py-0.5 text-[10px] font-bold">
-                                      {t.remarks || "Verified"}
-                                    </span>
+                                    <div className="flex flex-col gap-1 items-start">
+                                      <span className="rounded-full bg-blue-100 dark:bg-blue-950/70 border border-blue-300 dark:border-blue-800/60 text-blue-800 dark:text-blue-300 px-2 py-0.5 text-[10px] font-bold">
+                                        {t.remarks || (t.status === "Submitted" ? "Submitted" : "Pending")}
+                                      </span>
+                                      {t.isRetake && (
+                                        <span className="rounded-full bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/40 px-2 py-0.5 text-[9px] font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1">
+                                          <RefreshCw className="h-2.5 w-2.5" />
+                                          Retake #{t.attemptsCount || 2}
+                                        </span>
+                                      )}
+                                    </div>
                                   </td>
                                   <td className="p-3 text-center">
                                     <button
@@ -2666,6 +3275,46 @@ export default function AdminStudentDetailsPage() {
 
             {/* Modal Scrollable Body */}
             <div className="overflow-y-auto p-6 space-y-5 text-xs text-slate-700 dark:text-slate-300">
+              {/* Retake Attempt Banner & History */}
+              {selectedTaskModal.isRetake && (
+                <div className="rounded-xl bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/50 p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-purple-900 dark:text-purple-200 flex items-center gap-1.5 text-xs">
+                      <RefreshCw className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                      Retake Submission · Attempt #{selectedTaskModal.attemptsCount || 2}
+                    </span>
+                    <span className="text-[11px] font-semibold text-purple-700 dark:text-purple-300">
+                      Total Attempts: {selectedTaskModal.attemptsCount || 2}
+                    </span>
+                  </div>
+                  {Array.isArray(selectedTaskModal.attempts) && selectedTaskModal.attempts.length > 1 && (
+                    <div className="space-y-1.5 pt-1 border-t border-purple-200/60 dark:border-purple-800/40">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                        Attempt Timeline:
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {selectedTaskModal.attempts.map((att: any, aIdx: number) => (
+                          <div
+                            key={aIdx}
+                            className="rounded-lg bg-white/80 dark:bg-surface-elevated p-2 text-[11px] border border-purple-100 dark:border-purple-900/40 flex justify-between items-center"
+                          >
+                            <span className="font-medium">Attempt #{att.attemptNumber || aIdx + 1}</span>
+                            <span className="text-slate-500 font-mono text-[10px]">
+                              {att.submittedAt ? new Date(att.submittedAt).toLocaleDateString("en-GB") : ""}
+                            </span>
+                            {att.score !== undefined && (
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                {att.score}%
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Remarks Banner if present */}
               {selectedTaskModal.remarks && (
                 <div className="rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 p-3.5 flex items-start gap-2.5">
@@ -2729,8 +3378,155 @@ export default function AdminStudentDetailsPage() {
                 <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Examples / Case Study
                 </label>
-                <div className="rounded-xl bg-slate-50 dark:bg-surface-elevated/70 border border-slate-200 dark:border-slate-800/80 p-3.5 leading-relaxed font-mono text-[11px] bg-amber-500/5 text-slate-800 dark:text-slate-200">
-                  {selectedTaskModal.examplesCaseStudy}
+                <div className="rounded-xl bg-slate-50 dark:bg-surface-elevated/70 border border-slate-200 dark:border-slate-800/80 p-3.5 leading-relaxed text-[11px] text-slate-800 dark:text-slate-200">
+                  {(() => {
+                    const parsed = parseTaskSubmissionDetails(selectedTaskModal);
+                    if (parsed.isMultiQuestion && parsed.questions.length > 0) {
+                      return (
+                        <div className="space-y-4 font-sans text-xs">
+                          {parsed.questions.map((q, idx) => {
+                            const isMcq = q.type === "MCQ";
+                            const isShort = q.type === "SHORT_ANSWER";
+                            const isLong = q.type === "LONG_ANSWER";
+                            const isFile = q.type === "FILE_UPLOAD";
+                            const isCoding = q.type === "CODING";
+
+                            const typeBadge = isMcq
+                              ? { label: "Multiple Choice", cls: "bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300 border-blue-200 dark:border-blue-800" }
+                              : isShort
+                              ? { label: "Short Answer", cls: "bg-teal-100 text-teal-800 dark:bg-teal-950/70 dark:text-teal-300 border-teal-200 dark:border-teal-800" }
+                              : isLong
+                              ? { label: "Long Answer", cls: "bg-purple-100 text-purple-800 dark:bg-purple-950/70 dark:text-purple-300 border-purple-200 dark:border-purple-800" }
+                              : isFile
+                              ? { label: "File Upload", cls: "bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border-amber-200 dark:border-amber-800" }
+                              : { label: "Coding Solution", cls: "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/70 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800" };
+
+                            const studentText = typeof q.studentAnswer === "string" ? q.studentAnswer.trim() : "";
+
+                            return (
+                              <div
+                                key={idx}
+                                className="rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-surface-elevated/40 p-3.5 space-y-2.5 shadow-2xs"
+                              >
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
+                                      {idx + 1}
+                                    </span>
+                                    <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold border ${typeBadge.cls}`}>
+                                      {typeBadge.label}
+                                    </span>
+                                  </div>
+                                  {q.isCorrect !== undefined && (
+                                    <span
+                                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                        q.isCorrect
+                                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                                          : "bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800"
+                                      }`}
+                                    >
+                                      {q.isCorrect ? "Correct" : "Needs Review"} ({q.earned ?? (q.isCorrect ? 1 : 0)}/{q.max ?? 1} pt)
+                                    </span>
+                                  )}
+                                </div>
+
+                                <p className="font-semibold text-slate-900 dark:text-white text-xs">
+                                  {q.prompt}
+                                </p>
+
+                                {/* Response Content */}
+                                {isMcq ? (
+                                  <div className="rounded-lg bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/40 p-2.5 text-xs">
+                                    <span className="font-bold text-blue-700 dark:text-blue-300 mr-1.5">
+                                      Student's Selection:
+                                    </span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-medium">
+                                      {q.selectedChoiceText || q.studentAnswer || "No choice selected"}
+                                    </span>
+                                  </div>
+                                ) : isFile ? (
+                                  <div className="rounded-lg border border-amber-200 dark:border-amber-800/60 bg-amber-50/40 dark:bg-amber-950/20 p-3 space-y-2">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <div className="flex items-center gap-2">
+                                        <FileCheck className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                        <span className="font-bold text-slate-800 dark:text-slate-200 text-xs">
+                                          {q.fileName || selectedTaskModal.submissionFileName || "Student Uploaded Submission"}
+                                        </span>
+                                      </div>
+                                      {(q.fileUrl || selectedTaskModal.submissionFileUrl) && (
+                                        <a
+                                          href={q.fileUrl || selectedTaskModal.submissionFileUrl}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="inline-flex items-center gap-1 rounded-md bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1 text-[11px] font-bold transition-colors"
+                                        >
+                                          <Download className="h-3 w-3" />
+                                          Download File
+                                        </a>
+                                      )}
+                                    </div>
+                                    {studentText && !studentText.startsWith("http") && (
+                                      <p className="text-[11px] text-slate-600 dark:text-slate-400 italic">
+                                        "{studentText}"
+                                      </p>
+                                    )}
+                                  </div>
+                                ) : isCoding ? (
+                                  <div className="rounded-lg bg-slate-900 dark:bg-black/90 border border-slate-800 p-3 font-mono text-[11px] text-emerald-400 whitespace-pre-wrap overflow-x-auto">
+                                    {studentText || "// No code submitted"}
+                                  </div>
+                                ) : (
+                                  /* Short or Long Written Answer */
+                                  <div className="space-y-2">
+                                    <div className="rounded-lg bg-slate-50 dark:bg-surface-secondary/70 border border-slate-200 dark:border-slate-800 p-3 text-xs leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
+                                      {studentText || (
+                                        <span className="italic text-slate-400">No written answer provided.</span>
+                                      )}
+                                    </div>
+                                    {q.modelAnswer && (
+                                      <div className="rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 p-2.5 text-[11px] text-emerald-900 dark:text-emerald-300">
+                                        <span className="font-bold block mb-0.5">Model / Benchmark Answer:</span>
+                                        <span className="leading-relaxed">{q.modelAnswer}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                    if (selectedTaskModal.submissionFileUrl) {
+                      return (
+                        <div className="rounded-lg border border-amber-200 dark:border-amber-800/60 bg-amber-50/40 dark:bg-amber-950/20 p-3.5 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2.5">
+                            <FileCheck className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                            <div>
+                              <div className="font-bold text-slate-900 dark:text-white text-xs">
+                                {selectedTaskModal.submissionFileName || "Submitted Assignment File"}
+                              </div>
+                              <div className="text-[11px] text-slate-500">Click to inspect or download student submission</div>
+                            </div>
+                          </div>
+                          <a
+                            href={selectedTaskModal.submissionFileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 text-xs font-bold transition-colors"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            Download
+                          </a>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="font-mono text-[11px] whitespace-pre-wrap">
+                        {selectedTaskModal.examplesCaseStudy}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 

@@ -765,6 +765,8 @@ export default function ResumeBuilderPage() {
         singlePageFit: true,
       });
 
+      const studentFullName = (resumeData.personal.fullName || "").trim();
+
       apiFetch("/activity-logs/client", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -772,8 +774,9 @@ export default function ResumeBuilderPage() {
           action: "RESUME_DOWNLOADED",
           entityType: "RESUME",
           entityName: `${cleanName}_Resume.pdf`,
-          description: `Student exported PDF resume: "${cleanName}_Resume.pdf"`,
+          description: `Student ${studentFullName || "user"} exported PDF resume: "${cleanName}_Resume.pdf"`,
           metadata: {
+            studentName: studentFullName || undefined,
             templateId: template,
             targetRole: resumeData.personal.headline || "Software Engineer",
           },

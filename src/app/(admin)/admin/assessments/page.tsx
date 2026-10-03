@@ -31,6 +31,7 @@ import {
   type IndividualTask,
   type ReusableAssessment,
   getStoredMasterAssessments,
+  fetchAllReusableAssessments,
 } from "@/lib/data/tasks-api";
 import { CreateTaskModal } from "@/components/admin/create-task-modal";
 import { ReviewTaskModal } from "@/components/admin/review-task-modal";
@@ -46,6 +47,7 @@ export default function AdminAssessmentsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [selectedCourse, setSelectedCourse] = useState<string>("ALL");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isReuseMode, setIsReuseMode] = useState(false);
   const [reassignAssessment, setReassignAssessment] = useState<ReusableAssessment | null>(null);
   const [reviewingTask, setReviewingTask] = useState<IndividualTask | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -58,11 +60,21 @@ export default function AdminAssessmentsPage() {
   const loadTasks = useCallback(async (isManual = false) => {
     if (isManual) setIsRefreshing(true);
     try {
-      const data = await fetchAdminTasks();
+      // 1. Immediately populate from local cache
+      const cachedReusable = getStoredMasterAssessments();
+      setReusableList(cachedReusable);
+
+      // 2. Load live tasks and full aggregated reusable assessments from all courses
+      const [data, reusable] = await Promise.all([
+        fetchAdminTasks(),
+        fetchAllReusableAssessments(),
+      ]);
       setTasks(data);
-      setReusableList(getStoredMasterAssessments());
+      if (reusable && reusable.length > 0) {
+        setReusableList(reusable);
+      }
       if (isManual) {
-        showToast(`Loaded ${data.length} student assignments.`);
+        showToast(`Loaded ${data.length} student assignments and ${reusable.length} course assessments.`);
       }
     } catch (err) {
       console.error("Failed to load tasks:", err);
@@ -123,8 +135,9 @@ export default function AdminAssessmentsPage() {
     return list;
   }, [tasks, statusFilter, selectedCourse, searchQuery]);
 
-  const handleOpenAssignModal = (tpl?: ReusableAssessment) => {
+  const handleOpenAssignModal = (tpl?: ReusableAssessment, isReuse?: boolean) => {
     setReassignAssessment(tpl || null);
+    setIsReuseMode(Boolean(isReuse || tpl));
     setIsCreateModalOpen(true);
   };
 
@@ -144,6 +157,7 @@ export default function AdminAssessmentsPage() {
       createdAt: task.createdAt,
     };
     setReassignAssessment(tpl);
+    setIsReuseMode(true);
     setIsCreateModalOpen(true);
   };
 
@@ -211,6 +225,18 @@ export default function AdminAssessmentsPage() {
               <ClipboardCheck className="h-4 w-4" />
               <span>Question Bank</span>
             </Link>
+
+            <button
+              type="button"
+              onClick={() => {
+                handleOpenAssignModal(undefined, true);
+              }}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-xs font-bold text-[#2563EB] hover:bg-blue-100 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-all cursor-pointer shadow-xs"
+              title="Reuse an existing course assignment or created assessment"
+            >
+              <Repeat className="h-4 w-4" />
+              <span>Reuse Existing Assignment</span>
+            </button>
 
             <button
               type="button"
@@ -649,9 +675,11 @@ export default function AdminAssessmentsPage() {
       <CreateTaskModal
         isOpen={isCreateModalOpen}
         initialAssessment={reassignAssessment}
+        isReuseMode={isReuseMode}
         onClose={() => {
           setIsCreateModalOpen(false);
           setReassignAssessment(null);
+          setIsReuseMode(false);
         }}
         onCreated={(newTask) => {
           setTasks((prev) => [newTask, ...prev]);
@@ -659,7 +687,7 @@ export default function AdminAssessmentsPage() {
         }}
         onBatchCreated={(newTasks) => {
           setTasks((prev) => [...newTasks, ...prev]);
-          setReusableList(getStoredMasterAssessments());
+          fetchAllReusableAssessments().then((reusable) => setReusableList(reusable));
           showToast(`Assessment assigned successfully to ${newTasks.length} student(s)!`);
         }}
       />

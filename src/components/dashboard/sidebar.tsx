@@ -436,9 +436,17 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
   return (
     <>
-      {/* Desktop Sticky & Static Sidebar (Permanently Docked to Viewport) */}
+      {/* Desktop Layout Spacer to hold horizontal space in flex container */}
+      <div
+        className={`hidden md:block shrink-0 transition-all duration-300 ease-in-out print:hidden ${
+          isCollapsed ? "w-[78px]" : "w-[260px]"
+        }`}
+        aria-hidden="true"
+      />
+
+      {/* Desktop Fixed Sidebar (Permanently Docked to Viewport Left - Never Moves on Scroll) */}
       <aside
-        className={`hidden shrink-0 flex-col p-3 md:p-3.5 md:flex sticky top-0 h-screen z-40 transition-all duration-300 ease-in-out print:hidden ${
+        className={`hidden shrink-0 flex-col p-3 md:p-3.5 md:flex fixed top-0 left-0 bottom-0 h-screen z-40 transition-all duration-300 ease-in-out print:hidden ${
           isCollapsed ? "w-[78px]" : "w-[260px]"
         }`}
       >

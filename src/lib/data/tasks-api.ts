@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api/base-url";
+import { getStoredCourses, syncCoursesWithBackend, type FullCourse } from "@/lib/data/courses-store";
 
 export interface TaskQuestion {
   id: string;
@@ -251,17 +252,244 @@ const DEFAULT_MASTER_ASSESSMENTS: ReusableAssessment[] = [
   },
 ];
 
+/**
+ * Safely extracts section assignments from course curriculums and maps to ReusableAssessment format.
+ */
+export function extractCourseAssignments(courses: FullCourse[]): ReusableAssessment[] {
+  const result: ReusableAssessment[] = [];
+  const seen = new Set<string>();
+
+  for (const course of courses || []) {
+    if (!course || !Array.isArray(course.sections)) continue;
+    const courseTitle = course.title || "Course Assignment";
+    const courseId = course.id || course.slug;
+
+    for (let secIdx = 0; secIdx < course.sections.length; secIdx++) {
+      const sec = course.sections[secIdx];
+      if (!sec || !sec.assignment) continue;
+      const asg = sec.assignment;
+      const title = asg.title?.trim();
+      if (!title) continue;
+
+      const dedupeKey = `${(course.slug || course.id || "").toLowerCase()}:::${title.toLowerCase()}`;
+      if (seen.has(dedupeKey)) continue;
+      seen.add(dedupeKey);
+
+      // Convert questions to TaskQuestion[]
+      const questions: TaskQuestion[] = Array.isArray(asg.questions)
+        ? asg.questions.map((q: any, qIdx: number) => {
+            const rawType = (q.type || asg.type || "").toLowerCase();
+            let taskType: TaskQuestion["type"] = "SHORT_ANSWER";
+            if (rawType.includes("mcq") || (Array.isArray(q.choices) && q.choices.length > 1)) {
+              taskType = "MCQ";
+            } else if (rawType.includes("file") || rawType.includes("upload") || rawType.includes("project")) {
+              taskType = "FILE_UPLOAD";
+            } else if (rawType.includes("long") || rawType.includes("code") || rawType.includes("comprehens")) {
+              taskType = "LONG_ANSWER";
+            }
+
+            return {
+              id: q.id || `q-${courseId}-${secIdx}-${qIdx + 1}`,
+              type: taskType,
+              prompt: q.prompt || "",
+              modelAnswer: q.modelAnswer || q.solutionCode || "",
+              choices: Array.isArray(q.choices) && q.choices.length > 0 ? q.choices : undefined,
+              correctAnswer: typeof q.correctIndex === "number" ? q.correctIndex : 0,
+              maxPoints: typeof q.maxPoints === "number" && q.maxPoints > 0 ? q.maxPoints : 10,
+            };
+          })
+        : [];
+
+      result.push({
+        id: asg.id || `course-asg-${courseId}-${secIdx}`,
+        title,
+        description:
+          asg.description?.trim() ||
+          `Practical assignment for section "${sec.title || `Section ${secIdx + 1}`}" in ${courseTitle}.`,
+        instructions:
+          asg.modelAnswer?.trim() ||
+          (asg.minPassingScore ? `Minimum passing score: ${asg.minPassingScore}%` : "Complete all questions thoroughly and submit your answers."),
+        courseId,
+        courseTitle,
+        dueDate: undefined,
+        requiredFiles: asg.type?.toLowerCase().includes("file") ? ".pdf, .zip, .java, .py, .docx" : undefined,
+        questions,
+        timesAssigned: 0,
+        assignedStudents: [],
+        createdAt: course.createdAt || new Date().toISOString(),
+      });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Synchronous getter that immediately resolves real assignments from cached courses and local templates.
+ */
 export function getStoredMasterAssessments(): ReusableAssessment[] {
   if (typeof window === "undefined") return DEFAULT_MASTER_ASSESSMENTS;
   try {
-    const raw = localStorage.getItem(MASTER_ASSESSMENTS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    const courses = getStoredCourses();
+    const courseAssessments = extractCourseAssignments(courses);
+    if (courseAssessments.length > 0) {
+      const map = new Map<string, ReusableAssessment>();
+      courseAssessments.forEach((asm) => {
+        const key = `${(asm.courseTitle || "").toLowerCase().trim()}:::${asm.title.toLowerCase().trim()}`;
+        map.set(key, asm);
+      });
+
+      // Merge custom templates from localStorage
+      const raw = localStorage.getItem(MASTER_ASSESSMENTS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((custom: ReusableAssessment) => {
+            if (!custom || !custom.title) return;
+            if (custom.id === "asm-python-basics" || custom.id === "asm-java-intro") return;
+            const key = `${(custom.courseTitle || "").toLowerCase().trim()}:::${custom.title.toLowerCase().trim()}`;
+            if (!map.has(key)) {
+              map.set(key, custom);
+            }
+          });
+        }
+      }
+
+      const all = Array.from(map.values());
+      all.sort((a, b) => {
+        const courseCompare = (a.courseTitle || "").localeCompare(b.courseTitle || "");
+        if (courseCompare !== 0) return courseCompare;
+        return a.title.localeCompare(b.title);
+      });
+      return all;
     }
   } catch {}
   return DEFAULT_MASTER_ASSESSMENTS;
 }
+
+/**
+ * Asynchronously fetches and aggregates all real reusable assignments from:
+ * 1. Live database course curriculums
+ * 2. Previously assigned tasks in the database
+ * 3. Custom saved master templates
+ */
+export async function fetchAllReusableAssessments(): Promise<ReusableAssessment[]> {
+  try {
+    // 1. Sync courses with backend to ensure latest DB sections and assignments
+    let courses: FullCourse[] = [];
+    try {
+      courses = await syncCoursesWithBackend();
+    } catch {
+      courses = getStoredCourses();
+    }
+    if (!courses || courses.length === 0) {
+      courses = getStoredCourses();
+    }
+
+    // 2. Extract assignments from all courses
+    const courseAssessments = extractCourseAssignments(courses);
+
+    // 3. Fetch past admin-assigned tasks to track usage and capture any non-course standalone tasks
+    let pastTasks: IndividualTask[] = [];
+    try {
+      pastTasks = await fetchAdminTasks();
+    } catch {}
+
+    const assignmentMap = new Map<string, ReusableAssessment>();
+
+    // Index all course assessments first
+    courseAssessments.forEach((asm) => {
+      const key = `${(asm.courseTitle || "").toLowerCase().trim()}:::${asm.title.toLowerCase().trim()}`;
+      assignmentMap.set(key, { ...asm });
+    });
+
+    // Cross-reference with past assigned tasks
+    if (Array.isArray(pastTasks)) {
+      pastTasks.forEach((t) => {
+        if (!t.title) return;
+        const key = `${(t.courseTitle || "").toLowerCase().trim()}:::${t.title.toLowerCase().trim()}`;
+        const existing = assignmentMap.get(key);
+
+        if (existing) {
+          existing.timesAssigned = (existing.timesAssigned || 0) + 1;
+          if (t.assignedStudentEmail && !existing.assignedStudents.includes(t.assignedStudentEmail)) {
+            existing.assignedStudents.push(t.assignedStudentEmail);
+          }
+          if ((!existing.questions || existing.questions.length === 0) && t.questions && t.questions.length > 0) {
+            existing.questions = t.questions;
+          }
+        } else {
+          // Check if it matches by title only
+          let foundByTitle: ReusableAssessment | undefined;
+          for (const item of assignmentMap.values()) {
+            if (item.title.toLowerCase().trim() === t.title.toLowerCase().trim()) {
+              foundByTitle = item;
+              break;
+            }
+          }
+
+          if (foundByTitle) {
+            foundByTitle.timesAssigned = (foundByTitle.timesAssigned || 0) + 1;
+            if (t.assignedStudentEmail && !foundByTitle.assignedStudents.includes(t.assignedStudentEmail)) {
+              foundByTitle.assignedStudents.push(t.assignedStudentEmail);
+            }
+          } else {
+            // Standalone custom task created previously
+            assignmentMap.set(key, {
+              id: `task-asm-${t.id}`,
+              title: t.title.trim(),
+              description: t.description || "",
+              instructions: t.instructions,
+              courseId: t.courseId,
+              courseTitle: t.courseTitle || "General Track",
+              dueDate: t.dueDate,
+              requiredFiles: t.requiredFiles,
+              questions: t.questions || [],
+              timesAssigned: 1,
+              assignedStudents: t.assignedStudentEmail ? [t.assignedStudentEmail] : [],
+              createdAt: t.createdAt || new Date().toISOString(),
+            });
+          }
+        }
+      });
+    }
+
+    // 4. Merge any custom saved templates in localStorage
+    try {
+      const raw = localStorage.getItem(MASTER_ASSESSMENTS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((custom: ReusableAssessment) => {
+            if (!custom || !custom.title) return;
+            // Exclude mock templates if real assignments exist
+            if (custom.id === "asm-python-basics" || custom.id === "asm-java-intro") return;
+            const key = `${(custom.courseTitle || "").toLowerCase().trim()}:::${custom.title.toLowerCase().trim()}`;
+            if (!assignmentMap.has(key)) {
+              assignmentMap.set(key, custom);
+            }
+          });
+        }
+      }
+    } catch {}
+
+    const all = Array.from(assignmentMap.values());
+    if (all.length > 0) {
+      // Sort alphabetically by course, then by title
+      all.sort((a, b) => {
+        const courseCompare = (a.courseTitle || "").localeCompare(b.courseTitle || "");
+        if (courseCompare !== 0) return courseCompare;
+        return a.title.localeCompare(b.title);
+      });
+      return all;
+    }
+  } catch (err) {
+    console.warn("Failed to load aggregated reusable assessments:", err);
+  }
+
+  return DEFAULT_MASTER_ASSESSMENTS;
+}
+
 
 export function saveStoredMasterAssessment(assessment: Omit<ReusableAssessment, "id" | "createdAt" | "timesAssigned" | "assignedStudents">): ReusableAssessment {
   const existing = getStoredMasterAssessments();

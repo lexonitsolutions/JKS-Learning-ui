@@ -468,6 +468,36 @@ export interface CourseTaskItem {
   feedback?: string;
   enrollmentDate?: string;
   courseStatus?: string;
+  isRetake?: boolean;
+  attemptsCount?: number;
+  attempts?: Array<{
+    attemptNumber: number;
+    submittedAt: string;
+    score?: number;
+    passed?: boolean;
+    answers?: any;
+  }>;
+  submissionDetails?: {
+    score?: number;
+    maxMarks?: number;
+    passed?: boolean;
+    minPass?: number;
+    attemptCount?: number;
+    isRetake?: boolean;
+    questions?: Array<{
+      questionIndex: number;
+      prompt?: string;
+      type?: string;
+      choices?: string[];
+      correctAnswer?: any;
+      studentAnswer?: any;
+      selectedChoiceText?: string;
+      isCorrect?: boolean;
+      earned?: number;
+      max?: number;
+    }>;
+  };
+  answersJson?: any;
 }
 
 export interface StudentCourseTasksResponse {

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { FullCourse, Section, VideoItem, saveCourseAsync } from "@/lib/data/courses-store";
 import type { Track } from "@/lib/data/courses";
+import { fetchInstructors } from "@/lib/auth/use-mock-auth";
 
 interface EditCourseModalProps {
   isOpen: boolean;
@@ -43,6 +44,23 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
   const [sections, setSections] = useState<Section[]>([]);
   const [expandedVideoKey, setExpandedVideoKey] = useState<string | null>(null);
 
+  // Instructor State
+  const [instructorsList, setInstructorsList] = useState<{ id: string; name: string; email: string }[]>([
+    { id: "6aafc1a7d80072434f90eb89", name: "Davood Khan", email: "pattandavood123@gmail.com" },
+    { id: "6aad83b294e145c985052247", name: "Jouli Srikanth", email: "joulisrikanth123@gmail.com" },
+  ]);
+  const [selectedInstructorId, setSelectedInstructorId] = useState<string>("6aafc1a7d80072434f90eb89");
+
+  useEffect(() => {
+    fetchInstructors()
+      .then((list) => {
+        if (list && list.length > 0) {
+          setInstructorsList(list);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Feedback State
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -58,6 +76,11 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
       setThumbnail(course.thumbnail || "");
       setSummary(course.summary || "");
       setSections(course.sections ? JSON.parse(JSON.stringify(course.sections)) : []);
+      if (course.instructorUserIds && course.instructorUserIds.length > 0) {
+        setSelectedInstructorId(course.instructorUserIds[0]);
+      } else {
+        setSelectedInstructorId("6aafc1a7d80072434f90eb89");
+      }
       setFeedback(null);
     }
   }, [course]);
@@ -223,6 +246,8 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
 
     const effectiveTrack = track === "Custom" ? (customTrack.trim() || "Full Stack") : track;
 
+    const selectedInstructor = instructorsList.find((i) => i.id === selectedInstructorId);
+
     const updatedCourse: FullCourse = {
       ...course,
       title: title.trim(),
@@ -233,6 +258,8 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
       thumbnail: thumbnail.trim(),
       summary: summary.trim(),
       sections,
+      instructorUserIds: selectedInstructorId ? [selectedInstructorId] : ["6aafc1a7d80072434f90eb89"],
+      instructorName: selectedInstructor?.name || "Davood Khan",
     };
 
     try {
@@ -421,6 +448,27 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
                     <option value="Draft">Draft (Hidden from public catalog)</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Assigned Faculty & Instructor */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Assigned Faculty / Lead Instructor
+                </label>
+                <select
+                  value={selectedInstructorId}
+                  onChange={(e) => setSelectedInstructorId(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                >
+                  {instructorsList.map((inst) => (
+                    <option key={inst.id} value={inst.id}>
+                      {inst.name} ({inst.email})
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                  This faculty member will be prominently displayed on student course cards, video lessons, and certificate accreditations.
+                </p>
               </div>
 
               {/* Thumbnail URL */}

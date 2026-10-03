@@ -19,9 +19,66 @@ import {
   PhoneCall,
   ExternalLink,
   ChevronRight,
-  Clock,
+  RotateCcw,
 } from "lucide-react";
 import { addLead } from "@/lib/data/leads-store";
+
+function WhatsAppIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.05 20.15C10.56 20.15 9.11 19.75 7.85 19L7.55 18.82L4.43 19.64L5.26 16.6L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.68 12.05 3.68C14.25 3.68 16.31 4.54 17.87 6.1C19.42 7.66 20.28 9.72 20.27 11.92C20.28 16.46 16.59 20.15 12.05 20.15ZM16.57 14.33C16.32 14.2 15.1 13.6 14.87 13.52C14.64 13.43 14.48 13.39 14.31 13.64C14.15 13.88 13.68 14.44 13.53 14.61C13.39 14.77 13.25 14.8 13 14.67C12.75 14.55 11.94 14.28 10.98 13.43C10.23 12.76 9.73 11.93 9.58 11.68C9.44 11.44 9.57 11.3 9.69 11.18C9.8 11.07 9.94 10.89 10.07 10.74C10.2 10.59 10.24 10.48 10.32 10.31C10.41 10.15 10.36 10.01 10.3 9.89C10.24 9.76 9.74 8.54 9.54 8.04C9.34 7.56 9.14 7.62 8.99 7.62C8.85 7.61 8.68 7.61 8.52 7.61C8.35 7.61 8.08 7.67 7.85 7.92C7.62 8.17 6.98 8.77 6.98 9.99C6.98 11.21 7.87 12.39 8 12.56C8.13 12.72 9.73 15.2 12.18 16.26C12.76 16.51 13.22 16.66 13.57 16.77C14.16 16.96 14.7 16.93 15.12 16.87C15.59 16.8 16.57 16.28 16.78 15.7C16.98 15.11 16.98 14.61 16.92 14.51C16.86 14.41 16.72 14.35 16.57 14.33Z" />
+    </svg>
+  );
+}
+
+// Lightweight Markdown Formatter to cleanly render bold text, lists, and linebreaks
+function FormattedBotMessage({ text }: { text: string }) {
+  const lines = text.split("\n");
+
+  const parseInline = (line: string) => {
+    // Regex splits by **bold** text
+    const parts = line.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return (
+          <strong key={i} className="font-bold text-slate-900 dark:text-white">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div className="space-y-1.5 text-[11.5px] sm:text-xs leading-relaxed">
+      {lines.map((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <div key={idx} className="h-1" />;
+        }
+
+        // Bullet point detection
+        const isBullet =
+          trimmed.startsWith("•") ||
+          trimmed.startsWith("- ") ||
+          trimmed.startsWith("* ");
+
+        if (isBullet) {
+          const bulletContent = trimmed.replace(/^[•\-\*]\s*/, "");
+          return (
+            <div key={idx} className="flex items-start gap-1.5 pl-0.5">
+              <span className="text-blue-600 dark:text-cyan-400 font-black shrink-0 mt-0.5">•</span>
+              <span className="flex-1">{parseInline(bulletContent)}</span>
+            </div>
+          );
+        }
+
+        return <div key={idx}>{parseInline(line)}</div>;
+      })}
+    </div>
+  );
+}
 
 interface ChatMessage {
   id: string;
@@ -36,7 +93,7 @@ const INITIAL_BOT_MESSAGES: ChatMessage[] = [
   {
     id: "msg-1",
     sender: "bot",
-    text: "Hello! 👋 Welcome to JKS Learning. I'm Jordan, your AI Admissions & Career Advisor. How can I help accelerate your tech career today?",
+    text: "Hello! 👋 Welcome to JKS Learning. I'm Jordan, your Senior Admissions & Career Advisor. How can I help accelerate your tech journey today?",
     timestamp: "Just now",
     options: [
       "Explore Top Courses 🚀",
@@ -171,7 +228,7 @@ export function WebsiteChatbot() {
           "Fee & Scholarships 💰",
           "Talk to Live Counselor 📞",
         ],
-        isLeadForm: !data.leadCaptured && (text.toLowerCase().includes("call") || text.toLowerCase().includes("contact") || text.toLowerCase().includes("counselor")),
+        isLeadForm: !data.leadCaptured && (text.toLowerCase().includes("call") || text.toLowerCase().includes("contact") || text.toLowerCase().includes("counselor") || text.toLowerCase().includes("admission")),
       };
 
       setMessages((prev) => [...prev, botMsg]);
@@ -180,7 +237,7 @@ export function WebsiteChatbot() {
       const fallbackMsg: ChatMessage = {
         id: `msg-${Date.now()}`,
         sender: "bot",
-        text: "Thank you for reaching out to JKS Learning! We offer comprehensive enterprise cohorts in Full Stack Development, Frontend, SAP S/4HANA, and .NET 9. Leave your contact details below or email contact@jkslearning.com for an immediate counseling session.",
+        text: "Thank you for connecting with JKS Learning! We offer premier cohorts in Java Full Stack, Frontend Engineering, SAP S/4HANA, and .NET 9.\n\nLeave your contact details below or reach out directly on WhatsApp for an immediate counseling session.",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         options: ["Talk to Live Counselor 📞", "Explore Courses 🚀"],
         isLeadForm: true,
@@ -203,20 +260,40 @@ export function WebsiteChatbot() {
 
     setIsSubmittingLead(true);
     try {
-      addLead({
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-        name: leadForm.name,
-        email: leadForm.email || `${leadForm.name.toLowerCase().replace(/\s+/g, ".")}@gmail.com`,
-        phone: cleanedPhone,
-        interestedCourse: leadForm.course,
-        source: "website_chatbot",
-        status: "new",
-        priority: "high",
-        notes: "Requested instant advisor callback via Website AI Chatbot",
+      // 1. Submit lead to backend pipeline: saves in MongoDB Lead & LeadNote, alerts Admins in-app, dispatches Admin Email
+      const res = await fetch(`${apiUrl}/notifications/public-registration`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: leadForm.name.trim(),
+          phone: cleanedPhone,
+          email: leadForm.email?.trim() || undefined,
+          interestedCourse: leadForm.course,
+          source: "CHATBOT",
+          message: "Instant consultation requested via Website AI Chatbot",
+          batchTiming: "Immediate Callback Requested",
+        }),
       });
 
+      if (!res.ok) {
+        console.warn("Backend registration endpoint returned status", res.status);
+      }
 
-
+      // 2. Also save to local store for UI continuity
+      try {
+        addLead({
+          name: leadForm.name,
+          email: leadForm.email || `${leadForm.name.toLowerCase().replace(/\s+/g, ".")}@gmail.com`,
+          phone: cleanedPhone,
+          interestedCourse: leadForm.course,
+          source: "website_chatbot",
+          status: "new",
+          priority: "high",
+          notes: "Requested instant advisor callback via Website AI Chatbot",
+        });
+      } catch {}
 
       setLeadSubmitted(true);
       setMessages((prev) => [
@@ -224,15 +301,24 @@ export function WebsiteChatbot() {
         {
           id: `msg-${Date.now()}`,
           sender: "bot",
-          text: `🎉 Thank you **${leadForm.name}**! Your consultation request for **${leadForm.course}** has been assigned to our senior admissions counselor.\n\nYou will receive a call or WhatsApp message at **${leadForm.phone}** within 15 minutes!`,
+          text: `🎉 Thank you **${leadForm.name}**!\n\nYour consultation request for **${leadForm.course}** has been securely assigned to our senior admissions team.\n\nOur academic counselor will call or message you on WhatsApp at **${leadForm.phone}** within 15 minutes!`,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          options: [
+            "Explore Courses 🚀",
+            "Fee & Scholarships 💰",
+          ],
         },
       ]);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to submit lead:", err);
     } finally {
       setIsSubmittingLead(false);
     }
+  };
+
+  const restartConversation = () => {
+    setMessages(INITIAL_BOT_MESSAGES);
+    setLeadSubmitted(false);
   };
 
   return (
@@ -319,23 +405,24 @@ export function WebsiteChatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.96 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-16 right-3 sm:right-6 sm:bottom-20 z-50 flex h-[390px] sm:h-[430px] max-h-[68vh] sm:max-h-[72vh] w-[calc(100vw-1.5rem)] max-w-[325px] sm:max-w-[345px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-[0_16px_40px_-10px_rgba(15,23,42,0.3)] dark:shadow-[0_16px_40px_-10px_rgba(0,0,0,0.7)] backdrop-blur-xl"
+            className="fixed bottom-16 right-3 sm:right-6 sm:bottom-20 z-50 flex h-[410px] sm:h-[450px] max-h-[72vh] sm:max-h-[76vh] w-[calc(100vw-1.5rem)] max-w-[335px] sm:max-w-[355px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-[0_20px_50px_-10px_rgba(15,23,42,0.35)] dark:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.8)] backdrop-blur-xl"
           >
-            {/* Chatbot Luxury Header */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-2.5 sm:p-3 text-white shrink-0 border-b border-white/10">
+            {/* Chatbot Luxury Header (Clean, Classic & Professional) */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 p-2.5 sm:p-3 text-white shrink-0 border-b border-white/10">
               {/* Ambient radial glow */}
               <div className="absolute -top-10 -right-10 h-24 w-24 rounded-full bg-blue-600/30 blur-2xl pointer-events-none" />
               <div className="absolute -bottom-10 -left-10 h-24 w-24 rounded-full bg-cyan-500/20 blur-2xl pointer-events-none" />
 
               <div className="relative z-10 flex items-center justify-between">
+                {/* Advisor Profile Identity */}
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-gradient-to-tr from-blue-600 to-cyan-400 p-[1px] shadow-sm shadow-blue-500/25 ring-1 ring-white/20">
-                    <div className="relative h-full w-full rounded-[7px] overflow-hidden bg-slate-900">
+                  <div className="relative flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-xl overflow-hidden bg-gradient-to-tr from-blue-600 to-cyan-400 p-[1px] shadow-sm shadow-blue-500/30 ring-1 ring-white/20">
+                    <div className="relative h-full w-full rounded-[10px] overflow-hidden bg-slate-900">
                       <Image
                         src="/software-agent.png"
                         alt="JKS AI Career Advisor"
                         fill
-                        sizes="32px"
+                        sizes="34px"
                         className="h-full w-full object-cover"
                       />
                     </div>
@@ -343,45 +430,39 @@ export function WebsiteChatbot() {
                   </div>
 
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="text-xs font-bold tracking-tight truncate">JKS AI Career Advisor</h3>
-                      <span className="inline-flex items-center rounded-full bg-blue-500/20 px-1 py-0.2 text-[8px] font-extrabold text-cyan-300 border border-cyan-400/30 shrink-0">
-                        AI 2.0
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 text-[9.5px] text-emerald-400 font-medium">
+                    <h3 className="text-xs font-bold tracking-tight text-white truncate">
+                      JKS AI Career Advisor
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-[9.5px] text-emerald-400 font-medium">
                       <span className="relative flex h-1.5 w-1.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                       </span>
-                      <span>Online Advisor</span>
+                      <span>Admissions Advisor Online</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 shrink-0">
+                {/* Right Header Action Icons: WhatsApp SVG Icon + Close 'X' Button */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {/* WhatsApp SVG Icon Button */}
                   <a
                     href="https://wa.me/919876543210?text=Hi%20JKS%20Learning,%20I%20want%20to%20know%20more%20about%20your%20courses."
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 text-[9.5px] font-bold text-emerald-300 hover:bg-emerald-500 hover:text-white transition-all shadow-xs"
-                    title="Direct WhatsApp"
+                    title="Chat on WhatsApp"
+                    aria-label="Direct WhatsApp"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white border border-emerald-500/30 transition-all shadow-xs cursor-pointer group"
                   >
-                    WhatsApp
+                    <WhatsAppIcon className="h-3.5 w-3.5 fill-current" />
                   </a>
-                  <button
-                    type="button"
-                    onClick={() => setMessages(INITIAL_BOT_MESSAGES)}
-                    title="Restart Conversation"
-                    className="flex h-6.5 w-6.5 items-center justify-center rounded-lg bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white transition-colors cursor-pointer"
-                  >
-                    <Clock className="h-3 w-3" />
-                  </button>
+
+                  {/* Close Window Button */}
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
                     aria-label="Close Chat"
-                    className="flex h-6.5 w-6.5 items-center justify-center rounded-lg bg-white/10 text-slate-300 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-slate-300 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -392,7 +473,7 @@ export function WebsiteChatbot() {
               <div className="relative z-10 mt-2 flex items-center justify-between rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-[10px] text-slate-300">
                 <span className="flex items-center gap-1 truncate">
                   <Sparkles className="h-2.5 w-2.5 text-amber-300 shrink-0" />
-                  <span className="truncate">Ask fees, syllabus, or placement records</span>
+                  <span className="truncate">Instant fees, syllabus &amp; batch guidance</span>
                 </span>
                 <span className="text-[9px] text-cyan-300 font-semibold shrink-0 ml-1">24/7 Live</span>
               </div>
@@ -423,10 +504,14 @@ export function WebsiteChatbot() {
                       className={`rounded-2xl px-3 py-2 text-xs leading-relaxed shadow-2xs ${
                         msg.sender === "user"
                           ? "bg-gradient-to-r from-[#2563EB] to-blue-600 text-white rounded-br-xs shadow-blue-500/20"
-                          : "bg-white dark:bg-surface-elevated text-slate-800 dark:text-slate-100 border border-slate-100 dark:border-slate-800/80 rounded-bl-xs shadow-[0_1px_4px_rgba(0,0,0,0.03)]"
+                          : "bg-white dark:bg-surface-elevated text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-800 rounded-bl-xs shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
                       }`}
                     >
-                      <div className="whitespace-pre-line font-medium text-[11.5px] sm:text-xs">{msg.text}</div>
+                      {msg.sender === "user" ? (
+                        <div className="whitespace-pre-line text-[11.5px] sm:text-xs font-medium">{msg.text}</div>
+                      ) : (
+                        <FormattedBotMessage text={msg.text} />
+                      )}
                     </div>
 
                     <span className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-400 px-1 font-medium">{msg.timestamp}</span>
@@ -546,7 +631,7 @@ export function WebsiteChatbot() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Bar & Footer */}
+            {/* Input Bar & Footer (With relocated Reset/Restart button) */}
             <div className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-secondary p-2.5 space-y-1.5">
               <form
                 onSubmit={(e) => {
@@ -555,6 +640,17 @@ export function WebsiteChatbot() {
                 }}
                 className="flex items-center gap-1.5"
               >
+                {/* Relocated Reset / New Chat Action Button */}
+                <button
+                  type="button"
+                  onClick={restartConversation}
+                  title="Start New Conversation"
+                  aria-label="Restart Conversation"
+                  className="flex h-8.5 w-8.5 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-surface-elevated text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-surface-hover transition-colors shrink-0 cursor-pointer"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </button>
+
                 <input
                   type="text"
                   placeholder="Ask about syllabus, fees, scholarships..."
@@ -562,6 +658,7 @@ export function WebsiteChatbot() {
                   onChange={(e) => setInputValue(e.target.value)}
                   className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-input-bg px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-surface-elevated focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-400 font-medium"
                 />
+
                 <button
                   type="submit"
                   disabled={!inputValue.trim()}
@@ -571,8 +668,16 @@ export function WebsiteChatbot() {
                 </button>
               </form>
 
-              <div className="flex items-center justify-center text-[9.5px] text-slate-400 dark:text-slate-400 font-medium">
-                <span>⚡ Instant AI Career Guidance · JKS Learning</span>
+              <div className="flex items-center justify-between text-[9.5px] text-slate-400 dark:text-slate-400 font-medium px-1">
+                <span>⚡ Instant AI Career Guidance</span>
+                <button
+                  type="button"
+                  onClick={restartConversation}
+                  className="flex items-center gap-1 text-[9.5px] text-slate-400 hover:text-blue-600 dark:hover:text-cyan-400 transition-colors cursor-pointer"
+                >
+                  <RotateCcw className="h-2.5 w-2.5" />
+                  <span>Restart Chat</span>
+                </button>
               </div>
             </div>
           </motion.div>
