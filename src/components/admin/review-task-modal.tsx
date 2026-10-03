@@ -12,6 +12,7 @@ import {
   Download,
   Loader2,
   Star,
+  XCircle,
 } from "lucide-react";
 import {
   reviewTaskSubmission,
@@ -60,15 +61,18 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
     return Math.max(50, percent);
   };
 
-  const handleReviewSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const [reviewAction, setReviewAction] = useState<"Completed" | "Failed">("Completed");
+
+  const handleReviewSubmit = async (targetStatus: "Completed" | "Failed") => {
     setIsSubmitting(true);
+    setReviewAction(targetStatus);
     setErrorMessage(null);
 
     try {
       const res = await reviewTaskSubmission(task.id, {
         score: Number(score),
         feedback: feedback.trim(),
+        status: targetStatus,
       });
 
       if (res.success && res.data) {
@@ -240,7 +244,7 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
         </div>
 
         {/* GRADING & FEEDBACK FORM */}
-        <form onSubmit={handleReviewSubmit} className="space-y-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+        <form onSubmit={(e) => { e.preventDefault(); handleReviewSubmit("Completed"); }} className="space-y-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
@@ -277,28 +281,48 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-2">
+          <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
             <button
               type="button"
               onClick={onClose}
+              disabled={isSubmitting}
               className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-elevated cursor-pointer"
             >
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={() => handleReviewSubmit("Failed")}
+              disabled={isSubmitting}
+              className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-rose-500/20 hover:bg-rose-700 disabled:opacity-50 cursor-pointer"
+            >
+              {isSubmitting && reviewAction === "Failed" ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>Marking Failed...</span>
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-4 w-4" />
+                  <span>Mark as Failed (Allow Retry)</span>
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleReviewSubmit("Completed")}
               disabled={isSubmitting}
               className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
             >
-              {isSubmitting ? (
+              {isSubmitting && reviewAction === "Completed" ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Saving Review...</span>
+                  <span>Approving...</span>
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>Submit Review &amp; Complete Task</span>
+                  <span>Approve &amp; Pass (Completed)</span>
                 </>
               )}
             </button>

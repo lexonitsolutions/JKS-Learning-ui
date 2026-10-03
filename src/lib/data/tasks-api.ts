@@ -17,8 +17,13 @@ export interface TaskSubmissionData {
   uploadedFileName?: string;
   uploadedFileUrl?: string;
   score?: number;
+  instructorScore?: number;
   feedback?: string;
+  instructorFeedback?: string;
   evaluatedAt?: string;
+  isRetake?: boolean;
+  attemptCount?: number;
+  attempts?: any[];
 }
 
 export interface IndividualTask {
@@ -33,7 +38,17 @@ export interface IndividualTask {
   dueDate?: string;
   requiredFiles?: string;
   questions?: TaskQuestion[];
-  status: "PENDING" | "SUBMITTED" | "REVIEWED" | "COMPLETED" | "OVERDUE";
+  status:
+    | "PENDING"
+    | "ASSIGNED"
+    | "IN_PROGRESS"
+    | "SUBMITTED"
+    | "REVIEWED"
+    | "COMPLETED"
+    | "FAILED"
+    | "RETRY_AVAILABLE"
+    | "OVERDUE"
+    | string;
   submission?: TaskSubmissionData;
   createdById?: string;
   createdAt: string;
@@ -572,7 +587,7 @@ export function recordAssessmentAssigned(title: string, studentEmails: string[])
 
 export async function reviewTaskSubmission(
   taskId: string,
-  payload: { score: number; feedback: string }
+  payload: { score: number; feedback: string; status?: "Completed" | "Failed" | string }
 ): Promise<{ success: boolean; data?: IndividualTask; error?: string }> {
   try {
     const res = await apiFetch(`/admin/tasks/${encodeURIComponent(taskId)}/review`, {
@@ -589,6 +604,39 @@ export async function reviewTaskSubmission(
   } catch (err: any) {
     return { success: false, error: err?.message || "Network error reviewing task" };
   }
+}
+
+export async function deleteAdminTask(
+  taskId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await apiFetch(`/admin/tasks/${encodeURIComponent(taskId)}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      return { success: true };
+    }
+    // Fallback to /assessments/tasks/:id
+    const fallbackRes = await apiFetch(`/assessments/tasks/${encodeURIComponent(taskId)}`, {
+      method: "DELETE",
+    });
+    if (fallbackRes.ok) {
+      return { success: true };
+    }
+    const errData = await res.json().catch(() => ({}));
+    return { success: false, error: errData.message || "Failed to delete task" };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Network error deleting task" };
+  }
+}
+
+export function deleteStoredMasterAssessment(id: string): ReusableAssessment[] {
+  const existing = getStoredMasterAssessments();
+  const updated = existing.filter((a) => a.id !== id);
+  try {
+    localStorage.setItem(MASTER_ASSESSMENTS_KEY, JSON.stringify(updated));
+  } catch {}
+  return updated;
 }
 
 export async function fetchStudentAssignedTasks(studentEmail: string): Promise<IndividualTask[]> {

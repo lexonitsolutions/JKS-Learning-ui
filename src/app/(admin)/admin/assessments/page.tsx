@@ -22,6 +22,7 @@ import {
   Repeat,
   Layers,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
@@ -32,6 +33,8 @@ import {
   type ReusableAssessment,
   getStoredMasterAssessments,
   fetchAllReusableAssessments,
+  deleteAdminTask,
+  deleteStoredMasterAssessment,
 } from "@/lib/data/tasks-api";
 import { CreateTaskModal } from "@/components/admin/create-task-modal";
 import { ReviewTaskModal } from "@/components/admin/review-task-modal";
@@ -50,6 +53,7 @@ export default function AdminAssessmentsPage() {
   const [isReuseMode, setIsReuseMode] = useState(false);
   const [reassignAssessment, setReassignAssessment] = useState<ReusableAssessment | null>(null);
   const [reviewingTask, setReviewingTask] = useState<IndividualTask | null>(null);
+  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -159,6 +163,39 @@ export default function AdminAssessmentsPage() {
     setReassignAssessment(tpl);
     setIsReuseMode(true);
     setIsCreateModalOpen(true);
+  };
+
+  const handleDeleteTask = async (task: IndividualTask) => {
+    const studentInfo = task.assignedStudentEmail || "this student";
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${task.title}" assigned to ${studentInfo}?\n\nThis will permanently delete the assessment from the database and remove it from the student workspace.`
+    );
+    if (!confirmed) return;
+
+    setDeletingTaskId(task.id);
+    try {
+      const res = await deleteAdminTask(task.id);
+      if (res.success) {
+        setTasks((prev) => prev.filter((t) => t.id !== task.id));
+        showToast(`Assessment task for ${studentInfo} has been permanently deleted.`);
+      } else {
+        showToast(res.error || "Failed to delete task.");
+      }
+    } catch (err: any) {
+      showToast(err?.message || "Error deleting task.");
+    } finally {
+      setDeletingTaskId(null);
+    }
+  };
+
+  const handleDeleteTemplate = (tpl: ReusableAssessment) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete template "${tpl.title}"?`
+    );
+    if (!confirmed) return;
+    deleteStoredMasterAssessment(tpl.id);
+    setReusableList((prev) => prev.filter((t) => t.id !== tpl.id));
+    showToast(`Template "${tpl.title}" removed.`);
   };
 
   return (
@@ -359,14 +396,24 @@ export default function AdminAssessmentsPage() {
                       Assigned <span className="font-bold text-slate-700 dark:text-slate-300">{tpl.timesAssigned}</span> time(s)
                     </span>
 
-                    <button
-                      type="button"
-                      onClick={() => handleOpenAssignModal(tpl)}
-                      className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
-                    >
-                      <Repeat className="h-3 w-3" />
-                      <span>Assign to Students</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTemplate(tpl)}
+                        title="Delete template"
+                        className="inline-flex items-center justify-center h-7 w-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenAssignModal(tpl)}
+                        className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                      >
+                        <Repeat className="h-3 w-3" />
+                        <span>Assign to Students</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -576,6 +623,16 @@ export default function AdminAssessmentsPage() {
                                 >
                                   <Repeat className="h-3.5 w-3.5" />
                                 </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteTask(task)}
+                                  disabled={deletingTaskId === task.id}
+                                  title="Delete assessment from database and student workspace"
+                                  className="inline-flex items-center justify-center h-6 w-6 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer disabled:opacity-50"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
                               </div>
                             </td>
                           </tr>
@@ -650,6 +707,15 @@ export default function AdminAssessmentsPage() {
                               className="rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-slate-700 dark:text-slate-300"
                             >
                               {isSubmitted ? "Review" : "Details"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTask(task)}
+                              disabled={deletingTaskId === task.id}
+                              title="Delete task from database and student workspace"
+                              className="rounded-lg p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
                             <button
                               type="button"

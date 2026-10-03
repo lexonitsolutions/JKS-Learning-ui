@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   X,
@@ -77,6 +77,14 @@ export function TakeAssessmentModal({
   const [uploadedFileName, setUploadedFileName] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setAnswers({});
+      setUploadedFileName("");
+      setValidationError(null);
+    }
+  }, [isOpen, task?.id]);
 
   if (!isOpen) return null;
 
