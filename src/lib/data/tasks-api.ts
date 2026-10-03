@@ -616,11 +616,17 @@ export async function deleteAdminTask(
     if (res.ok) {
       return { success: true };
     }
-    // Fallback to /assessments/tasks/:id
-    const fallbackRes = await apiFetch(`/assessments/tasks/${encodeURIComponent(taskId)}`, {
+    // Fallback to /tasks/:id and /assessments/tasks/:id
+    const fallbackRes = await apiFetch(`/tasks/${encodeURIComponent(taskId)}`, {
       method: "DELETE",
     });
     if (fallbackRes.ok) {
+      return { success: true };
+    }
+    const fallbackRes2 = await apiFetch(`/assessments/tasks/${encodeURIComponent(taskId)}`, {
+      method: "DELETE",
+    });
+    if (fallbackRes2.ok) {
       return { success: true };
     }
     const errData = await res.json().catch(() => ({}));
@@ -641,10 +647,17 @@ export function deleteStoredMasterAssessment(id: string): ReusableAssessment[] {
 
 export async function fetchStudentAssignedTasks(studentEmail: string): Promise<IndividualTask[]> {
   try {
-    const res = await apiFetch(`/assessments/tasks/student/${encodeURIComponent(studentEmail)}`, {
+    // Try /tasks/student/:email and /assessments/tasks/student/:email
+    let res = await apiFetch(`/tasks/student/${encodeURIComponent(studentEmail)}`, {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });
+    if (!res.ok && res.status === 404) {
+      res = await apiFetch(`/assessments/tasks/student/${encodeURIComponent(studentEmail)}`, {
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+      });
+    }
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) return data;
@@ -665,11 +678,18 @@ export async function submitStudentTask(
   }
 ): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
-    const res = await apiFetch(`/assessments/tasks/${encodeURIComponent(taskId)}/submit`, {
+    let res = await apiFetch(`/tasks/${encodeURIComponent(taskId)}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    if (!res.ok && res.status === 404) {
+      res = await apiFetch(`/assessments/tasks/${encodeURIComponent(taskId)}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
     if (res.ok) {
       const data = await res.json();
       return { success: true, data };
