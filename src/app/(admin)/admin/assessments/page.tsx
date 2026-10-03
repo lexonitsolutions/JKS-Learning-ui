@@ -787,15 +787,17 @@ export default function AdminAssessmentsPage() {
       />
 
       {/* REVIEW TASK SUBMISSION MODAL */}
-      <ReviewTaskModal
-        isOpen={Boolean(reviewingTask)}
-        task={reviewingTask}
-        onClose={() => setReviewingTask(null)}
-        onReviewed={(updated) => {
-          setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-          showToast(`Task reviewed and feedback sent to ${updated.assignedStudentEmail}.`);
-        }}
-      />
+      {reviewingTask && (
+        <ReviewTaskModal
+          isOpen={Boolean(reviewingTask)}
+          task={reviewingTask}
+          onClose={() => setReviewingTask(null)}
+          onReviewed={(updated) => {
+            setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+            showToast(`Task reviewed and feedback sent to ${updated.assignedStudentEmail}.`);
+          }}
+        />
+      )}
     </>
   );
 }

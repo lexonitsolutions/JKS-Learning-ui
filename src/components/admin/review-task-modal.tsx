@@ -34,6 +34,7 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [reviewAction, setReviewAction] = useState<"Completed" | "Failed">("Completed");
 
   useEffect(() => {
     if (task) {
@@ -71,8 +72,6 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
     const percent = Math.min(100, Math.round((matches / modelWords.length) * 100));
     return Math.max(50, percent);
   };
-
-  const [reviewAction, setReviewAction] = useState<"Completed" | "Failed">("Completed");
 
   const handleReviewSubmit = async (targetStatus: "Completed" | "Failed") => {
     setIsSubmitting(true);
