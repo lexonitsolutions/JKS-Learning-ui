@@ -48,6 +48,7 @@ import {
 import type { Track } from "@/lib/data/courses";
 import { mapBackendTrack } from "@/lib/data/courses-api";
 import { apiFetch } from "@/lib/api/base-url";
+import { fetchInstructors } from "@/lib/auth/use-mock-auth";
 import { InAppVideoPlayer } from "@/components/ui/in-app-video-player";
 import { CourseThumbnailUploader } from "@/components/admin/course-thumbnail-uploader";
 import {
@@ -88,6 +89,7 @@ function AdminNewCourseContent() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importSuccessMessage, setImportSuccessMessage] = useState<string | null>(null);
+  const [expandedVideoId, setExpandedVideoId] = useState<string | null>(null);
 
   const clearFieldError = (fieldKey: string) => {
     setFieldErrors((prev) => {
@@ -164,6 +166,21 @@ function AdminNewCourseContent() {
   const [price, setPrice] = useState<number | string>("");
   const [summary, setSummary] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
+
+  // Step 1: Instructor / Faculty State
+  const [instructorsList, setInstructorsList] = useState<{ id: string; name: string; email: string }[]>([
+    { id: "6aafc1a7d80072434f90eb89", name: "Davood Khan", email: "pattandavood123@gmail.com" },
+    { id: "6aad83b294e145c985052247", name: "Jouli Srikanth", email: "joulisrikanth123@gmail.com" },
+  ]);
+  const [selectedInstructorId, setSelectedInstructorId] = useState<string>("6aafc1a7d80072434f90eb89");
+
+  useEffect(() => {
+    fetchInstructors()
+      .then((list) => {
+        if (list && list.length > 0) setInstructorsList(list);
+      })
+      .catch(() => {});
+  }, []);
 
   const createDefaultQuestion = (qType: string) => {
     const canonical = canonicalizeAssessmentType(qType);
@@ -319,6 +336,9 @@ function AdminNewCourseContent() {
           }
           if (courseData.summary) setSummary(courseData.summary);
           if (courseData.thumbnail) setThumbnailUrl(courseData.thumbnail);
+          if (courseData.instructorUserIds && courseData.instructorUserIds.length > 0) {
+            setSelectedInstructorId(courseData.instructorUserIds[0]);
+          }
 
           const rawSections = courseData.sectionsJson || courseData.sections;
           if (Array.isArray(rawSections) && rawSections.length > 0) {
@@ -1056,6 +1076,8 @@ function AdminNewCourseContent() {
     setIsPublishing(true);
     setSaveError(null);
 
+    const selectedInstructor = instructorsList.find((i) => i.id === selectedInstructorId);
+
     const newCourse: FullCourse = {
       id: existingCourseId || `crs-${Date.now()}`,
       slug: slug || `course-${Date.now()}`,
@@ -1072,6 +1094,8 @@ function AdminNewCourseContent() {
       sections,
       createdAt: new Date().toISOString(),
       status,
+      instructorUserIds: selectedInstructorId ? [selectedInstructorId] : ["6aafc1a7d80072434f90eb89"],
+      instructorName: selectedInstructor?.name || "Davood Khan",
     };
 
     try {
@@ -1470,6 +1494,27 @@ function AdminNewCourseContent() {
                         </p>
                       )}
                     </div>
+                  </div>
+
+                  {/* Assigned Faculty & Instructor */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Assigned Faculty / Lead Instructor
+                    </label>
+                    <select
+                      value={selectedInstructorId}
+                      onChange={(e) => setSelectedInstructorId(e.target.value)}
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
+                    >
+                      {instructorsList.map((inst) => (
+                        <option key={inst.id} value={inst.id}>
+                          {inst.name} ({inst.email})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                      Assigned instructor shown to students for mentorship and course credentials.
+                    </p>
                   </div>
 
                   {/* Course Summary Field */}
@@ -1886,6 +1931,202 @@ function AdminNewCourseContent() {
                                           </button>
                                         </div>
                                       </div>
+
+                                      {/* Interview Questions & Video Task Accordion Button */}
+                                      <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
+                                        <button
+                                          type="button"
+                                          onClick={() => setExpandedVideoId(expandedVideoId === vid.id ? null : vid.id)}
+                                          className="flex items-center gap-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
+                                        >
+                                          <HelpCircle className="h-3.5 w-3.5" />
+                                          <span>
+                                            Interview Questions ({(vid.interviewQuestions || []).length}) &amp; Task (
+                                            {vid.task?.title ? "Configured" : "None"})
+                                          </span>
+                                          {expandedVideoId === vid.id ? (
+                                            <ChevronUp className="h-3 w-3 ml-0.5" />
+                                          ) : (
+                                            <ChevronDown className="h-3 w-3 ml-0.5" />
+                                          )}
+                                        </button>
+                                      </div>
+
+                                      {/* EXPANDED CONFIGURATION PANEL */}
+                                      {expandedVideoId === vid.id && (
+                                        <div className="rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/20 dark:bg-blue-950/20 p-3 space-y-4 text-xs animate-in fade-in slide-in-from-top-1">
+                                          {/* 1. Interview Questions */}
+                                          <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                              <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                                                <HelpCircle className="h-3.5 w-3.5 text-[#2563EB]" />
+                                                Video Interview Questions ({(vid.interviewQuestions || []).length})
+                                              </span>
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  const updated = [...sections];
+                                                  const target = updated[secIdx].subsections![subIdx].videos[vidIdx];
+                                                  const list = target.interviewQuestions || [];
+                                                  target.interviewQuestions = [
+                                                    ...list,
+                                                    { id: `iq-${Date.now()}-${list.length + 1}`, question: "", answer: "" },
+                                                  ];
+                                                  setSections(updated);
+                                                }}
+                                                className="rounded-md bg-white dark:bg-surface-elevated border border-blue-200 dark:border-blue-800 px-2 py-0.5 text-[10.5px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
+                                              >
+                                                + Add Interview Question
+                                              </button>
+                                            </div>
+
+                                            {(vid.interviewQuestions || []).length === 0 ? (
+                                              <p className="text-[11px] text-slate-400 italic">
+                                                No interview questions attached to this video yet. Click &ldquo;+ Add Interview Question&rdquo; to attach technical screening questions.
+                                              </p>
+                                            ) : (
+                                              <div className="space-y-2">
+                                                {vid.interviewQuestions!.map((iq, qIdx) => (
+                                                  <div
+                                                    key={iq.id || qIdx}
+                                                    className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-2.5 space-y-1.5 shadow-2xs"
+                                                  >
+                                                    <div className="flex items-center justify-between gap-2">
+                                                      <span className="font-bold text-slate-700 dark:text-slate-300 text-[10.5px]">
+                                                        Question #{qIdx + 1}
+                                                      </span>
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                          const updated = [...sections];
+                                                          const target = updated[secIdx].subsections![subIdx].videos[vidIdx];
+                                                          target.interviewQuestions = target.interviewQuestions!.filter(
+                                                            (_, i) => i !== qIdx
+                                                          );
+                                                          setSections(updated);
+                                                        }}
+                                                        className="text-slate-400 hover:text-rose-500 cursor-pointer"
+                                                      >
+                                                        <Trash2 className="h-3 w-3" />
+                                                      </button>
+                                                    </div>
+                                                    <input
+                                                      type="text"
+                                                      value={iq.question}
+                                                      onChange={(e) => {
+                                                        const updated = [...sections];
+                                                        updated[secIdx].subsections![subIdx].videos[vidIdx].interviewQuestions![qIdx].question =
+                                                          e.target.value;
+                                                        setSections(updated);
+                                                      }}
+                                                      placeholder="Interview Question prompt..."
+                                                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                                    />
+                                                    <textarea
+                                                      rows={2}
+                                                      value={iq.answer || ""}
+                                                      onChange={(e) => {
+                                                        const updated = [...sections];
+                                                        updated[secIdx].subsections![subIdx].videos[vidIdx].interviewQuestions![qIdx].answer =
+                                                          e.target.value;
+                                                        setSections(updated);
+                                                      }}
+                                                      placeholder="Expected technical model answer..."
+                                                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                                    />
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+
+                                          {/* 2. Video Task */}
+                                          <div className="space-y-2 pt-2 border-t border-blue-100 dark:border-blue-900/50">
+                                            <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                                              <ClipboardCheck className="h-3.5 w-3.5 text-[#2563EB]" />
+                                              Attached Video Task / Practical Exercise
+                                            </span>
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                              <div className="sm:col-span-2">
+                                                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                                  Task Title
+                                                </label>
+                                                <input
+                                                  type="text"
+                                                  value={vid.task?.title || ""}
+                                                  onChange={(e) => {
+                                                    const updated = [...sections];
+                                                    const target = updated[secIdx].subsections![subIdx].videos[vidIdx];
+                                                    target.task = {
+                                                      description: "",
+                                                      instructions: "",
+                                                      submissionType: "text",
+                                                      points: 100,
+                                                      ...target.task,
+                                                      title: e.target.value,
+                                                    };
+                                                    setSections(updated);
+                                                  }}
+                                                  placeholder="e.g. Implement Architecture Demo"
+                                                  className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                                />
+                                              </div>
+                                              <div>
+                                                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                                  Submission Type
+                                                </label>
+                                                <select
+                                                  value={vid.task?.submissionType || "text"}
+                                                  onChange={(e) => {
+                                                    const updated = [...sections];
+                                                    const target = updated[secIdx].subsections![subIdx].videos[vidIdx];
+                                                    target.task = {
+                                                      title: "",
+                                                      description: "",
+                                                      instructions: "",
+                                                      points: 100,
+                                                      ...target.task,
+                                                      submissionType: e.target.value as any,
+                                                    };
+                                                    setSections(updated);
+                                                  }}
+                                                  className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                                >
+                                                  <option value="text">Text / Code Submission</option>
+                                                  <option value="file">File Upload (.zip, .pdf)</option>
+                                                  <option value="link">Project Link (GitHub / Deploy)</option>
+                                                </select>
+                                              </div>
+                                            </div>
+
+                                            <div>
+                                              <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                                Task Instructions &amp; Submission Criteria
+                                              </label>
+                                              <textarea
+                                                rows={2}
+                                                value={vid.task?.instructions || vid.task?.description || ""}
+                                                onChange={(e) => {
+                                                  const updated = [...sections];
+                                                  const target = updated[secIdx].subsections![subIdx].videos[vidIdx];
+                                                  target.task = {
+                                                    title: "",
+                                                    submissionType: "text",
+                                                    points: 100,
+                                                    ...target.task,
+                                                    description: e.target.value,
+                                                    instructions: e.target.value,
+                                                  };
+                                                  setSections(updated);
+                                                }}
+                                                placeholder="Explain the task deliverables and requirements..."
+                                                className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   ))}
 
@@ -2118,6 +2359,202 @@ function AdminNewCourseContent() {
                                 </button>
                               </div>
                             </div>
+
+                            {/* Interview Questions & Video Task Accordion Button */}
+                            <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
+                              <button
+                                type="button"
+                                onClick={() => setExpandedVideoId(expandedVideoId === vid.id ? null : vid.id)}
+                                className="flex items-center gap-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
+                              >
+                                <HelpCircle className="h-3.5 w-3.5" />
+                                <span>
+                                  Interview Questions ({(vid.interviewQuestions || []).length}) &amp; Task (
+                                  {vid.task?.title ? "Configured" : "None"})
+                                </span>
+                                {expandedVideoId === vid.id ? (
+                                  <ChevronUp className="h-3 w-3 ml-0.5" />
+                                ) : (
+                                  <ChevronDown className="h-3 w-3 ml-0.5" />
+                                )}
+                              </button>
+                            </div>
+
+                            {/* EXPANDED CONFIGURATION PANEL */}
+                            {expandedVideoId === vid.id && (
+                              <div className="rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/20 dark:bg-blue-950/20 p-3 space-y-4 text-xs animate-in fade-in slide-in-from-top-1">
+                                {/* 1. Interview Questions */}
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                                      <HelpCircle className="h-3.5 w-3.5 text-[#2563EB]" />
+                                      Video Interview Questions ({(vid.interviewQuestions || []).length})
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = [...sections];
+                                        const target = updated[secIdx].directVideos![vidIdx];
+                                        const list = target.interviewQuestions || [];
+                                        target.interviewQuestions = [
+                                          ...list,
+                                          { id: `iq-${Date.now()}-${list.length + 1}`, question: "", answer: "" },
+                                        ];
+                                        setSections(updated);
+                                      }}
+                                      className="rounded-md bg-white dark:bg-surface-elevated border border-blue-200 dark:border-blue-800 px-2 py-0.5 text-[10.5px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
+                                    >
+                                      + Add Interview Question
+                                    </button>
+                                  </div>
+
+                                  {(vid.interviewQuestions || []).length === 0 ? (
+                                    <p className="text-[11px] text-slate-400 italic">
+                                      No interview questions attached to this video yet. Click &ldquo;+ Add Interview Question&rdquo; to attach technical screening questions.
+                                    </p>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      {vid.interviewQuestions!.map((iq, qIdx) => (
+                                        <div
+                                          key={iq.id || qIdx}
+                                          className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-2.5 space-y-1.5 shadow-2xs"
+                                        >
+                                          <div className="flex items-center justify-between gap-2">
+                                            <span className="font-bold text-slate-700 dark:text-slate-300 text-[10.5px]">
+                                              Question #{qIdx + 1}
+                                            </span>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                const updated = [...sections];
+                                                const target = updated[secIdx].directVideos![vidIdx];
+                                                target.interviewQuestions = target.interviewQuestions!.filter(
+                                                  (_, i) => i !== qIdx
+                                                );
+                                                setSections(updated);
+                                              }}
+                                              className="text-slate-400 hover:text-rose-500 cursor-pointer"
+                                            >
+                                              <Trash2 className="h-3 w-3" />
+                                            </button>
+                                          </div>
+                                          <input
+                                            type="text"
+                                            value={iq.question}
+                                            onChange={(e) => {
+                                              const updated = [...sections];
+                                              updated[secIdx].directVideos![vidIdx].interviewQuestions![qIdx].question =
+                                                e.target.value;
+                                              setSections(updated);
+                                            }}
+                                            placeholder="Interview Question prompt..."
+                                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                          />
+                                          <textarea
+                                            rows={2}
+                                            value={iq.answer || ""}
+                                            onChange={(e) => {
+                                              const updated = [...sections];
+                                              updated[secIdx].directVideos![vidIdx].interviewQuestions![qIdx].answer =
+                                                e.target.value;
+                                              setSections(updated);
+                                            }}
+                                            placeholder="Expected technical model answer..."
+                                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                          />
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* 2. Video Task */}
+                                <div className="space-y-2 pt-2 border-t border-blue-100 dark:border-blue-900/50">
+                                  <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                                    <ClipboardCheck className="h-3.5 w-3.5 text-[#2563EB]" />
+                                    Attached Video Task / Practical Exercise
+                                  </span>
+
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    <div className="sm:col-span-2">
+                                      <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                        Task Title
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={vid.task?.title || ""}
+                                        onChange={(e) => {
+                                          const updated = [...sections];
+                                          const target = updated[secIdx].directVideos![vidIdx];
+                                          target.task = {
+                                            description: "",
+                                            instructions: "",
+                                            submissionType: "text",
+                                            points: 100,
+                                            ...target.task,
+                                            title: e.target.value,
+                                          };
+                                          setSections(updated);
+                                        }}
+                                        placeholder="e.g. Implement Architecture Demo"
+                                        className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                        Submission Type
+                                      </label>
+                                      <select
+                                        value={vid.task?.submissionType || "text"}
+                                        onChange={(e) => {
+                                          const updated = [...sections];
+                                          const target = updated[secIdx].directVideos![vidIdx];
+                                          target.task = {
+                                            title: "",
+                                            description: "",
+                                            instructions: "",
+                                            points: 100,
+                                            ...target.task,
+                                            submissionType: e.target.value as any,
+                                          };
+                                          setSections(updated);
+                                        }}
+                                        className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                      >
+                                        <option value="text">Text / Code Submission</option>
+                                        <option value="file">File Upload (.zip, .pdf)</option>
+                                        <option value="link">Project Link (GitHub / Deploy)</option>
+                                      </select>
+                                    </div>
+                                  </div>
+
+                                  <div>
+                                    <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                      Task Instructions &amp; Submission Criteria
+                                    </label>
+                                    <textarea
+                                      rows={2}
+                                      value={vid.task?.instructions || vid.task?.description || ""}
+                                      onChange={(e) => {
+                                        const updated = [...sections];
+                                        const target = updated[secIdx].directVideos![vidIdx];
+                                        target.task = {
+                                          title: "",
+                                          submissionType: "text",
+                                          points: 100,
+                                          ...target.task,
+                                          description: e.target.value,
+                                          instructions: e.target.value,
+                                        };
+                                        setSections(updated);
+                                      }}
+                                      placeholder="Explain the task deliverables and requirements..."
+                                      className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>

@@ -189,7 +189,7 @@ export function DashboardTopbar({
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 sm:h-20 shrink-0 items-center justify-between gap-2 sm:gap-4 px-4 sm:px-6 lg:px-8 border-b border-transparent bg-transparent backdrop-blur-md transition-all print:hidden">
+      <header className="sticky top-0 z-40 flex h-16 sm:h-20 shrink-0 items-center justify-between gap-2 sm:gap-4 px-4 sm:px-6 lg:px-8 border-b border-transparent bg-transparent backdrop-blur-md transition-all print:hidden">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           {/* Mobile Hamburger Toggle Button */}
           <button
@@ -257,7 +257,7 @@ export function DashboardTopbar({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.95 }}
                   transition={{ duration: 0.16, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2 w-72 z-50 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated shadow-[0_16px_45px_rgba(15,23,42,0.18)] dark:shadow-[0_16px_45px_rgba(0,0,0,0.6)] backdrop-blur-xl p-2.5 font-sans overflow-hidden"
+                  className="absolute right-0 top-full mt-2 w-72 z-[100] rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated shadow-[0_16px_45px_rgba(15,23,42,0.18)] dark:shadow-[0_16px_45px_rgba(0,0,0,0.6)] backdrop-blur-xl p-2.5 font-sans overflow-hidden"
                 >
                   <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/60 mb-1.5">
                     <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
@@ -327,7 +327,7 @@ export function DashboardTopbar({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.95 }}
                   transition={{ duration: 0.16, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-w-[calc(100vw-24px)] z-50 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated shadow-[0_16px_45px_rgba(15,23,42,0.18)] dark:shadow-[0_16px_45px_rgba(0,0,0,0.6)] backdrop-blur-xl font-sans overflow-hidden"
+                  className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-w-[calc(100vw-24px)] z-[100] rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-elevated shadow-[0_16px_45px_rgba(15,23,42,0.18)] dark:shadow-[0_16px_45px_rgba(0,0,0,0.6)] backdrop-blur-xl font-sans overflow-hidden"
                 >
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 py-3 bg-slate-50/70 dark:bg-slate-900/60">
                     <div className="flex items-center gap-2">

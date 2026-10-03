@@ -225,6 +225,8 @@ export async function syncAllCourseProgress(params: {
           completedAssignmentIds: finalAssignmentIds,
           assignmentScores: mergedScores,
           assignmentCooldowns: existingData.assignmentCooldowns || {},
+          savedQuizAnswers: existingData.savedQuizAnswers || {},
+          assignmentBreakdowns: existingData.assignmentBreakdowns || {},
         })
       );
 
@@ -393,27 +395,46 @@ export function getExactStudentCourseProgress(
         );
 
         if (matchedCourse && Array.isArray(matchedCourse.sections)) {
-          let videoCount = 0;
-          let assignmentCount = 0;
-          matchedCourse.sections.forEach((sec: any) => {
-            if (Array.isArray(sec.directVideos)) videoCount += sec.directVideos.length;
+          const validCourseVideoIds = new Set<string>();
+          const validCourseAssignmentIds = new Set<string>();
+
+          matchedCourse.sections.forEach((sec: any, secIdx: number) => {
+            if (Array.isArray(sec.directVideos)) {
+              sec.directVideos.forEach((v: any) => {
+                if (v?.id) validCourseVideoIds.add(String(v.id));
+              });
+            }
             if (Array.isArray(sec.subsections)) {
               sec.subsections.forEach((sub: any) => {
-                if (Array.isArray(sub.videos)) videoCount += sub.videos.length;
+                if (Array.isArray(sub.videos)) {
+                  sub.videos.forEach((v: any) => {
+                    if (v?.id) validCourseVideoIds.add(String(v.id));
+                  });
+                }
               });
             }
             if (sec.assignment && (sec.assignment.title || sec.assignment.id)) {
-              assignmentCount += 1;
+              const asgId = String(sec.assignment.id || `asg-${sec.id || secIdx + 1}`);
+              validCourseAssignmentIds.add(asgId);
             }
           });
 
-          totalVideos = videoCount;
-          totalAssignments = assignmentCount;
+          totalVideos = validCourseVideoIds.size;
+          totalAssignments = validCourseAssignmentIds.size;
           totalSections = matchedCourse.sections.length;
-          totalMilestones = videoCount + assignmentCount;
+          totalMilestones = totalVideos + totalAssignments;
           if (totalMilestones > 0) {
             customCourseFound = true;
           }
+
+          // Filter completed videos to only ones in the current course
+          completedVideoIds = completedVideoIds.filter((id) => validCourseVideoIds.has(String(id)));
+
+          // Filter completed assignments to only ones in the current course
+          completedAssignmentIds = completedAssignmentIds.filter((id) => {
+            const cleanId = String(id).replace(/^asg:/, '');
+            return validCourseAssignmentIds.has(cleanId) || validCourseAssignmentIds.has(String(id));
+          });
         }
       }
     } catch {}
@@ -447,10 +468,25 @@ export function getExactStudentCourseProgress(
     }
   }
 
-  const completedMilestones = completedVideoIds.length + completedAssignmentIds.length;
-  const overallPercent = totalMilestones > 0
-    ? Math.min(100, Math.round((completedMilestones / totalMilestones) * 100))
+  const completedMilestones =
+    Math.min(completedVideoIds.length, totalVideos) +
+    Math.min(completedAssignmentIds.length, totalAssignments);
+
+  let overallPercent = totalMilestones > 0
+    ? Math.round((completedMilestones / totalMilestones) * 100)
     : 0;
+
+  // Strict check: Cannot be 100% if any assignment is not completed!
+  if (totalAssignments > 0 && completedAssignmentIds.length < totalAssignments) {
+    if (overallPercent >= 100) {
+      overallPercent = 99;
+    }
+  }
+  if (totalVideos > 0 && completedVideoIds.length < totalVideos) {
+    if (overallPercent >= 100) {
+      overallPercent = 99;
+    }
+  }
 
   return {
     completedVideoIds,
@@ -511,12 +547,20 @@ export async function fetchCourseProgress(
         }
       });
 
-      const completedCount = combinedVideos.length + combinedAssignments.length;
+      const completedCount =
+        Math.min(combinedVideos.length, localExact.totalVideos) +
+        Math.min(combinedAssignments.length, localExact.totalAssignments);
       const totalCount = localExact.totalMilestones || 11;
-      const percent = Math.max(
-        data.overallPercent || 0,
-        Math.min(100, Math.round((completedCount / totalCount) * 100))
-      );
+      let percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+      if (typeof data.overallPercent === "number" && data.overallPercent < percent) {
+        percent = data.overallPercent;
+      }
+      if (localExact.totalAssignments > 0 && combinedAssignments.length < localExact.totalAssignments) {
+        if (percent >= 100) percent = 99;
+      }
+      if (localExact.totalVideos > 0 && combinedVideos.length < localExact.totalVideos) {
+        if (percent >= 100) percent = 99;
+      }
 
       return {
         status: data.status,

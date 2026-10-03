@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   X,
@@ -78,6 +78,14 @@ export function TakeAssessmentModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (isOpen) {
+      setAnswers({});
+      setUploadedFileName("");
+      setValidationError(null);
+    }
+  }, [isOpen, task?.id]);
+
   if (!isOpen) return null;
 
   const customQuestions: TaskQuestion[] =
@@ -93,16 +101,30 @@ export function TakeAssessmentModal({
   const answeredMcqCount = mcqQuestions.filter((q) => answers[q.id] !== undefined).length;
 
   // Every question must be answered before the assignment can be submitted —
-  // only the MCQs were checked before, so a written question could be left
-  // blank and still submitted (and scored as a miss).
+  // both MCQs, written, and file uploads are required.
   const isAnswered = (q: TaskQuestion) => {
     const value = answers[q.id];
     if (q.type === "MCQ") return typeof value === "number";
+    if (q.type === "FILE_UPLOAD") return Boolean(uploadedFileName || value || answers.uploadedFile);
     return typeof value === "string" && value.trim().length > 0;
   };
   const answeredCount = customQuestions.filter(isAnswered).length;
+  const isFileUploadRequired = Boolean(
+    task?.requiredFiles && !customQuestions.some((q) => q.type === "FILE_UPLOAD")
+  );
+  const isFileProvided = Boolean(uploadedFileName || answers.uploadedFile);
+
+  const defaultAnsweredCount = DEFAULT_QUESTIONS.filter(
+    (_, idx) => answers[`default-${idx + 1}`] !== undefined
+  ).length;
+
+  const totalQuestions = customQuestions.length > 0 ? customQuestions.length : DEFAULT_QUESTIONS.length;
+  const effectiveAnsweredCount = customQuestions.length > 0 ? answeredCount : defaultAnsweredCount;
+
   const allQuestionsAnswered =
-    customQuestions.length === 0 || answeredCount === customQuestions.length;
+    totalQuestions > 0 &&
+    effectiveAnsweredCount === totalQuestions &&
+    (!isFileUploadRequired || isFileProvided);
 
   const handleSelectOption = (qId: string, optIdx: number) => {
     setAnswers((prev) => ({ ...prev, [qId]: optIdx }));
@@ -125,7 +147,9 @@ export function TakeAssessmentModal({
   const handleSubmit = async () => {
     if (!allQuestionsAnswered) {
       setValidationError(
-        `Please answer all ${customQuestions.length} questions before submitting (${answeredCount}/${customQuestions.length} answered).`
+        `Please answer all ${totalQuestions} questions before submitting (${effectiveAnsweredCount}/${totalQuestions} answered${
+          isFileUploadRequired && !isFileProvided ? ", required solution file missing" : ""
+        }).`
       );
       return;
     }
@@ -270,6 +294,16 @@ export function TakeAssessmentModal({
             <div className="flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 p-3 text-xs font-semibold text-rose-700 dark:text-rose-300">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{validationError}</span>
+            </div>
+          )}
+
+          {!allQuestionsAnswered && (
+            <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[11px] font-semibold text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>
+                Please answer all {totalQuestions} questions before submitting ({effectiveAnsweredCount}/{totalQuestions} answered
+                {isFileUploadRequired && !isFileProvided ? ", required solution file missing" : ""}).
+              </span>
             </div>
           )}
 
@@ -435,11 +469,9 @@ export function TakeAssessmentModal({
         {/* MODAL FOOTER - PINNED */}
         <div className="shrink-0 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 p-4 sm:p-5 bg-slate-50/80 dark:bg-surface-elevated/80">
           <div className="text-[11px] text-slate-400 font-medium">
-            {customQuestions.length > 0 && (
-              <span>
-                {answeredCount}/{customQuestions.length} answered
-              </span>
-            )}
+            <span>
+              {effectiveAnsweredCount}/{totalQuestions} answered
+            </span>
           </div>
 
           <div className="flex gap-2">
@@ -454,7 +486,16 @@ export function TakeAssessmentModal({
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting || !allQuestionsAnswered}
-              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20 disabled:opacity-50 cursor-pointer"
+              title={
+                !allQuestionsAnswered
+                  ? `Answer all ${totalQuestions} questions before submitting (${effectiveAnsweredCount}/${totalQuestions} answered).`
+                  : undefined
+              }
+              className={`flex items-center gap-1.5 rounded-xl px-5 py-2 text-xs font-bold text-white shadow-md transition-all ${
+                isSubmitting || !allQuestionsAnswered
+                  ? "bg-slate-400 opacity-60 cursor-not-allowed"
+                  : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20 cursor-pointer"
+              }`}
             >
               {isSubmitting ? (
                 <>
@@ -464,7 +505,11 @@ export function TakeAssessmentModal({
               ) : (
                 <>
                   <FileCheck className="h-4 w-4" />
-                  <span>Submit Assignment</span>
+                  <span>
+                    {!allQuestionsAnswered
+                      ? `Answer All Questions (${effectiveAnsweredCount}/${totalQuestions})`
+                      : "Submit Assignment"}
+                  </span>
                 </>
               )}
             </button>

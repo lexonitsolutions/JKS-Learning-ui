@@ -8,6 +8,26 @@ import { fetchStudentEnrollments, getClientSessionEmail } from "./enrollments-ap
 
 export type VideoSourceType = "upload" | "url" | "gdrive" | "onedrive";
 
+export interface VideoInterviewQuestion {
+  id: string;
+  question: string;
+  answer?: string;
+  tags?: string;
+}
+
+export interface VideoTask {
+  title: string;
+  description: string;
+  instructions?: string;
+  submissionType?: "text" | "file" | "link";
+  points?: number;
+  requiredFiles?: string;
+  completed?: boolean;
+  submittedAt?: string;
+  submissionContent?: string;
+  submissionFileUrl?: string;
+}
+
 export interface VideoItem {
   id: string;
   title: string;
@@ -19,6 +39,8 @@ export interface VideoItem {
   isFreeDemo?: boolean;
   completed?: boolean;
   notes?: string;
+  interviewQuestions?: VideoInterviewQuestion[];
+  task?: VideoTask;
 }
 
 export interface SubSection {
@@ -189,12 +211,15 @@ export interface FullCourse {
   durationWeeks: number;
   price: number;
   rating: number;
+  ratingCount?: number;
   studentsEnrolled: number;
   summary: string;
   thumbnail?: string;
   sections: Section[];
   createdAt: string;
   status: "Published" | "Draft";
+  instructorUserIds?: string[];
+  instructorName?: string;
 }
 
 export interface StudentCourseProgress {
@@ -335,6 +360,7 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
     status: course.status.toUpperCase(),
     sections: course.sections,
     sectionsJson: course.sections,
+    instructorUserIds: course.instructorUserIds || ["6aafc1a7d80072434f90eb89"],
   };
 
   if (!isUpdate && course.id) {
@@ -376,6 +402,8 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
         sections: (Array.isArray(dbCourse.sectionsJson) && dbCourse.sectionsJson.length > 0)
           ? dbCourse.sectionsJson
           : course.sections,
+        instructorUserIds: dbCourse.instructorUserIds || course.instructorUserIds || ["6aafc1a7d80072434f90eb89"],
+        instructorName: dbCourse.instructorUsers?.[0]?.name || course.instructorName || "Davood Khan",
       };
     } else {
       const errText = await res.text();
@@ -670,6 +698,7 @@ export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
             durationWeeks: dbc.durationWeeks || existing?.durationWeeks || 12,
             price,
             rating: typeof dbc.rating === "number" ? dbc.rating : existing?.rating || 5.0,
+            ratingCount: typeof dbc.ratingCount === "number" ? dbc.ratingCount : (existing as any)?.ratingCount || 0,
             studentsEnrolled: typeof dbc.studentsEnrolled === "number" ? dbc.studentsEnrolled : existing?.studentsEnrolled || 0,
             summary: dbc.summary || existing?.summary || "",
             thumbnail: dbc.thumbnail || existing?.thumbnail || "",
@@ -861,6 +890,7 @@ export function normalizeDbCourse(dbCourse: any, existing?: FullCourse): FullCou
     durationWeeks: dbCourse?.durationWeeks || existing?.durationWeeks || 12,
     price,
     rating: typeof dbCourse?.rating === "number" ? dbCourse.rating : existing?.rating || 5.0,
+    ratingCount: typeof dbCourse?.ratingCount === "number" ? dbCourse.ratingCount : (existing as any)?.ratingCount || 0,
     studentsEnrolled:
       typeof dbCourse?.studentsEnrolled === "number"
         ? dbCourse.studentsEnrolled
@@ -872,6 +902,8 @@ export function normalizeDbCourse(dbCourse: any, existing?: FullCourse): FullCou
     status: (dbCourse?.status === "PUBLISHED" || dbCourse?.status === "Published"
       ? "Published"
       : "Draft") as "Published" | "Draft",
+    instructorUserIds: dbCourse?.instructorUserIds || existing?.instructorUserIds || ["6aafc1a7d80072434f90eb89"],
+    instructorName: dbCourse?.instructorUsers?.[0]?.name || existing?.instructorName || "Davood Khan",
   };
 }
 

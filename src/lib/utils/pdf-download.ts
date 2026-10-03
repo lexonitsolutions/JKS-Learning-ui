@@ -103,6 +103,12 @@ export async function downloadElementAsPdf(
     };
   }
 
+  if (typeof document !== "undefined" && (document as any).fonts) {
+    try {
+      await (document as any).fonts.ready;
+    } catch {}
+  }
+
   try {
     const canvas = await html2canvas(element, {
       scale,
@@ -128,7 +134,7 @@ export async function downloadElementAsPdf(
         clonedDoc.body.style.backgroundColor = "#ffffff";
         clonedDoc.body.style.color = "#0f172a";
 
-        // 2. Inject rock-solid light-theme variables and high-contrast color definitions
+        // 2. Inject rock-solid light-theme variables, font smoothing, and color definitions
         const styleOverride = clonedDoc.createElement("style");
         styleOverride.id = "jks-pdf-light-theme-override";
         styleOverride.textContent = `
@@ -163,6 +169,9 @@ export async function downloadElementAsPdf(
           #printable-resume-sheet * {
             color-scheme: light !important;
             box-sizing: border-box !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            text-rendering: geometricPrecision !important;
           }
           #printable-resume-sheet {
             width: 794px !important;
@@ -176,6 +185,13 @@ export async function downloadElementAsPdf(
             border: none !important;
             border-radius: 0 !important;
             margin: 0 auto !important;
+            font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+          }
+          #printable-resume-sheet .font-sans {
+            font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+          }
+          #printable-resume-sheet .font-serif {
+            font-family: Georgia, Cambria, "Times New Roman", Times, serif !important;
           }
           #printable-resume-sheet .text-slate-900 { color: #0f172a !important; }
           #printable-resume-sheet .text-slate-800 { color: #1e293b !important; }
@@ -391,12 +407,13 @@ export async function downloadElementAsPdf(
 
       // Embed ATS selectable & searchable text with exact scaled coordinates
       pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(255, 255, 255);
       extractedTexts.forEach((t) => {
         const textX = xOffset + t.relX * renderWidth;
         const textY = yOffset + t.relY * renderHeight;
         try {
           pdf.setFontSize(Math.max(5, t.fontSizePt * fitScale));
-          pdf.text(t.text, textX, textY, { renderingMode: "invisible" });
+          pdf.text(t.text, textX, textY, { renderingMode: 3 as any });
         } catch {}
       });
     } else {

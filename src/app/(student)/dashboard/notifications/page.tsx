@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   CheckCheck,
@@ -37,6 +38,7 @@ type StudentTabFilter =
   | "system";
 
 export default function StudentNotificationsPage() {
+  const router = useRouter();
   const session = useMockSession();
   const { user: clerkUser } = useUser();
   const userEmail =
@@ -164,9 +166,18 @@ export default function StudentNotificationsPage() {
                 return (
                   <div
                     key={notif.id}
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest("button") || (e.target as HTMLElement).closest("a")) return;
+                      if (notif.link) {
+                        markAsRead(notif.id);
+                        router.push(notif.link);
+                      }
+                    }}
                     className={`group relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border p-4 sm:p-5 transition-all ${
+                      notif.link ? "cursor-pointer hover:shadow-md" : ""
+                    } ${
                       !notif.read
-                        ? "border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20 shadow-xs"
+                        ? "border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20 shadow-xs hover:border-blue-300 dark:hover:border-blue-800"
                         : "border-slate-200/80 dark:border-slate-800 bg-white dark:bg-surface-elevated hover:border-slate-300 dark:hover:border-slate-700"
                     }`}
                   >

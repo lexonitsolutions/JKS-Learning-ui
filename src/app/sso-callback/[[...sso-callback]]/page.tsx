@@ -2,33 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AuthenticateWithRedirectCallback } from "@clerk/nextjs";
-import { Check, ShieldCheck, LoaderCircle } from "lucide-react";
+import { AuthenticateWithRedirectCallback, useAuth } from "@clerk/nextjs";
+import { Check, ShieldCheck, LoaderCircle, ArrowRight, X } from "lucide-react";
 
 import { JksLogo } from "@/components/common/jks-logo";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 
 // Landing point for the Clerk OAuth round-trip (Google / GitHub).
 //
-// <AuthenticateWithRedirectCallback> is the entire auth implementation: it
-// reads the handshake params off the URL, finishes the sign-in (or the sign-up,
-// when the social account is new and Clerk transferred the attempt), and then
-// navigates. Everything else on this page is presentation.
+// <AuthenticateWithRedirectCallback> reads the handshake params off the URL,
+// finishes the sign-in (or sign-up), and then navigates.
+// We also monitor useAuth() directly so as soon as isSignedIn becomes true,
+// we immediately route to /auth-redirect without waiting for Clerk's internal router.
 //
-// Two things here are load-bearing and should not be removed:
-//
-//  1. The #clerk-captcha element. When Clerk transfers a sign-in to a sign-up
-//     for a first-time Google/GitHub account, bot protection runs HERE, not on
-//     the login form. With no such element clerk-js logs "Cannot initialize
-//     Smart CAPTCHA widget because the clerk-captcha DOM element was not found"
-//     and downgrades to the invisible widget, which can stall the transfer and
-//     leave this page spinning forever. It must be a real, visible box (never
-//     display:none) and the only one on the page.
-//
-//  2. No auto-redirect timer. An earlier version force-navigated to /dashboard
-//     after 1.5s, which tore the page down mid-token-exchange. The escape hatch
-//     below is deliberately a LINK the user chooses to click, never an
-//     automatic navigation that could race the callback.
+// The #clerk-captcha element must remain mounted and visible for Smart CAPTCHA widget.
 
 const STEPS = [
   { label: "Account authorized", detail: "Provider confirmed your identity" },
@@ -36,22 +23,35 @@ const STEPS = [
   { label: "Opening your dashboard", detail: "Almost there" },
 ];
 
-// Paces the checklist against the real handshake. Purely cosmetic — the actual
-// navigation is driven by Clerk, not by this timer.
-const STEP_MS = 1400;
-// How long before we offer a manual way out.
-const SLOW_MS = 9000;
+// Paces the checklist against the real handshake.
+const STEP_MS = 1000;
+// How long before we offer a prominent manual escape hatch.
+const SLOW_MS = 3500;
 
 export default function SSOCallbackPage() {
+  const { isLoaded, isSignedIn } = useAuth();
   const reducedMotion = useReducedMotion();
   const [step, setStep] = useState(0);
   const [isSlow, setIsSlow] = useState(false);
+
+  // Instant redirect as soon as Clerk confirms session
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      window.location.replace("/auth-redirect");
+    }
+  }, [isLoaded, isSignedIn]);
 
   useEffect(() => {
     const timers = [
       setTimeout(() => setStep(1), STEP_MS),
       setTimeout(() => setStep(2), STEP_MS * 2),
       setTimeout(() => setIsSlow(true), SLOW_MS),
+      // Fallback redirect after 6.5s in case session exists in cookies
+      setTimeout(() => {
+        if (typeof window !== "undefined") {
+          window.location.replace("/auth-redirect");
+        }
+      }, 6500),
     ];
     return () => timers.forEach(clearTimeout);
   }, []);
@@ -60,12 +60,22 @@ export default function SSOCallbackPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#F8FAFC] dark:bg-background p-4 sm:p-6 md:p-10">
       <div className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-2xl">
         {/* Brand header */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/60 dark:from-slate-900/80 dark:via-blue-950/40 dark:to-slate-900/80 px-7 py-5">
+        <div className="relative flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-100/60 dark:from-slate-900/80 dark:via-blue-950/40 dark:to-slate-900/80 px-7 py-5">
           <JksLogo size="md" href="" />
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-100 dark:border-blue-900/50 bg-white/80 dark:bg-blue-950/60 px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Secure
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-100 dark:border-blue-900/50 bg-white/80 dark:bg-blue-950/60 px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Secure
+            </span>
+            <Link
+              href="/login"
+              title="Cancel and return to login"
+              aria-label="Cancel"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-400 dark:hover:text-white transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
 
         <div className="px-7 py-8">
@@ -153,24 +163,32 @@ export default function SSOCallbackPage() {
           */}
           <div id="clerk-captcha" className="mt-6 empty:mt-0" />
 
-          {/* Escape hatch — a link, never an automatic redirect. */}
+          {/* Escape hatch — visible when handshake is taking more than 3.5 seconds */}
           {isSlow && (
-            <div className="mt-6 rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-[#fffbeb] dark:bg-amber-950/40 px-4 py-3">
-              <p className="text-xs font-semibold text-amber-900 dark:text-amber-300">
-                This is taking longer than usual.
-              </p>
-              <p className="mt-1 text-[11px] font-medium leading-relaxed text-amber-800/80 dark:text-amber-400/80">
-                If a security check appeared above, complete it to continue. Otherwise you
-                can{" "}
-                <Link href="/dashboard" className="font-bold underline underline-offset-2">
-                  go to your dashboard
-                </Link>{" "}
-                or{" "}
-                <Link href="/login" className="font-bold underline underline-offset-2">
-                  try signing in again
+            <div className="mt-6 rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-[#fffbeb] dark:bg-amber-950/40 p-4 space-y-3">
+              <div>
+                <p className="text-xs font-bold text-amber-900 dark:text-amber-300">
+                  Opening taking longer than usual?
+                </p>
+                <p className="mt-1 text-[11px] font-medium leading-relaxed text-amber-800/85 dark:text-amber-300/80">
+                  Your identity may already be authorized. You can jump directly to your dashboard or re-authenticate:
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 pt-0.5">
+                <a
+                  href="/auth-redirect"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer text-center"
+                >
+                  <span>Go to Dashboard</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors text-center"
+                >
+                  Try Login Again
                 </Link>
-                .
-              </p>
+              </div>
             </div>
           )}
         </div>

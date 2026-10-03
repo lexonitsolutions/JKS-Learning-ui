@@ -298,7 +298,13 @@ export default function QuizzesPage() {
     });
   };
 
+  const allQuestionsAnswered =
+    activeQuiz && activeQuiz.questions.length > 0
+      ? activeQuiz.questions.every((_, idx) => selectedAnswers[idx] !== undefined)
+      : false;
+
   const handleSubmitQuiz = () => {
+    if (!activeQuiz || !allQuestionsAnswered) return;
     setIsSubmitted(true);
     if (activeQuiz) {
       const res = calculateScore();
@@ -541,11 +547,25 @@ export default function QuizzesPage() {
                   ) : (
                     <button
                       type="button"
+                      disabled={!allQuestionsAnswered}
+                      title={
+                        !allQuestionsAnswered
+                          ? `Answer all ${activeQuiz.questions.length} questions before submitting (${Object.keys(selectedAnswers).length}/${activeQuiz.questions.length} answered).`
+                          : undefined
+                      }
                       onClick={handleSubmitQuiz}
-                      className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-6 py-2 text-xs font-bold text-white shadow-md hover:bg-emerald-700 cursor-pointer"
+                      className={`flex items-center gap-1.5 rounded-xl px-6 py-2 text-xs font-bold text-white shadow-md transition-all ${
+                        !allQuestionsAnswered
+                          ? "bg-slate-400 opacity-60 cursor-not-allowed"
+                          : "bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
+                      }`}
                     >
                       <CheckCircle2 className="h-4 w-4" />
-                      <span>Submit Quiz</span>
+                      <span>
+                        {!allQuestionsAnswered
+                          ? `Answer All Questions (${Object.keys(selectedAnswers).length}/${activeQuiz.questions.length})`
+                          : "Submit Quiz"}
+                      </span>
                     </button>
                   )}
                 </div>
