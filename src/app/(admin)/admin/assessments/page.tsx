@@ -23,6 +23,8 @@ import {
   Layers,
   Sparkles,
   Trash2,
+  XCircle,
+  FileCheck,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
@@ -93,11 +95,20 @@ export default function AdminAssessmentsPage() {
     loadTasks(false);
   }, [loadTasks]);
 
+  // Helper to normalize task status safely
+  const getNormalizedAdminStatus = (status?: string, submission?: any): "PENDING" | "SUBMITTED" | "COMPLETED" | "FAILED" => {
+    const raw = String(status || "").trim().toUpperCase();
+    if (raw === "COMPLETED" || raw === "REVIEWED") return "COMPLETED";
+    if (raw === "FAILED") return "FAILED";
+    if (raw === "SUBMITTED" || (submission && submission.submittedAt)) return "SUBMITTED";
+    return "PENDING";
+  };
+
   // Derived Metrics from live DB tasks
   const totalTasks = tasks.length;
-  const pendingCount = tasks.filter((t) => t.status === "PENDING").length;
-  const submittedCount = tasks.filter((t) => t.status === "SUBMITTED").length;
-  const completedCount = tasks.filter((t) => t.status === "COMPLETED" || t.status === "REVIEWED").length;
+  const pendingCount = tasks.filter((t) => getNormalizedAdminStatus(t.status, t.submission) === "PENDING").length;
+  const submittedCount = tasks.filter((t) => getNormalizedAdminStatus(t.status, t.submission) === "SUBMITTED").length;
+  const completedCount = tasks.filter((t) => getNormalizedAdminStatus(t.status, t.submission) === "COMPLETED").length;
 
   // Distinct courses for dropdown filter
   const uniqueCourses = useMemo(() => {
@@ -113,11 +124,7 @@ export default function AdminAssessmentsPage() {
     let list = tasks;
 
     if (statusFilter !== "ALL") {
-      if (statusFilter === "COMPLETED") {
-        list = list.filter((t) => t.status === "COMPLETED" || t.status === "REVIEWED");
-      } else {
-        list = list.filter((t) => t.status === statusFilter);
-      }
+      list = list.filter((t) => getNormalizedAdminStatus(t.status, t.submission) === statusFilter);
     }
 
     if (selectedCourse !== "ALL") {
@@ -523,8 +530,10 @@ export default function AdminAssessmentsPage() {
                       </tr>
                     ) : (
                       filteredTasks.map((task) => {
-                        const isSubmitted = task.status === "SUBMITTED";
-                        const isReviewed = task.status === "REVIEWED" || task.status === "COMPLETED";
+                        const normStatus = getNormalizedAdminStatus(task.status, task.submission);
+                        const isSubmitted = normStatus === "SUBMITTED";
+                        const isReviewed = normStatus === "COMPLETED";
+                        const isFailed = normStatus === "FAILED";
                         const questionsCount = task.questions?.length || 0;
 
                         return (
@@ -566,13 +575,17 @@ export default function AdminAssessmentsPage() {
 
                             {/* Status Badge */}
                             <td className="px-3 py-3.5 text-center whitespace-nowrap">
-                              {task.status === "SUBMITTED" ? (
+                              {isSubmitted ? (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800/50 px-2 py-0.5 text-[10.5px] font-bold text-[#2563EB] dark:text-blue-400">
                                   <Clock className="h-2.5 w-2.5" /> Submitted
                                 </span>
-                              ) : task.status === "REVIEWED" || task.status === "COMPLETED" ? (
+                              ) : isReviewed ? (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/50 px-2 py-0.5 text-[10.5px] font-bold text-emerald-700 dark:text-emerald-300">
                                   <CheckCircle2 className="h-2.5 w-2.5" /> Completed
+                                </span>
+                              ) : isFailed ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/50 px-2 py-0.5 text-[10.5px] font-bold text-rose-700 dark:text-rose-300">
+                                  <XCircle className="h-2.5 w-2.5" /> Failed
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/50 px-2 py-0.5 text-[10.5px] font-bold text-amber-700 dark:text-amber-300">
@@ -603,6 +616,15 @@ export default function AdminAssessmentsPage() {
                                   >
                                     <FileText className="h-3 w-3" />
                                     <span>Review</span>
+                                  </button>
+                                ) : isReviewed || isFailed ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setReviewingTask(task)}
+                                    className="inline-flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition-colors cursor-pointer"
+                                  >
+                                    <FileCheck className="h-3 w-3" />
+                                    <span>View Review</span>
                                   </button>
                                 ) : (
                                   <button
@@ -651,8 +673,10 @@ export default function AdminAssessmentsPage() {
                   <div className="py-8 text-center text-xs text-slate-400">No assignments found.</div>
                 ) : (
                   filteredTasks.map((task) => {
-                    const isSubmitted = task.status === "SUBMITTED";
-                    const isReviewed = task.status === "REVIEWED" || task.status === "COMPLETED";
+                    const normStatus = getNormalizedAdminStatus(task.status, task.submission);
+                    const isSubmitted = normStatus === "SUBMITTED";
+                    const isReviewed = normStatus === "COMPLETED";
+                    const isFailed = normStatus === "FAILED";
 
                     return (
                       <div key={task.id} className="py-3.5 space-y-2">
@@ -669,13 +693,17 @@ export default function AdminAssessmentsPage() {
                             </div>
                           </div>
 
-                          {task.status === "SUBMITTED" ? (
+                          {isSubmitted ? (
                             <span className="rounded-full bg-blue-50 text-[#2563EB] border border-blue-200 px-2 py-0.5 text-[10px] font-bold shrink-0">
                               Submitted
                             </span>
                           ) : isReviewed ? (
                             <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold shrink-0">
                               Completed
+                            </span>
+                          ) : isFailed ? (
+                            <span className="rounded-full bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 text-[10px] font-bold shrink-0">
+                              Failed
                             </span>
                           ) : (
                             <span className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-[10px] font-bold shrink-0">
@@ -706,7 +734,7 @@ export default function AdminAssessmentsPage() {
                               onClick={() => setReviewingTask(task)}
                               className="rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-slate-700 dark:text-slate-300"
                             >
-                              {isSubmitted ? "Review" : "Details"}
+                              {isSubmitted ? "Review" : isReviewed || isFailed ? "View Review" : "Details"}
                             </button>
                             <button
                               type="button"

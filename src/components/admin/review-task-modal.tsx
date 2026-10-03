@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   CheckCircle2,
@@ -30,10 +30,21 @@ interface ReviewTaskModalProps {
 export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTaskModalProps) {
   const [score, setScore] = useState<number>(task?.submission?.score ?? 85);
   const [feedback, setFeedback] = useState<string>(
-    task?.submission?.feedback ?? "Demonstrated sound understanding of core concepts. Great job!"
+    task?.submission?.feedback ?? task?.submission?.instructorFeedback ?? "Demonstrated sound understanding of core concepts. Great job!"
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (task) {
+      setScore(task.submission?.instructorScore ?? task.submission?.score ?? 85);
+      setFeedback(
+        task.submission?.instructorFeedback ??
+        task.submission?.feedback ??
+        "Demonstrated sound understanding of core concepts. Great job!"
+      );
+    }
+  }, [task]);
 
   if (!isOpen || !task) return null;
 
@@ -131,7 +142,12 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
 
           {questions.length > 0 ? (
             questions.map((q, idx) => {
-              const studentAnswer = answers[q.id];
+              const studentAnswer =
+                answers[q.id] !== undefined
+                  ? answers[q.id]
+                  : answers[idx] !== undefined
+                  ? answers[idx]
+                  : answers[String(idx)];
               const matchScore =
                 q.type === "SHORT_ANSWER" || q.type === "LONG_ANSWER"
                   ? computeKeywordMatch(String(studentAnswer || ""), q.modelAnswer || "")
@@ -181,6 +197,13 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
                             </div>
                           );
                         })}
+                      </div>
+                    ) : q.type === "FILE_UPLOAD" ? (
+                      <div className="flex items-center gap-2 pt-1 text-xs">
+                        <FileText className="h-4 w-4 text-[#2563EB] dark:text-blue-400 shrink-0" />
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {studentAnswer || submission?.uploadedFileName || (answers as any)?.uploadedFile || "File submitted by student"}
+                        </span>
                       </div>
                     ) : (
                       <p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap">

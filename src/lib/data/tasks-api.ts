@@ -587,13 +587,18 @@ export function recordAssessmentAssigned(title: string, studentEmails: string[])
 
 export async function reviewTaskSubmission(
   taskId: string,
-  payload: { score: number; feedback: string; status?: "Completed" | "Failed" | string }
+  payload: { score: number; feedback: string; instructorFeedback?: string; status?: "Completed" | "Failed" | string }
 ): Promise<{ success: boolean; data?: IndividualTask; error?: string }> {
   try {
     const res = await apiFetch(`/admin/tasks/${encodeURIComponent(taskId)}/review`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        score: Number(payload.score),
+        feedback: payload.feedback,
+        instructorFeedback: payload.instructorFeedback || payload.feedback,
+        status: payload.status,
+      }),
     });
     if (res.ok) {
       const data = await res.json();
