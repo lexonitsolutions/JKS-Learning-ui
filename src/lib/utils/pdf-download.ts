@@ -391,12 +391,13 @@ export async function downloadElementAsPdf(
 
       // Embed ATS selectable & searchable text with exact scaled coordinates
       pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(255, 255, 255);
       extractedTexts.forEach((t) => {
         const textX = xOffset + t.relX * renderWidth;
         const textY = yOffset + t.relY * renderHeight;
         try {
           pdf.setFontSize(Math.max(5, t.fontSizePt * fitScale));
-          pdf.text(t.text, textX, textY, { renderingMode: "invisible" });
+          pdf.text(t.text, textX, textY, { renderingMode: 3 as any });
         } catch {}
       });
     } else {

@@ -252,6 +252,34 @@ const DEFAULT_MASTER_ASSESSMENTS: ReusableAssessment[] = [
   },
 ];
 
+export function normalizeTaskQuestion(q: any, fallbackIndex = 0): TaskQuestion {
+  const rawType = String(q?.type || "").toUpperCase().trim();
+  let taskType: TaskQuestion["type"] = "SHORT_ANSWER";
+  if (rawType.includes("LONG") || rawType.includes("COMPREHENS") || rawType.includes("ESSAY")) {
+    taskType = "LONG_ANSWER";
+  } else if (rawType.includes("FILE") || rawType.includes("UPLOAD") || rawType.includes("PROJECT")) {
+    taskType = "FILE_UPLOAD";
+  } else if (rawType.includes("SHORT") || rawType.includes("TEXT") || rawType.includes("CODE")) {
+    taskType = "SHORT_ANSWER";
+  } else if (rawType.includes("MCQ") || rawType.includes("CHOICE")) {
+    taskType = "MCQ";
+  } else if (Array.isArray(q?.choices) && q.choices.length > 1) {
+    taskType = "MCQ";
+  }
+
+  const isMcq = taskType === "MCQ";
+
+  return {
+    id: q?.id || `q-${Date.now()}-${fallbackIndex + 1}`,
+    type: taskType,
+    prompt: q?.prompt || "",
+    modelAnswer: taskType === "SHORT_ANSWER" || taskType === "LONG_ANSWER" ? q?.modelAnswer || q?.solutionCode || "" : undefined,
+    choices: isMcq && Array.isArray(q?.choices) && q.choices.length > 0 ? q.choices : isMcq ? ["Option A", "Option B", "Option C", "Option D"] : undefined,
+    correctAnswer: isMcq ? (typeof q?.correctAnswer === "number" ? q.correctAnswer : (typeof q?.correctIndex === "number" ? q.correctIndex : 0)) : undefined,
+    maxPoints: typeof q?.maxPoints === "number" && q.maxPoints > 0 ? q.maxPoints : taskType === "LONG_ANSWER" ? 20 : taskType === "SHORT_ANSWER" ? 10 : 5,
+  };
+}
+
 /**
  * Safely extracts section assignments from course curriculums and maps to ReusableAssessment format.
  */
@@ -276,29 +304,35 @@ export function extractCourseAssignments(courses: FullCourse[]): ReusableAssessm
       seen.add(dedupeKey);
 
       // Convert questions to TaskQuestion[]
-      const questions: TaskQuestion[] = Array.isArray(asg.questions)
-        ? asg.questions.map((q: any, qIdx: number) => {
-            const rawType = (q.type || asg.type || "").toLowerCase();
-            let taskType: TaskQuestion["type"] = "SHORT_ANSWER";
-            if (rawType.includes("mcq") || (Array.isArray(q.choices) && q.choices.length > 1)) {
-              taskType = "MCQ";
-            } else if (rawType.includes("file") || rawType.includes("upload") || rawType.includes("project")) {
-              taskType = "FILE_UPLOAD";
-            } else if (rawType.includes("long") || rawType.includes("code") || rawType.includes("comprehens")) {
-              taskType = "LONG_ANSWER";
-            }
-
-            return {
-              id: q.id || `q-${courseId}-${secIdx}-${qIdx + 1}`,
-              type: taskType,
-              prompt: q.prompt || "",
-              modelAnswer: q.modelAnswer || q.solutionCode || "",
-              choices: Array.isArray(q.choices) && q.choices.length > 0 ? q.choices : undefined,
-              correctAnswer: typeof q.correctIndex === "number" ? q.correctIndex : 0,
-              maxPoints: typeof q.maxPoints === "number" && q.maxPoints > 0 ? q.maxPoints : 10,
-            };
-          })
+      let questions: TaskQuestion[] = Array.isArray(asg.questions) && asg.questions.length > 0
+        ? asg.questions.map((q: any, qIdx: number) => normalizeTaskQuestion(q, qIdx))
         : [];
+
+      // If assignment has no questions array, create a single question matching assignment type
+      if (questions.length === 0) {
+        const rawAsgType = String(asg.type || "").toUpperCase().trim();
+        let fallbackType: TaskQuestion["type"] = "SHORT_ANSWER";
+        if (rawAsgType.includes("LONG") || rawAsgType.includes("COMPREHENS") || rawAsgType.includes("ESSAY")) {
+          fallbackType = "LONG_ANSWER";
+        } else if (rawAsgType.includes("FILE") || rawAsgType.includes("UPLOAD") || rawAsgType.includes("PROJECT")) {
+          fallbackType = "FILE_UPLOAD";
+        } else if (rawAsgType.includes("MCQ") || rawAsgType.includes("CHOICE")) {
+          fallbackType = "MCQ";
+        }
+
+        const asgAny = asg as any;
+        questions = [
+          {
+            id: `q-${courseId}-${secIdx}-1`,
+            type: fallbackType,
+            prompt: asgAny.prompt || asg.title || asg.description || "",
+            modelAnswer: asgAny.modelAnswer || "",
+            choices: fallbackType === "MCQ" ? ["Option A", "Option B", "Option C", "Option D"] : undefined,
+            correctAnswer: fallbackType === "MCQ" ? 0 : undefined,
+            maxPoints: typeof asgAny.maxPoints === "number" && asgAny.maxPoints > 0 ? asgAny.maxPoints : 100,
+          },
+        ];
+      }
 
       result.push({
         id: asg.id || `course-asg-${courseId}-${secIdx}`,
@@ -416,7 +450,7 @@ export async function fetchAllReusableAssessments(): Promise<ReusableAssessment[
             existing.assignedStudents.push(t.assignedStudentEmail);
           }
           if ((!existing.questions || existing.questions.length === 0) && t.questions && t.questions.length > 0) {
-            existing.questions = t.questions;
+            existing.questions = t.questions.map((q, idx) => normalizeTaskQuestion(q, idx));
           }
         } else {
           // Check if it matches by title only
@@ -444,7 +478,7 @@ export async function fetchAllReusableAssessments(): Promise<ReusableAssessment[
               courseTitle: t.courseTitle || "General Track",
               dueDate: t.dueDate,
               requiredFiles: t.requiredFiles,
-              questions: t.questions || [],
+              questions: (t.questions || []).map((q, idx) => normalizeTaskQuestion(q, idx)),
               timesAssigned: 1,
               assignedStudents: t.assignedStudentEmail ? [t.assignedStudentEmail] : [],
               createdAt: t.createdAt || new Date().toISOString(),

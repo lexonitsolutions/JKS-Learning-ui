@@ -294,7 +294,7 @@ export default function ResumeBuilderPage() {
   const [template, setTemplate] = useState<"modern" | "minimalist" | "executive">("modern");
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving">("saved");
-  const [previewZoom, setPreviewZoom] = useState<"100" | "fit">("fit");
+  const [previewZoom, setPreviewZoom] = useState<"100" | "fit">("100");
 
   // Dynamic A4 fit-to-screen scale & dimensions measurement
   const previewContainerRef = useRef<HTMLDivElement>(null);
@@ -900,9 +900,16 @@ export default function ResumeBuilderPage() {
                   <div className="flex flex-row items-baseline justify-between gap-3 font-bold text-slate-900">
                     <span className="font-semibold text-slate-900 min-w-0" style={{ color: "#0F172A" }}>{proj.title}</span>
                     {proj.liveUrl && (
-                      <span className="shrink-0 text-[#1E5EFF] font-mono text-[11px] underline whitespace-nowrap" style={{ color: "#1E5EFF" }}>
-                        {proj.liveUrl}
-                      </span>
+                      <a
+                        href={normalizeWebUrl(proj.liveUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 text-[#1E5EFF] text-[11px] underline whitespace-nowrap hover:text-blue-700"
+                        style={{ color: "#1E5EFF" }}
+                        title={proj.liveUrl}
+                      >
+                        {formatWebDisplay(proj.liveUrl)}
+                      </a>
                     )}
                   </div>
                   {proj.techStack && (
@@ -1082,14 +1089,14 @@ export default function ResumeBuilderPage() {
             <div className="space-y-2">
               {resumeData.projects.map((proj) => (
                 <div key={proj.id} className="text-xs text-black space-y-0.5" style={{ color: "#000000" }}>
-                  <div className="flex justify-between items-baseline gap-2 font-bold" style={{ color: "#000000" }}>
-                    <span className="font-bold min-w-0 flex-1" style={{ color: "#000000" }}>{proj.title}</span>
+                  <div className="flex justify-between items-baseline gap-3 text-xs" style={{ color: "#000000" }}>
+                    <span className="font-bold text-black min-w-0 flex-1" style={{ color: "#000000" }}>{proj.title}</span>
                     {proj.liveUrl && (
                       <a
                         href={normalizeWebUrl(proj.liveUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-mono text-[11px] font-normal underline hover:text-blue-700 shrink-0 text-right truncate max-w-[280px]"
+                        className="text-[11px] font-normal text-black underline shrink-0 whitespace-nowrap text-right hover:text-neutral-700"
                         style={{ color: "#000000" }}
                         title={proj.liveUrl}
                       >
@@ -1302,12 +1309,19 @@ export default function ResumeBuilderPage() {
             <div className="space-y-3 font-sans">
               {resumeData.projects.map((proj) => (
                 <div key={proj.id} className="space-y-1 text-xs">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline justify-between font-bold text-slate-900">
-                    <span className="font-semibold text-slate-900" style={{ color: "#0F172A" }}>{proj.title}</span>
+                  <div className="flex flex-row items-baseline justify-between gap-3 font-bold text-slate-900">
+                    <span className="font-semibold text-slate-900 min-w-0" style={{ color: "#0F172A" }}>{proj.title}</span>
                     {proj.liveUrl && (
-                      <span className="text-[#1E5EFF] font-mono text-[10px] underline" style={{ color: "#1E5EFF" }}>
-                        {proj.liveUrl}
-                      </span>
+                      <a
+                        href={normalizeWebUrl(proj.liveUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#1E5EFF] text-[11px] underline whitespace-nowrap shrink-0 hover:text-blue-700"
+                        style={{ color: "#1E5EFF" }}
+                        title={proj.liveUrl}
+                      >
+                        {formatWebDisplay(proj.liveUrl)}
+                      </a>
                     )}
                   </div>
                   {proj.techStack && (
@@ -2424,24 +2438,26 @@ export default function ResumeBuilderPage() {
                     style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
                   >
                     {/* Header */}
-                    <div className="border-b border-slate-200 pb-3 space-y-1.5" style={{ borderColor: "#e2e8f0" }}>
-                      <div className="flex flex-row items-baseline justify-between gap-3">
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight" style={{ color: "#0f172a" }}>
+                    <div className="border-b border-slate-200 pb-3 space-y-2" style={{ borderColor: "#e2e8f0" }}>
+                      <div>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-none" style={{ color: "#0f172a" }}>
                           {resumeData.personal.fullName || "Your Full Name"}
                         </h1>
-                        {resumeData.personal.location && (
-                          <span className="text-xs font-medium text-slate-500 flex items-center gap-1 shrink-0 whitespace-nowrap" style={{ color: "#64748b" }}>
-                            <MapPin className="h-3.5 w-3.5 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.location}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="text-sm font-bold text-[#1E5EFF]" style={{ color: "#1e5eff" }}>
-                        {resumeData.personal.headline || "Target Engineering Headline"}
+                        <div className="text-sm font-bold text-[#1E5EFF] mt-1.5" style={{ color: "#1e5eff" }}>
+                          {resumeData.personal.headline || "Target Engineering Headline"}
+                        </div>
                       </div>
 
                       {/* Contact row with pills */}
                       <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                        {resumeData.personal.location && (
+                          <span
+                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2.5 py-1 text-[11px] text-slate-700 border border-slate-200 shrink-0"
+                            style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}
+                          >
+                            <MapPin className="h-3 w-3 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.location}
+                          </span>
+                        )}
                         {resumeData.personal.email && (
                           <a
                             href={`mailto:${resumeData.personal.email}`}

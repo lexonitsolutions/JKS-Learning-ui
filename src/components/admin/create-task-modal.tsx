@@ -36,6 +36,7 @@ import {
   getStoredMasterAssessments,
   fetchAllReusableAssessments,
   recordAssessmentAssigned,
+  normalizeTaskQuestion,
 } from "@/lib/data/tasks-api";
 import { fetchAdminStudents, type AdminStudentRecord } from "@/lib/data/students-api";
 import { getStoredCourses } from "@/lib/data/courses-store";
@@ -79,6 +80,7 @@ export function CreateTaskModal({
   const [selectedTopic, setSelectedTopic] = useState("");
   const [customTopic, setCustomTopic] = useState("");
   const [primaryType, setPrimaryType] = useState<"SHORT_ANSWER" | "LONG_ANSWER" | "MCQ" | "FILE_UPLOAD">("SHORT_ANSWER");
+  const [isPrimaryTypeMenuOpen, setIsPrimaryTypeMenuOpen] = useState(false);
   const [taskMarks, setTaskMarks] = useState<number>(100);
 
   const [title, setTitle] = useState("");
@@ -248,14 +250,23 @@ export function CreateTaskModal({
         setDueDate(new Date(tpl.dueDate).toISOString().split("T")[0]);
       } catch {}
     }
-    if (tpl.requiredFiles) setRequiredFiles(tpl.requiredFiles);
     if (tpl.questions && tpl.questions.length > 0) {
-      setQuestions(tpl.questions);
-      setPrimaryType(tpl.questions[0].type);
-      const totalPoints = tpl.questions.reduce((sum, q) => sum + (q.maxPoints || 0), 0);
+      const normalized = tpl.questions.map((q, idx) => normalizeTaskQuestion(q, idx));
+      setQuestions(normalized);
+      setPrimaryType(normalized[0].type);
+      const totalPoints = normalized.reduce((sum, q) => sum + (q.maxPoints || 0), 0);
       if (totalPoints > 0) {
         setTaskMarks(totalPoints);
       }
+    } else {
+      const single = normalizeTaskQuestion({
+        type: tpl.requiredFiles ? "FILE_UPLOAD" : "SHORT_ANSWER",
+        prompt: tpl.instructions || tpl.description || tpl.title,
+        maxPoints: 100,
+      });
+      setQuestions([single]);
+      setPrimaryType(single.type);
+      setTaskMarks(100);
     }
     if (tpl.courseId || tpl.courseTitle) {
       const match = allCourses.find(
@@ -377,8 +388,9 @@ export function CreateTaskModal({
   };
 
   const handleAddQuestion = (type: TaskQuestion["type"]) => {
+    const newId = `question-item-${Date.now()}-${questions.length + 1}`;
     const newQ: TaskQuestion = {
-      id: `q-${Date.now()}-${questions.length + 1}`,
+      id: newId,
       type,
       prompt: "",
       maxPoints: type === "LONG_ANSWER" ? 20 : type === "SHORT_ANSWER" ? 10 : 5,
@@ -387,6 +399,16 @@ export function CreateTaskModal({
       correctAnswer: type === "MCQ" ? 0 : undefined,
     };
     setQuestions((prev) => [...prev, newQ]);
+
+    // Automatically smooth-scroll to newly added question and focus prompt
+    setTimeout(() => {
+      const el = document.getElementById(newId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        const input = el.querySelector("textarea, input[type='text']") as HTMLElement | null;
+        input?.focus();
+      }
+    }, 120);
   };
 
   const handleUpdateQuestion = (index: number, patch: Partial<TaskQuestion>) => {
@@ -868,20 +890,112 @@ export function CreateTaskModal({
                 </div>
               </div>
 
-              <div>
+              <div className="relative">
                 <label className="block font-bold text-slate-700 dark:text-slate-300 text-[11px]">
                   Primary Submission Type
                 </label>
-                <select
-                  value={primaryType}
-                  onChange={(e) => handlePrimaryTypeChange(e.target.value as any)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                >
-                  <option value="SHORT_ANSWER">Text / Code Short Answer</option>
-                  <option value="LONG_ANSWER">Long Form Project / Case Study</option>
-                  <option value="MCQ">Multiple Choice Questions (Auto-Graded)</option>
-                  <option value="FILE_UPLOAD">File / Project Archive Upload</option>
-                </select>
+                
+                {/* Custom Styled Dropdown Trigger */}
+                <div className="relative mt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsPrimaryTypeMenuOpen((prev) => !prev)}
+                    className="w-full flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-500/20 shadow-xs cursor-pointer transition-all text-left"
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span className={`flex h-5 w-5 items-center justify-center rounded-md text-[9.5px] font-black shrink-0 ${
+                        primaryType === "SHORT_ANSWER"
+                          ? "bg-blue-100 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300"
+                          : primaryType === "LONG_ANSWER"
+                          ? "bg-purple-100 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300"
+                          : primaryType === "MCQ"
+                          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300"
+                          : "bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300"
+                      }`}>
+                        {primaryType === "SHORT_ANSWER" ? "SA" : primaryType === "LONG_ANSWER" ? "LA" : primaryType === "MCQ" ? "MCQ" : "FILE"}
+                      </span>
+                      <span className="font-bold truncate">
+                        {primaryType === "SHORT_ANSWER"
+                          ? "Short Answer"
+                          : primaryType === "LONG_ANSWER"
+                          ? "Long Answer (Project / Case Study)"
+                          : primaryType === "MCQ"
+                          ? "Multiple Choice Questions (Auto-Graded)"
+                          : "File / Project Archive Upload"}
+                      </span>
+                    </div>
+                    <ChevronDown className={`h-4 w-4 text-slate-400 shrink-0 transition-transform ${isPrimaryTypeMenuOpen ? "rotate-180 text-blue-500" : ""}`} />
+                  </button>
+
+                  {/* Custom Popup Menu */}
+                  {isPrimaryTypeMenuOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-30"
+                        onClick={() => setIsPrimaryTypeMenuOpen(false)}
+                      />
+                      <div className="absolute left-0 right-0 top-full mt-1.5 z-40 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl p-1.5 space-y-1 animate-in fade-in zoom-in-95">
+                        {[
+                          {
+                            id: "SHORT_ANSWER" as const,
+                            title: "Short Answer",
+                            badge: "SA",
+                            desc: "Concise text or code answer evaluation",
+                            badgeCls: "bg-blue-100 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300",
+                          },
+                          {
+                            id: "LONG_ANSWER" as const,
+                            title: "Long Answer (Project / Case Study)",
+                            badge: "LA",
+                            desc: "Comprehensive essay, project analysis or case study",
+                            badgeCls: "bg-purple-100 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300",
+                          },
+                          {
+                            id: "MCQ" as const,
+                            title: "Multiple Choice Questions (Auto-Graded)",
+                            badge: "MCQ",
+                            desc: "Single-choice multiple options quiz with answer key",
+                            badgeCls: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300",
+                          },
+                          {
+                            id: "FILE_UPLOAD" as const,
+                            title: "File / Project Archive Upload",
+                            badge: "FILE",
+                            desc: "Student uploads project archives, PDFs, or codebases",
+                            badgeCls: "bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300",
+                          },
+                        ].map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              handlePrimaryTypeChange(opt.id);
+                              setIsPrimaryTypeMenuOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between rounded-lg p-2 text-left transition-colors cursor-pointer ${
+                              primaryType === opt.id
+                                ? "bg-blue-50 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200 border border-blue-200 dark:border-blue-800/60"
+                                : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <span className={`flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold shrink-0 ${opt.badgeCls}`}>
+                                {opt.badge}
+                              </span>
+                              <div>
+                                <div className="text-xs font-bold leading-tight">{opt.title}</div>
+                                <div className="text-[10.5px] text-slate-500 dark:text-slate-400">{opt.desc}</div>
+                              </div>
+                            </div>
+                            {primaryType === opt.id && (
+                              <CheckCircle2 className="h-4 w-4 text-[#2563EB] shrink-0" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -893,18 +1007,28 @@ export function CreateTaskModal({
                 Questions &amp; Tasks ({questions.length})
               </label>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => handleAddQuestion("SHORT_ANSWER")}
                   className="rounded-lg bg-blue-50 dark:bg-blue-950/60 px-2 py-1 text-[10.5px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 transition-colors cursor-pointer"
+                  title="Add Short Answer Question"
                 >
                   + Short Q
                 </button>
                 <button
                   type="button"
+                  onClick={() => handleAddQuestion("LONG_ANSWER")}
+                  className="rounded-lg bg-purple-50 dark:bg-purple-950/60 px-2 py-1 text-[10.5px] font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors cursor-pointer"
+                  title="Add Long Answer / Case Study Question"
+                >
+                  + Long Q
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleAddQuestion("MCQ")}
                   className="rounded-lg bg-indigo-50 dark:bg-indigo-950/60 px-2 py-1 text-[10.5px] font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition-colors cursor-pointer"
+                  title="Add Multiple Choice Question"
                 >
                   + MCQ
                 </button>
@@ -912,6 +1036,7 @@ export function CreateTaskModal({
                   type="button"
                   onClick={() => handleAddQuestion("FILE_UPLOAD")}
                   className="rounded-lg bg-amber-50 dark:bg-amber-950/60 px-2 py-1 text-[10.5px] font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-100 transition-colors cursor-pointer"
+                  title="Add File Upload Task"
                 >
                   + File Task
                 </button>
@@ -922,15 +1047,37 @@ export function CreateTaskModal({
               {questions.map((q, idx) => (
                 <div
                   key={q.id || idx}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-surface-elevated/40 p-3.5 space-y-2.5"
+                  id={q.id || `question-item-${idx}`}
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-surface-elevated/40 p-3.5 space-y-2.5 transition-all"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2563EB] text-white text-[10px] font-black">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2563EB] text-white text-[10px] font-black shrink-0">
                         {idx + 1}
                       </span>
-                      <span>Question #{idx + 1} ({q.type})</span>
-                    </span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 text-xs">
+                        Question #{idx + 1}
+                      </span>
+                      {/* Question type selector */}
+                      <select
+                        value={q.type}
+                        onChange={(e) => {
+                          const newType = e.target.value as TaskQuestion["type"];
+                          handleUpdateQuestion(idx, {
+                            type: newType,
+                            choices: newType === "MCQ" ? q.choices || ["Option A", "Option B", "Option C", "Option D"] : undefined,
+                            correctAnswer: newType === "MCQ" ? (typeof q.correctAnswer === "number" ? q.correctAnswer : 0) : undefined,
+                            modelAnswer: newType === "SHORT_ANSWER" || newType === "LONG_ANSWER" ? q.modelAnswer || "" : undefined,
+                          });
+                        }}
+                        className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-secondary px-2 py-0.5 text-[10.5px] font-bold text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
+                      >
+                        <option value="SHORT_ANSWER">Short Answer</option>
+                        <option value="LONG_ANSWER">Long Answer</option>
+                        <option value="MCQ">Multiple Choice (MCQ)</option>
+                        <option value="FILE_UPLOAD">File Upload</option>
+                      </select>
+                    </div>
 
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
@@ -939,8 +1086,8 @@ export function CreateTaskModal({
                           type="number"
                           min={1}
                           max={100}
-                          value={q.maxPoints || 20}
-                          onChange={(e) => handleUpdateQuestion(idx, { maxPoints: Number(e.target.value) || 20 })}
+                          value={q.maxPoints || (q.type === "LONG_ANSWER" ? 20 : q.type === "SHORT_ANSWER" ? 10 : 5)}
+                          onChange={(e) => handleUpdateQuestion(idx, { maxPoints: Number(e.target.value) || 10 })}
                           className="w-14 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2 py-0.5 text-center text-xs font-bold text-slate-900 dark:text-white"
                         />
                       </div>
@@ -968,14 +1115,54 @@ export function CreateTaskModal({
                     />
                   </div>
 
+                  {/* Short Answer Model Solution */}
+                  {q.type === "SHORT_ANSWER" && (
+                    <div className="space-y-1 pt-1">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        Benchmark / Model Answer (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter key concepts or expected answer summary..."
+                        value={q.modelAnswer || ""}
+                        onChange={(e) => handleUpdateQuestion(idx, { modelAnswer: e.target.value })}
+                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                      />
+                    </div>
+                  )}
+
+                  {/* Long Answer Rubric */}
+                  {q.type === "LONG_ANSWER" && (
+                    <div className="space-y-1 pt-1">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        Grading Rubric / Reference Solution (Optional)
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder="Specify core milestones, evaluation criteria, or solution guidelines..."
+                        value={q.modelAnswer || ""}
+                        onChange={(e) => handleUpdateQuestion(idx, { modelAnswer: e.target.value })}
+                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                      />
+                    </div>
+                  )}
+
+                  {/* File Upload Note */}
+                  {q.type === "FILE_UPLOAD" && (
+                    <div className="rounded-lg bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 p-2.5 text-[11px] text-amber-800 dark:text-amber-300 flex items-center gap-2">
+                      <Upload className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <span>Students will submit their response as an uploaded document, project archive (.zip), or source code file.</span>
+                    </div>
+                  )}
+
                   {/* MCQ choices */}
-                  {q.type === "MCQ" && q.choices && (
+                  {q.type === "MCQ" && (
                     <div className="space-y-1.5 pt-1">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                         Options (Select Radio for Correct Answer)
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {q.choices.map((choice, cIdx) => (
+                        {(q.choices || ["Option A", "Option B", "Option C", "Option D"]).map((choice, cIdx) => (
                           <div key={cIdx} className="flex items-center gap-2">
                             <input
                               type="radio"
