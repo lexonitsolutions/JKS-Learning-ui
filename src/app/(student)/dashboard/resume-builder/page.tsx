@@ -381,41 +381,62 @@ export default function ResumeBuilderPage() {
   };
 
   // Dynamically compute the exact fit scale factor so A4 (794px) fits seamlessly
-  // without any clipping or horizontal scrollbars in "fit" mode
+  // without any clipping, horizontal scrollbars, or shaking in "fit" mode
+  const lastScaleRef = useRef<number>(0.72);
+  const lastHeightRef = useRef<number>(1123);
+  const rafIdRef = useRef<number | null>(null);
+
   useEffect(() => {
     const updateDimensions = () => {
       if (previewContainerRef.current) {
         const containerWidth = previewContainerRef.current.clientWidth;
-        // Available width accounting for 24px padding (12px each side)
-        const availableWidth = Math.max(280, containerWidth - 24);
+        // Available width accounting for 32px safe horizontal breathing room (16px each side)
+        const availableWidth = Math.max(280, containerWidth - 32);
         const calculated = Math.min(1, Math.max(0.35, availableWidth / 794));
-        setFitScale(Number(calculated.toFixed(3)));
+        const rounded = Number(calculated.toFixed(3));
+
+        // Hysteresis threshold: Ignore micro-fluctuations (e.g. scrollbar toggle of 15-17px = ~0.02)
+        if (Math.abs(rounded - lastScaleRef.current) >= 0.015) {
+          lastScaleRef.current = rounded;
+          setFitScale(rounded);
+        }
       }
       if (sheetRef.current) {
-        const actualH = sheetRef.current.offsetHeight;
-        if (actualH > 0) {
+        const actualH = sheetRef.current.scrollHeight || sheetRef.current.offsetHeight;
+        if (actualH > 0 && Math.abs(actualH - lastHeightRef.current) > 10) {
+          lastHeightRef.current = actualH;
           setSheetHeight(actualH);
         }
       }
     };
 
+    const handleThrottledResize = () => {
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+      rafIdRef.current = requestAnimationFrame(() => {
+        updateDimensions();
+      });
+    };
+
+    // Run initial measurement
     updateDimensions();
 
     const resizeObserver =
       typeof ResizeObserver !== "undefined"
-        ? new ResizeObserver(() => updateDimensions())
+        ? new ResizeObserver(() => handleThrottledResize())
         : null;
 
-    if (resizeObserver) {
-      if (previewContainerRef.current) resizeObserver.observe(previewContainerRef.current);
-      if (sheetRef.current) resizeObserver.observe(sheetRef.current);
+    if (resizeObserver && previewContainerRef.current) {
+      resizeObserver.observe(previewContainerRef.current);
     }
 
-    window.addEventListener("resize", updateDimensions);
+    window.addEventListener("resize", handleThrottledResize);
 
     return () => {
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
       if (resizeObserver) resizeObserver.disconnect();
-      window.removeEventListener("resize", updateDimensions);
+      window.removeEventListener("resize", handleThrottledResize);
     };
   }, [resumeData, template, sectionOrder, mobileTab]);
 
@@ -861,13 +882,13 @@ export default function ResumeBuilderPage() {
             <div className="space-y-2 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.experiences.map((exp) => (
                 <div key={exp.id} className="space-y-0.5 text-xs">
-                  <div className="flex flex-row items-baseline justify-between gap-3 font-bold text-slate-900">
-                    <span className="min-w-0" style={{ color: "#0F172A" }}>
+                  <div className="flex flex-row items-center justify-between gap-3 font-bold text-slate-900 leading-snug">
+                    <span className="min-w-0 leading-snug" style={{ color: "#0F172A" }}>
                       {exp.role} — <span className="text-[#1E5EFF]" style={{ color: "#1E5EFF" }}>{exp.company}</span>
                       {exp.location && <span className="text-slate-500 font-normal" style={{ color: "#64748B" }}> ({exp.location})</span>}
                     </span>
                     {(exp.startDate || exp.endDate) && (
-                      <span className="shrink-0 text-slate-600 font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded border border-slate-200/80 whitespace-nowrap" style={{ color: "#475569", backgroundColor: "#F1F5F9", borderColor: "#E2E8F0" }}>
+                      <span className="shrink-0 inline-flex items-center text-slate-600 text-[11px] font-medium leading-none bg-slate-100 px-2 py-1 rounded border border-slate-200/80 whitespace-nowrap" style={{ color: "#475569", backgroundColor: "#F1F5F9", borderColor: "#E2E8F0" }}>
                         {exp.startDate}{exp.startDate && exp.endDate ? " - " : ""}{exp.endDate}
                       </span>
                     )}
@@ -897,14 +918,14 @@ export default function ResumeBuilderPage() {
             <div className="space-y-2 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.projects.map((proj) => (
                 <div key={proj.id} className="space-y-0.5 text-xs">
-                  <div className="flex flex-row items-baseline justify-between gap-3 font-bold text-slate-900">
-                    <span className="font-semibold text-slate-900 min-w-0" style={{ color: "#0F172A" }}>{proj.title}</span>
+                  <div className="flex flex-row items-center justify-between gap-3 font-bold text-slate-900 leading-snug">
+                    <span className="font-semibold text-slate-900 min-w-0 leading-snug" style={{ color: "#0F172A" }}>{proj.title}</span>
                     {proj.liveUrl && (
                       <a
                         href={normalizeWebUrl(proj.liveUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="shrink-0 text-[#1E5EFF] text-[11px] underline whitespace-nowrap hover:text-blue-700"
+                        className="shrink-0 inline-flex items-center text-[#1E5EFF] text-[11px] font-medium underline whitespace-nowrap hover:text-blue-700 leading-none"
                         style={{ color: "#1E5EFF" }}
                         title={proj.liveUrl}
                       >
@@ -913,7 +934,7 @@ export default function ResumeBuilderPage() {
                     )}
                   </div>
                   {proj.techStack && (
-                    <div className="text-[11px] text-slate-600 font-medium" style={{ color: "#475569" }}>
+                    <div className="text-[11px] text-slate-600 font-medium leading-normal" style={{ color: "#475569" }}>
                       <span className="text-slate-400" style={{ color: "#94A3B8" }}>Stack:</span> {proj.techStack}
                     </div>
                   )}
@@ -942,13 +963,13 @@ export default function ResumeBuilderPage() {
             <div className="space-y-1.5 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.educations.map((edu) => (
                 <div key={edu.id} className="text-xs">
-                  <div className="flex flex-row items-baseline justify-between gap-3 font-bold text-slate-900">
-                    <div style={{ color: "#0F172A" }}>{edu.degree}</div>
-                    <div className="shrink-0 text-slate-500 font-mono text-[11px] whitespace-nowrap" style={{ color: "#64748B" }}>
+                  <div className="flex flex-row items-center justify-between gap-3 font-bold text-slate-900 leading-snug">
+                    <div className="leading-snug" style={{ color: "#0F172A" }}>{edu.degree}</div>
+                    <div className="shrink-0 inline-flex items-center text-slate-500 text-[11px] font-medium leading-none whitespace-nowrap" style={{ color: "#64748B" }}>
                       {edu.year}{edu.score ? ` • ${edu.score}` : ""}
                     </div>
                   </div>
-                  <div className="text-slate-700" style={{ color: "#334155" }}>{edu.institution}{edu.location ? ` (${edu.location})` : ""}</div>
+                  <div className="text-slate-700 leading-normal" style={{ color: "#334155" }}>{edu.institution}{edu.location ? ` (${edu.location})` : ""}</div>
                 </div>
               ))}
             </div>
@@ -964,18 +985,18 @@ export default function ResumeBuilderPage() {
             </h2>
             <div className="space-y-1 pl-4 border-l-2 border-slate-200" style={{ borderColor: "#E2E8F0" }}>
               {resumeData.certifications.map((cert) => (
-                <div key={cert.id} className="text-xs text-slate-800 flex items-start justify-between gap-3" style={{ color: "#1E293B" }}>
-                  <div className="flex items-start gap-1.5 min-w-0">
-                    <Award className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" style={{ color: "#059669" }} />
-                    <div>
-                      <div className="font-semibold text-slate-900" style={{ color: "#0F172A" }}>{cert.title}</div>
-                      <div className="text-[11px] text-slate-500" style={{ color: "#64748B" }}>
+                <div key={cert.id} className="text-xs text-slate-800 flex items-center justify-between gap-3" style={{ color: "#1E293B" }}>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Award className="h-3.5 w-3.5 text-emerald-600 shrink-0" style={{ color: "#059669" }} />
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-900 leading-snug" style={{ color: "#0F172A" }}>{cert.title}</div>
+                      <div className="text-[11px] text-slate-500 leading-normal" style={{ color: "#64748B" }}>
                         {cert.issuer}
                       </div>
                     </div>
                   </div>
                   {cert.year && (
-                    <div className="shrink-0 text-[11px] text-slate-500 font-mono whitespace-nowrap mt-0.5" style={{ color: "#64748B" }}>
+                    <div className="shrink-0 inline-flex items-center text-[11px] text-slate-500 font-medium leading-none whitespace-nowrap" style={{ color: "#64748B" }}>
                       {cert.year}
                     </div>
                   )}
@@ -1054,13 +1075,13 @@ export default function ResumeBuilderPage() {
             <div className="space-y-2">
               {resumeData.experiences.map((exp) => (
                 <div key={exp.id} className="text-xs text-black space-y-0.5" style={{ color: "#000000" }}>
-                  <div className="flex justify-between items-baseline gap-2 font-bold" style={{ color: "#000000" }}>
-                    <div className="min-w-0 flex-1" style={{ color: "#000000" }}>
+                  <div className="flex justify-between items-center gap-2 font-bold leading-snug" style={{ color: "#000000" }}>
+                    <div className="min-w-0 flex-1 leading-snug" style={{ color: "#000000" }}>
                       <span className="font-bold">{exp.role.toUpperCase()}</span>, <span>{exp.company}</span>
                       {exp.location && <span className="font-normal text-neutral-700" style={{ color: "#333333" }}> — {exp.location}</span>}
                     </div>
                     {(exp.startDate || exp.endDate) && (
-                      <span className="font-mono text-[11px] shrink-0 text-right whitespace-nowrap" style={{ color: "#000000" }}>
+                      <span className="text-[11px] font-normal leading-none shrink-0 text-right whitespace-nowrap" style={{ color: "#000000" }}>
                         {exp.startDate}{exp.startDate && exp.endDate ? " – " : ""}{exp.endDate}
                       </span>
                     )}
@@ -1089,14 +1110,14 @@ export default function ResumeBuilderPage() {
             <div className="space-y-2">
               {resumeData.projects.map((proj) => (
                 <div key={proj.id} className="text-xs text-black space-y-0.5" style={{ color: "#000000" }}>
-                  <div className="flex justify-between items-baseline gap-3 text-xs" style={{ color: "#000000" }}>
-                    <span className="font-bold text-black min-w-0 flex-1" style={{ color: "#000000" }}>{proj.title}</span>
+                  <div className="flex justify-between items-center gap-3 text-xs leading-snug" style={{ color: "#000000" }}>
+                    <span className="font-bold text-black min-w-0 flex-1 leading-snug" style={{ color: "#000000" }}>{proj.title}</span>
                     {proj.liveUrl && (
                       <a
                         href={normalizeWebUrl(proj.liveUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[11px] font-normal text-black underline shrink-0 whitespace-nowrap text-right hover:text-neutral-700"
+                        className="text-[11px] font-normal leading-none text-black underline shrink-0 whitespace-nowrap text-right hover:text-neutral-700"
                         style={{ color: "#000000" }}
                         title={proj.liveUrl}
                       >
@@ -1132,13 +1153,13 @@ export default function ResumeBuilderPage() {
             </h2>
             <div className="space-y-1.5">
               {resumeData.educations.map((edu) => (
-                <div key={edu.id} className="flex justify-between items-baseline gap-2 text-xs text-black" style={{ color: "#000000" }}>
-                  <div className="min-w-0 flex-1">
+                <div key={edu.id} className="flex justify-between items-center gap-2 text-xs text-black leading-snug" style={{ color: "#000000" }}>
+                  <div className="min-w-0 flex-1 leading-snug">
                     <span className="font-bold" style={{ color: "#000000" }}>{edu.degree}</span>, {edu.institution}
                     {edu.location && <span className="text-neutral-700" style={{ color: "#333333" }}> — {edu.location}</span>}
                   </div>
                   {(edu.year || edu.score) && (
-                    <span className="font-mono text-[11px] shrink-0 text-right whitespace-nowrap" style={{ color: "#000000" }}>
+                    <span className="text-[11px] font-normal leading-none shrink-0 text-right whitespace-nowrap" style={{ color: "#000000" }}>
                       {edu.year} {edu.score ? `(${edu.score})` : ""}
                     </span>
                   )}
@@ -1156,11 +1177,11 @@ export default function ResumeBuilderPage() {
             </h2>
             <div className="space-y-1 text-xs text-black" style={{ color: "#000000" }}>
               {resumeData.certifications.map((cert) => (
-                <div key={cert.id} className="flex justify-between items-baseline gap-2" style={{ color: "#000000" }}>
-                  <div className="min-w-0 flex-1 font-medium" style={{ color: "#000000" }}>
+                <div key={cert.id} className="flex justify-between items-center gap-2 leading-snug" style={{ color: "#000000" }}>
+                  <div className="min-w-0 flex-1 font-medium leading-snug" style={{ color: "#000000" }}>
                     • <span className="font-semibold">{cert.title}</span> — <span className="text-neutral-700" style={{ color: "#333333" }}>{cert.issuer}</span>
                   </div>
-                  {cert.year && <span className="font-mono text-[11px] shrink-0 text-right whitespace-nowrap" style={{ color: "#000000" }}>{cert.year}</span>}
+                  {cert.year && <span className="text-[11px] font-normal leading-none shrink-0 text-right whitespace-nowrap" style={{ color: "#000000" }}>{cert.year}</span>}
                 </div>
               ))}
             </div>
@@ -1220,7 +1241,7 @@ export default function ResumeBuilderPage() {
                 <div key={edu.id} className="space-y-0.5">
                   <div className="font-bold text-slate-900" style={{ color: "#0F172A" }}>{edu.degree}</div>
                   <div className="text-slate-600" style={{ color: "#475569" }}>{edu.institution}</div>
-                  <div className="text-slate-500 font-mono text-[10px]" style={{ color: "#64748B" }}>
+                  <div className="text-slate-500 text-[10px] leading-normal" style={{ color: "#64748B" }}>
                     {edu.year} {edu.score ? `• ${edu.score}` : ""}
                   </div>
                 </div>
@@ -1276,9 +1297,9 @@ export default function ResumeBuilderPage() {
             <div className="space-y-3 font-sans">
               {resumeData.experiences.map((exp) => (
                 <div key={exp.id} className="space-y-1 text-xs">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline justify-between font-bold text-slate-900">
-                    <span className="font-serif text-sm font-semibold" style={{ color: "#0F172A" }}>{exp.role}</span>
-                    <span className="text-slate-500 font-mono text-[11px]" style={{ color: "#64748B" }}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between font-bold text-slate-900 leading-snug">
+                    <span className="font-serif text-sm font-semibold leading-snug" style={{ color: "#0F172A" }}>{exp.role}</span>
+                    <span className="text-slate-500 text-[11px] font-normal leading-none" style={{ color: "#64748B" }}>
                       {exp.startDate} – {exp.endDate}
                     </span>
                   </div>
@@ -1309,14 +1330,14 @@ export default function ResumeBuilderPage() {
             <div className="space-y-3 font-sans">
               {resumeData.projects.map((proj) => (
                 <div key={proj.id} className="space-y-1 text-xs">
-                  <div className="flex flex-row items-baseline justify-between gap-3 font-bold text-slate-900">
-                    <span className="font-semibold text-slate-900 min-w-0" style={{ color: "#0F172A" }}>{proj.title}</span>
+                  <div className="flex flex-row items-center justify-between gap-3 font-bold text-slate-900 leading-snug">
+                    <span className="font-semibold text-slate-900 min-w-0 leading-snug" style={{ color: "#0F172A" }}>{proj.title}</span>
                     {proj.liveUrl && (
                       <a
                         href={normalizeWebUrl(proj.liveUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#1E5EFF] text-[11px] underline whitespace-nowrap shrink-0 hover:text-blue-700"
+                        className="text-[#1E5EFF] text-[11px] font-medium leading-none underline whitespace-nowrap shrink-0 hover:text-blue-700"
                         style={{ color: "#1E5EFF" }}
                         title={proj.liveUrl}
                       >
@@ -2395,16 +2416,17 @@ export default function ResumeBuilderPage() {
             {/* Printable & Natural Scaled Preview Container (standard 794px A4 canvas with proportional scaling) */}
             <div
               ref={previewContainerRef}
-              className="w-full overflow-x-auto pb-8 pt-1"
+              className={`w-full pb-8 pt-1 ${previewZoom === "fit" ? "overflow-x-hidden" : "overflow-x-auto"}`}
             >
               <div
-                className="transition-all duration-300 mx-auto"
+                className="mx-auto"
                 style={
                   previewZoom === "fit"
                     ? {
                         width: `${Math.round(794 * fitScale)}px`,
                         height: `${Math.round(sheetHeight * fitScale)}px`,
                         position: "relative",
+                        overflow: "hidden",
                       }
                     : {
                         width: "794px",
@@ -2452,28 +2474,31 @@ export default function ResumeBuilderPage() {
                       <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
                         {resumeData.personal.location && (
                           <span
-                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2.5 py-1 text-[11px] text-slate-700 border border-slate-200 shrink-0"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2.5 py-1 text-[11px] leading-none text-slate-700 border border-slate-200 shrink-0"
                             style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}
                           >
-                            <MapPin className="h-3 w-3 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.location}
+                            <MapPin className="h-3 w-3 text-[#1E5EFF] shrink-0" style={{ color: "#1e5eff" }} />
+                            <span className="leading-none">{resumeData.personal.location}</span>
                           </span>
                         )}
                         {resumeData.personal.email && (
                           <a
                             href={`mailto:${resumeData.personal.email}`}
-                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2.5 py-1 text-[11px] text-slate-700 border border-slate-200 hover:underline"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2.5 py-1 text-[11px] leading-none text-slate-700 border border-slate-200 hover:underline shrink-0"
                             style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}
                           >
-                            <Mail className="h-3 w-3 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.email}
+                            <Mail className="h-3 w-3 text-[#1E5EFF] shrink-0" style={{ color: "#1e5eff" }} />
+                            <span className="leading-none">{resumeData.personal.email}</span>
                           </a>
                         )}
                         {resumeData.personal.phone && (
                           <a
                             href={`tel:${resumeData.personal.phone}`}
-                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2.5 py-1 text-[11px] text-slate-700 border border-slate-200 hover:underline"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2.5 py-1 text-[11px] leading-none text-slate-700 border border-slate-200 hover:underline shrink-0"
                             style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#334155" }}
                           >
-                            <Phone className="h-3 w-3 text-[#1E5EFF]" style={{ color: "#1e5eff" }} /> {resumeData.personal.phone}
+                            <Phone className="h-3 w-3 text-[#1E5EFF] shrink-0" style={{ color: "#1e5eff" }} />
+                            <span className="leading-none">{resumeData.personal.phone}</span>
                           </a>
                         )}
                         {resumeData.personal.linkedin && (
@@ -2481,11 +2506,12 @@ export default function ResumeBuilderPage() {
                             href={normalizeLinkedInUrl(resumeData.personal.linkedin)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-md bg-blue-50/80 px-2.5 py-1 text-[11px] text-[#1E5EFF] border border-blue-200 font-medium hover:underline cursor-pointer"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-blue-50/80 px-2.5 py-1 text-[11px] leading-none text-[#1E5EFF] border border-blue-200 font-medium hover:underline cursor-pointer shrink-0"
                             style={{ backgroundColor: "#eff6ff", borderColor: "#bfdbfe", color: "#1e5eff" }}
                             title={normalizeLinkedInUrl(resumeData.personal.linkedin)}
                           >
-                            <Link2 className="h-3 w-3" style={{ color: "#1e5eff" }} /> {formatLinkedInDisplay(resumeData.personal.linkedin)}
+                            <Link2 className="h-3 w-3 shrink-0" style={{ color: "#1e5eff" }} />
+                            <span className="leading-none">{formatLinkedInDisplay(resumeData.personal.linkedin)}</span>
                           </a>
                         )}
                         {resumeData.personal.github && (
@@ -2493,11 +2519,12 @@ export default function ResumeBuilderPage() {
                             href={normalizeGithubUrl(resumeData.personal.github)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] text-slate-800 border border-slate-300 font-medium hover:underline cursor-pointer"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] leading-none text-slate-800 border border-slate-300 font-medium hover:underline cursor-pointer shrink-0"
                             style={{ backgroundColor: "#f1f5f9", borderColor: "#cbd5e1", color: "#1e293b" }}
                             title={normalizeGithubUrl(resumeData.personal.github)}
                           >
-                            <Code2 className="h-3 w-3" style={{ color: "#1e293b" }} /> {formatGithubDisplay(resumeData.personal.github)}
+                            <Code2 className="h-3 w-3 shrink-0" style={{ color: "#1e293b" }} />
+                            <span className="leading-none">{formatGithubDisplay(resumeData.personal.github)}</span>
                           </a>
                         )}
                         {resumeData.personal.portfolio && (
@@ -2505,11 +2532,12 @@ export default function ResumeBuilderPage() {
                             href={normalizeWebUrl(resumeData.personal.portfolio)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1 text-[11px] text-emerald-800 border border-emerald-200 font-medium hover:underline cursor-pointer"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1 text-[11px] leading-none text-emerald-800 border border-emerald-200 font-medium hover:underline cursor-pointer shrink-0"
                             style={{ backgroundColor: "#ecfdf5", borderColor: "#a7f3d0", color: "#065f46" }}
                             title={normalizeWebUrl(resumeData.personal.portfolio)}
                           >
-                            <Globe className="h-3 w-3" style={{ color: "#059669" }} /> {formatWebDisplay(resumeData.personal.portfolio)}
+                            <Globe className="h-3 w-3 shrink-0" style={{ color: "#059669" }} />
+                            <span className="leading-none">{formatWebDisplay(resumeData.personal.portfolio)}</span>
                           </a>
                         )}
                       </div>
