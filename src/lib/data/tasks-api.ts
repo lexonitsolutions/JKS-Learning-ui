@@ -680,6 +680,9 @@ export async function submitStudentTask(
     answers: Record<string, any>;
     uploadedFileName?: string;
     uploadedFileUrl?: string;
+    score?: number;
+    instructorScore?: number;
+    autoScore?: number;
   }
 ): Promise<{ success: boolean; data?: any; error?: string }> {
   try {

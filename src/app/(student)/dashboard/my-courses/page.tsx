@@ -35,7 +35,7 @@ export default function MyCoursesPage() {
   const [courses, setCourses] = useState<EnrolledCourseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [filterTab, setFilterTab] = useState<"all" | "in-progress" | "completed" | "on-hold">("all");
+  const [filterTab, setFilterTab] = useState<"all" | "in-progress" | "completed" | "pending" | "on-hold">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
@@ -113,16 +113,19 @@ export default function MyCoursesPage() {
     totalEnrolled > 0
       ? Math.round(courses.reduce((acc, c) => acc + (c.progress || 0), 0) / totalEnrolled)
       : 0;
-  const completedCount = courses.filter((c) => (c.progress || 0) >= 100 && c.status !== "ON_HOLD").length;
+  const completedCount = courses.filter((c) => (c.progress || 0) >= 100 && c.status !== "ON_HOLD" && c.status !== "PENDING" && c.status !== "REJECTED").length;
   const onHoldCount = courses.filter((c) => c.status === "ON_HOLD").length;
+  const pendingCount = courses.filter((c) => c.status === "PENDING").length;
 
   // Filtered List
   const filteredCourses = useMemo(() => {
     let list = courses;
     if (filterTab === "in-progress") {
-      list = list.filter((c) => (c.progress || 0) < 100 && c.status !== "ON_HOLD");
+      list = list.filter((c) => (c.progress || 0) < 100 && c.status !== "ON_HOLD" && c.status !== "PENDING" && c.status !== "REJECTED");
     } else if (filterTab === "completed") {
-      list = list.filter((c) => (c.progress || 0) >= 100 && c.status !== "ON_HOLD");
+      list = list.filter((c) => (c.progress || 0) >= 100 && c.status !== "ON_HOLD" && c.status !== "PENDING" && c.status !== "REJECTED");
+    } else if (filterTab === "pending") {
+      list = list.filter((c) => c.status === "PENDING");
     } else if (filterTab === "on-hold") {
       list = list.filter((c) => c.status === "ON_HOLD");
     }
@@ -204,9 +207,12 @@ export default function MyCoursesPage() {
                 { id: "all", label: `All Courses (${totalEnrolled})` },
                 {
                   id: "in-progress",
-                  label: `In Progress (${courses.filter((c) => (c.progress || 0) < 100 && c.status !== "ON_HOLD").length})`,
+                  label: `In Progress (${courses.filter((c) => (c.progress || 0) < 100 && c.status !== "ON_HOLD" && c.status !== "PENDING" && c.status !== "REJECTED").length})`,
                 },
                 { id: "completed", label: `Completed (${completedCount})` },
+                ...(pendingCount > 0
+                  ? [{ id: "pending", label: `Waiting Approval (${pendingCount})` }]
+                  : []),
                 ...(onHoldCount > 0
                   ? [{ id: "on-hold", label: `On Hold (${onHoldCount})` }]
                   : []),
@@ -317,7 +323,15 @@ export default function MyCoursesPage() {
                       <span className="rounded-md bg-blue-500/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-blue-300 border border-blue-400/30 backdrop-blur-md">
                         {course.track}
                       </span>
-                      {course.status === "ON_HOLD" ? (
+                      {course.status === "PENDING" ? (
+                        <span className="rounded-md bg-amber-500 text-white px-2 py-0.5 text-[9px] font-bold shadow-xs flex items-center gap-1 animate-pulse">
+                          <Clock className="h-3 w-3" /> Waiting for Approval
+                        </span>
+                      ) : course.status === "REJECTED" ? (
+                        <span className="rounded-md bg-rose-600 text-white px-2 py-0.5 text-[9px] font-bold shadow-xs flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" /> Rejected
+                        </span>
+                      ) : course.status === "ON_HOLD" ? (
                         <span className="rounded-md bg-amber-500 text-white px-2 py-0.5 text-[9px] font-bold shadow-xs flex items-center gap-1">
                           <Clock className="h-3 w-3" /> On Hold
                         </span>
@@ -399,7 +413,29 @@ export default function MyCoursesPage() {
 
                   {/* Card Footer: Direct Link to Course Learning Player */}
                   <div className="border-t border-slate-100 p-3.5 bg-slate-50/50 dark:border-slate-800 dark:bg-surface-elevated/50">
-                    {course.status === "ON_HOLD" ? (
+                    {course.status === "PENDING" ? (
+                      <div className="flex flex-col gap-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/60 p-2.5 text-xs text-amber-900 dark:text-amber-200 shadow-xs">
+                        <div className="flex items-center gap-1.5 font-bold">
+                          <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+                          <span>Waiting for Admin Approval</span>
+                        </div>
+                        <p className="text-[11px] text-amber-800 dark:text-amber-300/90 leading-tight">
+                          Your enrollment request has been submitted and is waiting for admin approval. Course access is locked until approved.
+                        </p>
+                      </div>
+                    ) : course.status === "REJECTED" ? (
+                      <div className="flex flex-col gap-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800/60 p-2.5 text-xs text-rose-900 dark:text-rose-200 shadow-xs">
+                        <div className="flex items-center gap-1.5 font-bold">
+                          <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                          <span>Enrollment Not Approved</span>
+                        </div>
+                        <p className="text-[11px] text-rose-800 dark:text-rose-300/90 leading-tight">
+                          {course.rejectionReason
+                            ? `Reason: ${course.rejectionReason}`
+                            : "Your enrollment request for this course was not approved."}
+                        </p>
+                      </div>
+                    ) : course.status === "ON_HOLD" ? (
                       <div className="flex items-center justify-center gap-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/60 py-2.5 text-xs font-bold text-amber-900 dark:text-amber-200 shadow-xs">
                         <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                         <span>Course on Hold (Contact Admin)</span>

@@ -25,6 +25,42 @@ export interface EnrolledCourseItem {
   status?: string;
   completionApproved?: boolean;
   completionPending?: boolean;
+  couponCode?: string | null;
+  discountAmount?: number;
+  finalAmount?: number;
+  paymentMode?: string;
+  studentPhone?: string;
+  studentAddress?: string;
+  rejectionReason?: string | null;
+  approvedAt?: string;
+  rejectedAt?: string;
+}
+
+export interface CouponValidationResult {
+  valid: boolean;
+  code?: string;
+  discountPercent?: number;
+  discountType?: "PERCENTAGE" | "FIXED";
+  isFullDiscount?: boolean;
+  message?: string;
+}
+
+export interface PendingEnrollmentItem {
+  id: string;
+  studentName: string;
+  studentEmail: string;
+  studentPhone?: string;
+  studentAddress?: string;
+  courseId: string;
+  courseSlug: string;
+  courseTitle: string;
+  enrolledAt: string;
+  couponCode?: string | null;
+  discountAmount?: number;
+  finalAmount?: number;
+  paymentMode?: string;
+  status: string;
+  rejectionReason?: string | null;
 }
 
 export interface ProgressResult {
@@ -509,6 +545,7 @@ export async function fetchCourseProgress(
   studentEmailOrId?: string
 ): Promise<{
   status?: string;
+  rejectionReason?: string | null;
   completionApproved?: boolean;
   completionPending?: boolean;
   completedVideoIds: string[];
@@ -566,6 +603,7 @@ export async function fetchCourseProgress(
         status: data.status,
         completionApproved: data.completionApproved,
         completionPending: data.completionPending,
+        rejectionReason: data.rejectionReason,
         completedVideoIds: combinedVideos,
         completedAssignmentIds: combinedAssignments,
         assignmentScores: combinedScores,
@@ -633,5 +671,124 @@ export async function submitAssessment(params: {
     console.warn("Failed to submit assessment to backend:", err);
   }
   return null;
+}
+
+/**
+ * Validates a discount coupon code with backend database rules
+ */
+export async function validateCoupon(
+  code: string,
+  courseSlug?: string
+): Promise<CouponValidationResult> {
+  const cleanCode = (code || "").trim().toUpperCase();
+  if (!cleanCode) {
+    return { valid: false, message: "Please enter a coupon code." };
+  }
+
+  try {
+    const url = `/enrollments/coupons/validate?code=${encodeURIComponent(cleanCode)}${
+      courseSlug ? `&courseSlug=${encodeURIComponent(courseSlug)}` : ""
+    }`;
+    const res = await apiFetch(url, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        valid: Boolean(data.valid),
+        code: data.code,
+        discountPercent: data.discountPercent,
+        discountType: data.discountType,
+        isFullDiscount: Boolean(data.isFullDiscount),
+        message: data.message,
+      };
+    }
+
+    const err = await res.json().catch(() => ({}));
+    return {
+      valid: false,
+      message: err.message || `Coupon '${cleanCode}' is invalid or expired.`,
+    };
+  } catch (err: any) {
+    console.warn("Coupon validation failed:", err);
+    return {
+      valid: false,
+      message: "Could not validate coupon. Please check your connection.",
+    };
+  }
+}
+
+/**
+ * Fetches all student course enrollments currently waiting for admin review/approval
+ */
+export async function fetchPendingEnrollments(): Promise<PendingEnrollmentItem[]> {
+  try {
+    const res = await apiFetch("/admin/enrollments/pending", {
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to fetch pending enrollments:", err);
+  }
+  return [];
+}
+
+/**
+ * Approves a pending enrollment, unlocking course access and notifying the student
+ */
+export async function approveEnrollment(
+  enrollmentId: string
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const res = await apiFetch(`/admin/enrollments/${encodeURIComponent(enrollmentId)}/approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, data };
+    }
+
+    const err = await res.json().catch(() => ({}));
+    return { success: false, error: err.message || "Failed to approve enrollment." };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to approve enrollment." };
+  }
+}
+
+/**
+ * Rejects a pending enrollment with an optional explanation reason and notifies the student
+ */
+export async function rejectEnrollment(
+  enrollmentId: string,
+  reason?: string
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const res = await apiFetch(`/admin/enrollments/${encodeURIComponent(enrollmentId)}/reject`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, data };
+    }
+
+    const err = await res.json().catch(() => ({}));
+    return { success: false, error: err.message || "Failed to reject enrollment." };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to reject enrollment." };
+  }
 }
 

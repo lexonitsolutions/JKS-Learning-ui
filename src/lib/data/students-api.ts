@@ -549,3 +549,96 @@ export async function downloadStudentCourseTasksDocx(
   document.body.removeChild(a);
   window.URL.revokeObjectURL(url);
 }
+
+export interface PendingEnrollmentItem {
+  id: string;
+  enrollmentId: string;
+  userId: string;
+  studentName: string;
+  studentEmail: string;
+  studentPhone?: string;
+  studentAddress?: string;
+  courseId: string;
+  courseSlug: string;
+  courseTitle: string;
+  track?: string;
+  batchTiming?: string;
+  enrolledAt: string;
+  couponCode?: string | null;
+  discountAmount?: number;
+  finalAmount?: number;
+  paymentMode?: string;
+  status?: string;
+}
+
+/**
+ * Fetches all student course enrollments currently waiting for admin review/approval
+ */
+export async function fetchPendingEnrollments(): Promise<PendingEnrollmentItem[]> {
+  try {
+    const res = await apiFetch("/admin/enrollments/pending", {
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to fetch pending enrollments:", err);
+  }
+  return [];
+}
+
+/**
+ * Approves a pending enrollment, unlocking course access and notifying the student
+ */
+export async function approveEnrollment(
+  enrollmentId: string
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const res = await apiFetch(`/admin/enrollments/${encodeURIComponent(enrollmentId)}/approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, data };
+    }
+
+    const err = await res.json().catch(() => ({}));
+    return { success: false, error: err.message || "Failed to approve enrollment." };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to approve enrollment." };
+  }
+}
+
+/**
+ * Rejects a pending enrollment with an optional explanation reason and notifies the student
+ */
+export async function rejectEnrollment(
+  enrollmentId: string,
+  reason?: string
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const res = await apiFetch(`/admin/enrollments/${encodeURIComponent(enrollmentId)}/reject`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, data };
+    }
+
+    const err = await res.json().catch(() => ({}));
+    return { success: false, error: err.message || "Failed to reject enrollment." };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to reject enrollment." };
+  }
+}

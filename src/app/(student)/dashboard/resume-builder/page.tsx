@@ -6,6 +6,7 @@ import {
   Printer,
   Sparkles,
   Plus,
+  Minus,
   Trash2,
   CheckCircle2,
   Briefcase,
@@ -294,13 +295,16 @@ export default function ResumeBuilderPage() {
   const [template, setTemplate] = useState<"modern" | "minimalist" | "executive">("modern");
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving">("saved");
-  const [previewZoom, setPreviewZoom] = useState<"100" | "fit">("100");
-
+  // Zoom settings: support custom percentage (e.g. 70%, 100%, 85%) and fit mode
+  const [zoomPercent, setZoomPercent] = useState<number>(100);
+  const [zoomInputVal, setZoomInputVal] = useState<string>("100");
+  const [isFitMode, setIsFitMode] = useState<boolean>(false);
   // Dynamic A4 fit-to-screen scale & dimensions measurement
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const [fitScale, setFitScale] = useState<number>(0.72);
   const [sheetHeight, setSheetHeight] = useState<number>(1123);
+  const activeScale = isFitMode ? fitScale : Math.min(2.0, Math.max(0.3, zoomPercent / 100));
 
   // Section collapse states for clean mobile/desktop accordion
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -757,10 +761,13 @@ export default function ResumeBuilderPage() {
     // Ensure mobile view switches to preview so the resume sheet is mounted and rendered
     setMobileTab("preview");
 
-    // Temporarily switch zoom to 100% ("100") so html2canvas renders the unscaled element cleanly at 1:1
-    const previousZoom = previewZoom;
-    if (previewZoom !== "100") {
-      setPreviewZoom("100");
+    // Temporarily switch zoom to 100% so html2canvas renders the unscaled element cleanly at 1:1
+    const prevFit = isFitMode;
+    const prevZoom = zoomPercent;
+    if (isFitMode || zoomPercent !== 100) {
+      setIsFitMode(false);
+      setZoomPercent(100);
+      setZoomInputVal("100");
     }
 
     // Allow DOM to settle if tab changed or zoom changed
@@ -768,7 +775,11 @@ export default function ResumeBuilderPage() {
 
     const sheetEl = document.getElementById("printable-resume-sheet");
     if (!sheetEl || isExportingPdf) {
-      if (previousZoom !== "100") setPreviewZoom(previousZoom);
+      if (prevFit || prevZoom !== 100) {
+        setIsFitMode(prevFit);
+        setZoomPercent(prevZoom);
+        setZoomInputVal(String(prevZoom));
+      }
       return;
     }
 
@@ -808,8 +819,10 @@ export default function ResumeBuilderPage() {
       window.print();
     } finally {
       setIsExportingPdf(false);
-      if (previousZoom !== "100") {
-        setPreviewZoom(previousZoom);
+      if (prevFit || prevZoom !== 100) {
+        setIsFitMode(prevFit);
+        setZoomPercent(prevZoom);
+        setZoomInputVal(String(prevZoom));
       }
     }
   };
@@ -2368,39 +2381,113 @@ export default function ResumeBuilderPage() {
           {/* ===================================================================== */}
           <div
             id="resume-preview-sticky-col"
-            className={`lg:col-span-7 sticky top-20 lg:top-[5.25rem] self-start flex flex-col items-center resume-print-wrapper print:!flex print:!col-span-12 print:!w-full print:!p-0 print:!m-0 transition-all duration-300 ${
+            className={`lg:col-span-7 sticky top-16 lg:top-[4.5rem] self-start flex flex-col items-center resume-print-wrapper print:!flex print:!col-span-12 print:!w-full print:!p-0 print:!m-0 transition-all duration-300 lg:max-h-[calc(100vh-5.5rem)] overflow-hidden ${
               mobileTab === "edit" ? "hidden lg:flex" : "flex"
             }`}
           >
             {/* Desktop Preview Header & Controls */}
-            <div className="w-full flex items-center justify-between pb-3 px-1 text-xs text-slate-500 dark:text-slate-400 print:hidden shrink-0">
+            <div className="w-full flex flex-wrap items-center justify-between gap-2 pb-3 px-1 text-xs text-slate-500 dark:text-slate-400 print:hidden shrink-0 border-b border-slate-100 dark:border-slate-800/80 mb-1">
               <span className="font-semibold flex items-center gap-1.5">
                 <Eye className="h-4 w-4 text-[#1E5EFF] dark:text-blue-400" />
                 <span>Live Document Preview (A4 Standard)</span>
               </span>
 
               <div className="flex items-center gap-2">
-                {/* Scale / Fit toggle */}
+                {/* Scale / Fit and Custom Zoom toggle */}
                 <div className="flex items-center gap-1 bg-slate-100 dark:bg-surface-elevated p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
                   <button
                     type="button"
-                    onClick={() => setPreviewZoom("fit")}
+                    onClick={() => {
+                      setIsFitMode(true);
+                      const fitVal = Math.round(fitScale * 100);
+                      setZoomPercent(fitVal);
+                      setZoomInputVal(String(fitVal));
+                    }}
                     className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
-                      previewZoom === "fit"
+                      isFitMode
                         ? "bg-white dark:bg-surface-secondary text-[#1E5EFF] dark:text-blue-400 shadow-2xs"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-400"
                     }`}
+                    title="Fit to available preview width"
                   >
-                    Fit Screen {previewZoom === "fit" ? `(${Math.round(fitScale * 100)}%)` : ""}
+                    Fit Screen {isFitMode ? `(${Math.round(fitScale * 100)}%)` : ""}
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => setPreviewZoom("100")}
+                    onClick={() => {
+                      const next = Math.max(30, (isFitMode ? Math.round(fitScale * 100) : zoomPercent) - 10);
+                      setIsFitMode(false);
+                      setZoomPercent(next);
+                      setZoomInputVal(String(next));
+                    }}
+                    className="flex h-5 w-5 items-center justify-center rounded text-slate-500 hover:bg-white dark:hover:bg-surface-secondary hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all cursor-pointer text-xs font-bold"
+                    title="Zoom Out (-10%)"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </button>
+
+                  {/* Editable Zoom Percentage Input */}
+                  <div className="flex items-center bg-white dark:bg-surface-secondary rounded border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 shadow-2xs">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={isFitMode ? Math.round(fitScale * 100) : zoomInputVal}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, "");
+                        setZoomInputVal(val);
+                        const num = parseInt(val, 10);
+                        if (!isNaN(num) && num >= 20 && num <= 250) {
+                          setIsFitMode(false);
+                          setZoomPercent(num);
+                        }
+                      }}
+                      onBlur={() => {
+                        let num = parseInt(zoomInputVal, 10);
+                        if (isNaN(num) || num < 30) num = 30;
+                        if (num > 200) num = 200;
+                        setIsFitMode(false);
+                        setZoomPercent(num);
+                        setZoomInputVal(String(num));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          (e.target as HTMLInputElement).blur();
+                        }
+                      }}
+                      className="w-7 text-center text-[11px] font-bold text-slate-900 dark:text-white outline-none bg-transparent"
+                      title="Type zoom percentage (e.g. 70, 100) and press Enter"
+                    />
+                    <span className="text-[10px] font-bold text-slate-400 select-none">%</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = Math.min(200, (isFitMode ? Math.round(fitScale * 100) : zoomPercent) + 10);
+                      setIsFitMode(false);
+                      setZoomPercent(next);
+                      setZoomInputVal(String(next));
+                    }}
+                    className="flex h-5 w-5 items-center justify-center rounded text-slate-500 hover:bg-white dark:hover:bg-surface-secondary hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all cursor-pointer text-xs font-bold"
+                    title="Zoom In (+10%)"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsFitMode(false);
+                      setZoomPercent(100);
+                      setZoomInputVal("100");
+                    }}
                     className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
-                      previewZoom === "100"
+                      !isFitMode && zoomPercent === 100
                         ? "bg-white dark:bg-surface-secondary text-[#1E5EFF] dark:text-blue-400 shadow-2xs"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-400"
                     }`}
+                    title="Reset to 100%"
                   >
                     100%
                   </button>
@@ -2413,26 +2500,19 @@ export default function ResumeBuilderPage() {
               </div>
             </div>
 
-            {/* Printable & Natural Scaled Preview Container (standard 794px A4 canvas with proportional scaling) */}
+            {/* Printable & Scaled Preview Container - Independently Scrollable */}
             <div
               ref={previewContainerRef}
-              className={`w-full pb-8 pt-1 ${previewZoom === "fit" ? "overflow-x-hidden" : "overflow-x-auto"}`}
+              className="w-full flex-1 overflow-y-auto overflow-x-auto pb-12 pt-2 px-1 [scrollbar-width:thin] focus:outline-none"
             >
               <div
-                className="mx-auto"
-                style={
-                  previewZoom === "fit"
-                    ? {
-                        width: `${Math.round(794 * fitScale)}px`,
-                        height: `${Math.round(sheetHeight * fitScale)}px`,
-                        position: "relative",
-                        overflow: "hidden",
-                      }
-                    : {
-                        width: "794px",
-                        minWidth: "794px",
-                      }
-                }
+                className="mx-auto transition-all duration-150"
+                style={{
+                  width: `${Math.round(794 * activeScale)}px`,
+                  minHeight: `${Math.round(sheetHeight * activeScale)}px`,
+                  position: "relative",
+                  overflow: "hidden",
+                }}
               >
                 <div
                   id="printable-resume-sheet"
@@ -2442,13 +2522,7 @@ export default function ResumeBuilderPage() {
                     backgroundColor: "#ffffff",
                     color: "#0f172a",
                     transformOrigin: "top left",
-                    ...(previewZoom === "fit"
-                      ? {
-                          transform: `scale(${fitScale})`,
-                        }
-                      : {
-                          transform: "none",
-                        }),
+                    transform: `scale(${activeScale})`,
                   }}
                 >
                 {/* ─────────────────────────────────────────────────────────────────── */}

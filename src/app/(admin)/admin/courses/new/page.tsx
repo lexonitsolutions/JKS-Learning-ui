@@ -151,6 +151,7 @@ function AdminNewCourseContent() {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [track, setTrack] = useState<string>("Full Stack");
+  const [subTrack, setSubTrack] = useState<string>("");
   const [availableTracks, setAvailableTracks] = useState<string[]>([
     "Full Stack",
     "Frontend",
@@ -166,6 +167,60 @@ function AdminNewCourseContent() {
   const [price, setPrice] = useState<number | string>("");
   const [summary, setSummary] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
+
+  const TRACK_SUBTRACKS: Record<string, string[]> = {
+    SAP: [
+      "SAP B1",
+      "SAP Ariba",
+      "SAP S/4HANA",
+      "SAP ABAP",
+      "SAP FICO",
+      "SAP MM",
+      "SAP SD",
+      "SAP SuccessFactors",
+      "SAP Basis",
+    ],
+    "Full Stack": [
+      "Java Full Stack",
+      "MERN / Full Stack JavaScript",
+      "Python Full Stack",
+      ".NET Cloud Architecture",
+      "Spring Boot & Angular",
+    ],
+    Frontend: [
+      "React 19 & Next.js",
+      "Angular Enterprise Architecture",
+      "Vue.js & Nuxt Architect",
+      "React Native Mobile",
+    ],
+    DotNet: [
+      ".NET 9 Web API & Microservices",
+      "Azure Cloud Architecture",
+      "C# Enterprise Systems",
+      "Microservices & Kubernetes",
+    ],
+    "Cloud & DevOps": [
+      "AWS Cloud Architecture",
+      "Azure DevOps & CI/CD",
+      "Docker & Kubernetes",
+      "Terraform & GitOps",
+    ],
+    "Data Science & AI": [
+      "Applied Generative AI & LLMs",
+      "Python Data Science & ML",
+      "Data Engineering & PySpark",
+    ],
+  };
+
+  const getSubTracksForTrack = (selectedTrack: string): string[] => {
+    const norm = (selectedTrack || "").toLowerCase();
+    if (norm.includes("sap")) return TRACK_SUBTRACKS["SAP"];
+    if (norm.includes("front")) return TRACK_SUBTRACKS["Frontend"];
+    if (norm.includes("dotnet") || norm.includes(".net")) return TRACK_SUBTRACKS["DotNet"];
+    if (norm.includes("cloud") || norm.includes("devops")) return TRACK_SUBTRACKS["Cloud & DevOps"];
+    if (norm.includes("data") || norm.includes("ai")) return TRACK_SUBTRACKS["Data Science & AI"];
+    return TRACK_SUBTRACKS["Full Stack"];
+  };
 
   // Step 1: Instructor / Faculty State
   const [instructorsList, setInstructorsList] = useState<{ id: string; name: string; email: string }[]>([
@@ -190,7 +245,10 @@ function AdminNewCourseContent() {
     let defaultRubric = "";
     let defaultPoints = 10;
 
-    if (canonical === "Multiple Choice (MCQ)") {
+    if (canonical === "Multiple Select (Multi-Choice)") {
+      defaultChoices = ["Option A", "Option B", "Option C", "Option D"];
+      defaultPoints = 10;
+    } else if (canonical === "Multiple Choice (MCQ)") {
       defaultChoices = ["Option A", "Option B", "Option C", "Option D"];
       defaultPoints = 5;
     } else if (canonical === "Project / File Upload") {
@@ -211,6 +269,7 @@ function AdminNewCourseContent() {
       type: canonical,
       choices: defaultChoices,
       correctIndex: 0,
+      correctIndices: canonical === "Multiple Select (Multi-Choice)" ? [0, 1] : [0],
       modelAnswer: "",
       keywords: "",
       language: "JavaScript",
@@ -294,6 +353,138 @@ function AdminNewCourseContent() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedSuccess, setPublishedSuccess] = useState(false);
 
+  // Auto-Save Draft State
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
+  const [draftPayload, setDraftPayload] = useState<any>(null);
+  const draftStorageKey = editSlug ? `jks_course_wizard_draft_${editSlug}` : "jks_course_wizard_draft_new";
+
+  // Check for saved draft on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(draftStorageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.savedAt) {
+          setDraftPayload(parsed);
+          setShowDraftBanner(true);
+          setDraftSavedAt(
+            new Date(parsed.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          );
+        }
+      }
+    } catch {}
+  }, [draftStorageKey]);
+
+  const handleRestoreDraft = () => {
+    if (!draftPayload) return;
+    if (draftPayload.title !== undefined) setTitle(draftPayload.title);
+    if (draftPayload.slug !== undefined) setSlug(draftPayload.slug);
+    if (draftPayload.track !== undefined) setTrack(draftPayload.track);
+    if (draftPayload.subTrack !== undefined) setSubTrack(draftPayload.subTrack);
+    if (draftPayload.customTrackInput !== undefined) setCustomTrackInput(draftPayload.customTrackInput);
+    if (draftPayload.level !== undefined) setLevel(draftPayload.level);
+    if (draftPayload.durationWeeks !== undefined) setDurationWeeks(draftPayload.durationWeeks);
+    if (draftPayload.price !== undefined) setPrice(draftPayload.price);
+    if (draftPayload.summary !== undefined) setSummary(draftPayload.summary);
+    if (draftPayload.thumbnailUrl !== undefined) setThumbnailUrl(draftPayload.thumbnailUrl);
+    if (draftPayload.sections !== undefined) setSections(draftPayload.sections);
+    if (draftPayload.selectedInstructorId !== undefined) setSelectedInstructorId(draftPayload.selectedInstructorId);
+    if (draftPayload.antiSkipEnforced !== undefined) setAntiSkipEnforced(draftPayload.antiSkipEnforced);
+    if (draftPayload.requireFullWatchToUnlockAssignment !== undefined) setRequireFullWatchToUnlockAssignment(draftPayload.requireFullWatchToUnlockAssignment);
+    if (draftPayload.preventForwardSeeking !== undefined) setPreventForwardSeeking(draftPayload.preventForwardSeeking);
+    if (draftPayload.playbackSpeedCap !== undefined) setPlaybackSpeedCap(draftPayload.playbackSpeedCap);
+    if (draftPayload.certificateTitle !== undefined) setCertificateTitle(draftPayload.certificateTitle);
+    if (draftPayload.requireAllVideosComplete !== undefined) setRequireAllVideosComplete(draftPayload.requireAllVideosComplete);
+    if (draftPayload.requireAllAssignmentsPassed !== undefined) setRequireAllAssignmentsPassed(draftPayload.requireAllAssignmentsPassed);
+    setShowDraftBanner(false);
+  };
+
+  const handleDiscardDraft = () => {
+    try {
+      localStorage.removeItem(draftStorageKey);
+    } catch {}
+    setShowDraftBanner(false);
+    setDraftSavedAt(null);
+    setDraftPayload(null);
+  };
+
+  // Debounced auto-save draft effect
+  useEffect(() => {
+    if (!title.trim() || isLoadingEdit) return;
+
+    setIsDraftSaving(true);
+    const timer = setTimeout(() => {
+      try {
+        const now = Date.now();
+        const payload = {
+          title,
+          slug,
+          track,
+          subTrack,
+          customTrackInput,
+          level,
+          durationWeeks,
+          price,
+          summary,
+          thumbnailUrl,
+          sections,
+          selectedInstructorId,
+          antiSkipEnforced,
+          requireFullWatchToUnlockAssignment,
+          preventForwardSeeking,
+          playbackSpeedCap,
+          certificateTitle,
+          requireAllVideosComplete,
+          requireAllAssignmentsPassed,
+          savedAt: now,
+        };
+        localStorage.setItem(draftStorageKey, JSON.stringify(payload));
+        setIsDraftSaving(false);
+        setDraftSavedAt(
+          new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+        );
+      } catch (err) {
+        console.warn("Failed to auto-save course wizard draft:", err);
+        setIsDraftSaving(false);
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [
+    title,
+    slug,
+    track,
+    subTrack,
+    customTrackInput,
+    level,
+    durationWeeks,
+    price,
+    summary,
+    thumbnailUrl,
+    sections,
+    selectedInstructorId,
+    antiSkipEnforced,
+    requireFullWatchToUnlockAssignment,
+    preventForwardSeeking,
+    playbackSpeedCap,
+    certificateTitle,
+    requireAllVideosComplete,
+    requireAllAssignmentsPassed,
+    isLoadingEdit,
+    draftStorageKey,
+  ]);
+
+  // Clean up draft on successful publishing
+  useEffect(() => {
+    if (publishedSuccess) {
+      try {
+        localStorage.removeItem(draftStorageKey);
+      } catch {}
+    }
+  }, [publishedSuccess, draftStorageKey]);
+
   // Load existing course when ?edit=<slug> is present
   useEffect(() => {
     if (!editSlug) return;
@@ -327,12 +518,15 @@ function AdminNewCourseContent() {
           setSlug(courseData.slug || "");
           const mappedTrack = mapBackendTrack(courseData.track);
           setTrack(mappedTrack);
+          if (courseData.subTrack) setSubTrack(courseData.subTrack);
           if (courseData.level) setLevel(courseData.level);
           if (courseData.durationWeeks) setDurationWeeks(courseData.durationWeeks);
           if (courseData.priceCents !== undefined && courseData.priceCents !== null) {
             setPrice(Math.round(courseData.priceCents / 100));
           } else if (courseData.price !== undefined) {
             setPrice(courseData.price);
+          } else {
+            setPrice(0);
           }
           if (courseData.summary) setSummary(courseData.summary);
           if (courseData.thumbnail) setThumbnailUrl(courseData.thumbnail);
@@ -357,8 +551,13 @@ function AdminNewCourseContent() {
                   prompt: q.prompt || "",
                   type: canonicalizeAssessmentType(rawQType),
                   choices: Array.isArray(q.choices) && q.choices.length > 0 ? q.choices : ["Option A", "Option B", "Option C", "Option D"],
-                correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
-                modelAnswer: q.modelAnswer || "",
+                  correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
+                  correctIndices: Array.isArray(q.correctIndices)
+                    ? q.correctIndices
+                    : typeof q.correctIndex === "number"
+                    ? [q.correctIndex]
+                    : [0],
+                  modelAnswer: q.modelAnswer || "",
                 keywords: q.keywords || "",
                 language: q.language || "JavaScript",
                 starterCode: q.starterCode || "",
@@ -875,10 +1074,14 @@ function AdminNewCourseContent() {
       if (field === "type") {
         const canonical = canonicalizeAssessmentType(val);
         q.type = canonical;
-        if (canonical === "Multiple Choice (MCQ)" && (!q.choices || q.choices.length === 0)) {
+        if (
+          (canonical === "Multiple Choice (MCQ)" || canonical === "Multiple Select (Multi-Choice)") &&
+          (!q.choices || q.choices.length === 0)
+        ) {
           q.choices = ["Option A", "Option B", "Option C", "Option D"];
           q.correctIndex = 0;
-          if (!q.maxPoints) q.maxPoints = 5;
+          q.correctIndices = canonical === "Multiple Select (Multi-Choice)" ? [0, 1] : [0];
+          if (!q.maxPoints) q.maxPoints = canonical === "Multiple Select (Multi-Choice)" ? 10 : 5;
         } else if (canonical === "Coding Challenge / Test") {
           if (!q.starterCode) {
             q.starterCode = "// Write your solution function here\nfunction solution(input) {\n  // Your code here\n  return input;\n}\n";
@@ -930,6 +1133,30 @@ function AdminNewCourseContent() {
     const asg = updated[sectionIndex].assignment;
     if (asg.questions && asg.questions[questionIndex]) {
       asg.questions[questionIndex].correctIndex = correctIndex;
+      (asg.questions[questionIndex] as any).correctIndices = [correctIndex];
+    }
+    setSections(updated);
+  };
+
+  const toggleQuestionCorrectIndex = (
+    sectionIndex: number,
+    questionIndex: number,
+    choiceIndex: number
+  ) => {
+    const updated = [...sections];
+    const asg = updated[sectionIndex].assignment;
+    if (asg.questions && asg.questions[questionIndex]) {
+      const q = asg.questions[questionIndex] as any;
+      const current: number[] = Array.isArray(q.correctIndices)
+        ? [...q.correctIndices]
+        : typeof q.correctIndex === "number"
+        ? [q.correctIndex]
+        : [0];
+      const next = current.includes(choiceIndex)
+        ? current.filter((i: number) => i !== choiceIndex)
+        : [...current, choiceIndex].sort((a: number, b: number) => a - b);
+      q.correctIndices = next.length > 0 ? next : [choiceIndex];
+      q.correctIndex = q.correctIndices[0] ?? 0;
     }
     setSections(updated);
   };
@@ -1083,9 +1310,10 @@ function AdminNewCourseContent() {
       slug: slug || `course-${Date.now()}`,
       title,
       track: track as Track,
+      subTrack: subTrack.trim() || undefined,
       level,
       durationWeeks: Number(durationWeeks) || 12,
-      price: price !== "" && Number(price) >= 0 ? Number(price) : 19999,
+      price: price !== "" && !isNaN(Number(price)) && Number(price) >= 0 ? Number(price) : 0,
       // Preserve existing rating and enrollment count when editing
       rating: isEditMode ? originalRating : 5.0,
       studentsEnrolled: isEditMode ? originalStudentsEnrolled : 0,
@@ -1144,6 +1372,16 @@ function AdminNewCourseContent() {
             <span className="hidden sm:inline text-xs font-semibold text-slate-900 dark:text-white">
               {isEditMode ? `Editing: ${title || "Course"}` : "Stage Workflow Course Builder"}
             </span>
+
+            {isDraftSaving ? (
+              <span className="hidden md:inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                <Loader2 className="h-3 w-3 animate-spin text-amber-600" /> Auto-saving draft...
+              </span>
+            ) : draftSavedAt ? (
+              <span className="hidden md:inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Auto-saved draft ({draftSavedAt})
+              </span>
+            ) : null}
           </div>
 
           <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
@@ -1228,6 +1466,35 @@ function AdminNewCourseContent() {
             );
           })}
         </div>
+
+        {/* DRAFT RECOVERY BANNER */}
+        {showDraftBanner && (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-300 dark:border-amber-700/80 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-xs text-amber-900 dark:text-amber-200 shadow-xs">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>
+                Found an uncommitted auto-saved draft for this course{draftSavedAt ? ` from ${draftSavedAt}` : ""}.
+              </span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleRestoreDraft}
+                className="font-bold underline hover:no-underline text-amber-900 dark:text-amber-200 cursor-pointer"
+              >
+                Restore Draft
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={handleDiscardDraft}
+                className="text-amber-700 dark:text-amber-400 hover:text-amber-950 dark:hover:text-white cursor-pointer"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* VALIDATION ERROR BANNER */}
         {validationError && (
@@ -1359,78 +1626,102 @@ function AdminNewCourseContent() {
                         </p>
                       )}
                     </div>
+                  </div>
 
+                  {/* ACADEMIC TRACK & SUB-TRACK SECTION */}
+                  <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated/40 p-4 space-y-4">
                     <div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                          Academic Track
+                          Academic Track <span className="text-slate-400 font-normal lowercase">(select preset or edit directly)</span>
                         </label>
-                        {!showCustomTrackInput && (
-                          <button
-                            type="button"
-                            onClick={() => setShowCustomTrackInput(true)}
-                            className="text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
-                          >
-                            + Add Custom Track
-                          </button>
-                        )}
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Click to select preset, then edit the text freely below
+                        </span>
                       </div>
 
-                      {!showCustomTrackInput ? (
-                        <select
-                          value={track}
-                          onChange={(e) => {
-                            if (e.target.value === "__ADD_CUSTOM__") {
-                              setShowCustomTrackInput(true);
-                            } else {
-                              setTrack(e.target.value);
-                            }
-                          }}
-                          className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                        >
-                          {availableTracks.map((t) => (
-                            <option key={t} value={t}>
-                              {t}
-                            </option>
-                          ))}
-                          <option value="__ADD_CUSTOM__">+ Add Custom Track...</option>
-                        </select>
-                      ) : (
-                        <div className="mt-1.5 flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={customTrackInput}
-                            onChange={(e) => setCustomTrackInput(e.target.value)}
-                            placeholder="Enter custom academic track name (e.g. Cybersecurity)"
-                            className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                            autoFocus
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const trimmed = customTrackInput.trim();
-                              if (trimmed) {
-                                if (!availableTracks.includes(trimmed)) {
-                                  setAvailableTracks((prev) => [...prev, trimmed]);
+                      {/* Preset Track Pills */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                        {availableTracks.map((t) => {
+                          const isSelected =
+                            track.toLowerCase().trim() === t.toLowerCase().trim() ||
+                            (t === "SAP" && track.toLowerCase().includes("sap"));
+                          return (
+                            <button
+                              key={t}
+                              type="button"
+                              onClick={() => {
+                                setTrack(t);
+                                const subList = getSubTracksForTrack(t);
+                                if (subList.length > 0 && !subList.includes(subTrack)) {
+                                  setSubTrack(subList[0]);
                                 }
-                                setTrack(trimmed);
-                                setCustomTrackInput("");
-                                setShowCustomTrackInput(false);
-                              }
-                            }}
-                            className="rounded-xl bg-[#2563EB] px-3 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
-                          >
-                            Save
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setShowCustomTrackInput(false)}
-                            className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-surface-elevated px-2.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 cursor-pointer"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      )}
+                              }}
+                              className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                                isSelected
+                                  ? "bg-[#2563EB] text-white shadow-xs scale-[1.02]"
+                                  : "bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400 dark:hover:border-blue-500"
+                              }`}
+                            >
+                              {t}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Editable Track Input */}
+                      <input
+                        type="text"
+                        value={track}
+                        onChange={(e) => setTrack(e.target.value)}
+                        placeholder="e.g. SAP, Full Stack, Frontend, DotNet, Cloud..."
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
+                      />
+                    </div>
+
+                    {/* SUB-TRACK SECTION */}
+                    <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800">
+                      <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                          <span>Sub-Track / Module Specialization</span>
+                          <span className="rounded bg-blue-100 dark:bg-blue-950/70 text-[#2563EB] dark:text-blue-300 px-1.5 py-0.5 text-[10px] font-bold">
+                            {track || "Track"}
+                          </span>
+                        </label>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Choose a sub-track or edit custom specialization
+                        </span>
+                      </div>
+
+                      {/* Dynamic Sub-Track Pills (SAP B1, SAP Ariba, SAP S/4HANA, etc.) */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                        {getSubTracksForTrack(track).map((st) => {
+                          const isSelected = subTrack.toLowerCase().trim() === st.toLowerCase().trim();
+                          return (
+                            <button
+                              key={st}
+                              type="button"
+                              onClick={() => setSubTrack(st)}
+                              className={`rounded-lg px-2.5 py-1 text-[11.5px] font-bold transition-all cursor-pointer ${
+                                isSelected
+                                  ? "bg-emerald-600 text-white shadow-xs scale-[1.02]"
+                                  : "bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-emerald-400 dark:hover:border-emerald-500"
+                              }`}
+                            >
+                              {st}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Editable Sub-Track Input */}
+                      <input
+                        type="text"
+                        value={subTrack}
+                        onChange={(e) => setSubTrack(e.target.value)}
+                        placeholder="e.g. SAP B1, SAP Ariba, SAP S/4HANA, or custom specialization..."
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/30"
+                      />
                     </div>
                   </div>
 
@@ -2663,7 +2954,8 @@ function AdminNewCourseContent() {
                             className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                           >
                             <option value="Short Answer Question">Short Answer Question</option>
-                            <option value="Multiple Choice (MCQ)">Multiple Choice (MCQ)</option>
+                            <option value="Multiple Choice (MCQ)">Single Choice (MCQ - Single Option)</option>
+                            <option value="Multiple Select (Multi-Choice)">Multiple Choice (Multi-Select - Multiple Correct Answers)</option>
                             <option value="Long Answer / Comprehensive">Long Answer / Comprehensive</option>
                             <option value="Project / File Upload">Project / File Upload</option>
                           </select>
@@ -2834,7 +3126,8 @@ function AdminNewCourseContent() {
                                             className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-[11px] font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
                                           >
                                             <option value="Short Answer Question">Short Answer Question</option>
-                                            <option value="Multiple Choice (MCQ)">Multiple Choice (MCQ)</option>
+                                            <option value="Multiple Choice (MCQ)">Single Choice (MCQ - Single Option)</option>
+                                            <option value="Multiple Select (Multi-Choice)">Multiple Choice (Multi-Select - Multiple Correct Answers)</option>
                                             <option value="Long Answer / Comprehensive">Long Answer / Comprehensive</option>
                                             <option value="Coding Challenge / Test">Coding Challenge / Test</option>
                                             <option value="Project / File Upload">Project / File Upload</option>
@@ -2932,11 +3225,11 @@ function AdminNewCourseContent() {
                                     </div>
                                   )}
 
-                                  {/* 2. MULTIPLE CHOICE (MCQ) */}
+                                  {/* 2. MULTIPLE CHOICE (MCQ - SINGLE OPTION) */}
                                   {qType === "Multiple Choice (MCQ)" && (
                                     <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-emerald-400 dark:border-emerald-600">
                                       <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                                        <span>Select the radio button next to the <strong>Correct Answer</strong>:</span>
+                                        <span>Select the radio button next to the <strong>Single Correct Answer</strong>:</span>
                                         <button
                                           type="button"
                                           onClick={() => addChoiceToQuestion(secIdx, qIdx)}
@@ -3036,6 +3329,124 @@ function AdminNewCourseContent() {
                                                 updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
                                               }
                                               className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                                            />
+                                            <span className="text-xs text-slate-500">Points</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* 3. MULTIPLE SELECT (MULTI-CHOICE - MULTIPLE CORRECT ANSWERS) */}
+                                  {qType === "Multiple Select (Multi-Choice)" && (
+                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-indigo-500 dark:border-indigo-400">
+                                      <div className="rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 p-2.5 border border-indigo-100 dark:border-indigo-900/40 text-[11px] text-indigo-900 dark:text-indigo-300">
+                                        <span className="font-bold">Multi-Select Assessment: </span>
+                                        Check all checkboxes next to the <strong>Multiple Correct Answers</strong>. Students must select all matching options to receive full score.
+                                      </div>
+
+                                      <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                                        <span>Select checkboxes for all valid correct choices:</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => addChoiceToQuestion(secIdx, qIdx)}
+                                          className="flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                                        >
+                                          <Plus className="h-3 w-3" /> Add Choice
+                                        </button>
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        {(q.choices || []).map((choice, cIdx) => {
+                                          const isCorrect = Array.isArray(q.correctIndices)
+                                            ? q.correctIndices.includes(cIdx)
+                                            : (q.correctIndex ?? 0) === cIdx;
+                                          const letter = String.fromCharCode(65 + cIdx);
+
+                                          return (
+                                            <div
+                                              key={cIdx}
+                                              className={`flex items-center gap-2.5 rounded-xl border p-2.5 transition-colors ${
+                                                isCorrect
+                                                  ? "border-indigo-400 dark:border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/30"
+                                                  : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg"
+                                              }`}
+                                            >
+                                              <input
+                                                type="checkbox"
+                                                checked={isCorrect}
+                                                onChange={() => toggleQuestionCorrectIndex(secIdx, qIdx, cIdx)}
+                                                className="h-4 w-4 accent-indigo-600 rounded cursor-pointer shrink-0 ml-1"
+                                                title="Check to include this as one of the multiple correct answers"
+                                              />
+                                              <span
+                                                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
+                                                  isCorrect
+                                                    ? "bg-indigo-600 text-white"
+                                                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                                                }`}
+                                              >
+                                                {letter}
+                                              </span>
+                                              <input
+                                                type="text"
+                                                value={choice}
+                                                onChange={(e) =>
+                                                  updateQuestionChoice(secIdx, qIdx, cIdx, e.target.value)
+                                                }
+                                                placeholder={`Option ${letter} text...`}
+                                                className="min-w-0 flex-1 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none font-medium"
+                                              />
+                                              {isCorrect && (
+                                                <span className="shrink-0 rounded-md bg-indigo-100 dark:bg-indigo-950 border border-indigo-300 dark:border-indigo-800 px-2 py-0.5 text-[10px] font-bold text-indigo-800 dark:text-indigo-300">
+                                                  Correct Choice ✓
+                                                </span>
+                                              )}
+                                              {(q.choices?.length || 0) > 2 && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => removeChoiceFromQuestion(secIdx, qIdx, cIdx)}
+                                                  className="shrink-0 p-1 text-slate-400 hover:text-rose-500 cursor-pointer rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                                                  title="Remove this choice"
+                                                >
+                                                  <X className="h-3.5 w-3.5" />
+                                                </button>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                        <div>
+                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                                            Explanation / Multiple Choice Rationale
+                                          </label>
+                                          <input
+                                            type="text"
+                                            value={q.explanation || ""}
+                                            onChange={(e) =>
+                                              updateQuestionField(secIdx, qIdx, "explanation", e.target.value)
+                                            }
+                                            placeholder="Explain why these choices are correct..."
+                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-indigo-500"
+                                          />
+                                        </div>
+
+                                        <div>
+                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                                            Points / Weightage
+                                          </label>
+                                          <div className="flex items-center gap-2">
+                                            <input
+                                              type="number"
+                                              min="1"
+                                              max="100"
+                                              value={q.maxPoints ?? 10}
+                                              onChange={(e) =>
+                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
+                                              }
+                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-indigo-500"
                                             />
                                             <span className="text-xs text-slate-500">Points</span>
                                           </div>

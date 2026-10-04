@@ -101,11 +101,12 @@ import {
   fetchCourseProgress,
   getExactStudentCourseProgress,
 } from "@/lib/data/enrollments-api";
+import { approveEnrollment, rejectEnrollment } from "@/lib/data/students-api";
 import { CourseThumbnail } from "@/components/common/course-thumbnail";
 import { MessageStudentModal } from "@/components/admin/message-student-modal";
 import { EditStudentModal } from "@/components/admin/edit-student-modal";
 
-type HubTabType = "overview" | "qa" | "notes" | "announcements" | "reviews" | "tools";
+type HubTabType = "overview" | "qa" | "reviews" | "tools";
 
 interface ParsedQuestionItem {
   questionIndex: number;
@@ -722,9 +723,9 @@ export default function AdminStudentDetailsPage() {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 p-4 sm:p-6 w-full min-w-0">
           {/* LEFT COLUMN: In-App Video Player & Tabs (8 cols on desktop) */}
           <div className="xl:col-span-8 flex flex-col min-w-0 space-y-4">
-            {/* FIXED / STICKY IN-APP VIDEO PLAYER - Locked at top when scrolling */}
+            {/* IN-APP VIDEO PLAYER - Normal page scroll */}
             {activeVideo ? (
-              <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-2 pb-3 bg-[#F8FAFC]/95 dark:bg-[#020617]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs transition-all space-y-3">
+              <div className="relative w-full space-y-3">
                 <div className="w-full aspect-video max-h-[35vh] sm:max-h-[42vh] lg:max-h-[48vh] mx-auto rounded-2xl overflow-hidden shadow-md bg-black flex items-center justify-center border border-slate-200 dark:border-slate-800">
                   <InAppVideoPlayer
                     key={activeVideo.id}
@@ -813,8 +814,6 @@ export default function AdminStudentDetailsPage() {
                 {[
                   { id: "overview", label: "Overview", icon: BookOpen },
                   { id: "qa", label: "Q&A", icon: MessageSquare },
-                  { id: "notes", label: "Notes", icon: FileText },
-                  { id: "announcements", label: "Announcements", icon: Bell },
                   { id: "reviews", label: "Reviews", icon: Star },
                   { id: "tools", label: "Learning Tools", icon: Code2 },
                 ].map((tab) => {
@@ -874,28 +873,6 @@ export default function AdminStudentDetailsPage() {
                 </div>
               )}
 
-              {/* TAB CONTENT: Notes */}
-              {activeHubTab === "notes" && (
-                <div className="p-5 sm:p-6 space-y-3">
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Student Lecture Notes</h4>
-                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated/70 p-3.5 space-y-1 text-xs">
-                    <span className="font-mono font-bold text-[#2563EB] dark:text-blue-400">01:24 — 01. JVM Architecture</span>
-                    <p className="text-slate-700 dark:text-slate-300">JVM Heap vs Metaspace memory layout. Heap stores object instances, Metaspace stores class metadata.</p>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB CONTENT: Announcements */}
-              {activeHubTab === "announcements" && (
-                <div className="p-5 sm:p-6 space-y-3">
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Cohort Updates</h4>
-                  <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/40 p-3.5 space-y-1 text-xs">
-                    <span className="font-bold text-blue-900 dark:text-blue-200">Spring Boot 3.3 Microservices Milestone Added</span>
-                    <p className="text-blue-800 dark:text-blue-300">4 brand new video lectures with containerized Docker deployment available in Section 3.</p>
-                  </div>
-                </div>
-              )}
-
               {/* TAB CONTENT: Reviews */}
               {activeHubTab === "reviews" && (
                 <div className="p-5 sm:p-6 space-y-3">
@@ -920,8 +897,8 @@ export default function AdminStudentDetailsPage() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Curriculum Playlist (4 cols on desktop) */}
-          <aside className="xl:col-span-4 flex flex-col space-y-4 min-w-0">
+          {/* RIGHT COLUMN: Curriculum Playlist (4 cols on desktop) - Sticky and scrollable independently */}
+          <aside className="xl:col-span-4 flex flex-col space-y-4 min-w-0 xl:sticky xl:top-4 xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto">
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-4 shadow-xs">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">Curriculum &amp; Video Lessons</h3>
@@ -1668,6 +1645,16 @@ export default function AdminStudentDetailsPage() {
                               <span className="inline-flex self-start rounded-md bg-blue-500/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-300 border border-blue-400/30 backdrop-blur-md">
                                 {course.track}
                               </span>
+                              {course.status === "PENDING" && (
+                                <span className="inline-flex items-center gap-1 rounded-md bg-amber-500 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-xs animate-pulse">
+                                  <Clock className="h-2.5 w-2.5" /> Pending Approval
+                                </span>
+                              )}
+                              {course.status === "REJECTED" && (
+                                <span className="inline-flex items-center gap-1 rounded-md bg-rose-600/90 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-xs">
+                                  <X className="h-2.5 w-2.5" /> Rejected
+                                </span>
+                              )}
                               {course.status === "PAUSED" && (
                                 <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/90 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-xs">
                                   <Pause className="h-2.5 w-2.5" /> Paused
@@ -1709,7 +1696,46 @@ export default function AdminStudentDetailsPage() {
                                     onClick={(e) => e.stopPropagation()}
                                     className="absolute right-0 top-8 z-30 w-44 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-1 shadow-xl space-y-0.5 text-left animate-in fade-in zoom-in-95"
                                   >
-                                    {course.status === "REMOVED" ? (
+                                    {course.status === "PENDING" ? (
+                                      <>
+                                        <button
+                                          type="button"
+                                          onClick={async () => {
+                                            const res = await approveEnrollment(course.enrollmentId);
+                                            if (res.success) {
+                                              showToast("Enrollment approved successfully!");
+                                              loadData();
+                                            } else {
+                                              showToast(res.error || "Failed to approve enrollment");
+                                            }
+                                            setOpenCourseDropdownId(null);
+                                          }}
+                                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
+                                        >
+                                          <Check className="h-3 w-3" />
+                                          <span>Approve Access</span>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={async () => {
+                                            const reason = prompt("Enter reason for rejection (optional):");
+                                            if (reason === null) return;
+                                            const res = await rejectEnrollment(course.enrollmentId, reason || undefined);
+                                            if (res.success) {
+                                              showToast("Enrollment rejected.");
+                                              loadData();
+                                            } else {
+                                              showToast(res.error || "Failed to reject enrollment");
+                                            }
+                                            setOpenCourseDropdownId(null);
+                                          }}
+                                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                                        >
+                                          <X className="h-3 w-3" />
+                                          <span>Reject Request</span>
+                                        </button>
+                                      </>
+                                    ) : course.status === "REMOVED" ? (
                                       <button
                                         type="button"
                                         onClick={() =>

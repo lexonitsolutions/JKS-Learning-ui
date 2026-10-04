@@ -17,6 +17,7 @@ import {
   ChevronUp,
   HelpCircle,
   ClipboardCheck,
+  Loader2,
 } from "lucide-react";
 import { FullCourse, Section, VideoItem, saveCourseAsync } from "@/lib/data/courses-store";
 import type { Track } from "@/lib/data/courses";
@@ -35,14 +36,69 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
   // Form State
   const [title, setTitle] = useState("");
   const [track, setTrack] = useState<string>("Full Stack");
+  const [subTrack, setSubTrack] = useState<string>("");
   const [customTrack, setCustomTrack] = useState("");
   const [level, setLevel] = useState<"Beginner" | "Intermediate" | "Advanced">("Beginner");
-  const [price, setPrice] = useState<number>(24999);
+  const [price, setPrice] = useState<number>(0);
   const [status, setStatus] = useState<"Published" | "Draft">("Published");
   const [thumbnail, setThumbnail] = useState("");
   const [summary, setSummary] = useState("");
   const [sections, setSections] = useState<Section[]>([]);
   const [expandedVideoKey, setExpandedVideoKey] = useState<string | null>(null);
+
+  const TRACK_SUBTRACKS: Record<string, string[]> = {
+    SAP: [
+      "SAP B1",
+      "SAP Ariba",
+      "SAP S/4HANA",
+      "SAP ABAP",
+      "SAP FICO",
+      "SAP MM",
+      "SAP SD",
+      "SAP SuccessFactors",
+      "SAP Basis",
+    ],
+    "Full Stack": [
+      "Java Full Stack",
+      "MERN / Full Stack JavaScript",
+      "Python Full Stack",
+      ".NET Cloud Architecture",
+      "Spring Boot & Angular",
+    ],
+    Frontend: [
+      "React 19 & Next.js",
+      "Angular Enterprise Architecture",
+      "Vue.js & Nuxt Architect",
+      "React Native Mobile",
+    ],
+    DotNet: [
+      ".NET 9 Web API & Microservices",
+      "Azure Cloud Architecture",
+      "C# Enterprise Systems",
+      "Microservices & Kubernetes",
+    ],
+    "DevOps & Cloud": [
+      "AWS Cloud Architecture",
+      "Azure DevOps & CI/CD",
+      "Docker & Kubernetes",
+      "Terraform & GitOps",
+    ],
+    "Data Science": [
+      "Applied Generative AI & LLMs",
+      "Python Data Science & ML",
+      "Data Engineering & PySpark",
+    ],
+  };
+
+  const getSubTracksForTrack = (selectedTrack: string): string[] => {
+    const norm = (selectedTrack || "").toLowerCase();
+    if (norm.includes("sap")) return TRACK_SUBTRACKS["SAP"];
+    if (norm.includes("front")) return TRACK_SUBTRACKS["Frontend"];
+    if (norm.includes("dotnet") || norm.includes(".net")) return TRACK_SUBTRACKS["DotNet"];
+    if (norm.includes("cloud") || norm.includes("devops")) return TRACK_SUBTRACKS["DevOps & Cloud"];
+    if (norm.includes("data") || norm.includes("ai")) return TRACK_SUBTRACKS["Data Science"];
+    return TRACK_SUBTRACKS["Full Stack"];
+  };
 
   // Instructor State
   const [instructorsList, setInstructorsList] = useState<{ id: string; name: string; email: string }[]>([
@@ -70,8 +126,9 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
     if (course) {
       setTitle(course.title || "");
       setTrack(course.track || "Full Stack");
+      setSubTrack(course.subTrack || "");
       setLevel(course.level || "Beginner");
-      setPrice(course.price || 0);
+      setPrice(typeof course.price === "number" ? course.price : 0);
       setStatus(course.status || "Published");
       setThumbnail(course.thumbnail || "");
       setSummary(course.summary || "");
@@ -84,6 +141,110 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
       setFeedback(null);
     }
   }, [course]);
+
+  // Auto-Save Draft State
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
+  const [draftPayload, setDraftPayload] = useState<any>(null);
+
+  // Check for saved draft on course load
+  useEffect(() => {
+    if (course?.id) {
+      try {
+        const draftKey = `jks_course_draft_${course.id}`;
+        const raw = localStorage.getItem(draftKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.savedAt) {
+            setDraftPayload(parsed);
+            setShowDraftBanner(true);
+            setDraftSavedAt(
+              new Date(parsed.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            );
+          }
+        }
+      } catch {}
+    }
+  }, [course?.id]);
+
+  const handleRestoreDraft = () => {
+    if (!draftPayload) return;
+    if (draftPayload.title !== undefined) setTitle(draftPayload.title);
+    if (draftPayload.track !== undefined) setTrack(draftPayload.track);
+    if (draftPayload.subTrack !== undefined) setSubTrack(draftPayload.subTrack);
+    if (draftPayload.customTrack !== undefined) setCustomTrack(draftPayload.customTrack);
+    if (draftPayload.level !== undefined) setLevel(draftPayload.level);
+    if (draftPayload.price !== undefined) setPrice(draftPayload.price);
+    if (draftPayload.status !== undefined) setStatus(draftPayload.status);
+    if (draftPayload.thumbnail !== undefined) setThumbnail(draftPayload.thumbnail);
+    if (draftPayload.summary !== undefined) setSummary(draftPayload.summary);
+    if (draftPayload.sections !== undefined) setSections(draftPayload.sections);
+    if (draftPayload.selectedInstructorId !== undefined) setSelectedInstructorId(draftPayload.selectedInstructorId);
+    setShowDraftBanner(false);
+  };
+
+  const handleDiscardDraft = () => {
+    if (course?.id) {
+      try {
+        localStorage.removeItem(`jks_course_draft_${course.id}`);
+      } catch {}
+    }
+    setShowDraftBanner(false);
+    setDraftSavedAt(null);
+    setDraftPayload(null);
+  };
+
+  // Debounced auto-save draft effect
+  useEffect(() => {
+    if (!isOpen || !course?.id || !title.trim()) return;
+
+    setIsDraftSaving(true);
+    const timer = setTimeout(() => {
+      try {
+        const draftKey = `jks_course_draft_${course.id}`;
+        const now = Date.now();
+        const payload = {
+          title,
+          track,
+          subTrack,
+          customTrack,
+          level,
+          price,
+          status,
+          thumbnail,
+          summary,
+          sections,
+          selectedInstructorId,
+          savedAt: now,
+        };
+        localStorage.setItem(draftKey, JSON.stringify(payload));
+        setIsDraftSaving(false);
+        setDraftSavedAt(
+          new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+        );
+      } catch (err) {
+        console.warn("Failed to auto-save course draft:", err);
+        setIsDraftSaving(false);
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [
+    isOpen,
+    course?.id,
+    title,
+    track,
+    subTrack,
+    customTrack,
+    level,
+    price,
+    status,
+    thumbnail,
+    summary,
+    sections,
+    selectedInstructorId,
+  ]);
 
   if (!isOpen || !course) return null;
 
@@ -252,8 +413,9 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
       ...course,
       title: title.trim(),
       track: effectiveTrack as Track,
+      subTrack: subTrack.trim() || undefined,
       level,
-      price: Number(price) || 0,
+      price: typeof price === "number" && !isNaN(price) && price >= 0 ? price : 0,
       status,
       thumbnail: thumbnail.trim(),
       summary: summary.trim(),
@@ -264,6 +426,12 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
 
     try {
       const saved = await saveCourseAsync(updatedCourse);
+      try {
+        localStorage.removeItem(`jks_course_draft_${course.id}`);
+      } catch {}
+      setDraftSavedAt(null);
+      setShowDraftBanner(false);
+      setDraftPayload(null);
       setFeedback({
         type: "success",
         message: "Course curriculum and video lectures successfully saved! Changes are now live for all enrolled students.",
@@ -289,13 +457,22 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4 bg-slate-50/50 dark:bg-surface-elevated/40">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
                 Edit Course &amp; Video Lectures
               </h2>
               <span className="rounded-md bg-blue-100 dark:bg-blue-950/60 px-2 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-400">
                 /{course.slug}
               </span>
+              {isDraftSaving ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
+                  <Loader2 className="h-3 w-3 animate-spin text-amber-600" /> Auto-saving draft...
+                </span>
+              ) : draftSavedAt ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                  <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Auto-saved draft ({draftSavedAt})
+                </span>
+              ) : null}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Add new video lectures or modify curriculum. Changes immediately propagate to student dashboards.
@@ -309,6 +486,35 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
             <X className="h-5 w-5" />
           </button>
         </div>
+
+        {/* Draft Recovery Banner */}
+        {showDraftBanner && (
+          <div className="flex items-center justify-between gap-3 bg-amber-50 dark:bg-amber-950/60 border-b border-amber-200 dark:border-amber-800 px-5 py-2.5 text-xs text-amber-900 dark:text-amber-200">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+              <span>
+                Found an uncommitted auto-saved draft for this course{draftSavedAt ? ` from ${draftSavedAt}` : ""}.
+              </span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleRestoreDraft}
+                className="font-bold underline hover:no-underline text-amber-900 dark:text-amber-200 cursor-pointer"
+              >
+                Restore Draft
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={handleDiscardDraft}
+                className="text-amber-700 dark:text-amber-400 hover:text-amber-900 cursor-pointer"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tab Selector */}
         <div className="flex border-b border-slate-100 dark:border-slate-800 px-5 bg-white dark:bg-surface-secondary">
@@ -374,37 +580,100 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
                 />
               </div>
 
-              {/* Track & Level */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Academic Track & Sub-Track */}
+              <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated/40 p-4 space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Academic Track
-                  </label>
-                  <select
+                  <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Academic Track <span className="text-slate-400 font-normal lowercase">(select preset or edit directly)</span>
+                    </label>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Click preset or edit word below
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                    {["SAP", "Full Stack", "Frontend", ".NET", "DevOps & Cloud", "Data Science"].map((t) => {
+                      const isSelected =
+                        track.toLowerCase().trim() === t.toLowerCase().trim() ||
+                        (t === "SAP" && track.toLowerCase().includes("sap"));
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => {
+                            setTrack(t);
+                            const subList = getSubTracksForTrack(t);
+                            if (subList.length > 0 && !subList.includes(subTrack)) {
+                              setSubTrack(subList[0]);
+                            }
+                          }}
+                          className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-[#2563EB] text-white shadow-xs scale-[1.02]"
+                              : "bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400"
+                          }`}
+                        >
+                          {t}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <input
+                    type="text"
                     value={track}
                     onChange={(e) => setTrack(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                  >
-                    <option value="Full Stack">Full Stack</option>
-                    <option value="Frontend">Frontend</option>
-                    <option value="SAP">SAP</option>
-                    <option value=".NET">.NET</option>
-                    <option value="Data Science">Data Science</option>
-                    <option value="DevOps & Cloud">DevOps &amp; Cloud</option>
-                    <option value="Custom">+ Custom Track</option>
-                  </select>
-
-                  {track === "Custom" && (
-                    <input
-                      type="text"
-                      placeholder="Type custom academic track name..."
-                      value={customTrack}
-                      onChange={(e) => setCustomTrack(e.target.value)}
-                      className="mt-2 w-full rounded-xl border border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/20 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
-                    />
-                  )}
+                    placeholder="e.g. SAP, Full Stack, Frontend, DotNet..."
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
+                  />
                 </div>
 
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <span>Sub-Track / Specialization</span>
+                      <span className="rounded bg-blue-100 dark:bg-blue-950/70 text-[#2563EB] dark:text-blue-300 px-1.5 py-0.5 text-[10px] font-bold">
+                        {track || "Track"}
+                      </span>
+                    </label>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Choose specialization or enter custom
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                    {getSubTracksForTrack(track).map((st) => {
+                      const isSelected = subTrack.toLowerCase().trim() === st.toLowerCase().trim();
+                      return (
+                        <button
+                          key={st}
+                          type="button"
+                          onClick={() => setSubTrack(st)}
+                          className={`rounded-lg px-2.5 py-1 text-[11.5px] font-bold transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-emerald-600 text-white shadow-xs scale-[1.02]"
+                              : "bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-emerald-400"
+                          }`}
+                        >
+                          {st}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <input
+                    type="text"
+                    value={subTrack}
+                    onChange={(e) => setSubTrack(e.target.value)}
+                    placeholder="e.g. SAP B1, SAP Ariba, SAP S/4HANA, or custom specialization..."
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Difficulty Level */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Difficulty Level

@@ -27,6 +27,10 @@ import {
   ShieldAlert,
   PauseCircle,
   Trash2,
+  Check,
+  X,
+  Tag,
+  AlertCircle,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
@@ -35,9 +39,14 @@ import {
   fetchAdminStudents,
   updateAdminStudent,
   deleteAdminStudent,
+  fetchPendingEnrollments,
+  approveEnrollment,
+  rejectEnrollment,
   type AdminStudentRecord,
+  type PendingEnrollmentItem,
 } from "@/lib/data/students-api";
 import { getExactStudentCourseProgress } from "@/lib/data/enrollments-api";
+import { apiFetch } from "@/lib/api/base-url";
 import { MessageStudentModal } from "@/components/admin/message-student-modal";
 import { EditStudentModal } from "@/components/admin/edit-student-modal";
 import { motion } from "framer-motion";
@@ -104,7 +113,7 @@ export default function AdminStudentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterTab, setFilterTab] = useState<"All" | "Enrolled" | "NoCourses">("All");
+  const [filterTab, setFilterTab] = useState<"All" | "Pending" | "Enrolled" | "NoCourses">("All");
   const [courseFilter, setCourseFilter] = useState<string>("ALL");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [editingStudent, setEditingStudent] = useState<AdminStudentRecord | null>(null);
@@ -118,9 +127,109 @@ export default function AdminStudentsPage() {
     enrolledCourses?: string[];
   } | null>(null);
 
+  // Pending Enrollments State
+  const [pendingEnrollments, setPendingEnrollments] = useState<PendingEnrollmentItem[]>([]);
+  const [isLoadingPending, setIsLoadingPending] = useState(false);
+  const [rejectModalItem, setRejectModalItem] = useState<PendingEnrollmentItem | null>(null);
+  const [rejectionReasonInput, setRejectionReasonInput] = useState("");
+  const [isActionInProgress, setIsActionInProgress] = useState<string | null>(null);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const loadPending = useCallback(async () => {
+    setIsLoadingPending(true);
+    try {
+      let list: PendingEnrollmentItem[] = [];
+      if (typeof fetchPendingEnrollments === "function") {
+        list = await fetchPendingEnrollments();
+      } else {
+        const res = await apiFetch("/admin/enrollments/pending", {
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) list = data;
+        }
+      }
+      setPendingEnrollments(Array.isArray(list) ? list : []);
+    } catch (err) {
+      console.error("Failed to load pending enrollments:", err);
+      setPendingEnrollments([]);
+    } finally {
+      setIsLoadingPending(false);
+    }
+  }, []);
+
+  const handleApprove = async (item: PendingEnrollmentItem) => {
+    setIsActionInProgress(item.id);
+    try {
+      let res: { success: boolean; data?: any; error?: string };
+      if (typeof approveEnrollment === "function") {
+        res = await approveEnrollment(item.id);
+      } else {
+        const response = await apiFetch(`/admin/enrollments/${encodeURIComponent(item.id)}/approve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (response.ok) {
+          res = { success: true, data: await response.json() };
+        } else {
+          const err = await response.json().catch(() => ({}));
+          res = { success: false, error: err.message || "Failed to approve enrollment." };
+        }
+      }
+
+      if (res.success) {
+        showToast(`Enrollment approved for ${item.studentName}! Course access is now active.`);
+        await Promise.all([loadPending(), loadStudents(false)]);
+      } else {
+        showToast(res.error || "Failed to approve enrollment.");
+      }
+    } catch (err: any) {
+      showToast(err.message || "Failed to approve enrollment.");
+    } finally {
+      setIsActionInProgress(null);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectModalItem) return;
+    setIsActionInProgress(rejectModalItem.id);
+    try {
+      let res: { success: boolean; data?: any; error?: string };
+      if (typeof rejectEnrollment === "function") {
+        res = await rejectEnrollment(rejectModalItem.id, rejectionReasonInput.trim() || undefined);
+      } else {
+        const response = await apiFetch(`/admin/enrollments/${encodeURIComponent(rejectModalItem.id)}/reject`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason: rejectionReasonInput.trim() || undefined }),
+        });
+        if (response.ok) {
+          res = { success: true, data: await response.json() };
+        } else {
+          const err = await response.json().catch(() => ({}));
+          res = { success: false, error: err.message || "Failed to reject enrollment." };
+        }
+      }
+
+      if (res.success) {
+        showToast(`Enrollment request for ${rejectModalItem.studentName} was rejected.`);
+        setRejectModalItem(null);
+        setRejectionReasonInput("");
+        await Promise.all([loadPending(), loadStudents(false)]);
+      } else {
+        showToast(res.error || "Failed to reject enrollment.");
+      }
+    } catch (err: any) {
+      showToast(err.message || "Failed to reject enrollment.");
+    } finally {
+      setIsActionInProgress(null);
+    }
   };
 
   const handleToggleHold = async (s: AdminStudentRecord) => {
@@ -213,9 +322,19 @@ export default function AdminStudentsPage() {
 
   useEffect(() => {
     loadStudents(false);
+    loadPending();
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam?.toLowerCase() === "pending") {
+        setFilterTab("Pending");
+      }
+    }
 
     const handleProgressChange = () => {
       loadStudents(false);
+      loadPending();
     };
 
     window.addEventListener("jks_video_progress_changed", handleProgressChange);
@@ -224,7 +343,7 @@ export default function AdminStudentsPage() {
       window.removeEventListener("jks_video_progress_changed", handleProgressChange);
       window.removeEventListener("focus", handleProgressChange);
     };
-  }, [loadStudents]);
+  }, [loadStudents, loadPending]);
 
   // Derived Metrics from live data
   const totalRegistered = students.length;
@@ -292,6 +411,26 @@ export default function AdminStudentsPage() {
 
     return list;
   }, [students, filterTab, courseFilter, searchQuery]);
+
+  // Filtered Pending Enrollments
+  const filteredPending = useMemo(() => {
+    let list = pendingEnrollments;
+    if (courseFilter !== "ALL") {
+      list = list.filter((p) => (p.courseSlug || p.courseId || p.courseTitle || "").toLowerCase() === courseFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.studentName.toLowerCase().includes(q) ||
+          p.studentEmail.toLowerCase().includes(q) ||
+          (p.studentPhone && p.studentPhone.toLowerCase().includes(q)) ||
+          p.courseTitle.toLowerCase().includes(q) ||
+          (p.couponCode && p.couponCode.toLowerCase().includes(q))
+      );
+    }
+    return list;
+  }, [pendingEnrollments, courseFilter, searchQuery]);
 
   // Dynamic CSV Exporter
   const handleExportCSV = () => {
@@ -368,8 +507,8 @@ export default function AdminStudentsPage() {
 
         {/* Live Metric KPI Cards (with Skeleton UI Support) */}
         {isLoading ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {[1, 2, 3].map((n) => (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((n) => (
               <div
                 key={n}
                 className="rounded-[20px] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-surface-secondary p-5 shadow-sm animate-pulse space-y-3"
@@ -384,7 +523,7 @@ export default function AdminStudentsPage() {
             ))}
           </div>
         ) : (
-          <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <TiltCard>
               <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
                 <div className="flex items-center justify-between">
@@ -396,6 +535,30 @@ export default function AdminStudentsPage() {
                 <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{totalRegistered}</div>
                 <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                   <Sparkles className="h-3 w-3" /> Live from API database
+                </div>
+              </div>
+            </TiltCard>
+
+            <TiltCard>
+              <div
+                onClick={() => setFilterTab("Pending")}
+                className={`rounded-[20px] border p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl cursor-pointer transition-all ${
+                  pendingEnrollments.length > 0
+                    ? "border-amber-300 dark:border-amber-700 bg-amber-50/70 dark:bg-amber-950/30 hover:border-amber-400"
+                    : "border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 hover:border-slate-300"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Pending Approvals</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400">
+                    <Clock className={`h-4 w-4 ${pendingEnrollments.length > 0 ? "animate-pulse" : ""}`} />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl font-black text-amber-700 dark:text-amber-400">
+                  {pendingEnrollments.length}
+                </div>
+                <div className="mt-1 text-xs text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
+                  {pendingEnrollments.length > 0 ? "Action required: review requests" : "No pending reviews"}
                 </div>
               </div>
             </TiltCard>
@@ -450,6 +613,23 @@ export default function AdminStudentsPage() {
             <div className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated p-1 shadow-xs overflow-x-auto">
               {[
                 { id: "All", label: `All (${totalRegistered})` },
+                {
+                  id: "Pending",
+                  label: (
+                    <span className="flex items-center gap-1.5">
+                      <span>Pending Approvals</span>
+                      <span
+                        className={`rounded-full px-1.5 py-0.2 text-[10px] font-extrabold ${
+                          pendingEnrollments.length > 0
+                            ? "bg-amber-500 text-white animate-pulse"
+                            : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                        }`}
+                      >
+                        {pendingEnrollments.length}
+                      </span>
+                    </span>
+                  ),
+                },
                 { id: "Enrolled", label: `Enrolled (${enrolledCount})` },
                 { id: "NoCourses", label: `No Courses (${noCoursesCount})` },
               ].map((tab) => (
@@ -503,7 +683,7 @@ export default function AdminStudentsPage() {
                 }}
                 className="self-start rounded-xl px-2.5 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer whitespace-nowrap"
               >
-                Clear filters ({filtered.length})
+                Clear filters ({filterTab === "Pending" ? filteredPending.length : filtered.length})
               </button>
             )}
           </div>
@@ -511,10 +691,13 @@ export default function AdminStudentsPage() {
           <div className="flex items-center gap-2 self-end sm:self-auto">
             <button
               type="button"
-              onClick={() => loadStudents(true)}
+              onClick={() => {
+                loadStudents(true);
+                loadPending();
+              }}
               disabled={isRefreshing}
               className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer disabled:opacity-50"
-              title="Refresh student roster from database"
+              title="Refresh student roster and pending requests from database"
             >
               <RefreshCw
                 className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-[#2563EB] dark:text-blue-400" : ""}`}
@@ -533,8 +716,183 @@ export default function AdminStudentsPage() {
           </div>
         </div>
 
-        {/* Students Table with Skeleton (Skull UI) Loading Animation */}
-        <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
+        {/* Main Content: Pending Approvals View OR Standard Students Roster */}
+        {filterTab === "Pending" ? (
+          <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-amber-500 animate-pulse" />
+                  Course Enrollment Requests Awaiting Admin Approval
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Review applicant details, course selection, and applied coupons before granting active course access.
+                </p>
+              </div>
+              <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 px-3 py-1.5 rounded-xl w-fit">
+                {filteredPending.length} Request{filteredPending.length === 1 ? "" : "s"} Pending
+              </div>
+            </div>
+
+            {isLoadingPending ? (
+              <div className="py-12 text-center text-slate-400 animate-pulse">
+                <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-[#2563EB]" />
+                Loading enrollment approval queue...
+              </div>
+            ) : filteredPending.length === 0 ? (
+              <div className="py-16 text-center text-slate-400 dark:text-slate-500">
+                <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
+                  <div className="h-12 w-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-xs">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-sm mt-1">Queue is all clear</span>
+                  <span className="text-xs text-slate-400">
+                    {searchQuery
+                      ? "No pending enrollment requests match your current search filters."
+                      : "There are currently no course enrollment requests waiting for review. All students are either confirmed or fully processed."}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs min-w-[860px] border-separate border-spacing-y-2">
+                  <thead>
+                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
+                      <th className="pb-3 pr-4 pl-4">Applicant Student</th>
+                      <th className="px-4 pb-3">Course & Timing</th>
+                      <th className="px-4 pb-3">Requested Date</th>
+                      <th className="px-4 pb-3">Coupon & Amount</th>
+                      <th className="px-4 pb-3">Status</th>
+                      <th className="pr-4 pb-3 pl-4 text-right">Admin Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredPending.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="bg-white/95 dark:bg-surface-elevated/70 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl shadow-xs transition-colors hover:bg-slate-50/90 dark:hover:bg-surface-hover"
+                      >
+                        {/* Student Details */}
+                        <td className="py-3.5 pr-4 pl-4 first:rounded-l-2xl">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-950/60 text-xs font-bold text-amber-700 dark:text-amber-400 shadow-xs border border-amber-200/60 dark:border-amber-800/40">
+                              {item.studentName?.slice(0, 2).toUpperCase() || "ST"}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-bold text-slate-900 dark:text-white truncate">
+                                {item.studentName}
+                              </div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 truncate">
+                                <Mail className="h-3 w-3 shrink-0" />
+                                <span>{item.studentEmail}</span>
+                              </div>
+                              {item.studentPhone && item.studentPhone !== "N/A" && (
+                                <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 truncate">
+                                  <Phone className="h-3 w-3 shrink-0" />
+                                  <span>{item.studentPhone}</span>
+                                </div>
+                              )}
+                              {item.studentAddress && item.studentAddress !== "Online Enrollment" && (
+                                <div className="text-[10px] text-slate-400 truncate max-w-[200px]">
+                                  {item.studentAddress}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Course & Timing */}
+                        <td className="px-4 py-3.5">
+                          <div className="font-bold text-slate-900 dark:text-white max-w-[220px]">
+                            {item.courseTitle}
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            Mode: <span className="font-medium text-slate-700 dark:text-slate-300">{item.paymentMode || "Online Application"}</span>
+                          </div>
+                        </td>
+
+                        {/* Date */}
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <div className="font-semibold text-slate-700 dark:text-slate-300">
+                            {new Date(item.enrolledAt).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            {new Date(item.enrolledAt).toLocaleTimeString("en-IN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                        </td>
+
+                        {/* Coupon & Amount */}
+                        <td className="px-4 py-3.5">
+                          <div className="space-y-1">
+                            {item.couponCode ? (
+                              <div className="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded-md border border-purple-200 dark:border-purple-800/60">
+                                <Tag className="h-2.5 w-2.5" />
+                                {item.couponCode}
+                                {item.discountAmount ? ` (-₹${item.discountAmount.toLocaleString("en-IN")})` : ""}
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-400 block">No coupon applied</span>
+                            )}
+                            <div className="font-bold text-slate-900 dark:text-white text-xs">
+                              Payable: ₹{(item.finalAmount ?? 0).toLocaleString("en-IN")}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100/90 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 shadow-xs">
+                            <Clock className="h-3 w-3 animate-pulse text-amber-600" />
+                            Pending Approval
+                          </span>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="pr-4 py-3.5 pl-4 text-right last:rounded-r-2xl whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              disabled={isActionInProgress === item.id}
+                              onClick={() => handleApprove(item)}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs hover:shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50"
+                              title="Approve student enrollment and release course access"
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                              <span>{isActionInProgress === item.id ? "Approving..." : "Approve"}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={isActionInProgress === item.id}
+                              onClick={() => {
+                                setRejectModalItem(item);
+                                setRejectionReasonInput("");
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-all cursor-pointer disabled:opacity-50"
+                              title="Reject student enrollment request"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                              <span>Reject</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Students Table with Skeleton (Skull UI) Loading Animation */
+          <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs min-w-[760px] border-separate border-spacing-y-1.5">
               <thead>
@@ -819,6 +1177,7 @@ export default function AdminStudentsPage() {
             </table>
           </div>
         </div>
+        )}
       </div>
 
       {/* DIRECT MESSAGE STUDENT MODAL */}
@@ -841,6 +1200,72 @@ export default function AdminStudentsPage() {
           showToast(`Student details for "${updated.name}" updated successfully.`);
         }}
       />
+
+      {/* REJECT ENROLLMENT MODAL */}
+      {rejectModalItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="relative w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-rose-500" />
+                Reject Course Enrollment
+              </h3>
+              <button
+                type="button"
+                onClick={() => setRejectModalItem(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="rounded-xl bg-slate-50 dark:bg-surface-elevated p-3 text-xs space-y-1">
+              <div className="font-semibold text-slate-800 dark:text-white">
+                Student: <span className="font-normal">{rejectModalItem.studentName} ({rejectModalItem.studentEmail})</span>
+              </div>
+              <div className="font-semibold text-slate-800 dark:text-white">
+                Course: <span className="font-normal">{rejectModalItem.courseTitle}</span>
+              </div>
+              {rejectModalItem.couponCode && (
+                <div className="font-semibold text-slate-800 dark:text-white">
+                  Coupon: <span className="font-mono text-purple-600">{rejectModalItem.couponCode}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Reason for rejection (will be shown to the student in their dashboard):
+              </label>
+              <textarea
+                rows={3}
+                value={rejectionReasonInput}
+                onChange={(e) => setRejectionReasonInput(e.target.value)}
+                placeholder="e.g., Incomplete fee clearance, invalid enrollment details, or duplicate application..."
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-3 text-xs text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-rose-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setRejectModalItem(null)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-hover rounded-xl cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isActionInProgress === rejectModalItem.id}
+                onClick={handleReject}
+                className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {isActionInProgress === rejectModalItem.id ? "Rejecting..." : "Confirm Rejection"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -107,7 +107,7 @@ export function transformBackendCourse(bc: BackendCourse): Course {
     track,
     level: (bc.level as any) || "Intermediate",
     durationWeeks: bc.durationWeeks || (track === "Frontend" ? 10 : track === "SAP" ? 12 : 16),
-    price: bc.priceCents ? Math.round(bc.priceCents / 100) : 24999,
+    price: typeof bc.priceCents === "number" ? Math.round(bc.priceCents / 100) : (typeof (bc as any).price === "number" ? (bc as any).price : 0),
     rating: typeof bc.rating === "number" ? bc.rating : 4.9,
     studentsEnrolled: typeof bc.studentsEnrolled === "number" ? bc.studentsEnrolled : 0,
     summary: bc.summary || "",

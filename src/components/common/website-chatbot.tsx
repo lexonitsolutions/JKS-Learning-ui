@@ -106,6 +106,7 @@ const INITIAL_BOT_MESSAGES: ChatMessage[] = [
 
 export function WebsiteChatbot() {
   const pathname = usePathname();
+  const isStudentWorkspace = pathname?.startsWith("/dashboard");
   const [isOpen, setIsOpen] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
   const [showGuidanceTooltip, setShowGuidanceTooltip] = useState(true);
@@ -126,14 +127,13 @@ export function WebsiteChatbot() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Determine if current page is an allowed marketing/public page where chatbot is helpful
+  // Determine if current page is an allowed page where chatbot is helpful
   const isAllowedPage = useMemo(() => {
     if (!pathname) return false;
-    // Disallow all admin, instructor, and dashboard workspaces
+    // Disallow admin and instructor workspaces
     if (
       pathname.startsWith("/admin") ||
-      pathname.startsWith("/instructor") ||
-      pathname.startsWith("/dashboard")
+      pathname.startsWith("/instructor")
     ) {
       return false;
     }
@@ -145,6 +145,10 @@ export function WebsiteChatbot() {
       pathname.startsWith("/register-course")
     ) {
       return false;
+    }
+    // Allowed in entire student workspace
+    if (pathname.startsWith("/dashboard")) {
+      return true;
     }
     // Allowed public pages
     return (
@@ -342,10 +346,12 @@ export function WebsiteChatbot() {
               </div>
               <div className="text-left">
                 <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1">
-                  Need Course Guidance?
+                  {isStudentWorkspace ? "Need Study Guidance?" : "Need Course Guidance?"}
                   <Sparkles className="h-3 w-3 text-amber-500" />
                 </div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Admissions Advisor Online</div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                  {isStudentWorkspace ? "AI Learning Tutor Online" : "Admissions Advisor Online"}
+                </div>
               </div>
             </motion.div>
           )}
@@ -431,14 +437,14 @@ export function WebsiteChatbot() {
 
                   <div className="min-w-0">
                     <h3 className="text-xs font-bold tracking-tight text-white truncate">
-                      JKS AI Career Advisor
+                      {isStudentWorkspace ? "JKS AI Learning Assistant" : "JKS AI Career Advisor"}
                     </h3>
                     <div className="flex items-center gap-1.5 text-[9.5px] text-emerald-400 font-medium">
                       <span className="relative flex h-1.5 w-1.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                       </span>
-                      <span>Admissions Advisor Online</span>
+                      <span>{isStudentWorkspace ? "AI Tutor & Support Online" : "Admissions Advisor Online"}</span>
                     </div>
                   </div>
                 </div>
@@ -653,7 +659,11 @@ export function WebsiteChatbot() {
 
                 <input
                   type="text"
-                  placeholder="Ask about syllabus, fees, scholarships..."
+                  placeholder={
+                    isStudentWorkspace
+                      ? "Ask questions about lessons, tasks, or code..."
+                      : "Ask about syllabus, fees, scholarships..."
+                  }
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-input-bg px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-surface-elevated focus:ring-1 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-400 font-medium"

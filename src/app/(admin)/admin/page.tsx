@@ -20,7 +20,12 @@ import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { RevenueChart, type DataPoint } from "@/components/admin/revenue-chart";
 import { Reveal } from "@/lib/motion/reveal";
 import { TiltCard } from "@/components/interactions/tilt-card";
-import { fetchAdminStudents, type AdminStudentRecord } from "@/lib/data/students-api";
+import {
+  fetchAdminStudents,
+  fetchPendingEnrollments,
+  type AdminStudentRecord,
+  type PendingEnrollmentItem,
+} from "@/lib/data/students-api";
 import { fetchInvoicesFromApi, type Invoice } from "@/lib/data/invoices-store";
 import { apiFetch } from "@/lib/api/base-url";
 import { useAllCourses } from "@/lib/data/courses-store";
@@ -41,6 +46,7 @@ export default function AdminDashboardPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [students, setStudents] = useState<AdminStudentRecord[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [pendingEnrollments, setPendingEnrollments] = useState<PendingEnrollmentItem[]>([]);
   const [summary, setSummary] = useState<PlatformSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -50,10 +56,12 @@ export default function AdminDashboardPage() {
     else setIsLoading(true);
 
     try {
-      const [studentsData, invoicesData] = await Promise.all([
+      const [studentsData, invoicesData, pendingData] = await Promise.all([
         fetchAdminStudents(),
         fetchInvoicesFromApi(),
+        fetchPendingEnrollments().catch(() => []),
       ]);
+      setPendingEnrollments(Array.isArray(pendingData) ? pendingData : []);
 
       // Enrich progress from live localStorage tracking if present
       const enrichedStudents = (studentsData || []).map((student) => {
@@ -296,6 +304,37 @@ export default function AdminDashboardPage() {
             <span>{isRefreshing ? "Syncing DB..." : "Refresh Data"}</span>
           </button>
         </div>
+
+        {/* Pending Approvals Alert Banner */}
+        {pendingEnrollments.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 rounded-[20px] border border-amber-300/80 dark:border-amber-700/80 bg-gradient-to-r from-amber-50/90 via-orange-50/80 to-amber-50/90 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-amber-950/40 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl transition-all">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-xs">
+                <Clock className="h-5 w-5 animate-pulse" />
+              </div>
+              <div>
+                <div className="font-extrabold text-amber-900 dark:text-amber-200 text-sm sm:text-base flex items-center gap-2">
+                  <span>Course Approvals Awaiting Review</span>
+                  <span className="rounded-full bg-amber-500 text-white text-[11px] px-2 py-0.5 font-black animate-pulse">
+                    {pendingEnrollments.length} Pending
+                  </span>
+                </div>
+                <p className="text-xs text-amber-800/80 dark:text-amber-300/80 mt-0.5">
+                  {pendingEnrollments.length === 1
+                    ? "1 student application is waiting for administrator approval."
+                    : `${pendingEnrollments.length} student applications are waiting for administrator approval.`} Approved students automatically receive active course access.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/admin/students?tab=pending"
+              className="inline-flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white px-4 py-2.5 text-xs font-bold shadow-xs transition-all whitespace-nowrap cursor-pointer shrink-0"
+            >
+              <span>Review & Approve Queue</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        )}
 
         {/* 4 Real KPI Cards */}
         <Reveal variant="stagger" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
