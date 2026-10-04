@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import {
   X,
   CheckCircle2,
@@ -15,6 +15,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { type IndividualTask, type TaskQuestion } from "@/lib/data/tasks-api";
+import { evaluateAssessmentSubmission } from "@/lib/data/assessment-scoring";
 
 interface ViewSubmissionModalProps {
   isOpen: boolean;
@@ -34,7 +35,12 @@ export function ViewSubmissionModal({
   const submission = task.submission;
   const answers = submission?.answers || {};
   const questions: TaskQuestion[] = task.questions || [];
-  const score = submission?.instructorScore ?? submission?.score;
+
+  const evaluationResult = useMemo(() => {
+    return evaluateAssessmentSubmission(questions, answers, submission?.uploadedFileName);
+  }, [questions, answers, submission?.uploadedFileName]);
+
+  const score = submission?.instructorScore ?? submission?.score ?? evaluationResult.score;
   const feedback = submission?.instructorFeedback ?? submission?.feedback;
 
   const isCompleted =
@@ -42,8 +48,9 @@ export function ViewSubmissionModal({
     (task.status === "REVIEWED" && (score ?? 0) >= 60);
   const isFailed =
     task.status === "FAILED" ||
-    (task.status === "REVIEWED" && (score ?? 100) < 50);
-  const isSubmitted = task.status === "SUBMITTED";
+    task.status === "Failed" ||
+    (score !== undefined && score < 50 && task.status !== "SUBMITTED");
+  const isSubmitted = task.status === "SUBMITTED" || task.status === "Submitted";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs">
@@ -106,7 +113,15 @@ export function ViewSubmissionModal({
             )}
 
             {score !== undefined && (
-              <div className="rounded-xl bg-slate-100 dark:bg-surface-elevated px-3 py-1 text-xs font-black text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 flex items-center gap-1">
+              <div
+                className={`rounded-xl px-3 py-1 text-xs font-black border flex items-center gap-1 ${
+                  isFailed || score < 50
+                    ? "bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300"
+                    : score >= 70
+                    ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
+                    : "bg-slate-100 dark:bg-surface-elevated border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                }`}
+              >
                 <Award className="h-3.5 w-3.5 text-amber-500" />
                 <span>{score}/100</span>
               </div>
@@ -114,15 +129,43 @@ export function ViewSubmissionModal({
           </div>
         </div>
 
+        {/* Evaluation Summary Strip */}
+        {questions.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-surface-elevated/70 p-3 text-xs">
+            <span className="font-bold text-slate-700 dark:text-slate-300">Performance Breakdown:</span>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-[11px] font-bold">
+                <CheckCircle2 className="h-3 w-3" /> {evaluationResult.correctCount} Correct
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 dark:bg-rose-950/60 border border-rose-300 text-rose-800 dark:text-rose-300 px-2 py-0.5 text-[11px] font-bold">
+                <XCircle className="h-3 w-3" /> {evaluationResult.incorrectCount} Incorrect
+              </span>
+              <span className="text-slate-500 font-semibold text-[11px]">
+                Marks: {evaluationResult.totalEarned} / {evaluationResult.totalMax} pts
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Admin Feedback Banner */}
         {feedback && (
-          <div className="rounded-2xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/70 dark:bg-blue-950/30 p-4 space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 uppercase tracking-wide">
+          <div
+            className={`rounded-2xl border p-4 space-y-1 ${
+              isFailed
+                ? "border-rose-200 dark:border-rose-900/50 bg-rose-50/60 dark:bg-rose-950/20"
+                : "border-blue-200 dark:border-blue-900/50 bg-blue-50/70 dark:bg-blue-950/30"
+            }`}
+          >
+            <div
+              className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide ${
+                isFailed ? "text-rose-700 dark:text-rose-300" : "text-[#2563EB] dark:text-blue-400"
+              }`}
+            >
               <ShieldCheck className="h-4 w-4" />
               <span>Instructor Evaluation &amp; Feedback</span>
             </div>
             <p className="text-xs text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed pl-5.5 font-medium">
-              "{feedback}"
+              &quot;{feedback}&quot;
             </p>
           </div>
         )}
@@ -137,7 +180,7 @@ export function ViewSubmissionModal({
                   Assessment Did Not Pass Passing Criteria
                 </div>
                 <div className="text-[11px] text-rose-700 dark:text-rose-300">
-                  You are eligible to review the instructor's feedback and submit a new attempt.
+                  You are eligible to review the instructor feedback and submit a new attempt.
                 </div>
               </div>
             </div>
@@ -161,37 +204,21 @@ export function ViewSubmissionModal({
         <div className="space-y-4">
           <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
             <span>Submitted Responses ({questions.length > 0 ? questions.length : "Task Submission"})</span>
-            <span>Total Marks: {questions.reduce((acc, q) => acc + (q.maxPoints || 10), 0) || 100} Pts</span>
+            <span>Total Marks: {evaluationResult.totalMax || 100} Pts</span>
           </div>
 
-          {questions.length > 0 ? (
-            questions.map((q, idx) => {
-              const studentAnswer =
-                answers[q.id] !== undefined
-                  ? answers[q.id]
-                  : answers[idx] !== undefined
-                  ? answers[idx]
-                  : answers[String(idx)];
-
-              const isMcq = q.type === "MCQ";
-              const isSelectedOptionNumber = typeof studentAnswer === "number";
-              const selectedOptionText =
-                isMcq && isSelectedOptionNumber && q.choices
-                  ? q.choices[studentAnswer]
-                  : typeof studentAnswer === "string"
-                  ? studentAnswer
-                  : "";
-
-              const isCorrectMcq =
-                isMcq &&
-                typeof q.correctAnswer === "number" &&
-                isSelectedOptionNumber &&
-                studentAnswer === q.correctAnswer;
+          {evaluationResult.evaluations.length > 0 ? (
+            evaluationResult.evaluations.map((ev, idx) => {
+              const q = questions[idx] || ({} as TaskQuestion);
 
               return (
                 <div
-                  key={q.id || idx}
-                  className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-surface-elevated/40 p-4 space-y-3"
+                  key={ev.id || idx}
+                  className={`rounded-2xl border p-4 space-y-3 transition-colors ${
+                    ev.isCorrect
+                      ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/20 dark:bg-emerald-950/10"
+                      : "border-rose-200 dark:border-rose-900/50 bg-rose-50/20 dark:bg-rose-950/10"
+                  }`}
                 >
                   {/* Question Header */}
                   <div className="flex items-center justify-between gap-2">
@@ -203,55 +230,57 @@ export function ViewSubmissionModal({
                         Question #{idx + 1}
                       </span>
                       <span className="rounded-lg bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                        {q.type.replace("_", " ")}
+                        {ev.type.replace("_", " ")}
                       </span>
                     </div>
 
-                    <span className="text-xs font-semibold text-slate-500">
-                      {q.maxPoints || (q.type === "LONG_ANSWER" ? 20 : 10)} pts
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {ev.isCorrect ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                          <CheckCircle2 className="h-3 w-3" /> Correct (+{ev.earnedPoints} pts)
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 dark:bg-rose-950/60 border border-rose-300 text-rose-800 dark:text-rose-300 px-2 py-0.5 text-[10px] font-bold">
+                          <XCircle className="h-3 w-3" /> Incorrect (0 pts)
+                        </span>
+                      )}
+                      <span className="text-xs font-semibold text-slate-500">
+                        {ev.maxPoints} pts
+                      </span>
+                    </div>
                   </div>
 
                   {/* Question Prompt */}
                   <p className="text-xs font-semibold text-slate-900 dark:text-white leading-relaxed">
-                    {q.prompt}
+                    {ev.prompt}
                   </p>
 
                   {/* Student Answer Box */}
                   <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-secondary p-3 space-y-1.5">
                     <div className="flex items-center justify-between text-[10.5px] font-bold text-slate-400 uppercase tracking-wider">
-                      <span>Your Submitted Response</span>
-                      {isMcq && typeof q.correctAnswer === "number" && (
-                        <span>
-                          {isCorrectMcq ? (
-                            <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" /> Correct
-                            </span>
-                          ) : (
-                            <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                              <XCircle className="h-3 w-3" /> Incorrect
-                            </span>
-                          )}
-                        </span>
-                      )}
+                      <span>Your Submitted Response:</span>
                     </div>
 
-                    {isMcq ? (
+                    {ev.type === "MCQ" && q.choices ? (
                       <div className="space-y-1.5 pt-1">
-                        {(q.choices || []).map((choice, cIdx) => {
-                          const isSelected = studentAnswer === cIdx || studentAnswer === choice;
-                          const isCorrect = typeof q.correctAnswer === "number" && q.correctAnswer === cIdx;
+                        {q.choices.map((choice, cIdx) => {
+                          const isSelected =
+                            ev.studentChoiceIdx === cIdx ||
+                            ev.studentAnswerText.trim().toLowerCase() === choice.trim().toLowerCase();
+                          const isCorrect =
+                            ev.correctChoiceIdx === cIdx ||
+                            ev.correctAnswerText.trim().toLowerCase() === choice.trim().toLowerCase();
 
                           return (
                             <div
                               key={cIdx}
-                              className={`flex items-center justify-between rounded-lg p-2 text-xs font-medium border ${
+                              className={`flex items-center justify-between rounded-lg p-2.5 text-xs font-medium border transition-colors ${
                                 isSelected && isCorrect
-                                  ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300"
+                                  ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-400 text-emerald-900 dark:text-emerald-200 font-bold"
                                   : isSelected && !isCorrect
-                                  ? "bg-rose-50 dark:bg-rose-950/40 border-rose-300 text-rose-800 dark:text-rose-300"
+                                  ? "bg-rose-50 dark:bg-rose-950/50 border-rose-400 text-rose-900 dark:text-rose-200 font-bold"
                                   : isCorrect
-                                  ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 text-emerald-700 dark:text-emerald-400"
+                                  ? "bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-300 text-emerald-800 dark:text-emerald-300 font-semibold"
                                   : "border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-300"
                               }`}
                             >
@@ -261,38 +290,45 @@ export function ViewSubmissionModal({
                                 </span>
                                 <span>{choice}</span>
                               </div>
-                              {isSelected && (
-                                <span className="text-[10px] font-bold uppercase tracking-wider">
-                                  Your Choice
+
+                              {isSelected && isCorrect && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300">
+                                  Your Choice (Correct ✓)
+                                </span>
+                              )}
+
+                              {isSelected && !isCorrect && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 border border-rose-300">
+                                  Your Choice (Incorrect ✗)
+                                </span>
+                              )}
+
+                              {!isSelected && isCorrect && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300">
+                                  Correct Choice ✓
                                 </span>
                               )}
                             </div>
                           );
                         })}
                       </div>
-                    ) : q.type === "FILE_UPLOAD" ? (
+                    ) : ev.type === "FILE_UPLOAD" ? (
                       <div className="flex items-center gap-2 pt-1 text-xs font-semibold text-[#2563EB] dark:text-blue-400">
                         <FileText className="h-4 w-4" />
-                        <span>
-                          {typeof studentAnswer === "string"
-                            ? studentAnswer
-                            : submission?.uploadedFileName || "Uploaded Project Document / Archive"}
-                        </span>
+                        <span>{ev.studentAnswerText}</span>
                       </div>
                     ) : (
-                      <p className="text-xs text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed pt-1">
-                        {typeof studentAnswer === "string" && studentAnswer.trim()
-                          ? studentAnswer
-                          : <span className="text-slate-400 italic">No text response recorded</span>}
+                      <p className="text-xs text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed pt-1 font-medium">
+                        {ev.studentAnswerText}
                       </p>
                     )}
                   </div>
 
-                  {/* Benchmark / Model Reference if available */}
-                  {q.modelAnswer && (
+                  {/* Model Reference if available */}
+                  {(ev.type === "SHORT_ANSWER" || ev.type === "LONG_ANSWER") && q.modelAnswer && (
                     <div className="rounded-xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20 p-2.5 text-[11px] space-y-1">
                       <span className="font-bold text-[#2563EB] dark:text-blue-400 uppercase tracking-wider text-[10px]">
-                        Benchmark / Expected Answer Guidelines
+                        Benchmark / Model Answer Guidelines:
                       </span>
                       <p className="text-blue-950 dark:text-blue-200 whitespace-pre-wrap leading-relaxed">
                         {q.modelAnswer}
@@ -318,41 +354,6 @@ export function ViewSubmissionModal({
               </p>
             </div>
           )}
-        </div>
-
-        {/* Modal Footer */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <div className="text-[11px] text-slate-400">
-            {isFailed
-              ? "Retry available: You can submit another attempt anytime."
-              : isCompleted
-              ? "Completed: This assessment has been officially verified."
-              : "Review in progress: Results will be updated once evaluated."}
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            {isFailed && onRetry && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onRetry(task);
-                }}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-rose-500/20 hover:bg-rose-700 transition-colors cursor-pointer"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                <span>Retry Assessment</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-elevated transition-colors cursor-pointer"
-            >
-              Close
-            </button>
-          </div>
         </div>
       </div>
     </div>

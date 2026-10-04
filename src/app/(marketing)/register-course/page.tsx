@@ -33,6 +33,7 @@ import {
 import { JksLogo } from "@/components/common/jks-logo";
 import { registerCourseOnline, createInvoice, type Invoice } from "@/lib/data/invoices-store";
 import { InvoiceModal } from "@/components/common/invoice-modal";
+import { validateCoupon } from "@/lib/data/enrollments-api";
 
 
 import { useAuth, useUser } from "@clerk/nextjs";
@@ -181,6 +182,11 @@ function CourseRegistrationContent() {
   // Coupon state
   const [couponCode, setCouponCode] = useState("ADMISSION10");
   const [couponApplied, setCouponApplied] = useState(true);
+  const [couponDiscountPercent, setCouponDiscountPercent] = useState<number>(10);
+  const [isFullDiscount, setIsFullDiscount] = useState<boolean>(false);
+  const [couponMessage, setCouponMessage] = useState<string>("");
+  const [couponError, setCouponError] = useState<string>("");
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState<boolean>(false);
 
   const [paymentMode, setPaymentMode] = useState<Invoice["paymentMode"]>("UPI");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -189,23 +195,55 @@ function CourseRegistrationContent() {
   const [enrollError, setEnrollError] = useState<string | null>(null);
 
   // Recalculate discount
-  const finalDiscount = couponApplied ? selectedCourse.discount : 0;
+  const finalDiscount = couponApplied
+    ? isFullDiscount
+      ? selectedCourse.price
+      : Math.round(selectedCourse.price * ((couponDiscountPercent || 10) / 100))
+    : 0;
   const netPayable = Math.max(0, selectedCourse.price - finalDiscount);
   const taxableAmount = +(netPayable / 1.18).toFixed(2);
   const totalTax = +(netPayable - taxableAmount).toFixed(2);
   const cgst = +(totalTax / 2).toFixed(2);
   const sgst = +(totalTax / 2).toFixed(2);
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      couponCode.toUpperCase() === "ADMISSION10" ||
-      couponCode.toUpperCase() === "EARLYBIRD" ||
-      couponCode.toUpperCase() === "JKS10"
-    ) {
-      setCouponApplied(true);
-    } else {
-      alert("Invalid coupon code. Try ADMISSION10 for instant discount.");
+    setCouponError("");
+    setCouponMessage("");
+    const cleaned = couponCode.trim().toUpperCase();
+    if (!cleaned) {
+      setCouponApplied(false);
+      setIsFullDiscount(false);
+      setCouponDiscountPercent(0);
+      return;
+    }
+    setIsValidatingCoupon(true);
+    try {
+      const res = await validateCoupon(cleaned, selectedCourse.slug);
+      if (res.valid) {
+        setCouponApplied(true);
+        const percent = res.discountPercent ?? (res.isFullDiscount ? 100 : 10);
+        setCouponDiscountPercent(percent);
+        setIsFullDiscount(Boolean(res.isFullDiscount));
+        setCouponMessage(
+          res.message ||
+            (res.isFullDiscount
+              ? "100% Instant Scholarship Applied! ₹0 Final Amount — Auto-approves with immediate access."
+              : `${percent}% Discount Applied!`)
+        );
+      } else {
+        setCouponApplied(false);
+        setIsFullDiscount(false);
+        setCouponDiscountPercent(0);
+        setCouponError(res.message || "Invalid coupon code. Try ADMISSION10 or JKS100FREE.");
+      }
+    } catch {
+      setCouponApplied(false);
+      setIsFullDiscount(false);
+      setCouponDiscountPercent(0);
+      setCouponError("Could not validate coupon. Please try again.");
+    } finally {
+      setIsValidatingCoupon(false);
     }
   };
 
@@ -659,32 +697,63 @@ function CourseRegistrationContent() {
             </div>
 
             {/* Coupon Code Input */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated/80 p-4 space-y-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Tag className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" /> Apply Scholarship / Admission Coupon:
+            <div className={`rounded-2xl border p-4 space-y-2.5 transition-all ${
+              isFullDiscount
+                ? "border-emerald-300 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/30"
+                : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated/80"
+            }`}>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Tag className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" /> Apply Scholarship / Admission Coupon:
+                </span>
+                {couponApplied && (
+                  <span className={`text-[11px] font-bold flex items-center gap-1 ${
+                    isFullDiscount ? "text-emerald-700 dark:text-emerald-300" : "text-emerald-600 dark:text-emerald-400"
+                  }`}>
+                    <Check className="h-3.5 w-3.5" /> {isFullDiscount ? "100% Free Scholarship" : `${couponDiscountPercent}% Discount`}
+                  </span>
+                )}
               </label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
-                  placeholder="Enter coupon (e.g. ADMISSION10)"
+                  placeholder="Enter coupon (e.g. ADMISSION10 or JKS100FREE)"
                   className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-text-heading dark:text-white uppercase font-mono outline-none focus:border-primary-blue"
                 />
                 <button
                   type="button"
                   onClick={handleApplyCoupon}
-                  className="rounded-xl bg-primary-fill px-4 py-2 text-xs font-bold text-white hover:bg-blue-600 cursor-pointer"
+                  disabled={isValidatingCoupon}
+                  className="rounded-xl bg-primary-fill px-4 py-2 text-xs font-bold text-white hover:bg-blue-600 cursor-pointer disabled:opacity-50 flex items-center gap-1"
                 >
-                  Apply
+                  {isValidatingCoupon ? (
+                    <>
+                      <span className="h-3.5 w-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                      <span>Validating</span>
+                    </>
+                  ) : (
+                    "Apply"
+                  )}
                 </button>
               </div>
-              {couponApplied && (
-                <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex flex-wrap items-center gap-1.5 pt-0.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                  <span>Coupon <span className="font-mono uppercase font-bold">{couponCode}</span> applied!</span>
-                  <span className="text-emerald-700 dark:text-emerald-300 font-medium">(₹{finalDiscount.toLocaleString("en-IN")} Scholarship Discount)</span>
+
+              {isFullDiscount && (
+                <div className="rounded-xl bg-emerald-100/90 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-700 p-2.5 text-[11px] text-emerald-900 dark:text-emerald-200 font-semibold flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>100% Instant Scholarship Applied! ₹0 Final Amount — Auto-approves with immediate access.</span>
                 </div>
+              )}
+
+              {couponMessage && !isFullDiscount && (
+                <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                  {couponMessage}
+                </div>
+              )}
+
+              {couponError && (
+                <div className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold">{couponError}</div>
               )}
             </div>
 
@@ -739,7 +808,9 @@ function CourseRegistrationContent() {
               </div>
               <div className="flex justify-between border-t-2 border-slate-900 dark:border-slate-700 pt-2.5 font-extrabold text-sm text-text-heading dark:text-white">
                 <span>Total Net Investment (Incl. 18% GST):</span>
-                <span className="font-mono text-primary-blue dark:text-blue-400 text-base">₹{netPayable.toLocaleString("en-IN")}</span>
+                <span className={`font-mono text-base font-black ${isFullDiscount ? "text-emerald-600 dark:text-emerald-400" : "text-primary-blue dark:text-blue-400"}`}>
+                  ₹{netPayable.toLocaleString("en-IN")}
+                </span>
               </div>
             </div>
 
@@ -767,9 +838,19 @@ function CourseRegistrationContent() {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="flex items-center justify-center gap-2 rounded-xl bg-primary-fill px-5 sm:px-8 py-3 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all cursor-pointer disabled:opacity-50"
+                className={`flex items-center justify-center gap-2 rounded-xl px-5 sm:px-8 py-3 text-xs font-bold text-white shadow-md transition-all cursor-pointer disabled:opacity-50 ${
+                  isFullDiscount
+                    ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/25"
+                    : "bg-primary-fill hover:bg-blue-600 shadow-primary-blue/25"
+                }`}
               >
-                <span>{isProcessing ? "Processing..." : "Complete Enrollment"}</span>
+                <span>
+                  {isProcessing
+                    ? "Processing..."
+                    : isFullDiscount
+                    ? "Authorize & Get Instant Access"
+                    : "Authorize / Enroll"}
+                </span>
                 <ArrowRight className="h-4 w-4 shrink-0" />
               </button>
             </div>
@@ -782,19 +863,54 @@ function CourseRegistrationContent() {
         {/* ======================================================== */}
         {step === 4 && generatedInvoice && (
           <div className="space-y-6 rounded-[28px] border border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-surface-secondary p-8 sm:p-12 text-center shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
-            <div className="flex h-20 w-20 mx-auto items-center justify-center rounded-3xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shadow-md ring-2 ring-emerald-200 dark:ring-emerald-800">
-              <CheckCircle2 className="h-10 w-10" />
-            </div>
+            {generatedInvoice?.isAutoApproved || isFullDiscount ? (
+              <>
+                <div className="flex h-20 w-20 mx-auto items-center justify-center rounded-3xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shadow-md ring-2 ring-emerald-200 dark:ring-emerald-800">
+                  <CheckCircle2 className="h-10 w-10" />
+                </div>
 
-            <div className="space-y-2 max-w-lg mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-text-heading dark:text-white">Admission &amp; Tax Invoice Generated! 🎉</h2>
-              <p className="text-xs sm:text-sm text-text-body dark:text-slate-300">
-                Welcome to JKS Learning, <span className="font-bold text-emerald-600 dark:text-emerald-400">{studentInfo.name}</span>! Your enrollment in <span className="text-text-heading dark:text-white font-bold">{selectedCourse.title}</span> has been confirmed.
-              </p>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                Tax Invoice ID: <span className="text-primary-blue dark:text-blue-400 font-bold">{generatedInvoice.invoiceNumber}</span>
-              </div>
-            </div>
+                <div className="space-y-2 max-w-lg mx-auto">
+                  <div className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    <Sparkles className="h-3.5 w-3.5" /> 100% Scholarship · Instant Access Activated
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-text-heading dark:text-white">Admission &amp; Tax Invoice Generated! 🎉</h2>
+                  <p className="text-xs sm:text-sm text-text-body dark:text-slate-300">
+                    Welcome to JKS Learning, <span className="font-bold text-emerald-600 dark:text-emerald-400">{studentInfo.name}</span>! Your enrollment in <span className="text-text-heading dark:text-white font-bold">{selectedCourse.title}</span> has been confirmed using a 100% discount coupon.
+                  </p>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                    Tax Invoice ID: <span className="text-primary-blue dark:text-blue-400 font-bold">{generatedInvoice.invoiceNumber}</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex h-20 w-20 mx-auto items-center justify-center rounded-3xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 shadow-md ring-2 ring-amber-200 dark:ring-amber-800">
+                  <Clock className="h-10 w-10 animate-pulse" />
+                </div>
+
+                <div className="space-y-2 max-w-lg mx-auto">
+                  <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                    <Clock className="h-3.5 w-3.5" /> Pending Admin Approval
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-text-heading dark:text-white">Waiting for Approval 🎉</h2>
+                  <p className="text-xs sm:text-sm text-text-body dark:text-slate-300">
+                    Your enrollment request for <span className="text-text-heading dark:text-white font-bold">{selectedCourse.title}</span> has been submitted and is waiting for admin approval.
+                  </p>
+                  <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 p-3 max-w-md mx-auto text-left text-[11px] text-amber-900 dark:text-amber-200 space-y-1">
+                    <p className="font-bold flex items-center gap-1.5">
+                      <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                      Admissions Administration Notified
+                    </p>
+                    <p className="text-amber-800 dark:text-amber-300 leading-normal">
+                      The administrator has received your enrollment request. The course content remains locked until approved. You will receive an in-app notification once approved.
+                    </p>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                    Application ID: <span className="text-primary-blue dark:text-blue-400 font-bold">{generatedInvoice.invoiceNumber}</span>
+                  </div>
+                </div>
+              </>
+            )}
 
             <div className="flex flex-col sm:flex-row items-center gap-3 justify-center pt-4">
               <button

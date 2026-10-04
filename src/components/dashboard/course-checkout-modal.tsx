@@ -25,7 +25,7 @@ import { registerCourseOnline, type Invoice } from "@/lib/data/invoices-store";
 import { enrollStudentCourse } from "@/lib/data/courses-store";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
-import { getClientSessionEmail } from "@/lib/data/enrollments-api";
+import { getClientSessionEmail, validateCoupon } from "@/lib/data/enrollments-api";
 
 export interface CheckoutCourseItem {
   id: string;
@@ -98,7 +98,11 @@ export function CourseCheckoutModal({
   // Coupon state
   const [couponCode, setCouponCode] = useState("ADMISSION10");
   const [couponApplied, setCouponApplied] = useState(true);
+  const [couponDiscountPercent, setCouponDiscountPercent] = useState<number>(10);
+  const [isFullDiscount, setIsFullDiscount] = useState<boolean>(false);
+  const [couponMessage, setCouponMessage] = useState<string>("");
   const [couponError, setCouponError] = useState("");
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
   // Payment process state
   const [isProcessing, setIsProcessing] = useState(false);
@@ -152,23 +156,61 @@ export function CourseCheckoutModal({
   const effectiveEmail = accountEmail.toLowerCase().trim();
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(effectiveEmail);
 
-  const basePrice = course.price > 0 ? course.price : 29999;
-  const originalPrice = course.originalPrice || Math.round(basePrice * 1.5);
-  const discountAmount = couponApplied ? Math.round(basePrice * 0.1) : 0; // 10% instant scholarship discount
-  const finalPrice = Math.max(0, basePrice - discountAmount);
+  const isFreeCourse = typeof course.price === "number" ? course.price === 0 : false;
+  const basePrice = typeof course.price === "number" && course.price >= 0 ? course.price : 0;
+  const originalPrice = isFreeCourse ? 0 : (course.originalPrice || Math.round(basePrice * 1.5));
+  const discountAmount = isFreeCourse
+    ? 0
+    : couponApplied
+    ? isFullDiscount
+      ? basePrice
+      : Math.round(basePrice * ((couponDiscountPercent || 10) / 100))
+    : 0;
+  const finalPrice = isFreeCourse ? 0 : Math.max(0, basePrice - discountAmount);
   const taxableAmount = +(finalPrice / 1.18).toFixed(2);
   const totalTax = +(finalPrice - taxableAmount).toFixed(2);
   const cgst = +(totalTax / 2).toFixed(2);
   const sgst = +(totalTax / 2).toFixed(2);
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleApplyCoupon = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setCouponError("");
+    setCouponMessage("");
     const cleaned = couponCode.trim().toUpperCase();
-    if (cleaned === "ADMISSION10" || cleaned === "EARLYBIRD" || cleaned === "JKS10" || cleaned === "PRO20") {
-      setCouponApplied(true);
-    } else {
-      setCouponError("Invalid coupon. Try ADMISSION10 for 10% scholarship discount.");
+    if (!cleaned) {
+      setCouponApplied(false);
+      setIsFullDiscount(false);
+      setCouponDiscountPercent(0);
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    try {
+      const result = await validateCoupon(cleaned, course.slug);
+      if (result.valid) {
+        setCouponApplied(true);
+        const percent = result.discountPercent ?? (result.isFullDiscount ? 100 : 10);
+        setCouponDiscountPercent(percent);
+        setIsFullDiscount(Boolean(result.isFullDiscount));
+        setCouponMessage(
+          result.message ||
+            (result.isFullDiscount
+              ? "100% Instant Scholarship Applied! ₹0 Final Amount — Auto-approves with immediate access."
+              : `${percent}% Discount Applied!`)
+        );
+      } else {
+        setCouponApplied(false);
+        setIsFullDiscount(false);
+        setCouponDiscountPercent(0);
+        setCouponError(result.message || "Invalid coupon code. Try ADMISSION10 or JKS100FREE.");
+      }
+    } catch {
+      setCouponApplied(false);
+      setIsFullDiscount(false);
+      setCouponDiscountPercent(0);
+      setCouponError("Could not validate coupon. Please check your connection.");
+    } finally {
+      setIsValidatingCoupon(false);
     }
   };
 
@@ -218,7 +260,9 @@ export function CourseCheckoutModal({
         discount: discountAmount,
         discountCode: couponApplied ? couponCode.toUpperCase() : undefined,
         paymentMode:
-          paymentMode === "Card"
+          isFreeCourse || finalPrice === 0
+            ? "Free Course"
+            : paymentMode === "Card"
             ? "Credit/Debit Card"
             : paymentMode === "NetBanking"
             ? "Net Banking"
@@ -228,8 +272,16 @@ export function CourseCheckoutModal({
         batchTiming: selectedBatch,
       });
 
-      // Synchronize in-app course enrollment
-      enrollStudentCourse(course.slug, effectiveEmail);
+      // Synchronize in-app course enrollment if auto-approved by 100% coupon or free course
+      const isAutoApproved = Boolean(
+        invoice.isAutoApproved ||
+        invoice.enrollmentStatus === "ACTIVE" ||
+        isFreeCourse ||
+        isFullDiscount
+      );
+      if (isAutoApproved) {
+        enrollStudentCourse(course.slug, effectiveEmail);
+      }
 
       // Synchronize student profile details across local storage and broadcast updates
       if (typeof window !== "undefined") {
@@ -275,9 +327,8 @@ export function CourseCheckoutModal({
         setEnrollmentError(errMsg);
         return;
       }
-      console.error("Payment registration fallback:", err);
-      enrollStudentCourse(course.slug, effectiveEmail);
-      setPaymentSuccess(true);
+      console.error("Payment registration error:", err);
+      setEnrollmentError(errMsg);
     } finally {
       setIsProcessing(false);
     }
@@ -467,7 +518,18 @@ export function CourseCheckoutModal({
                   </div>
                 </div>
 
-                {/* Payment Method Selector Grid */}
+                {/* Payment Method Selector Grid / Free Notice */}
+                {isFreeCourse ? (
+                  <div className="rounded-2xl border border-emerald-300 bg-emerald-50/70 p-4 space-y-2 dark:border-emerald-800 dark:bg-emerald-950/30">
+                    <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-xs">
+                      <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>Free Course — No Payment Required</span>
+                    </div>
+                    <p className="text-[11px] text-emerald-700 dark:text-emerald-400 leading-relaxed">
+                      This course is currently offered free of charge (₹0). Click <strong>Confirm Free Enrollment</strong> below to activate immediate, unrestricted access to all course lectures and materials.
+                    </p>
+                  </div>
+                ) : (
                 <div className="space-y-2.5 pt-1">
                   <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider dark:text-white">
                     Choose Payment Gateway Mode
@@ -589,19 +651,26 @@ export function CourseCheckoutModal({
                     )}
                   </div>
                 </div>
+                )}
               </div>
 
               {/* RIGHT COLUMN: Scholarship Coupon & Tax Invoice Summary (5 cols on desktop) */}
               <div className="lg:col-span-5 space-y-4 flex flex-col justify-between">
                 {/* Coupon Code Card */}
-                <div className="rounded-2xl border border-dashed border-blue-300 dark:border-blue-900 bg-blue-50/50 p-4 space-y-2 dark:bg-blue-950/20">
+                <div className={`rounded-2xl border p-4 space-y-2.5 transition-all ${
+                  isFullDiscount
+                    ? "border-emerald-400 bg-emerald-50/70 dark:border-emerald-700 dark:bg-emerald-950/30"
+                    : "border-dashed border-blue-300 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-950/20"
+                }`}>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5 text-xs font-bold text-blue-900 dark:text-blue-300">
                       <Tag className="h-3.5 w-3.5" /> Scholarship Coupon
                     </span>
                     {couponApplied && (
-                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                        <Check className="h-3.5 w-3.5" /> 10% Discount
+                      <span className={`text-[11px] font-bold flex items-center gap-1 ${
+                        isFullDiscount ? "text-emerald-700 dark:text-emerald-300" : "text-emerald-600 dark:text-emerald-400"
+                      }`}>
+                        <Check className="h-3.5 w-3.5" /> {isFullDiscount ? "100% Free Scholarship" : `${couponDiscountPercent}% Discount`}
                       </span>
                     )}
                   </div>
@@ -611,16 +680,38 @@ export function CourseCheckoutModal({
                       type="text"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      placeholder="ADMISSION10"
+                      placeholder="ADMISSION10 or JKS100FREE"
                       className="flex-1 rounded-xl border border-blue-200 bg-white px-3 py-2 text-xs font-bold text-slate-800 uppercase outline-none focus:border-blue-500 dark:border-blue-800 dark:bg-surface-secondary dark:text-white"
                     />
                     <button
                       type="submit"
-                      className="rounded-xl bg-[#2563EB] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
+                      disabled={isValidatingCoupon}
+                      className="rounded-xl bg-[#2563EB] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer disabled:opacity-50 flex items-center gap-1"
                     >
-                      Apply
+                      {isValidatingCoupon ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <span>Validating</span>
+                        </>
+                      ) : (
+                        "Apply"
+                      )}
                     </button>
                   </form>
+
+                  {isFullDiscount && (
+                    <div className="rounded-xl bg-emerald-100/80 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-700 p-2.5 text-[11px] text-emerald-900 dark:text-emerald-200 font-semibold flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>100% Instant Scholarship Applied! ₹0 Final Amount — Auto-approves with immediate access.</span>
+                    </div>
+                  )}
+
+                  {couponMessage && !isFullDiscount && (
+                    <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                      {couponMessage}
+                    </div>
+                  )}
+
                   {couponError && (
                     <div className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold">{couponError}</div>
                   )}
@@ -633,9 +724,11 @@ export function CourseCheckoutModal({
                   </div>
                   <div className="flex justify-between">
                     <span>Base Tuition Fee</span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">₹{basePrice.toLocaleString("en-IN")}</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                      {isFreeCourse ? "₹0 (Free Course)" : `₹${basePrice.toLocaleString("en-IN")}`}
+                    </span>
                   </div>
-                  {couponApplied && (
+                  {couponApplied && !isFreeCourse && (
                     <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
                       <span>Scholarship Deduction ({couponCode})</span>
                       <span>-₹{discountAmount.toLocaleString("en-IN")}</span>
@@ -651,79 +744,137 @@ export function CourseCheckoutModal({
                   </div>
                   <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2.5 border-t border-slate-200 dark:border-slate-800">
                     <span>Total Net Payable</span>
-                    <span className="text-[#2563EB] dark:text-blue-400">₹{finalPrice.toLocaleString("en-IN")}</span>
+                    <span className={`font-black ${isFreeCourse || isFullDiscount ? "text-emerald-600 dark:text-emerald-400" : "text-[#2563EB] dark:text-blue-400"}`}>
+                      {isFreeCourse ? "₹0 (Free Access)" : `₹${finalPrice.toLocaleString("en-IN")}`}
+                    </span>
                   </div>
                 </div>
 
                 {/* Security Guarantee Box */}
                 <div className="flex items-center gap-2 rounded-xl bg-slate-100 dark:bg-slate-800/60 p-3 text-[11px] text-slate-500 dark:text-slate-400">
                   <BadgeCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span>Instant LMS workspace activation &amp; official GST tax receipt upon approval.</span>
+                  <span>
+                    {isFreeCourse
+                      ? "Free Course: Automatic instant enrollment without payment."
+                      : isFullDiscount
+                      ? "100% Scholarship Verified: Automatic approval with immediate course access."
+                      : "Direct Enrollment: Creates pending application for admin approval."}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          /* Payment Success Confirmation View */
+          /* Payment / Approval Confirmation View */
           <div className="p-6 sm:p-10 text-center space-y-4 overflow-y-auto">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 shadow-md">
-              <CheckCircle2 className="h-9 w-9" />
-            </div>
+            {generatedInvoice?.isAutoApproved || isFullDiscount || isFreeCourse ? (
+              /* Auto-Approved Confirmation (100% Coupon or Free Course) */
+              <>
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 shadow-md">
+                  <CheckCircle2 className="h-9 w-9" />
+                </div>
 
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                <Sparkles className="h-3.5 w-3.5" /> Payment Approved &amp; Enrolled
-              </div>
-              <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                Congratulations, {studentName}!
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                You have officially enrolled in <strong>{course.title}</strong>. Your curriculum, in-app video lectures, assignments, and verified certification track are now active.
-              </p>
-            </div>
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    <Sparkles className="h-3.5 w-3.5" /> {isFreeCourse ? "Free Course · Instant Access Activated" : "100% Scholarship · Instant Access Activated"}
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                    Enrollment Confirmed!
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                    Welcome to JKS Learning, {studentName}! Your enrollment for <strong>{course.title}</strong> has been confirmed. You can now access the full course curriculum.
+                  </p>
+                </div>
+              </>
+            ) : (
+              /* Normal Enrollment - Waiting for Admin Approval */
+              <>
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 shadow-md ring-4 ring-amber-100/50 dark:ring-amber-900/30">
+                  <Clock className="h-9 w-9 animate-pulse" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                    <Clock className="h-3.5 w-3.5" /> Pending Admin Approval
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                    Waiting for Approval
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 max-w-md mx-auto leading-relaxed">
+                    Your enrollment request for <strong>{course.title}</strong> has been submitted and is waiting for admin approval.
+                  </p>
+                  <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 p-3 max-w-md mx-auto text-left text-[11px] text-amber-900 dark:text-amber-200 space-y-1">
+                    <p className="font-bold flex items-center gap-1.5">
+                      <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                      Admissions Administration Notified
+                    </p>
+                    <p className="text-amber-800 dark:text-amber-300 leading-normal">
+                      The administrator has received your enrollment request. The course content remains locked until approved. You will receive an in-app notification as soon as action is taken.
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Generated Invoice Metadata Card */}
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-left text-xs space-y-2 dark:border-slate-800 dark:bg-surface-elevated/70 max-w-lg mx-auto">
               <div className="flex items-center justify-between border-b border-slate-200/60 pb-2 dark:border-slate-800">
                 <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <FileText className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
-                  Tax Invoice Generated
+                  Application &amp; Billing Dossier
                 </span>
-                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                  PAID (₹{finalPrice.toLocaleString("en-IN")})
+                <span className={`font-mono font-bold ${
+                  generatedInvoice?.isAutoApproved || isFullDiscount ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
+                }`}>
+                  {generatedInvoice?.isAutoApproved || isFullDiscount ? "PAID (₹0)" : "WAITING APPROVAL"}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-400">
                 <div>
-                  <span className="font-medium text-slate-400">Invoice No:</span>{" "}
+                  <span className="font-medium text-slate-400">Application / Inv:</span>{" "}
                   <strong className="text-slate-800 dark:text-slate-200 font-mono">
-                    {generatedInvoice?.invoiceNumber || "JKS-INV-2026-LIVE"}
+                    {generatedInvoice?.invoiceNumber || "JKS-APP-2026"}
                   </strong>
                 </div>
                 <div>
-                  <span className="font-medium text-slate-400">Payment Mode:</span>{" "}
-                  <strong className="text-slate-800 dark:text-slate-200">{paymentMode}</strong>
+                  <span className="font-medium text-slate-400">Status:</span>{" "}
+                  <strong className={generatedInvoice?.isAutoApproved || isFullDiscount ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"}>
+                    {generatedInvoice?.isAutoApproved || isFullDiscount ? "Approved / Active" : "Pending Approval"}
+                  </strong>
                 </div>
                 <div>
                   <span className="font-medium text-slate-400">Cohort Batch:</span>{" "}
                   <strong className="text-slate-800 dark:text-slate-200 truncate block">{selectedBatch}</strong>
                 </div>
                 <div>
-                  <span className="font-medium text-slate-400">GST Status:</span>{" "}
-                  <strong className="text-emerald-600">18% Compliant</strong>
+                  <span className="font-medium text-slate-400">Tuition:</span>{" "}
+                  <strong className="text-slate-800 dark:text-slate-200">
+                    {isFullDiscount ? "₹0 (100% Scholarship)" : `₹${finalPrice.toLocaleString("en-IN")}`}
+                  </strong>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 max-w-md mx-auto">
-              <Link
-                href={`/dashboard/my-courses/${course.slug}`}
-                onClick={onClose}
-                className="w-full sm:flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-5 py-3 text-xs font-bold text-white shadow-md hover:bg-blue-700 transition-all cursor-pointer"
-              >
-                <span>Start Learning Now</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+              {generatedInvoice?.isAutoApproved || isFullDiscount ? (
+                <Link
+                  href={`/dashboard/my-courses/${course.slug}`}
+                  onClick={onClose}
+                  className="w-full sm:flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-3 text-xs font-bold text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                >
+                  <span>Start Learning Now</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              ) : (
+                <Link
+                  href="/dashboard/my-courses"
+                  onClick={onClose}
+                  className="w-full sm:flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 px-5 py-3 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                >
+                  <span>Go to My Courses</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
               <Link
                 href="/dashboard/payments"
                 onClick={onClose}
@@ -741,11 +892,11 @@ export function CourseCheckoutModal({
           <div className="border-t border-slate-100 bg-white/95 px-5 py-3.5 sm:px-7 sm:py-4 backdrop-blur-md dark:border-slate-800 dark:bg-surface-elevated/95 shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="flex items-baseline justify-between sm:justify-start sm:gap-2">
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Net Payable:</span>
-              <span className="text-lg font-black text-[#2563EB] dark:text-blue-400">
-                ₹{finalPrice.toLocaleString("en-IN")}
+              <span className={`text-lg font-black ${isFreeCourse || isFullDiscount ? "text-emerald-600 dark:text-emerald-400" : "text-[#2563EB] dark:text-blue-400"}`}>
+                {isFreeCourse ? "₹0" : `₹${finalPrice.toLocaleString("en-IN")}`}
               </span>
               <span className="text-[11px] text-slate-400 dark:text-slate-400 font-normal">
-                (Incl. 18% GST)
+                {isFreeCourse ? "(Free Course)" : isFullDiscount ? "(100% Scholarship Applied)" : "(Incl. 18% GST)"}
               </span>
             </div>
 
@@ -760,24 +911,38 @@ export function CourseCheckoutModal({
               </button>
               <button
                 type="button"
-                disabled={isProcessing || isStudentOnHold || !isEmailValid}
+                disabled={isProcessing || isStudentOnHold || !isEmailValid || isValidatingCoupon}
                 onClick={handleProcessPayment}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-[1.01] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg transition-all hover:scale-[1.01] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+                  isFreeCourse || isFullDiscount
+                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 shadow-emerald-500/25 hover:from-emerald-700 hover:to-teal-700"
+                    : "bg-gradient-to-r from-blue-600 to-indigo-600 shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700"
+                }`}
               >
                 {isProcessing ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Authorizing ₹{finalPrice.toLocaleString("en-IN")}…</span>
+                    <span>Submitting Request…</span>
                   </>
                 ) : isStudentOnHold ? (
                   <>
                     <Lock className="h-4 w-4" />
                     <span>Account On Hold</span>
                   </>
+                ) : isFreeCourse ? (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    <span>Confirm Free Enrollment (₹0)</span>
+                  </>
+                ) : isFullDiscount ? (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    <span>Authorize &amp; Get Instant Access</span>
+                  </>
                 ) : (
                   <>
                     <Lock className="h-4 w-4" />
-                    <span>Pay ₹{finalPrice.toLocaleString("en-IN")} &amp; Activate</span>
+                    <span>Authorize / Enroll</span>
                   </>
                 )}
               </button>

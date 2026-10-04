@@ -16,10 +16,18 @@ import {
   ClipboardCheck,
   Star,
   MessageSquare,
+  User,
+  BookOpen,
+  FileText,
+  Award,
+  CreditCard,
+  Settings,
+  LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMockSession } from "@/lib/auth/use-mock-auth";
-import { useUser } from "@clerk/nextjs";
+import { useMockSession, performLogout } from "@/lib/auth/use-mock-auth";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useNotifications } from "@/lib/data/notifications-store";
 
@@ -88,10 +96,13 @@ export function DashboardTopbar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { signOut } = useClerk();
   const [exploreOpen, setExploreOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const exploreRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
   const session = useMockSession();
   const { user: clerkUser } = useUser();
 
@@ -167,7 +178,12 @@ export function DashboardTopbar({
     userEmail
   );
 
-  // Close explore and notification dropdowns on outside click
+  const handleLogout = async () => {
+    setProfileOpen(false);
+    await performLogout(signOut);
+  };
+
+  // Close explore, notification, and profile dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (exploreRef.current && !exploreRef.current.contains(e.target as Node)) {
@@ -175,6 +191,9 @@ export function DashboardTopbar({
       }
       if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
         setNotificationsOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -185,11 +204,12 @@ export function DashboardTopbar({
   useEffect(() => {
     setExploreOpen(false);
     setNotificationsOpen(false);
+    setProfileOpen(false);
   }, [pathname]);
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-16 sm:h-20 shrink-0 items-center justify-between gap-2 sm:gap-4 px-4 sm:px-6 lg:px-8 border-b border-transparent bg-transparent backdrop-blur-md transition-all print:hidden">
+      <header className="sticky top-0 z-40 flex h-16 sm:h-20 shrink-0 items-center justify-between gap-2 sm:gap-4 px-4 sm:px-6 lg:px-8 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/85 dark:bg-[#070D1E]/85 backdrop-blur-xl shadow-xs transition-all print:hidden">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           {/* Mobile Hamburger Toggle Button */}
           <button
@@ -417,28 +437,215 @@ export function DashboardTopbar({
             </AnimatePresence>
           </div>
 
-          {/* User Profile Avatar Link (no dropdown menu) */}
-          <Link
-            href={isAdmin ? "/admin/settings" : isInstructor ? "/instructor/profile" : "/dashboard/profile"}
-            className="flex items-center rounded-full p-0.5 transition-transform hover:scale-105 focus:outline-none shrink-0"
-            aria-label="User profile"
-            title={userName}
-          >
-            <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs sm:text-sm font-bold text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)] overflow-hidden ring-2 ring-blue-500/20">
-              {userAvatar ? (
-                <img
-                  src={userAvatar}
-                  alt={userName}
-                  className="h-full w-full object-cover"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              ) : null}
-              <span className={userAvatar ? "sr-only" : ""}>{resolvedInitials}</span>
-            </div>
-          </Link>
+          {/* User Profile Avatar Dropdown Menu */}
+          <div ref={profileRef} className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center rounded-full p-0.5 transition-transform hover:scale-105 focus:outline-none shrink-0 cursor-pointer"
+              aria-label="Toggle user profile menu"
+              aria-expanded={profileOpen}
+              title={userName}
+            >
+              <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs sm:text-sm font-bold text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)] overflow-hidden ring-2 ring-blue-500/20">
+                {userAvatar ? (
+                  <img
+                    src={userAvatar}
+                    alt={userName}
+                    className="h-full w-full object-cover"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                ) : null}
+                <span className={userAvatar ? "sr-only" : ""}>{resolvedInitials}</span>
+              </div>
+            </button>
+
+            <AnimatePresence>
+              {profileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                  transition={{ duration: 0.16, ease: "easeOut" }}
+                  className="absolute right-0 top-full mt-2 w-72 sm:w-80 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl p-2 z-50 overflow-hidden"
+                >
+                  {/* Profile Header Card */}
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800/80 mb-1.5">
+                    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-sm font-bold text-white shadow-md overflow-hidden ring-2 ring-blue-500/20">
+                      {userAvatar ? (
+                        <img
+                          src={userAvatar}
+                          alt={userName}
+                          className="h-full w-full object-cover"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      ) : null}
+                      <span className={userAvatar ? "sr-only" : ""}>{resolvedInitials}</span>
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          {userName}
+                        </p>
+                        <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300">
+                          {roleType}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                        {userEmail || "No email linked"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Navigation Links */}
+                  <div className="space-y-0.5 py-1">
+                    {!isAdmin && !isInstructor && (
+                      <>
+                        <Link
+                          href="/dashboard/profile"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors"
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            My Profile
+                          </span>
+                          <span className="text-[10px] text-slate-400">Settings</span>
+                        </Link>
+
+                        <Link
+                          href="/dashboard/my-courses"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors"
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <BookOpen className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                            My Courses
+                          </span>
+                        </Link>
+
+                        <Link
+                          href="/dashboard/resume-builder"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors"
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                            Resume Maker
+                          </span>
+                          <span className="rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-400 px-1.5 py-0.2 text-[9px] font-black uppercase">
+                            New
+                          </span>
+                        </Link>
+
+                        <Link
+                          href="/dashboard/assessments"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors"
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <ClipboardCheck className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            Assessments &amp; Quizzes
+                          </span>
+                        </Link>
+
+                        <Link
+                          href="/dashboard/certificates"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors"
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <Award className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                            Certificates
+                          </span>
+                        </Link>
+
+                        <Link
+                          href="/dashboard/payments"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors"
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <CreditCard className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                            Invoices &amp; Billing
+                          </span>
+                        </Link>
+                      </>
+                    )}
+
+                    {isAdmin && (
+                      <>
+                        <Link
+                          href="/admin/settings"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors"
+                        >
+                          <Settings className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          Admin Settings
+                        </Link>
+                        <Link
+                          href="/admin/courses"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors"
+                        >
+                          <BookOpen className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                          Manage Courses
+                        </Link>
+                        <Link
+                          href="/admin/students"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors"
+                        >
+                          <User className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                          Manage Students
+                        </Link>
+                      </>
+                    )}
+
+                    {isInstructor && (
+                      <>
+                        <Link
+                          href="/instructor/profile"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors"
+                        >
+                          <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          Instructor Profile
+                        </Link>
+                        <Link
+                          href="/instructor/courses"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors"
+                        >
+                          <BookOpen className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                          My Assigned Courses
+                        </Link>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Divider & Sign Out */}
+                  <div className="border-t border-slate-100 dark:border-slate-800/80 pt-1 mt-1">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer text-left"
+                    >
+                      <LogOut className="h-4 w-4 shrink-0" />
+                      <span>Log Out</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </header>
     </>

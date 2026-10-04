@@ -100,7 +100,7 @@ function YoutubeIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-type TabType = "overview" | "interview" | "video-task" | "curriculum" | "qa" | "notes" | "announcements" | "reviews" | "tools";
+type TabType = "overview" | "interview" | "video-task" | "curriculum" | "qa" | "reviews" | "tools";
 
 function formatCooldown(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -122,6 +122,7 @@ export default function CourseLearningHubPage({
 
   const [course, setCourse] = useState<FullCourse | null>(null);
   const [enrollmentStatus, setEnrollmentStatus] = useState<string>("ACTIVE");
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   // Completing every lecture and assignment only *requests* completion.
   // An admin has to approve it before the certificate is released.
   const [completionApproved, setCompletionApproved] = useState(false);
@@ -131,9 +132,9 @@ export default function CourseLearningHubPage({
   const [completedAssignmentIds, setCompletedAssignmentIds] = useState<string[]>([]);
   const [assignmentScores, setAssignmentScores] = useState<Record<string, number>>({});
   const [assignmentCooldowns, setAssignmentCooldowns] = useState<Record<string, number>>({});
-  // Answers are keyed by question index. MCQs store the chosen option index,
-  // every other question kind stores the text (or file name) the student entered.
-  const [activeQuizAnswers, setActiveQuizAnswers] = useState<Record<number, number | string>>({});
+  // Answers are keyed by question index. Single Choice stores number,
+  // Multi-Choice stores number[], written questions store string.
+  const [activeQuizAnswers, setActiveQuizAnswers] = useState<Record<number, any>>({});
   const [isSubmittingAssessment, setIsSubmittingAssessment] = useState(false);
   const [now, setNow] = useState<number>(Date.now());
 
@@ -207,6 +208,7 @@ export default function CourseLearningHubPage({
   >({});
   const [currentVideoTaskText, setCurrentVideoTaskText] = useState<string>("");
   const [currentVideoTaskFile, setCurrentVideoTaskFile] = useState<string>("");
+  const [prereqNoticeSection, setPrereqNoticeSection] = useState<Section | null>(null);
 
   // Live timer tick for real-time cooldown countdowns
   useEffect(() => {
@@ -273,6 +275,9 @@ export default function CourseLearningHubPage({
           const prog = await fetchCourseProgress(slug, effectiveEmail);
           if (prog.status) {
             setEnrollmentStatus(prog.status);
+          }
+          if (prog.rejectionReason) {
+            setRejectionReason(prog.rejectionReason);
           }
           setCompletionApproved(prog.completionApproved === true);
           let initialVideos = prog.completedVideoIds || [];
@@ -426,6 +431,25 @@ export default function CourseLearningHubPage({
   const completedMilestones = completedVideosCount + passedAssignmentsCount;
   const overallPercent = totalMilestones > 0 ? Math.min(100, Math.round((completedMilestones / totalMilestones) * 100)) : 0;
 
+  // Check if a section is locked because previous section's assessment has not been submitted
+  const getUnsubmittedPrerequisiteSection = (targetSecId: string): Section | null => {
+    const targetIndex = allSections.findIndex((s) => s.id === targetSecId);
+    if (targetIndex <= 0) return null;
+    for (let i = 0; i < targetIndex; i++) {
+      const prevSec = allSections[i];
+      const prevAsgId = prevSec?.assignment?.id;
+      if (prevAsgId) {
+        const isDone =
+          completedAssignmentIds.includes(prevAsgId) ||
+          assignmentScores[prevAsgId] !== undefined;
+        if (!isDone) {
+          return prevSec;
+        }
+      }
+    }
+    return null;
+  };
+
   const handleAutoAdvance = (vidId: string) => {
     const currentIndex = allVideos.findIndex((v) => v.id === vidId);
     if (currentIndex !== -1 && currentIndex < allVideos.length - 1) {
@@ -441,6 +465,15 @@ export default function CourseLearningHubPage({
           break;
         }
       }
+
+      // Check if accessing next video requires submitting preceding section's assessment
+      const prereq = getUnsubmittedPrerequisiteSection(nextSecId);
+      if (prereq) {
+        setAutoPlayNext(false);
+        setPrereqNoticeSection(prereq);
+        return;
+      }
+
       setAutoPlayNext(true);
       setActiveVideo(nextVid);
       setActiveSectionId(nextSecId);
@@ -492,7 +525,20 @@ export default function CourseLearningHubPage({
     }
   };
 
+  const isAccessBlocked =
+    enrollmentStatus === "PENDING" ||
+    enrollmentStatus === "REJECTED" ||
+    enrollmentStatus === "ON_HOLD" ||
+    enrollmentStatus === "PAUSED" ||
+    enrollmentStatus === "REMOVED";
+
   const handleSelectVideo = (vid: VideoItem, secId: string) => {
+    if (isAccessBlocked) return;
+    const prereq = getUnsubmittedPrerequisiteSection(secId);
+    if (prereq) {
+      setPrereqNoticeSection(prereq);
+      return;
+    }
     setAutoPlayNext(true);
     setActiveVideo(vid);
     setActiveSectionId(secId);
@@ -558,6 +604,19 @@ export default function CourseLearningHubPage({
             studentAnswer: correctIdx,
             isCorrect: true,
             explanation: "Correct answer verified and recorded.",
+          });
+        } else if (kind === "MULTI_CHOICE") {
+          const rawIndices = Array.isArray(q.correctIndices)
+            ? q.correctIndices
+            : [typeof q.correctIndex === "number" ? q.correctIndex : 0];
+          existing[idx] = rawIndices;
+          synthesizedBreakdown.push({
+            questionIndex: idx,
+            prompt: q.prompt || `Question ${idx + 1}`,
+            kind,
+            studentAnswer: rawIndices,
+            isCorrect: true,
+            explanation: "All correct options verified and recorded.",
           });
         } else if (kind === "SHORT_ANSWER") {
           const ansText = (q as any).sampleAnswer || q.guidance || "Validated according to architectural standards.";
@@ -627,6 +686,7 @@ export default function CourseLearningHubPage({
   };
 
   const handleOpenAssignment = (sec: Section, retake: boolean = false) => {
+    if (isAccessBlocked) return;
     setActiveAssignmentSection(sec);
     const answers = resolveAssignmentAnswers(sec, retake);
     setActiveQuizAnswers(answers);
@@ -644,11 +704,12 @@ export default function CourseLearningHubPage({
    */
   const isQuestionAnswered = (
     q: any,
-    answer: number | string | undefined,
+    answer: any,
     assignmentType?: string
   ): boolean => {
     const kind = resolveAssessmentKind(q?.type, assignmentType, q);
     if (kind === "MCQ") return typeof answer === "number";
+    if (kind === "MULTI_CHOICE") return Array.isArray(answer) && answer.length > 0;
     const text = typeof answer === "string" ? answer.trim() : "";
     if (!text) return false;
     if (kind === "LONG_ANSWER" && typeof q?.minWords === "number" && q.minWords > 0) {
@@ -661,6 +722,30 @@ export default function CourseLearningHubPage({
     const asgId = activeAssignmentSection?.assignment.id;
     setActiveQuizAnswers((prev) => {
       const updated = { ...prev, [qIdx]: choiceIdx };
+      if (asgId) {
+        setSavedQuizAnswers((sPrev) => ({ ...sPrev, [asgId]: updated }));
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem(`jks_answers_${asgId}`, JSON.stringify(updated));
+          } catch {}
+        }
+      }
+      return updated;
+    });
+  };
+
+  const handleToggleMultiQuizAnswer = (qIdx: number, choiceIdx: number) => {
+    const asgId = activeAssignmentSection?.assignment.id;
+    setActiveQuizAnswers((prev) => {
+      const current = Array.isArray(prev[qIdx])
+        ? [...prev[qIdx]]
+        : typeof prev[qIdx] === "number"
+        ? [prev[qIdx]]
+        : [];
+      const next = current.includes(choiceIdx)
+        ? current.filter((i: number) => i !== choiceIdx)
+        : [...current, choiceIdx].sort((a: number, b: number) => a - b);
+      const updated = { ...prev, [qIdx]: next };
       if (asgId) {
         setSavedQuizAnswers((sPrev) => ({ ...sPrev, [asgId]: updated }));
         if (typeof window !== "undefined") {
@@ -708,6 +793,27 @@ export default function CourseLearningHubPage({
         if (trimmed === correctChoice || parseInt(trimmed, 10) === correctIdx) {
           return 1;
         }
+      }
+      return 0;
+    }
+
+    if (kind === "MULTI_CHOICE") {
+      const rawIndices = Array.isArray(q?.correctIndices)
+        ? q.correctIndices
+        : typeof q?.correctIndex === "number"
+        ? [q.correctIndex]
+        : [0];
+      const correctSorted = [...rawIndices].map(Number).sort((a, b) => a - b);
+      const studentAnswers = Array.isArray(answer)
+        ? [...answer].map(Number).sort((a, b) => a - b)
+        : typeof answer === "number"
+        ? [answer]
+        : [];
+      if (
+        studentAnswers.length === correctSorted.length &&
+        studentAnswers.every((val, idx) => val === correctSorted[idx])
+      ) {
+        return 1;
       }
       return 0;
     }
@@ -819,6 +925,10 @@ export default function CourseLearningHubPage({
             explanation = isCorrect
               ? "Correct answer selected!"
               : "Incorrect choice selected. Please review course lectures and try again.";
+          } else if (kind === "MULTI_CHOICE") {
+            explanation = isCorrect
+              ? "All correct answers selected!"
+              : "Incorrect combination of choices. All matching answers must be chosen to pass.";
           } else {
             explanation = isCorrect
               ? "Answer verified and meets evaluation criteria."
@@ -1072,7 +1182,66 @@ export default function CourseLearningHubPage({
         {/* LEFT COLUMN: In-App Video Viewport & Udemy Bottom Sections */}
         <div className="flex flex-1 min-w-0 flex-col p-3 sm:p-5 lg:p-6 space-y-5">
           {/* IN-APP VIDEO PLAYER OR ENROLLMENT-ACCESS OVERLAY */}
-          {enrollmentStatus === "ON_HOLD" || enrollmentStatus === "PAUSED" || enrollmentStatus === "REMOVED" ? (
+          {enrollmentStatus === "PENDING" ? (
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-amber-300 dark:border-amber-800 bg-amber-50/90 dark:bg-amber-950/40 p-10 sm:p-12 text-center space-y-4 shadow-sm">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 shadow-xs">
+                <Clock className="h-8 w-8 animate-pulse" />
+              </div>
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-200/70 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200">
+                  <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
+                  Status: Pending Approval
+                </div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">
+                  Waiting for Approval
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto">
+                  Your enrollment request has been submitted and is waiting for admin approval. You will receive an in-app and email notification as soon as your access is approved.
+                </p>
+              </div>
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href="/dashboard/my-courses"
+                  className="rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-colors"
+                >
+                  Return to My Courses
+                </Link>
+              </div>
+            </div>
+          ) : enrollmentStatus === "REJECTED" ? (
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-rose-300 dark:border-rose-800 bg-rose-50/90 dark:bg-rose-950/40 p-10 sm:p-12 text-center space-y-4 shadow-sm">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300 shadow-xs">
+                <Lock className="h-8 w-8" />
+              </div>
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-200/70 text-rose-900 dark:bg-rose-900/60 dark:text-rose-200">
+                  Status: Rejected
+                </div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">
+                  Enrollment Not Approved
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto">
+                  {rejectionReason
+                    ? `Reason: ${rejectionReason}`
+                    : "Your enrollment request for this course was not approved by the administrator. Contact admissions for more details."}
+                </p>
+              </div>
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href="/dashboard/my-courses"
+                  className="rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 text-xs font-bold shadow-md hover:bg-slate-800 transition-colors"
+                >
+                  Return to My Courses
+                </Link>
+                <Link
+                  href="/courses"
+                  className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-surface px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-colors"
+                >
+                  Browse Other Courses
+                </Link>
+              </div>
+            </div>
+          ) : enrollmentStatus === "ON_HOLD" || enrollmentStatus === "PAUSED" || enrollmentStatus === "REMOVED" ? (
             <div className={`flex flex-col items-center justify-center rounded-3xl border p-12 text-center space-y-4 shadow-sm ${
               enrollmentStatus === "REMOVED"
                 ? "border-rose-300 dark:border-rose-800 bg-rose-50/90 dark:bg-rose-950/40"
@@ -1109,8 +1278,8 @@ export default function CourseLearningHubPage({
               </Link>
             </div>
           ) : activeVideo ? (
-            /* FIXED / STICKY VIDEO VIEWPORT - Stays firmly locked at top when scrolling, remaining sections scroll below */
-            <div className="sticky top-16 sm:top-20 z-10 -mx-3 sm:-mx-5 lg:-mx-6 px-3 sm:px-5 lg:px-6 pt-2 pb-3 bg-[#F8FAFC]/95 dark:bg-[#020617]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs transition-all space-y-3">
+            /* NORMAL SCROLL VIDEO VIEWPORT - In-flow natural page scrolling */
+            <div className="relative w-full space-y-3">
               <div className="max-w-5xl mx-auto w-full">
                 <InAppVideoPlayer
                   key={activeVideo.id}
@@ -1195,8 +1364,6 @@ export default function CourseLearningHubPage({
                   badge: activeVideo?.task?.title ? "Task" : undefined,
                 },
                 { id: "qa", label: "Q&A", icon: MessageSquare },
-                { id: "notes", label: "Notes", icon: FileText },
-                { id: "announcements", label: "Announcements", icon: Bell },
                 { id: "reviews", label: "Reviews", icon: Star },
                 { id: "tools", label: "Learning Tools", icon: Code2 },
               ].map((tab) => {
@@ -1277,6 +1444,27 @@ export default function CourseLearningHubPage({
 
                   {/* Sections & Video Lessons List */}
                   <div className="space-y-4">
+                    {isAccessBlocked && (
+                      <div className="rounded-2xl border border-amber-300 dark:border-amber-800 bg-amber-50/90 dark:bg-amber-950/40 p-4 text-xs font-semibold text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+                        <Lock className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                        <div>
+                          <div className="font-bold">
+                            {enrollmentStatus === "PENDING"
+                              ? "Curriculum Locked (Pending Approval)"
+                              : enrollmentStatus === "REJECTED"
+                              ? "Curriculum Locked (Enrollment Rejected)"
+                              : "Curriculum Locked"}
+                          </div>
+                          <div className="text-[11px] font-normal text-amber-800 dark:text-amber-300 mt-0.5">
+                            {enrollmentStatus === "PENDING"
+                              ? "Video lectures and assignments will unlock immediately upon administrator approval."
+                              : enrollmentStatus === "REJECTED"
+                              ? (rejectionReason ? `Reason: ${rejectionReason}` : "Your enrollment was rejected by administration.")
+                              : "Access to video lectures and assignments is temporarily restricted."}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {allSections.map((sec, secIdx) => {
                       const asgId = sec.assignment.id;
                       const score = assignmentScores[asgId] ?? (completedAssignmentIds.includes(asgId) ? 85 : undefined);
@@ -1285,6 +1473,8 @@ export default function CourseLearningHubPage({
                       const cooldownExpiry = assignmentCooldowns[asgId] || 0;
                       const isCooldownActive = cooldownExpiry > now;
                       const secondsRemaining = Math.max(0, Math.ceil((cooldownExpiry - now) / 1000));
+                      const prereqSec = getUnsubmittedPrerequisiteSection(sec.id);
+                      const isSectionLocked = Boolean(prereqSec);
 
                       return (
                         <div
@@ -1311,6 +1501,25 @@ export default function CourseLearningHubPage({
                               {sec.directVideos.map((vid: VideoItem) => {
                                 const isSelected = activeVideo?.id === vid.id;
                                 const isDone = completedVideoIds.includes(vid.id);
+
+                                if (isSectionLocked) {
+                                  return (
+                                    <button
+                                      key={vid.id}
+                                      type="button"
+                                      onClick={() => handleSelectVideo(vid, sec.id)}
+                                      className="flex w-full items-center justify-between gap-2 rounded-xl p-3 text-left text-xs sm:text-sm transition-all cursor-pointer opacity-60 hover:opacity-90 text-slate-500 hover:bg-slate-50 border border-transparent dark:text-slate-400 dark:hover:bg-surface-elevated"
+                                    >
+                                      <div className="flex items-center gap-2.5 min-w-0">
+                                        <Lock className="h-4 w-4 text-amber-500 shrink-0" />
+                                        <span className="truncate">{vid.title}</span>
+                                      </div>
+                                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded shrink-0">
+                                        Locked
+                                      </span>
+                                    </button>
+                                  );
+                                }
 
                                 return (
                                   <button
@@ -1362,6 +1571,25 @@ export default function CourseLearningHubPage({
                                     {sub.videos.map((vid: VideoItem) => {
                                       const isSelected = activeVideo?.id === vid.id;
                                       const isDone = completedVideoIds.includes(vid.id);
+
+                                      if (isSectionLocked) {
+                                        return (
+                                          <button
+                                            key={vid.id}
+                                            type="button"
+                                            onClick={() => handleSelectVideo(vid, sec.id)}
+                                            className="flex w-full items-center justify-between gap-2 rounded-xl p-3 text-left text-xs sm:text-sm transition-all cursor-pointer opacity-60 hover:opacity-90 text-slate-500 hover:bg-slate-50 border border-transparent dark:text-slate-400 dark:hover:bg-surface-elevated"
+                                          >
+                                            <div className="flex items-center gap-2.5 min-w-0">
+                                              <Lock className="h-4 w-4 text-amber-500 shrink-0" />
+                                              <span className="truncate">{vid.title}</span>
+                                            </div>
+                                            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded shrink-0">
+                                              Locked
+                                            </span>
+                                          </button>
+                                        );
+                                      }
 
                                       return (
                                         <button
@@ -2227,89 +2455,7 @@ export default function CourseLearningHubPage({
                 </div>
               )}
 
-              {/* TAB 3: NOTES */}
-              {activeTab === "notes" && (
-                <div className="space-y-6 max-w-3xl">
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-3 dark:border-slate-800 dark:bg-surface-elevated/50">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800 dark:text-white">
-                        Take a note at <span className="text-[#2563EB] font-mono dark:text-blue-400">02:15</span>
-                      </span>
-                      <span className="text-[11px] text-slate-400 dark:text-slate-400">{activeVideo?.title}</span>
-                    </div>
 
-                    <textarea
-                      rows={3}
-                      value={newNoteText}
-                      onChange={(e) => setNewNoteText(e.target.value)}
-                      placeholder="Type your notes or key takeaways here..."
-                      className="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400"
-                    />
-
-                    <div className="flex justify-end">
-                      <button
-                        type="button"
-                        onClick={handleAddNote}
-                        className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
-                      >
-                        <Plus className="h-3.5 w-3.5" /> Save Note
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider dark:text-slate-300">
-                      Saved Notes ({notesList.length})
-                    </h4>
-                    {notesList.map((n) => (
-                      <div
-                        key={n.id}
-                        className="rounded-2xl border border-slate-200 bg-white p-4 space-y-1.5 shadow-2xs dark:border-slate-800 dark:bg-surface-elevated"
-                      >
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="rounded bg-blue-100 px-2 py-0.5 font-mono text-[11px] font-bold text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-400">
-                            {n.timestamp}
-                          </span>
-                          <span className="text-[11px] text-slate-400 dark:text-slate-400">{n.lecture}</span>
-                        </div>
-                        <p className="text-xs text-slate-700 leading-relaxed font-medium dark:text-slate-300">{n.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 4: ANNOUNCEMENTS */}
-              {activeTab === "announcements" && (
-                <div className="space-y-4 max-w-3xl">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3 shadow-2xs dark:border-slate-800 dark:bg-surface-elevated">
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-10 w-10 shrink-0 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 flex items-center justify-center p-1.5">
-                        <Image
-                          src="/images/jks-logo.png"
-                          alt="Instructor"
-                          width={40}
-                          height={40}
-                          unoptimized
-                          className="h-full w-full object-contain"
-                        />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">JKS Technical Faculty &amp; Mentors</h4>
-                        <span className="text-[11px] text-slate-400 dark:text-slate-400">Official Course Announcement</span>
-                      </div>
-                    </div>
-
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      🚀 Course Curriculum and Milestone Challenges Active!
-                    </h3>
-
-                    <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-300">
-                      Hello learners! Welcome to this mastercourse. Complete each video lesson sequentially and make sure to score &ge; 70% on section assessments to qualify for your official verified certificate!
-                    </p>
-                  </div>
-                </div>
-              )}
 
               {/* TAB 5: REVIEWS */}
               {activeTab === "reviews" && (
@@ -2674,7 +2820,7 @@ export default function CourseLearningHubPage({
         </div>
 
         {/* RIGHT COLUMN: Sequential Curriculum Rail & Certificate Unlock */}
-        <aside className="hidden lg:block w-full shrink-0 border-t border-slate-200 bg-white p-4 sm:p-5 lg:w-[340px] xl:w-[380px] lg:border-t-0 lg:border-l space-y-6 dark:border-slate-800/80 dark:bg-surface-secondary">
+        <aside className="hidden lg:block w-full shrink-0 border-t border-slate-200 bg-white p-4 sm:p-5 lg:w-[340px] xl:w-[380px] lg:border-t-0 lg:border-l space-y-6 dark:border-slate-800/80 dark:bg-surface-secondary lg:sticky lg:top-16 sm:lg:top-20 lg:h-[calc(100vh-5rem)] lg:overflow-y-auto">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Curriculum &amp; Video Lessons</h3>
             <p className="text-xs text-slate-500 font-medium dark:text-slate-400">
@@ -2692,6 +2838,8 @@ export default function CourseLearningHubPage({
               const cooldownExpiry = assignmentCooldowns[asgId] || 0;
               const isCooldownActive = cooldownExpiry > now;
               const secondsRemaining = Math.max(0, Math.ceil((cooldownExpiry - now) / 1000));
+              const prereqSec = getUnsubmittedPrerequisiteSection(sec.id);
+              const isSectionLocked = Boolean(prereqSec);
 
               return (
                 <div
@@ -2716,6 +2864,25 @@ export default function CourseLearningHubPage({
                       {sec.directVideos.map((vid) => {
                         const isSelected = activeVideo?.id === vid.id;
                         const isDone = completedVideoIds.includes(vid.id);
+
+                        if (isSectionLocked) {
+                          return (
+                            <button
+                              key={vid.id}
+                              type="button"
+                              onClick={() => handleSelectVideo(vid, sec.id)}
+                              className="flex w-full items-center justify-between gap-2 rounded-xl p-2.5 text-left text-xs transition-all cursor-pointer opacity-60 hover:opacity-85 text-slate-500 hover:bg-slate-50 border border-transparent dark:text-slate-400 dark:hover:bg-surface-elevated"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Lock className="h-4 w-4 text-amber-500 shrink-0" />
+                                <span className="truncate">{vid.title}</span>
+                              </div>
+                              <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded shrink-0">
+                                Locked
+                              </span>
+                            </button>
+                          );
+                        }
 
                         return (
                           <button
@@ -2765,6 +2932,25 @@ export default function CourseLearningHubPage({
                             {sub.videos.map((vid) => {
                               const isSelected = activeVideo?.id === vid.id;
                               const isDone = completedVideoIds.includes(vid.id);
+
+                              if (isSectionLocked) {
+                                return (
+                                  <button
+                                    key={vid.id}
+                                    type="button"
+                                    onClick={() => handleSelectVideo(vid, sec.id)}
+                                    className="flex w-full items-center justify-between gap-2 rounded-xl p-2.5 text-left text-xs transition-all cursor-pointer opacity-60 hover:opacity-85 text-slate-500 hover:bg-slate-50 border border-transparent dark:text-slate-400 dark:hover:bg-surface-elevated"
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <Lock className="h-4 w-4 text-amber-500 shrink-0" />
+                                      <span className="truncate">{vid.title}</span>
+                                    </div>
+                                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded shrink-0">
+                                      Locked
+                                    </span>
+                                  </button>
+                                );
+                              }
 
                               return (
                                 <button
@@ -3386,6 +3572,95 @@ export default function CourseLearningHubPage({
                           </div>
                         )}
 
+                        {/* MULTIPLE SELECT (MULTI-CHOICE) */}
+                        {kind === "MULTI_CHOICE" && (
+                          <div className="space-y-2.5 pt-1">
+                            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                              <span>Select <strong>all correct options</strong> (Multiple Choice):</span>
+                              <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+                                Multi-Answer
+                              </span>
+                            </div>
+
+                            {(q.choices || []).map((choice, cIdx) => {
+                              const studentAnswers: number[] = Array.isArray(answer)
+                                ? answer
+                                : typeof answer === "number"
+                                ? [answer]
+                                : [];
+                              const isSelected = studentAnswers.includes(cIdx);
+                              const rawIndices = Array.isArray(q?.correctIndices)
+                                ? q.correctIndices
+                                : typeof q?.correctIndex === "number"
+                                ? [q.correctIndex]
+                                : [0];
+                              const correctIndices: number[] = rawIndices.map(Number);
+                              const isActuallyCorrect = correctIndices.includes(cIdx);
+
+                              const isWrongUserSelection = isReviewMode && hasReviewed && isSelected && !isActuallyCorrect;
+                              const isRightUserSelection = isReviewMode && hasReviewed && isSelected && isActuallyCorrect;
+                              const isMissedCorrectKey = isReviewMode && hasReviewed && !isSelected && isActuallyCorrect;
+
+                              let choiceClass = "border-slate-200 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-surface-secondary dark:text-slate-300 dark:hover:bg-surface-hover";
+                              if (isWrongUserSelection) {
+                                choiceClass = "border-rose-400 bg-rose-50/80 font-bold text-rose-900 shadow-xs dark:bg-rose-950/50 dark:border-rose-500 dark:text-rose-200";
+                              } else if (isRightUserSelection) {
+                                choiceClass = "border-emerald-500 bg-emerald-50/80 font-bold text-emerald-900 shadow-xs dark:bg-emerald-950/50 dark:border-emerald-500 dark:text-emerald-200";
+                              } else if (isMissedCorrectKey) {
+                                choiceClass = "border-emerald-400/80 bg-emerald-50/40 font-bold text-emerald-800 dark:bg-emerald-950/30 dark:border-emerald-600 dark:text-emerald-300 border-dashed";
+                              } else if (isSelected) {
+                                choiceClass = "border-indigo-600 bg-indigo-50/70 font-semibold text-indigo-900 shadow-xs dark:bg-indigo-950/50 dark:border-indigo-500 dark:text-indigo-200";
+                              }
+
+                              return (
+                                <button
+                                  key={cIdx}
+                                  type="button"
+                                  disabled={isCooldownActive || isReviewMode}
+                                  onClick={() => handleToggleMultiQuizAnswer(qIdx, cIdx)}
+                                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left text-xs transition-all ${
+                                    isCooldownActive || isReviewMode ? "cursor-default opacity-95" : "cursor-pointer"
+                                  } ${choiceClass}`}
+                                >
+                                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-[10px] font-bold ${
+                                    isWrongUserSelection
+                                      ? "border-rose-600 bg-rose-600 text-white"
+                                      : isRightUserSelection
+                                      ? "border-emerald-600 bg-emerald-600 text-white"
+                                      : isMissedCorrectKey
+                                      ? "border-emerald-600 bg-emerald-600 text-white"
+                                      : isSelected
+                                      ? "border-indigo-600 bg-indigo-600 text-white dark:border-indigo-400 dark:bg-indigo-500"
+                                      : "border-slate-300 text-slate-500 dark:border-slate-600 dark:text-slate-400"
+                                  }`}>
+                                    {isSelected || isMissedCorrectKey ? "✓" : String.fromCharCode(65 + cIdx)}
+                                  </div>
+                                  <div className="flex-1 flex items-center justify-between gap-2">
+                                    <span className={isWrongUserSelection ? "line-through decoration-rose-500" : ""}>{choice}</span>
+                                    {isWrongUserSelection ? (
+                                      <span className="shrink-0 text-[10px] font-bold text-rose-800 bg-rose-100 dark:bg-rose-900/60 dark:text-rose-300 px-2 py-0.5 rounded-full">
+                                        Your Choice (Incorrect)
+                                      </span>
+                                    ) : isRightUserSelection ? (
+                                      <span className="shrink-0 text-[10px] font-bold text-emerald-800 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 px-2 py-0.5 rounded-full">
+                                        Your Choice (Correct ✓)
+                                      </span>
+                                    ) : isMissedCorrectKey ? (
+                                      <span className="shrink-0 text-[10px] font-bold text-emerald-800 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 px-2 py-0.5 rounded-full">
+                                        Missed Correct Key
+                                      </span>
+                                    ) : isSelected ? (
+                                      <span className="shrink-0 text-[10px] font-bold text-indigo-800 bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-300 px-2 py-0.5 rounded-full">
+                                        {isReviewMode ? "Your Answer" : "Selected"}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
                         {/* SHORT ANSWER */}
                         {kind === "SHORT_ANSWER" && (
                           <div className="space-y-2">
@@ -3866,6 +4141,89 @@ export default function CourseLearningHubPage({
                 className="w-full rounded-xl bg-[#2563EB] py-2.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
               >
                 Back to Learning
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PREREQUISITE ASSESSMENT REQUIREMENT MODAL */}
+      {prereqNoticeSection && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4"
+          onClick={() => setPrereqNoticeSection(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-3xl border border-amber-200/80 bg-white p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200 dark:border-amber-900/60 dark:bg-surface-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    Assessment Required
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Sequential Learning Progression
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPrereqNoticeSection(null)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-surface-elevated dark:hover:text-slate-200 cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4 dark:border-amber-950/60 dark:bg-amber-950/30 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                  Before you can access videos in this section, you must first complete and submit the milestone assessment for:
+                </p>
+              </div>
+              <div className="mt-2 pl-6">
+                <div className="text-xs font-bold text-slate-900 dark:text-white">
+                  {prereqNoticeSection.title}
+                </div>
+                {prereqNoticeSection.assignment && (
+                  <div className="text-[11px] text-amber-700 dark:text-amber-300 font-medium">
+                    📝 {prereqNoticeSection.assignment.title}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Our mastery-based curriculum requires completing each section&apos;s hands-on tasks and milestone evaluations before unlocking subsequent lessons.
+            </p>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setPrereqNoticeSection(null)}
+                className="flex-1 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-surface-elevated cursor-pointer transition-colors"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const target = prereqNoticeSection;
+                  setPrereqNoticeSection(null);
+                  if (target) {
+                    handleOpenAssignment(target);
+                  }
+                }}
+                className="flex-[1.5] rounded-xl bg-[#2563EB] py-2.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <span>Start Assessment</span>
+                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>

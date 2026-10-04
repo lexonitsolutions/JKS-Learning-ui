@@ -597,7 +597,15 @@ export default function AdminAssessmentsPage() {
                             {/* Score */}
                             <td className="px-3 py-3.5 text-center font-bold text-slate-900 dark:text-white whitespace-nowrap">
                               {task.submission?.score !== undefined ? (
-                                <span className="rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-xs font-black">
+                                <span
+                                  className={`rounded-lg px-2 py-0.5 text-xs font-black ${
+                                    isFailed || task.submission.score < 50
+                                      ? "bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300"
+                                      : task.submission.score >= 70
+                                      ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300"
+                                      : "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
+                                  }`}
+                                >
                                   {task.submission.score}/100
                                 </span>
                               ) : (
@@ -722,7 +730,17 @@ export default function AdminAssessmentsPage() {
                         <div className="flex items-center justify-between pt-1">
                           <div className="text-xs font-bold">
                             {task.submission?.score !== undefined ? (
-                              <span className="text-emerald-600">Score: {task.submission.score}/100</span>
+                              <span
+                                className={
+                                  isFailed || task.submission.score < 50
+                                    ? "text-rose-600 dark:text-rose-400 font-bold"
+                                    : task.submission.score >= 70
+                                    ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                                    : "text-amber-600 dark:text-amber-400 font-bold"
+                                }
+                              >
+                                Score: {task.submission.score}/100
+                              </span>
                             ) : (
                               <span className="text-slate-400">Score: —</span>
                             )}

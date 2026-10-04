@@ -63,6 +63,7 @@ export interface SectionAssignment {
     prompt: string;
     choices?: string[];
     correctIndex?: number;
+    correctIndices?: number[];
     modelAnswer?: string;
     keywords?: string;
     type?: "MCQ" | "Short Answer" | "Long Answer" | "Coding Challenge" | "File Upload" | string;
@@ -90,8 +91,20 @@ export function canonicalizeAssessmentType(raw?: string): string {
   if (!raw) return "Short Answer Question";
   const s = raw.toLowerCase().trim().replace(/[-_]+/g, " ");
   if (
+    s.includes("multi select") ||
+    s.includes("multiple select") ||
+    s.includes("multi choice") ||
+    s.includes("multiple choice (multiple") ||
+    s.includes("select all") ||
+    s.includes("checkbox")
+  ) {
+    return "Multiple Select (Multi-Choice)";
+  }
+  if (
     s.includes("mcq") ||
     s.includes("choice") ||
+    s.includes("choose") ||
+    s.includes("option") ||
     s.includes("multiple answer") ||
     s.includes("multi answer")
   ) {
@@ -112,8 +125,8 @@ export function canonicalizeAssessmentType(raw?: string): string {
   return "Short Answer Question";
 }
 
-/** The five question kinds the course builder can author. */
-export type AssessmentKind = "MCQ" | "SHORT_ANSWER" | "LONG_ANSWER" | "CODING" | "FILE_UPLOAD";
+/** The question kinds the course builder can author. */
+export type AssessmentKind = "MCQ" | "MULTI_CHOICE" | "SHORT_ANSWER" | "LONG_ANSWER" | "CODING" | "FILE_UPLOAD";
 
 /**
  * Resolve a question's kind from the human-readable label or internal key the builder stores.
@@ -122,15 +135,27 @@ export type AssessmentKind = "MCQ" | "SHORT_ANSWER" | "LONG_ANSWER" | "CODING" |
 export function resolveAssessmentKind(
   raw?: string,
   fallback?: string,
-  questionObj?: { choices?: any[]; starterCode?: string; testCases?: string }
+  questionObj?: { choices?: any[]; correctIndices?: any[]; starterCode?: string; testCases?: string }
 ): AssessmentKind {
   const parse = (str?: string): AssessmentKind | null => {
     if (!str) return null;
     const s = str.toLowerCase().replace(/[-_]+/g, " ").trim();
     if (!s) return null;
     if (
+      s.includes("multi select") ||
+      s.includes("multiple select") ||
+      s.includes("multi choice") ||
+      s.includes("checkbox") ||
+      s.includes("select all") ||
+      s.includes("multiple correct")
+    ) {
+      return "MULTI_CHOICE";
+    }
+    if (
       s.includes("mcq") ||
       s.includes("choice") ||
+      s.includes("choose") ||
+      s.includes("option") ||
       s.includes("multiple answer") ||
       s.includes("multi answer")
     ) {
@@ -159,8 +184,11 @@ export function resolveAssessmentKind(
   const fromRaw = parse(raw);
   if (fromRaw) return fromRaw;
 
-  // 2. Structural inference: if the question object contains choices or code templates
+  // 2. Structural inference: if the question object contains choices, correctIndices, or code templates
   if (questionObj) {
+    if (Array.isArray(questionObj.correctIndices) && questionObj.correctIndices.length > 0) {
+      return "MULTI_CHOICE";
+    }
     if (Array.isArray(questionObj.choices) && questionObj.choices.length > 1) {
       return "MCQ";
     }
@@ -180,7 +208,9 @@ export function resolveAssessmentKind(
 export function assessmentKindLabel(kind: AssessmentKind): string {
   switch (kind) {
     case "MCQ":
-      return "Multiple Choice";
+      return "Single Choice (MCQ)";
+    case "MULTI_CHOICE":
+      return "Multiple Choice (Multi-Select)";
     case "SHORT_ANSWER":
       return "Short Answer";
     case "LONG_ANSWER":
@@ -207,6 +237,7 @@ export interface FullCourse {
   slug: string;
   title: string;
   track: Track;
+  subTrack?: string;
   level: "Beginner" | "Intermediate" | "Advanced";
   durationWeeks: number;
   price: number;
@@ -384,12 +415,13 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
     if (res.ok) {
       const dbCourse = await res.json();
       const track = mapBackendTrack(dbCourse.track);
-      const price = dbCourse.priceCents ? Math.round(dbCourse.priceCents / 100) : course.price;
+      const price = typeof dbCourse.priceCents === "number" ? Math.round(dbCourse.priceCents / 100) : (typeof course.price === "number" ? course.price : 0);
       return {
         id: dbCourse.id || course.id,
         slug: dbCourse.slug || course.slug,
         title: dbCourse.title || course.title,
         track,
+        subTrack: dbCourse.subTrack || course.subTrack,
         level: dbCourse.level || course.level,
         durationWeeks: dbCourse.durationWeeks || course.durationWeeks,
         price,
@@ -619,7 +651,7 @@ export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
         const updated: FullCourse[] = dbCourses.map((dbc) => {
           const existing = current.find((c) => c.slug === dbc.slug || c.id === dbc.id);
           const track = mapBackendTrack(dbc.track);
-          const price = dbc.priceCents ? Math.round(dbc.priceCents / 100) : 24999;
+          const price = typeof dbc.priceCents === "number" ? Math.round(dbc.priceCents / 100) : (typeof dbc.price === "number" ? dbc.price : 0);
 
           // Preserve rich section materials if matching sectionsJson or build from modules
           let sections: Section[] = [];
@@ -694,6 +726,7 @@ export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
             slug: dbc.slug,
             title: dbc.title,
             track,
+            subTrack: dbc.subTrack || existing?.subTrack,
             level: dbc.level || existing?.level || "Intermediate",
             durationWeeks: dbc.durationWeeks || existing?.durationWeeks || 12,
             price,

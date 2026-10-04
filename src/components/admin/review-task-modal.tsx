@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   X,
   CheckCircle2,
@@ -13,12 +13,14 @@ import {
   Loader2,
   Star,
   XCircle,
+  Award,
 } from "lucide-react";
 import {
   reviewTaskSubmission,
   type IndividualTask,
   type TaskQuestion,
 } from "@/lib/data/tasks-api";
+import { evaluateAssessmentSubmission } from "@/lib/data/assessment-scoring";
 
 interface ReviewTaskModalProps {
   isOpen: boolean;
@@ -28,60 +30,93 @@ interface ReviewTaskModalProps {
 }
 
 export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTaskModalProps) {
-  const [score, setScore] = useState<number>(task?.submission?.score ?? 85);
-  const [feedback, setFeedback] = useState<string>(
-    task?.submission?.feedback ?? task?.submission?.instructorFeedback ?? "Demonstrated sound understanding of core concepts. Great job!"
-  );
+  const submission = task?.submission;
+  const answers = submission?.answers || {};
+  const questions: TaskQuestion[] = task?.questions || [];
+
+  // Compute accurate question-by-question correctness
+  const evaluationResult = useMemo(() => {
+    return evaluateAssessmentSubmission(questions, answers, submission?.uploadedFileName);
+  }, [questions, answers, submission?.uploadedFileName]);
+
+  const [score, setScore] = useState<number>(0);
+  const [feedback, setFeedback] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [reviewAction, setReviewAction] = useState<"Completed" | "Failed">("Completed");
 
   useEffect(() => {
     if (task) {
-      setScore(task.submission?.instructorScore ?? task.submission?.score ?? 85);
-      setFeedback(
-        task.submission?.instructorFeedback ??
-        task.submission?.feedback ??
-        "Demonstrated sound understanding of core concepts. Great job!"
-      );
+      // Determine initial score: prioritize instructor score, else existing score (if not false 85 on failed), else auto-calculated
+      let initialScore = evaluationResult.score;
+      if (task.submission?.instructorScore !== undefined) {
+        // If task was marked Failed but had false 85, correct it to evaluationResult.score
+        if (task.status === "Failed" && task.submission.instructorScore >= 60 && evaluationResult.score < 50) {
+          initialScore = evaluationResult.score;
+        } else {
+          initialScore = task.submission.instructorScore;
+        }
+      } else if (task.submission?.score !== undefined) {
+        if (task.status === "Failed" && task.submission.score >= 60 && evaluationResult.score < 50) {
+          initialScore = evaluationResult.score;
+        } else {
+          initialScore = task.submission.score;
+        }
+      }
+
+      setScore(initialScore);
+
+      const existingFeedback =
+        task.submission?.instructorFeedback ?? task.submission?.feedback;
+
+      if (existingFeedback && existingFeedback !== "Demonstrated sound understanding of core concepts. Great job!") {
+        setFeedback(existingFeedback);
+      } else if (initialScore < 50 || task.status === "Failed") {
+        setFeedback(
+          `Assessment did not meet passing criteria (${evaluationResult.correctCount}/${questions.length} correct). Please review the curriculum notes and retry.`
+        );
+      } else {
+        setFeedback("Demonstrated sound understanding of core concepts. Great job!");
+      }
     }
-  }, [task]);
+  }, [task, evaluationResult]);
 
   if (!isOpen || !task) return null;
-
-  const submission = task.submission;
-  const answers = submission?.answers || {};
-  const questions: TaskQuestion[] = task.questions || [];
-
-  // Helper keyword match calculation for short/long answers
-  const computeKeywordMatch = (studentText: string, modelText: string) => {
-    if (!studentText || !modelText) return 75;
-    const modelWords = modelText
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "")
-      .split(/\s+/)
-      .filter((w) => w.length > 3);
-    if (modelWords.length === 0) return 85;
-
-    const studentLower = studentText.toLowerCase();
-    let matches = 0;
-    modelWords.forEach((word) => {
-      if (studentLower.includes(word)) matches++;
-    });
-
-    const percent = Math.min(100, Math.round((matches / modelWords.length) * 100));
-    return Math.max(50, percent);
-  };
 
   const handleReviewSubmit = async (targetStatus: "Completed" | "Failed") => {
     setIsSubmitting(true);
     setReviewAction(targetStatus);
     setErrorMessage(null);
 
+    // Ensure sensible scoring based on target status
+    let finalScore = Number(score);
+    let finalFeedback = feedback.trim();
+
+    if (targetStatus === "Failed") {
+      // If marking as Failed, score cannot be an unearned distinction score (like 85)
+      if (finalScore >= 50) {
+        finalScore = evaluationResult.score < 50 ? evaluationResult.score : Math.min(finalScore, 40);
+      }
+      if (!finalFeedback || finalFeedback === "Demonstrated sound understanding of core concepts. Great job!") {
+        finalFeedback = `Assessment did not meet passing criteria (${evaluationResult.correctCount}/${questions.length} correct). Please review instructor remarks and retry.`;
+      }
+    } else {
+      // Completed
+      if (finalScore < 50 && evaluationResult.score >= 50) {
+        finalScore = evaluationResult.score;
+      } else if (finalScore < 50) {
+        finalScore = 60; // minimum passing mark for approved completion
+      }
+      if (!finalFeedback) {
+        finalFeedback = "Demonstrated sound understanding of core concepts. Great job!";
+      }
+    }
+
     try {
       const res = await reviewTaskSubmission(task.id, {
-        score: Number(score),
-        feedback: feedback.trim(),
+        score: finalScore,
+        feedback: finalFeedback,
+        instructorFeedback: finalFeedback,
         status: targetStatus,
       });
 
@@ -110,7 +145,7 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
         </button>
 
         <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-bold">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-bold shrink-0">
             <FileCheck className="h-5 w-5" />
           </div>
           <div>
@@ -133,100 +168,164 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
           </div>
         )}
 
+        {/* ACCURATE SCORECARD BAR */}
+        {questions.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-surface-elevated/70 p-3.5 text-xs">
+            <div className="flex items-center gap-2">
+              <Award className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
+              <span className="font-bold text-slate-700 dark:text-slate-200">
+                Evaluation Scorecard:
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 text-emerald-800 dark:text-emerald-300 px-2.5 py-0.5 text-[11px] font-bold">
+                <CheckCircle2 className="h-3 w-3" />
+                {evaluationResult.correctCount} Correct
+              </span>
+
+              <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 dark:bg-rose-950/60 border border-rose-300 text-rose-800 dark:text-rose-300 px-2.5 py-0.5 text-[11px] font-bold">
+                <XCircle className="h-3 w-3" />
+                {evaluationResult.incorrectCount} Incorrect
+              </span>
+
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-950/60 border border-blue-300 text-blue-900 dark:text-blue-300 px-2.5 py-0.5 text-[11px] font-bold">
+                Auto-Score: {evaluationResult.score}/100 ({evaluationResult.totalEarned}/{evaluationResult.totalMax} pts)
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* QUESTIONS & ANSWERS COMPARISON VIEW */}
         <div className="space-y-4">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Question Responses &amp; Model Answer Comparison
+            Question Responses &amp; Answer Evaluation
           </h4>
 
-          {questions.length > 0 ? (
-            questions.map((q, idx) => {
-              const studentAnswer =
-                answers[q.id] !== undefined
-                  ? answers[q.id]
-                  : answers[idx] !== undefined
-                  ? answers[idx]
-                  : answers[String(idx)];
-              const matchScore =
-                q.type === "SHORT_ANSWER" || q.type === "LONG_ANSWER"
-                  ? computeKeywordMatch(String(studentAnswer || ""), q.modelAnswer || "")
-                  : null;
+          {evaluationResult.evaluations.length > 0 ? (
+            evaluationResult.evaluations.map((ev, idx) => {
+              const q = questions[idx] || ({} as TaskQuestion);
 
               return (
                 <div
-                  key={q.id}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-surface-elevated/60 p-4 space-y-3"
+                  key={ev.id || idx}
+                  className={`rounded-xl border p-4 space-y-3 transition-colors ${
+                    ev.isCorrect
+                      ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/20 dark:bg-emerald-950/10"
+                      : "border-rose-200 dark:border-rose-900/50 bg-rose-50/20 dark:bg-rose-950/10"
+                  }`}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="font-bold text-xs text-slate-900 dark:text-white">
-                      Q{idx + 1}: {q.prompt}
+                      Q{idx + 1}: {ev.prompt}
                     </span>
-                    <span className="text-[10px] font-bold uppercase text-[#2563EB] dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded">
-                      {q.type.replace("_", " ")}
-                    </span>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {ev.isCorrect ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Correct (+{ev.earnedPoints} pts)
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 dark:bg-rose-950/60 border border-rose-300 text-rose-800 dark:text-rose-300 px-2 py-0.5 text-[10px] font-bold">
+                          <XCircle className="h-3 w-3" />
+                          Incorrect (0 pts)
+                        </span>
+                      )}
+
+                      <span className="text-[10px] font-bold uppercase text-[#2563EB] dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded">
+                        {ev.type.replace("_", " ")}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Student Answer */}
-                  <div className="rounded-lg bg-white dark:bg-input-bg border border-slate-200 dark:border-slate-700 p-3 text-xs space-y-1">
+                  <div className="rounded-lg bg-white dark:bg-input-bg border border-slate-200 dark:border-slate-700 p-3 text-xs space-y-1.5">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">
                       Student&apos;s Submitted Answer:
                     </span>
-                    {q.type === "MCQ" && q.choices ? (
-                      <div className="space-y-1 pt-1">
+
+                    {ev.type === "MCQ" && q.choices ? (
+                      <div className="space-y-1.5 pt-1">
                         {q.choices.map((c, cIdx) => {
-                          const isSelected = studentAnswer === cIdx;
-                          const isCorrect = q.correctAnswer === cIdx;
+                          const isSelected =
+                            ev.studentChoiceIdx === cIdx ||
+                            ev.studentAnswerText.trim().toLowerCase() === c.trim().toLowerCase();
+                          const isCorrect =
+                            ev.correctChoiceIdx === cIdx ||
+                            ev.correctAnswerText.trim().toLowerCase() === c.trim().toLowerCase();
+
                           return (
                             <div
                               key={cIdx}
-                              className={`flex items-center justify-between rounded-lg p-2 text-xs font-medium border ${
-                                isSelected
-                                  ? isCorrect
-                                    ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-900 dark:text-emerald-200 font-bold"
-                                    : "bg-rose-50 dark:bg-rose-950/40 border-rose-300 text-rose-900 dark:text-rose-200 font-bold"
-                                  : "border-transparent text-slate-600 dark:text-slate-300"
+                              className={`flex items-center justify-between rounded-lg p-2.5 text-xs font-medium border transition-colors ${
+                                isSelected && isCorrect
+                                  ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-400 text-emerald-900 dark:text-emerald-200 font-bold"
+                                  : isSelected && !isCorrect
+                                  ? "bg-rose-50 dark:bg-rose-950/50 border-rose-400 text-rose-900 dark:text-rose-200 font-bold"
+                                  : isCorrect
+                                  ? "bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-300 text-emerald-800 dark:text-emerald-300 font-semibold"
+                                  : "border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                               }`}
                             >
-                              <span>{c}</span>
-                              {isSelected && (
-                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white dark:bg-surface-elevated shadow-xs">
-                                  {isCorrect ? "Correct Choice ✓" : "Student Selected ✗"}
+                              <div className="flex items-center gap-2">
+                                <span className="flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold border border-current">
+                                  {String.fromCharCode(65 + cIdx)}
+                                </span>
+                                <span>{c}</span>
+                              </div>
+
+                              {isSelected && isCorrect && (
+                                <span className="text-[10.5px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300">
+                                  Student Selected (Correct ✓)
+                                </span>
+                              )}
+
+                              {isSelected && !isCorrect && (
+                                <span className="text-[10.5px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 border border-rose-300">
+                                  Student Selected (Incorrect ✗)
+                                </span>
+                              )}
+
+                              {!isSelected && isCorrect && (
+                                <span className="text-[10.5px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300">
+                                  Correct Choice ✓
                                 </span>
                               )}
                             </div>
                           );
                         })}
                       </div>
-                    ) : q.type === "FILE_UPLOAD" ? (
+                    ) : ev.type === "FILE_UPLOAD" ? (
                       <div className="flex items-center gap-2 pt-1 text-xs">
                         <FileText className="h-4 w-4 text-[#2563EB] dark:text-blue-400 shrink-0" />
                         <span className="font-semibold text-slate-800 dark:text-slate-200">
-                          {studentAnswer || submission?.uploadedFileName || (answers as any)?.uploadedFile || "File submitted by student"}
+                          {ev.studentAnswerText}
                         </span>
                       </div>
                     ) : (
-                      <p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
-                        {studentAnswer ? String(studentAnswer) : "(No answer submitted)"}
+                      <p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap font-medium">
+                        {ev.studentAnswerText}
                       </p>
                     )}
                   </div>
 
-                  {/* Admin Model Answer Comparison */}
-                  {(q.type === "SHORT_ANSWER" || q.type === "LONG_ANSWER") && q.modelAnswer && (
+                  {/* Model Answer / Rubric */}
+                  {(ev.type === "SHORT_ANSWER" || ev.type === "LONG_ANSWER") && q.modelAnswer && (
                     <div className="rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 p-3 text-xs space-y-1.5">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] uppercase font-bold text-blue-900 dark:text-blue-300">
-                          Faculty Model Answer / Key Rubric Points:
+                          Faculty Model Answer / Rubric:
                         </span>
-                        {matchScore !== null && (
+                        {ev.matchScore !== null && (
                           <span
                             className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                              matchScore >= 70
+                              ev.isCorrect
                                 ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300"
-                                : "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
+                                : "bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300"
                             }`}
                           >
-                            ~{matchScore}% Concept Alignment
+                            {ev.matchScore}% Concept Alignment
                           </span>
                         )}
                       </div>
@@ -269,9 +368,20 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
         <form onSubmit={(e) => { e.preventDefault(); handleReviewSubmit("Completed"); }} className="space-y-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
-                Score / Points (0 - 100) *
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
+                  Score / Points (0 - 100) *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setScore(evaluationResult.score)}
+                  title="Reset to auto-calculated score based on student answers"
+                  className="text-[10px] text-[#2563EB] dark:text-blue-400 font-bold hover:underline cursor-pointer"
+                >
+                  Use Auto-Score ({evaluationResult.score})
+                </button>
+              </div>
+
               <div className="relative mt-1.5">
                 <input
                   type="number"

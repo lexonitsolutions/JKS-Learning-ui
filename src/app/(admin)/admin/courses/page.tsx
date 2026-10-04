@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Plus, BookOpen, Search, Award, Star, TrendingUp, Sparkles, Video, Layers, Pencil, Trash2, AlertTriangle, X, MoreVertical, Eye } from "lucide-react";
+import { Plus, BookOpen, Search, Award, Star, TrendingUp, Sparkles, Video, Layers, Pencil, Trash2, AlertTriangle, X, MoreVertical, Eye, Activity, SlidersHorizontal, IndianRupee } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { CourseWorkflowModal, type CourseWorkflowData } from "@/components/admin/course-workflow-modal";
 import { EditCourseModal } from "@/components/admin/edit-course-modal";
@@ -32,6 +32,28 @@ export default function AdminCoursesPage() {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Sticky header animation state for row headings
+  const [isHeaderStuck, setIsHeaderStuck] = useState(false);
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!tableRef.current) return;
+      const rect = tableRef.current.getBoundingClientRect();
+      const topOffset = window.innerWidth >= 640 ? 80 : 64;
+      setIsHeaderStuck(rect.top <= topOffset + 2);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
   }, []);
 
   // Delete confirmation state
@@ -67,7 +89,7 @@ export default function AdminCoursesPage() {
       track: newCourse.track as Track,
       level: newCourse.level as "Beginner" | "Intermediate" | "Advanced",
       durationWeeks: 12,
-      price: parseInt(newCourse.price.replace(/,/g, ""), 10) || 24999,
+      price: newCourse.price !== "" && !isNaN(parseInt(newCourse.price.replace(/,/g, ""), 10)) ? parseInt(newCourse.price.replace(/,/g, ""), 10) : 0,
       rating: 5.0,
       studentsEnrolled: 0,
       summary: "Comprehensive multi-stage enterprise engineering curriculum.",
@@ -139,7 +161,7 @@ export default function AdminCoursesPage() {
         userInitials="LX"
       />
 
-      <div className="flex-1 space-y-5 p-3 sm:p-6 lg:p-8 lg:pt-4 w-full max-w-full overflow-x-hidden">
+      <div className="flex-1 space-y-5 p-3 sm:p-5 lg:p-6 lg:pt-4 w-full max-w-full overflow-x-clip">
         {saveError && (
           <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
             {saveError}
@@ -252,18 +274,121 @@ export default function AdminCoursesPage() {
         </Reveal>
 
         {/* Main Courses Table */}
-        <div className="w-full max-w-full overflow-hidden rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
-          <div className="w-full overflow-x-auto touch-pan-x">
-            <table className="w-full text-left text-xs min-w-[680px] border-separate border-spacing-y-1.5">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-400 uppercase">
-                  <th className="pb-3 pr-4 pl-4">Course Name &amp; Structure</th>
-                  <th className="px-4 pb-3">Track</th>
-                  <th className="px-4 pb-3">Price</th>
-                  <th className="px-4 pb-3">Sections &amp; Videos</th>
-                  <th className="px-4 pb-3 text-center">Rating</th>
-                  <th className="px-4 pb-3 text-center">Status</th>
-                  <th className="pr-4 pb-3 pl-4 text-right">Actions</th>
+        <div
+          ref={tableRef}
+          className={`w-full max-w-full rounded-[22px] border transition-all duration-300 ${
+            isHeaderStuck
+              ? "border-blue-500/30 shadow-[0_12px_36px_-6px_rgba(20,50,100,0.12)] dark:shadow-[0_12px_36px_-6px_rgba(0,0,0,0.7)]"
+              : "border-white/70 dark:border-slate-800/80 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none"
+          } bg-white/80 dark:bg-surface-secondary/90 p-3 sm:p-4 backdrop-blur-xl overflow-x-clip`}
+        >
+          <div className="w-full overflow-x-clip [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <table className="w-full text-left text-xs border-separate border-spacing-y-1.5">
+              <colgroup><col className="w-[32%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[17%]" /><col className="w-[8%]" /><col className="w-[13%]" /><col className="w-[10%]" /></colgroup>
+              <thead className="sticky top-16 sm:top-20 z-20 transition-all duration-300">
+                <tr className="border-none relative">
+                  {/* 1. Course Name & Structure */}
+                  <th
+                    className={`w-[32%] pb-3.5 pt-3.5 pr-3 pl-3 sm:pl-4 sticky top-16 sm:top-20 z-20 transition-all duration-300 first:rounded-l-xl ${
+                      isHeaderStuck
+                        ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
+                        : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 uppercase">
+                      <BookOpen className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                      <span className="truncate">Course Name &amp; Structure</span>
+                      {isHeaderStuck && (
+                        <span className="ml-1.5 hidden md:inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-950/80 border border-blue-300 dark:border-blue-800 px-1.5 py-0.2 text-[9.5px] font-extrabold text-blue-700 dark:text-blue-300 animate-in fade-in">
+                          {filteredCourses.length}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+
+                  {/* 2. Track */}
+                  <th
+                    className={`w-[10%] px-2.5 sm:px-3 pb-3.5 pt-3.5 sticky top-16 sm:top-20 z-20 transition-all duration-300 ${
+                      isHeaderStuck
+                        ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
+                        : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 uppercase whitespace-nowrap">
+                      <Layers className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      <span>Track</span>
+                    </div>
+                  </th>
+
+                  {/* 3. Price */}
+                  <th
+                    className={`w-[10%] px-2.5 sm:px-3 pb-3.5 pt-3.5 sticky top-16 sm:top-20 z-20 transition-all duration-300 ${
+                      isHeaderStuck
+                        ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
+                        : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1 text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 uppercase whitespace-nowrap">
+                      <IndianRupee className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>Price</span>
+                    </div>
+                  </th>
+
+                  {/* 4. Sections & Videos */}
+                  <th
+                    className={`w-[17%] px-2.5 sm:px-3 pb-3.5 pt-3.5 sticky top-16 sm:top-20 z-20 transition-all duration-300 ${
+                      isHeaderStuck
+                        ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
+                        : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 uppercase whitespace-nowrap">
+                      <Video className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                      <span>Sections &amp; Videos</span>
+                    </div>
+                  </th>
+
+                  {/* 5. Rating */}
+                  <th
+                    className={`w-[8%] px-2 sm:px-3 pb-3.5 pt-3.5 text-center sticky top-16 sm:top-20 z-20 transition-all duration-300 ${
+                      isHeaderStuck
+                        ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
+                        : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
+                    }`}
+                  >
+                    <div className="inline-flex items-center gap-1 text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 uppercase whitespace-nowrap">
+                      <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500/30 shrink-0" />
+                      <span>Rating</span>
+                    </div>
+                  </th>
+
+                  {/* 6. Status */}
+                  <th
+                    className={`w-[13%] px-2.5 sm:px-3 pb-3.5 pt-3.5 text-center sticky top-16 sm:top-20 z-20 transition-all duration-300 ${
+                      isHeaderStuck
+                        ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
+                        : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
+                    }`}
+                  >
+                    <div className="inline-flex items-center gap-1 text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 uppercase whitespace-nowrap">
+                      <Activity className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>Status</span>
+                    </div>
+                  </th>
+
+                  {/* 7. Action */}
+                  <th
+                    className={`w-[10%] px-2.5 sm:px-3 pb-3.5 pt-3.5 text-center sticky top-16 sm:top-20 z-20 transition-all duration-300 last:rounded-r-xl ${
+                      isHeaderStuck
+                        ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
+                        : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
+                    }`}
+                  >
+                    <div className="inline-flex items-center justify-center gap-1 text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 uppercase whitespace-nowrap">
+                      <SlidersHorizontal className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                      <span>Action</span>
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -288,44 +413,50 @@ export default function AdminCoursesPage() {
 
                     return (
                       <tr key={c.id || c.slug} className="group transition-all duration-200 ease-out hover:bg-slate-100/60 dark:hover:bg-white/[0.035] hover:shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_2px_14px_rgba(0,0,0,0.3)]">
-                      <td className="py-3.5 pr-4 pl-4 whitespace-nowrap first:rounded-l-2xl">
-                        <div className="flex items-center gap-3">
+                      <td className="py-3.5 pr-3 pl-3 sm:pl-4 first:rounded-l-2xl">
+                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                           {c.thumbnail ? (
                             <img
                               src={c.thumbnail}
                               alt={c.title}
-                              className="h-10 w-16 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs"
+                              className="h-10 w-14 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs"
                             />
                           ) : (
-                            <div className="flex h-10 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-900 via-slate-900 to-indigo-950 text-[10px] font-extrabold text-white shrink-0 shadow-2xs border border-white/10">
+                            <div className="flex h-10 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-blue-900 via-slate-900 to-indigo-950 text-[10px] font-extrabold text-white shrink-0 shadow-2xs border border-white/10">
                               {c.track?.slice(0, 4)}
                             </div>
                           )}
-                          <div className="min-w-0">
-                            <div className="font-bold text-slate-900 dark:text-white truncate max-w-xs">{c.title}</div>
-                            <div className="text-[11px] text-slate-400 dark:text-slate-400 font-mono">/{c.slug}</div>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-bold text-slate-900 dark:text-white truncate max-w-[140px] sm:max-w-[200px] lg:max-w-[250px]">{c.title}</div>
+                            <div className="text-[11px] text-slate-400 dark:text-slate-400 font-mono truncate max-w-[120px] sm:max-w-[180px]">/{c.slug}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3.5 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                        <span className="inline-flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                      <td className="px-2.5 sm:px-3 py-3.5 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                        <span className="inline-flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                           {c.track}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
-                        ₹{c.price.toLocaleString("en-IN")}
-                      </td>
-                      <td className="px-4 py-3.5 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1 rounded bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 text-[11px] font-semibold text-[#2563EB] dark:text-blue-400 border border-transparent dark:border-blue-800/40">
-                            <Layers className="h-3 w-3" /> {sectionCount} Sections
+                      <td className="px-2.5 sm:px-3 py-3.5 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                        {c.price <= 0 ? (
+                          <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
+                            Free Course
                           </span>
-                          <span className="inline-flex items-center gap-1 rounded bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                            <Video className="h-3 w-3" /> {totalVids} Videos
+                        ) : (
+                          `₹${c.price.toLocaleString("en-IN")}`
+                        )}
+                      </td>
+                      <td className="px-2.5 sm:px-3 py-3.5 font-medium text-slate-600 dark:text-slate-300">
+                        <div className="flex flex-wrap items-center gap-1">
+                          <span className="inline-flex items-center gap-1 rounded bg-blue-50 dark:bg-blue-950/50 px-1.5 py-0.5 text-[10.5px] font-semibold text-[#2563EB] dark:text-blue-400 border border-transparent dark:border-blue-800/40 whitespace-nowrap">
+                            <Layers className="h-3 w-3" /> {sectionCount} Sec
+                          </span>
+                          <span className="inline-flex items-center gap-1 rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10.5px] font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            <Video className="h-3 w-3" /> {totalVids} Vids
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3.5 text-center font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                      <td className="px-2 sm:px-3 py-3.5 text-center font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         {c.rating > 0 ? (
                           <span className="inline-flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
                             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
@@ -335,13 +466,13 @@ export default function AdminCoursesPage() {
                           "—"
                         )}
                       </td>
-                      <td className="px-4 py-3.5 text-center whitespace-nowrap">
+                      <td className="px-2.5 sm:px-3 py-3.5 text-center whitespace-nowrap">
                         <button
                           type="button"
                           disabled={togglingCourseId === (c.id || c.slug)}
                           onClick={() => handleToggleStatus(c)}
                           title={`Click to ${c.status === "Published" ? "unpublish (switch to Draft)" : "publish"} course`}
-                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50 ${
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50 whitespace-nowrap ${
                             c.status === "Published"
                               ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
                               : "bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:hover:bg-amber-900/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60"
@@ -349,13 +480,10 @@ export default function AdminCoursesPage() {
                         >
                           <span className={`h-1.5 w-1.5 rounded-full ${c.status === "Published" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
                           <span>{togglingCourseId === (c.id || c.slug) ? "Updating..." : c.status}</span>
-                          <span className="text-[10px] opacity-75 font-normal ml-0.5">
-                            ({c.status === "Published" ? "Unpublish" : "Publish"})
-                          </span>
                         </button>
                       </td>
-                      <td className="pr-4 py-3.5 pl-4 text-right whitespace-nowrap last:rounded-r-2xl">
-                        <div className="relative inline-block text-right course-actions-dropdown">
+                      <td className="px-2.5 sm:px-3 py-3.5 text-center whitespace-nowrap last:rounded-r-2xl">
+                        <div className="relative inline-flex items-center justify-center course-actions-dropdown">
                           <button
                             type="button"
                             onClick={() =>

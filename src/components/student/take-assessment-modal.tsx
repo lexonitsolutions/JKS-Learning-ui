@@ -13,6 +13,10 @@ import {
   Loader2,
 } from "lucide-react";
 import { type TaskQuestion, type IndividualTask, submitStudentTask } from "@/lib/data/tasks-api";
+import {
+  hasTaskExplicitFiles,
+  evaluateAssessmentSubmission,
+} from "@/lib/data/assessment-scoring";
 
 interface MockQuestion {
   id?: string;
@@ -97,23 +101,24 @@ export function TakeAssessmentModal({
   const isIndividualTask = Boolean(task);
   const effectiveInstructions = task?.instructions || instructions;
 
-  const mcqQuestions = customQuestions.filter((q) => q.type === "MCQ");
-  const answeredMcqCount = mcqQuestions.filter((q) => answers[q.id] !== undefined).length;
-
-  // Every question must be answered before the assignment can be submitted —
-  // both MCQs, written, and file uploads are required.
-  const isAnswered = (q: TaskQuestion) => {
-    const value = answers[q.id];
-    if (q.type === "MCQ") return typeof value === "number";
-    if (q.type === "FILE_UPLOAD") return Boolean(uploadedFileName || value || answers.uploadedFile);
-    return typeof value === "string" && value.trim().length > 0;
-  };
-  const answeredCount = customQuestions.filter(isAnswered).length;
-  const isFileUploadRequired = Boolean(
-    task?.requiredFiles && !customQuestions.some((q) => q.type === "FILE_UPLOAD")
-  );
+  const isFileUploadRequired =
+    hasTaskExplicitFiles(task?.requiredFiles) &&
+    !customQuestions.some((q) => q.type === "FILE_UPLOAD");
   const isFileProvided = Boolean(uploadedFileName || answers.uploadedFile);
 
+  // Every question must be answered before the assignment can be submitted
+  const isAnswered = (q: TaskQuestion) => {
+    const value = answers[q.id];
+    if (q.type === "MCQ") {
+      return typeof value === "number" || (typeof value === "string" && value.trim().length > 0);
+    }
+    if (q.type === "FILE_UPLOAD") {
+      return Boolean(uploadedFileName || value || answers.uploadedFile);
+    }
+    return typeof value === "string" && value.trim().length > 0;
+  };
+
+  const answeredCount = customQuestions.filter(isAnswered).length;
   const defaultAnsweredCount = DEFAULT_QUESTIONS.filter(
     (_, idx) => answers[`default-${idx + 1}`] !== undefined
   ).length;
@@ -158,87 +163,29 @@ export function TakeAssessmentModal({
     setValidationError(null);
 
     try {
-      if (isIndividualTask && task) {
-        // Calculate MCQ score if MCQs exist
-        let totalMcqs = mcqQuestions.length;
-        let correctMcqs = 0;
-        mcqQuestions.forEach((q) => {
-          if (answers[q.id] === q.correctAnswer) {
-            correctMcqs++;
-          }
-        });
-
-        const autoScore = totalMcqs > 0 ? Math.round((correctMcqs / totalMcqs) * 100) : 85;
-
-        // Persist to backend
-        const res = await submitStudentTask(task.id, {
-          studentEmail: studentEmail || task.assignedStudentEmail,
+      if (customQuestions.length > 0) {
+        // Calculate true score across all questions using actual right and wrong answers
+        const evalResult = evaluateAssessmentSubmission(
+          customQuestions,
           answers,
-          uploadedFileName: uploadedFileName || undefined,
-        });
+          uploadedFileName
+        );
+        const autoScore = evalResult.score;
+
+        if (isIndividualTask && task) {
+          // Persist calculated score to backend
+          await submitStudentTask(task.id, {
+            studentEmail: studentEmail || task.assignedStudentEmail,
+            answers,
+            uploadedFileName: uploadedFileName || undefined,
+            score: autoScore,
+            instructorScore: autoScore,
+          });
+        }
 
         onSubmit(autoScore, { answers, uploadedFileName });
-      } else if (customQuestions.length > 0) {
-        let totalEarned = 0;
-        customQuestions.forEach((q) => {
-          const ans = answers[q.id];
-          if (q.type === "MCQ") {
-            if (typeof ans === "number" && ans === q.correctAnswer) {
-              totalEarned += 1;
-            } else if (typeof ans === "string") {
-              const trimmed = ans.trim().toLowerCase();
-              const choices = q.choices || [];
-              const correctChoice =
-                typeof q.correctAnswer === "number" && choices[q.correctAnswer]
-                  ? choices[q.correctAnswer].trim().toLowerCase()
-                  : "";
-              if (trimmed === correctChoice || parseInt(trimmed, 10) === q.correctAnswer) {
-                totalEarned += 1;
-              }
-            }
-          } else {
-            // Written / Short Answer / Long Answer evaluation
-            const answerStr = typeof ans === "string" ? ans.trim() : "";
-            if (!answerStr) return;
-            const kwSet = new Set<string>();
-            if (q.modelAnswer) {
-              q.modelAnswer
-                .toLowerCase()
-                .replace(/[^a-z0-9\s]/g, "")
-                .split(/\s+/)
-                .filter((w) => w.length > 3)
-                .forEach((w) => kwSet.add(w));
-            }
-            if (kwSet.size === 0 && q.prompt) {
-              q.prompt
-                .toLowerCase()
-                .replace(/[^a-z0-9\s]/g, "")
-                .split(/\s+/)
-                .filter((w) => w.length > 3)
-                .forEach((w) => kwSet.add(w));
-            }
-            const kwList = Array.from(kwSet);
-            const lowerAns = answerStr.toLowerCase();
-            const isGibberish =
-              !/\s/.test(answerStr) && answerStr.length > 10 && !kwList.some((k) => lowerAns.includes(k));
-
-            if (!isGibberish && kwList.length > 0) {
-              let matched = 0;
-              for (const kw of kwList) {
-                if (lowerAns.includes(kw)) matched++;
-              }
-              const ratio = matched / kwList.length;
-              if (ratio >= 0.5) totalEarned += 1;
-              else if (ratio >= 0.25) totalEarned += 0.5;
-            } else if (!isGibberish && answerStr.length >= 10 && /\s/.test(answerStr)) {
-              totalEarned += 1;
-            }
-          }
-        });
-        const score = Math.round((totalEarned / customQuestions.length) * 100);
-        onSubmit(score, { answers, uploadedFileName: uploadedFileName || undefined });
       } else {
-        // No questions configured for this assignment — generic knowledge check.
+        // Fallback for default questions
         const correctCount = DEFAULT_QUESTIONS.reduce(
           (acc, q, idx) => acc + (answers[`default-${idx + 1}`] === q.correctIndex ? 1 : 0),
           0
@@ -437,11 +384,11 @@ export function TakeAssessmentModal({
             ))
           )}
 
-          {/* Optional File Attachment if Task specifies requiredFiles */}
-          {task?.requiredFiles && !customQuestions.some((q) => q.type === "FILE_UPLOAD") && (
+          {/* Optional File Attachment ONLY IF Task genuinely requires file submission */}
+          {isFileUploadRequired && (
             <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated p-4 space-y-2">
               <label className="block font-bold text-slate-800 dark:text-slate-200 text-xs">
-                Submit Required Project File ({task.requiredFiles})
+                Submit Required Project File ({Array.isArray(task?.requiredFiles) ? task.requiredFiles.filter(Boolean).join(", ") : task?.requiredFiles})
               </label>
               <div className="flex items-center gap-3">
                 <input

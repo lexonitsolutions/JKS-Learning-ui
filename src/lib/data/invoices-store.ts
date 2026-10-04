@@ -28,8 +28,11 @@ export interface Invoice {
   sgstRate: number; // 9%
   sgstAmount: number;
   totalAmount: number;
-  paymentMode: "UPI" | "Credit/Debit Card" | "Net Banking" | "No-Cost EMI";
+  paymentMode: "UPI" | "Credit/Debit Card" | "Net Banking" | "No-Cost EMI" | "Free Course";
   paymentStatus: "Paid" | "Pending" | "Refunded";
+  enrollmentStatus?: "ACTIVE" | "PENDING" | "REJECTED" | string;
+  isAutoApproved?: boolean;
+  approvalMessage?: string;
   transactionRef: string;
   batchTiming?: string;
 }
@@ -235,7 +238,10 @@ export async function registerCourseOnline(data: {
         sgstAmount: inv.sgst,
         totalAmount: inv.totalAmount,
         paymentMode: data.paymentMode,
-        paymentStatus: "Paid",
+        paymentStatus: json.isAutoApproved || inv.status === "PAID" ? "Paid" : "Pending",
+        enrollmentStatus: json.status || (json.isAutoApproved ? "ACTIVE" : "PENDING"),
+        isAutoApproved: Boolean(json.isAutoApproved),
+        approvalMessage: json.message,
         transactionRef: `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`,
         batchTiming: inv.batchTiming,
       };
