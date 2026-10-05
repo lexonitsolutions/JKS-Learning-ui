@@ -61,8 +61,8 @@ export function AddInstructorModal({
     e.preventDefault();
     if (!name.trim() || !email.trim() || isSaving) return;
 
-    if (password.trim().length < 8) {
-      setError("The initial password must be at least 8 characters.");
+    if (password.trim().length < 5) {
+      setError("Password must be at least 5 characters long.");
       return;
     }
 
@@ -283,12 +283,12 @@ export function AddInstructorModal({
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                       Login Password *
                     </label>
-                    <span className="text-[10px] text-slate-400">Min 8 chars</span>
+                    <span className="text-[10px] text-slate-400">Min 5 chars</span>
                   </div>
                   <input
                     type="text"
                     required
-                    minLength={8}
+                    minLength={5}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Initial login password"

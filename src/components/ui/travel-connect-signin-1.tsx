@@ -280,7 +280,7 @@ const registerSchema = z
     phone: z
       .string()
       .regex(/^[0-9]{10}$/, "Please enter a valid 10-digit mobile number"),
-    password: z.string().min(5, "Password must be at least 5 characters"),
+    password: z.string().min(5, "Password must be at least 5 characters long."),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

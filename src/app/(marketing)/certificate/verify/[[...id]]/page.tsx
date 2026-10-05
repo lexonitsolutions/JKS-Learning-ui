@@ -18,6 +18,7 @@ import {
   Sparkles,
   ArrowRight,
   BadgeCheck,
+  Loader2,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api/base-url";
 import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
@@ -40,7 +41,7 @@ interface VerificationResult {
   directorRole?: string;
 }
 
-export default function CertificateVerifyPage() {
+function CertificateVerifyContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -692,3 +693,18 @@ export default function CertificateVerifyPage() {
     </div>
   );
 }
+
+export default function CertificateVerifyPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex h-96 w-full items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[#1E5EFF]" />
+        </div>
+      }
+    >
+      <CertificateVerifyContent />
+    </React.Suspense>
+  );
+}
+

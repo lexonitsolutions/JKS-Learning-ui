@@ -25,6 +25,7 @@ import {
   Menu,
   X,
   Activity,
+  FolderTree,
   type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -58,8 +59,10 @@ const STUDENT_SEC_NAV: NavItem[] = [
 
 const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/batches", label: "Batches", icon: FolderTree },
   { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
+  { href: "/admin/syllabus", label: "Syllabus", icon: FileText },
   { href: "/admin/events", label: "Events", icon: Calendar, badge: "New" },
   { href: "/admin/instructors", label: "Instructors", icon: GraduationCap },
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
@@ -79,8 +82,10 @@ const ADMIN_SEC_NAV: NavItem[] = [
 
 const INSTRUCTOR_MAIN_NAV: NavItem[] = [
   { href: "/instructor", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/instructor/batches", label: "Batches", icon: FolderTree },
   { href: "/instructor/students", label: "Students", icon: Users },
   { href: "/instructor/courses", label: "Courses", icon: BookOpen },
+  { href: "/instructor/syllabus", label: "Syllabus", icon: FileText },
   { href: "/instructor/assessments", label: "Assessments", icon: ClipboardCheck, badge: "New" },
   { href: "/instructor/analytics", label: "Analytics", icon: BarChart3 },
 ];

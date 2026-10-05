@@ -68,8 +68,8 @@ export function EditInstructorModal({
     e.preventDefault();
     if (!name.trim() || !email.trim() || isSaving) return;
 
-    if (newPassword.trim() && newPassword.trim().length < 6) {
-      setError("New password must be at least 6 characters long.");
+    if (newPassword.trim() && newPassword.trim().length < 5) {
+      setError("Password must be at least 5 characters long.");
       return;
     }
 

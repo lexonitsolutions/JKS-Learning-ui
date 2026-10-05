@@ -56,7 +56,10 @@ import {
   uploadVideoToBunnyStream,
 } from "@/lib/data/videos-api";
 
-type StepNumber = 1 | 2 | 3 | 4 | 5;
+import { VideoAssignmentManager } from "@/components/admin/video-assignment-manager";
+import { SyllabusTemplateSelector } from "@/components/admin/syllabus-template-selector";
+
+type StepNumber = 1 | 2 | 3 | 4;
 
 interface StepTab {
   step: StepNumber;
@@ -66,11 +69,11 @@ interface StepTab {
 }
 
 const STEPS: StepTab[] = [
-  { step: 1, label: "1. Course Basics", shortLabel: "Basics", icon: Layers },
-  { step: 2, label: "2. Curriculum & Videos", shortLabel: "Curriculum", icon: Video },
-  { step: 3, label: "3. Assignments & Pass Marks", shortLabel: "Assignments", icon: ClipboardCheck },
-  { step: 4, label: "4. Anti-Skip & Security", shortLabel: "Anti-Skip", icon: Lock },
-  { step: 5, label: "5. Certificate & Publish", shortLabel: "Certificate", icon: Award },
+  { step: 1, label: "1. Course Basics & Syllabus", shortLabel: "Basics & Syllabus", icon: Layers },
+  { step: 2, label: "2. Curriculum, Videos & Assignments", shortLabel: "Curriculum & Assignments", icon: Video },
+  { step: 3, label: "3. Anti-Skip & Security", shortLabel: "Anti-Skip", icon: Lock },
+  { step: 4, label: "4. Certificate & Publish", shortLabel: "Certificate", icon: Award },
+
 ];
 
 function AdminNewCourseContent() {
@@ -90,6 +93,7 @@ function AdminNewCourseContent() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importSuccessMessage, setImportSuccessMessage] = useState<string | null>(null);
   const [expandedVideoId, setExpandedVideoId] = useState<string | null>(null);
+  const [selectedSyllabusTemplateId, setSelectedSyllabusTemplateId] = useState<string | null>(null);
 
   const clearFieldError = (fieldKey: string) => {
     setFieldErrors((prev) => {
@@ -533,8 +537,45 @@ function AdminNewCourseContent() {
           if (courseData.instructorUserIds && courseData.instructorUserIds.length > 0) {
             setSelectedInstructorId(courseData.instructorUserIds[0]);
           }
+          if (courseData.syllabusTemplateId) {
+            setSelectedSyllabusTemplateId(courseData.syllabusTemplateId);
+          }
 
-          const rawSections = courseData.sectionsJson || courseData.sections;
+          let rawSections = courseData.sectionsJson || courseData.sections;
+          if ((!Array.isArray(rawSections) || rawSections.length === 0) && Array.isArray(courseData.modules) && courseData.modules.length > 0) {
+            rawSections = courseData.modules.map((m: any, idx: number) => ({
+              id: `sec-${m.id || idx}`,
+              title: m.title || `Module ${idx + 1}`,
+              order: m.order || idx + 1,
+              description: m.description || "",
+              subsections: (m.topics || []).map((t: any, tIdx: number) => ({
+                id: `sub-${t.id || tIdx}`,
+                title: t.title || `Topic ${tIdx + 1}`,
+                order: t.order || tIdx + 1,
+                description: t.description || "",
+                videos: (t.videos || []).map((v: any, vIdx: number) => ({
+                  id: `v-${v.id || vIdx}`,
+                  title: v.title || `Video ${vIdx + 1}`,
+                  durationSeconds: v.durationSeconds || 300,
+                  durationFormatted: v.durationFormatted || "5:00",
+                  videoType: (v.videoType as any) || "url",
+                  videoUrl: v.videoUrl || v.providerAssetId || "",
+                  order: v.order || vIdx + 1,
+                  isFreeDemo: Boolean(v.isFreeDemo),
+                  notes: v.notes || "",
+                })),
+              })),
+              directVideos: [],
+              assignment: {
+                id: `asg-${m.id || idx}`,
+                title: `${m.title || "Module"} Practical Assessment`,
+                description: `Hands-on assessment and evaluation for ${m.title || "Module"}.`,
+                type: "Multiple Choice (MCQ)",
+                minPassingScore: 70,
+                questions: [],
+              },
+            }));
+          }
           if (Array.isArray(rawSections) && rawSections.length > 0) {
             const normalizedSections = rawSections.map((sec: any, idx: number) => {
               const asgType = canonicalizeAssessmentType(sec.assignment?.type);
@@ -742,7 +783,10 @@ function AdminNewCourseContent() {
       return { valid: true, message: "", step: 2 };
     }
 
-    if (step === 3) {
+    if (step === 3 || step === 4) {
+      return { valid: true, message: "", step };
+    }
+    if (false && step === 3) {
       for (let i = 0; i < sections.length; i++) {
         const sec = sections[i];
         if (!sec.assignment.title.trim()) {
@@ -775,7 +819,7 @@ function AdminNewCourseContent() {
       return { valid: true, message: "", step: 4 };
     }
 
-    return { valid: true, message: "", step: 5 };
+    return { valid: true, message: "", step: 4 };
   };
 
   const validateStep = (step: StepNumber): { valid: boolean; message: string } => {
@@ -849,7 +893,7 @@ function AdminNewCourseContent() {
       return;
     }
     setValidationError(null);
-    if (currentStep < 5) {
+    if (currentStep < 4) {
       setCurrentStep((currentStep + 1) as StepNumber);
     }
   };
@@ -1288,7 +1332,7 @@ function AdminNewCourseContent() {
   // Save & Publish
   const handlePublishCourse = async (status: "Published" | "Draft" = "Published") => {
     // Validate stages 1 to 3 before submitting
-    for (let s = 1; s <= 3; s++) {
+    for (let s = 1; s <= 2; s++) {
       const check = validateStepWithField(s as StepNumber);
       if (!check.valid) {
         if (check.fieldId && check.fieldKey) {
@@ -1324,6 +1368,7 @@ function AdminNewCourseContent() {
       status,
       instructorUserIds: selectedInstructorId ? [selectedInstructorId] : ["6aafc1a7d80072434f90eb89"],
       instructorName: selectedInstructor?.name || "Davood Khan",
+      syllabusTemplateId: selectedSyllabusTemplateId || null,
     };
 
     try {
@@ -1420,7 +1465,7 @@ function AdminNewCourseContent() {
         </div>
 
         {/* STEP PROGRESS BAR INDICATOR WITH SEQUENTIAL GATING */}
-        <div className="grid grid-cols-5 gap-1 sm:gap-2 rounded-2xl sm:rounded-[20px] border border-white/80 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary p-1 sm:p-2 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+        <div className="grid grid-cols-4 gap-1 sm:gap-2 rounded-2xl sm:rounded-[20px] border border-white/80 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary p-1 sm:p-2 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
           {STEPS.map((s) => {
             const isActive = currentStep === s.step;
             const isDone = currentStep > s.step;
@@ -1841,6 +1886,22 @@ function AdminNewCourseContent() {
                   </div>
 
                   {/* Thumbnail / Media Upload Box */}
+                  {/* Reusable Syllabus Template Selector */}
+                  <SyllabusTemplateSelector
+                    selectedTemplateId={selectedSyllabusTemplateId}
+                    onSelectTemplate={(tpl) => {
+                      if (!tpl) {
+                        setSelectedSyllabusTemplateId(null);
+                        return;
+                      }
+                      setSelectedSyllabusTemplateId(tpl.id);
+                    }}
+                    onImportModules={(importedSections: any) => {
+                      handleImportSections(importedSections, false);
+                    }}
+                  />
+
+                  {/* Thumbnail / Media Upload Box */}
                   <CourseThumbnailUploader
                     thumbnailUrl={thumbnailUrl}
                     onThumbnailChange={setThumbnailUrl}
@@ -1972,7 +2033,9 @@ function AdminNewCourseContent() {
                         </div>
                       </div>
 
-                      {/* Section Description */}
+                      {/* Dedicated Scroll Container for Section Body */}
+                      <div className="max-h-[640px] overflow-y-auto pr-1 sm:pr-2 space-y-5 custom-scrollbar">
+                        {/* Section Description */}
                       <div>
                         <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                           Section Description
@@ -2223,201 +2286,18 @@ function AdminNewCourseContent() {
                                         </div>
                                       </div>
 
-                                      {/* Interview Questions & Video Task Accordion Button */}
-                                      <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
-                                        <button
-                                          type="button"
-                                          onClick={() => setExpandedVideoId(expandedVideoId === vid.id ? null : vid.id)}
-                                          className="flex items-center gap-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
-                                        >
-                                          <HelpCircle className="h-3.5 w-3.5" />
-                                          <span>
-                                            Interview Questions ({(vid.interviewQuestions || []).length}) &amp; Task (
-                                            {vid.task?.title ? "Configured" : "None"})
-                                          </span>
-                                          {expandedVideoId === vid.id ? (
-                                            <ChevronUp className="h-3 w-3 ml-0.5" />
-                                          ) : (
-                                            <ChevronDown className="h-3 w-3 ml-0.5" />
-                                          )}
-                                        </button>
+                                      {/* Video-Level Optional Assignment Manager */}
+                                      <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800">
+                                        <VideoAssignmentManager
+                                          video={vid}
+                                          videoIndexLabel={`Video ${vidIdx + 1}`}
+                                          onUpdate={(updatedVid) => {
+                                            const updated = [...sections];
+                                            updated[secIdx].subsections![subIdx].videos[vidIdx] = updatedVid;
+                                            setSections(updated);
+                                          }}
+                                        />
                                       </div>
-
-                                      {/* EXPANDED CONFIGURATION PANEL */}
-                                      {expandedVideoId === vid.id && (
-                                        <div className="rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/20 dark:bg-blue-950/20 p-3 space-y-4 text-xs animate-in fade-in slide-in-from-top-1">
-                                          {/* 1. Interview Questions */}
-                                          <div className="space-y-2">
-                                            <div className="flex items-center justify-between">
-                                              <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                                                <HelpCircle className="h-3.5 w-3.5 text-[#2563EB]" />
-                                                Video Interview Questions ({(vid.interviewQuestions || []).length})
-                                              </span>
-                                              <button
-                                                type="button"
-                                                onClick={() => {
-                                                  const updated = [...sections];
-                                                  const target = updated[secIdx].subsections![subIdx].videos[vidIdx];
-                                                  const list = target.interviewQuestions || [];
-                                                  target.interviewQuestions = [
-                                                    ...list,
-                                                    { id: `iq-${Date.now()}-${list.length + 1}`, question: "", answer: "" },
-                                                  ];
-                                                  setSections(updated);
-                                                }}
-                                                className="rounded-md bg-white dark:bg-surface-elevated border border-blue-200 dark:border-blue-800 px-2 py-0.5 text-[10.5px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
-                                              >
-                                                + Add Interview Question
-                                              </button>
-                                            </div>
-
-                                            {(vid.interviewQuestions || []).length === 0 ? (
-                                              <p className="text-[11px] text-slate-400 italic">
-                                                No interview questions attached to this video yet. Click &ldquo;+ Add Interview Question&rdquo; to attach technical screening questions.
-                                              </p>
-                                            ) : (
-                                              <div className="space-y-2">
-                                                {vid.interviewQuestions!.map((iq, qIdx) => (
-                                                  <div
-                                                    key={iq.id || qIdx}
-                                                    className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-2.5 space-y-1.5 shadow-2xs"
-                                                  >
-                                                    <div className="flex items-center justify-between gap-2">
-                                                      <span className="font-bold text-slate-700 dark:text-slate-300 text-[10.5px]">
-                                                        Question #{qIdx + 1}
-                                                      </span>
-                                                      <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                          const updated = [...sections];
-                                                          const target = updated[secIdx].subsections![subIdx].videos[vidIdx];
-                                                          target.interviewQuestions = target.interviewQuestions!.filter(
-                                                            (_, i) => i !== qIdx
-                                                          );
-                                                          setSections(updated);
-                                                        }}
-                                                        className="text-slate-400 hover:text-rose-500 cursor-pointer"
-                                                      >
-                                                        <Trash2 className="h-3 w-3" />
-                                                      </button>
-                                                    </div>
-                                                    <input
-                                                      type="text"
-                                                      value={iq.question}
-                                                      onChange={(e) => {
-                                                        const updated = [...sections];
-                                                        updated[secIdx].subsections![subIdx].videos[vidIdx].interviewQuestions![qIdx].question =
-                                                          e.target.value;
-                                                        setSections(updated);
-                                                      }}
-                                                      placeholder="Interview Question prompt..."
-                                                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                                    />
-                                                    <textarea
-                                                      rows={2}
-                                                      value={iq.answer || ""}
-                                                      onChange={(e) => {
-                                                        const updated = [...sections];
-                                                        updated[secIdx].subsections![subIdx].videos[vidIdx].interviewQuestions![qIdx].answer =
-                                                          e.target.value;
-                                                        setSections(updated);
-                                                      }}
-                                                      placeholder="Expected technical model answer..."
-                                                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                                    />
-                                                  </div>
-                                                ))}
-                                              </div>
-                                            )}
-                                          </div>
-
-                                          {/* 2. Video Task */}
-                                          <div className="space-y-2 pt-2 border-t border-blue-100 dark:border-blue-900/50">
-                                            <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                                              <ClipboardCheck className="h-3.5 w-3.5 text-[#2563EB]" />
-                                              Attached Video Task / Practical Exercise
-                                            </span>
-
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                              <div className="sm:col-span-2">
-                                                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                                  Task Title
-                                                </label>
-                                                <input
-                                                  type="text"
-                                                  value={vid.task?.title || ""}
-                                                  onChange={(e) => {
-                                                    const updated = [...sections];
-                                                    const target = updated[secIdx].subsections![subIdx].videos[vidIdx];
-                                                    target.task = {
-                                                      description: "",
-                                                      instructions: "",
-                                                      submissionType: "text",
-                                                      points: 100,
-                                                      ...target.task,
-                                                      title: e.target.value,
-                                                    };
-                                                    setSections(updated);
-                                                  }}
-                                                  placeholder="e.g. Implement Architecture Demo"
-                                                  className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                                />
-                                              </div>
-                                              <div>
-                                                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                                  Submission Type
-                                                </label>
-                                                <select
-                                                  value={vid.task?.submissionType || "text"}
-                                                  onChange={(e) => {
-                                                    const updated = [...sections];
-                                                    const target = updated[secIdx].subsections![subIdx].videos[vidIdx];
-                                                    target.task = {
-                                                      title: "",
-                                                      description: "",
-                                                      instructions: "",
-                                                      points: 100,
-                                                      ...target.task,
-                                                      submissionType: e.target.value as any,
-                                                    };
-                                                    setSections(updated);
-                                                  }}
-                                                  className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                                >
-                                                  <option value="text">Text / Code Submission</option>
-                                                  <option value="file">File Upload (.zip, .pdf)</option>
-                                                  <option value="link">Project Link (GitHub / Deploy)</option>
-                                                </select>
-                                              </div>
-                                            </div>
-
-                                            <div>
-                                              <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                                Task Instructions &amp; Submission Criteria
-                                              </label>
-                                              <textarea
-                                                rows={2}
-                                                value={vid.task?.instructions || vid.task?.description || ""}
-                                                onChange={(e) => {
-                                                  const updated = [...sections];
-                                                  const target = updated[secIdx].subsections![subIdx].videos[vidIdx];
-                                                  target.task = {
-                                                    title: "",
-                                                    submissionType: "text",
-                                                    points: 100,
-                                                    ...target.task,
-                                                    description: e.target.value,
-                                                    instructions: e.target.value,
-                                                  };
-                                                  setSections(updated);
-                                                }}
-                                                placeholder="Explain the task deliverables and requirements..."
-                                                className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                              />
-                                            </div>
-                                          </div>
-                                        </div>
-                                      )}
                                     </div>
                                   ))}
 
@@ -2651,1102 +2531,31 @@ function AdminNewCourseContent() {
                               </div>
                             </div>
 
-                            {/* Interview Questions & Video Task Accordion Button */}
-                            <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
-                              <button
-                                type="button"
-                                onClick={() => setExpandedVideoId(expandedVideoId === vid.id ? null : vid.id)}
-                                className="flex items-center gap-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
-                              >
-                                <HelpCircle className="h-3.5 w-3.5" />
-                                <span>
-                                  Interview Questions ({(vid.interviewQuestions || []).length}) &amp; Task (
-                                  {vid.task?.title ? "Configured" : "None"})
-                                </span>
-                                {expandedVideoId === vid.id ? (
-                                  <ChevronUp className="h-3 w-3 ml-0.5" />
-                                ) : (
-                                  <ChevronDown className="h-3 w-3 ml-0.5" />
-                                )}
-                              </button>
+                            {/* Video-Level Optional Assignment Manager */}
+                            <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800">
+                              <VideoAssignmentManager
+                                video={vid}
+                                videoIndexLabel={`Video ${vidIdx + 1}`}
+                                onUpdate={(updatedVid) => {
+                                  const updated = [...sections];
+                                  updated[secIdx].directVideos![vidIdx] = updatedVid;
+                                  setSections(updated);
+                                }}
+                              />
                             </div>
-
-                            {/* EXPANDED CONFIGURATION PANEL */}
-                            {expandedVideoId === vid.id && (
-                              <div className="rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/20 dark:bg-blue-950/20 p-3 space-y-4 text-xs animate-in fade-in slide-in-from-top-1">
-                                {/* 1. Interview Questions */}
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                                      <HelpCircle className="h-3.5 w-3.5 text-[#2563EB]" />
-                                      Video Interview Questions ({(vid.interviewQuestions || []).length})
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const updated = [...sections];
-                                        const target = updated[secIdx].directVideos![vidIdx];
-                                        const list = target.interviewQuestions || [];
-                                        target.interviewQuestions = [
-                                          ...list,
-                                          { id: `iq-${Date.now()}-${list.length + 1}`, question: "", answer: "" },
-                                        ];
-                                        setSections(updated);
-                                      }}
-                                      className="rounded-md bg-white dark:bg-surface-elevated border border-blue-200 dark:border-blue-800 px-2 py-0.5 text-[10.5px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
-                                    >
-                                      + Add Interview Question
-                                    </button>
-                                  </div>
-
-                                  {(vid.interviewQuestions || []).length === 0 ? (
-                                    <p className="text-[11px] text-slate-400 italic">
-                                      No interview questions attached to this video yet. Click &ldquo;+ Add Interview Question&rdquo; to attach technical screening questions.
-                                    </p>
-                                  ) : (
-                                    <div className="space-y-2">
-                                      {vid.interviewQuestions!.map((iq, qIdx) => (
-                                        <div
-                                          key={iq.id || qIdx}
-                                          className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-2.5 space-y-1.5 shadow-2xs"
-                                        >
-                                          <div className="flex items-center justify-between gap-2">
-                                            <span className="font-bold text-slate-700 dark:text-slate-300 text-[10.5px]">
-                                              Question #{qIdx + 1}
-                                            </span>
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                const updated = [...sections];
-                                                const target = updated[secIdx].directVideos![vidIdx];
-                                                target.interviewQuestions = target.interviewQuestions!.filter(
-                                                  (_, i) => i !== qIdx
-                                                );
-                                                setSections(updated);
-                                              }}
-                                              className="text-slate-400 hover:text-rose-500 cursor-pointer"
-                                            >
-                                              <Trash2 className="h-3 w-3" />
-                                            </button>
-                                          </div>
-                                          <input
-                                            type="text"
-                                            value={iq.question}
-                                            onChange={(e) => {
-                                              const updated = [...sections];
-                                              updated[secIdx].directVideos![vidIdx].interviewQuestions![qIdx].question =
-                                                e.target.value;
-                                              setSections(updated);
-                                            }}
-                                            placeholder="Interview Question prompt..."
-                                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                          />
-                                          <textarea
-                                            rows={2}
-                                            value={iq.answer || ""}
-                                            onChange={(e) => {
-                                              const updated = [...sections];
-                                              updated[secIdx].directVideos![vidIdx].interviewQuestions![qIdx].answer =
-                                                e.target.value;
-                                              setSections(updated);
-                                            }}
-                                            placeholder="Expected technical model answer..."
-                                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                          />
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* 2. Video Task */}
-                                <div className="space-y-2 pt-2 border-t border-blue-100 dark:border-blue-900/50">
-                                  <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                                    <ClipboardCheck className="h-3.5 w-3.5 text-[#2563EB]" />
-                                    Attached Video Task / Practical Exercise
-                                  </span>
-
-                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                    <div className="sm:col-span-2">
-                                      <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                        Task Title
-                                      </label>
-                                      <input
-                                        type="text"
-                                        value={vid.task?.title || ""}
-                                        onChange={(e) => {
-                                          const updated = [...sections];
-                                          const target = updated[secIdx].directVideos![vidIdx];
-                                          target.task = {
-                                            description: "",
-                                            instructions: "",
-                                            submissionType: "text",
-                                            points: 100,
-                                            ...target.task,
-                                            title: e.target.value,
-                                          };
-                                          setSections(updated);
-                                        }}
-                                        placeholder="e.g. Implement Architecture Demo"
-                                        className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                      />
-                                    </div>
-                                    <div>
-                                      <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                        Submission Type
-                                      </label>
-                                      <select
-                                        value={vid.task?.submissionType || "text"}
-                                        onChange={(e) => {
-                                          const updated = [...sections];
-                                          const target = updated[secIdx].directVideos![vidIdx];
-                                          target.task = {
-                                            title: "",
-                                            description: "",
-                                            instructions: "",
-                                            points: 100,
-                                            ...target.task,
-                                            submissionType: e.target.value as any,
-                                          };
-                                          setSections(updated);
-                                        }}
-                                        className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                      >
-                                        <option value="text">Text / Code Submission</option>
-                                        <option value="file">File Upload (.zip, .pdf)</option>
-                                        <option value="link">Project Link (GitHub / Deploy)</option>
-                                      </select>
-                                    </div>
-                                  </div>
-
-                                  <div>
-                                    <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                      Task Instructions &amp; Submission Criteria
-                                    </label>
-                                    <textarea
-                                      rows={2}
-                                      value={vid.task?.instructions || vid.task?.description || ""}
-                                      onChange={(e) => {
-                                        const updated = [...sections];
-                                        const target = updated[secIdx].directVideos![vidIdx];
-                                        target.task = {
-                                          title: "",
-                                          submissionType: "text",
-                                          points: 100,
-                                          ...target.task,
-                                          description: e.target.value,
-                                          instructions: e.target.value,
-                                        };
-                                        setSections(updated);
-                                      }}
-                                      placeholder="Explain the task deliverables and requirements..."
-                                      className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            )}
                           </div>
                         ))}
                       </div>
+                      </div>
                     </div>
                   ))}
                 </motion.div>
               )}
 
-              {/* STEP 3: ASSIGNMENTS & PASSING MARKS */}
+              {/* STEP 3: ANTI-SKIP OPTIONS & STAGE PROTECTION POLICY */}
               {currentStep === 3 && (
                 <motion.div
                   key="step-3"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="space-y-5"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 bg-[#ECFDF5]/70 dark:bg-emerald-950/30 p-4 text-xs text-slate-700 dark:text-slate-300">
-                    <div>
-                      <div className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400">
-                        <ClipboardCheck className="h-4 w-4" />
-                        Section Milestones & Minimum Passing Thresholds
-                      </div>
-                      <p className="mt-1 leading-relaxed text-slate-600 dark:text-slate-400">
-                        Specify the evaluation criteria and pass out marks for each section. Students must achieve this score to unlock subsequent sections.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsImportModalOpen(true)}
-                      className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-white dark:bg-emerald-900/40 px-3 py-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-200 shadow-xs hover:bg-emerald-50 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer shrink-0"
-                    >
-                      <ArrowDownToLine className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                      Import Curriculum & Assignments
-                    </button>
-                  </div>
-
-                  {sections.map((section, secIdx) => (
-                    <div
-                      key={section.id}
-                      className="rounded-[22px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-5 sm:p-6 shadow-xs space-y-4"
-                    >
-                      <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 dark:bg-slate-800 text-xs font-bold text-white shrink-0">
-                            {secIdx + 1}
-                          </span>
-                          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                            ASSIGNMENT FOR: {section.title || `Section ${secIdx + 1}`}
-                          </h3>
-                        </div>
-                        <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                          Section {secIdx + 1} Requirement
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                        <div id={`field-assignment-title-${secIdx}`} className="sm:col-span-8 transition-all">
-                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                            ASSIGNMENT TITLE <span className="text-rose-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={section.assignment.title}
-                            onChange={(e) => {
-                              const updated = [...sections];
-                              updated[secIdx].assignment.title = e.target.value;
-                              setSections(updated);
-                              if (e.target.value.trim().length > 0) clearFieldError(`assignment-title-${secIdx}`);
-                            }}
-                            placeholder="e.g. Stage 1 MCQ Assessment or Capstone Project"
-                            className={`mt-1 w-full rounded-lg border px-3.5 py-2 text-xs font-semibold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none transition-all duration-200 ${
-                              fieldErrors[`assignment-title-${secIdx}`]
-                                ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
-                                : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB]"
-                            }`}
-                          />
-                          {fieldErrors[`assignment-title-${secIdx}`] && (
-                            <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-rose-600 dark:text-rose-400 animate-in fade-in slide-in-from-top-1">
-                              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                              <span>{fieldErrors[`assignment-title-${secIdx}`]}</span>
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="sm:col-span-4">
-                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                            ASSESSMENT TYPE
-                          </label>
-                          <select
-                            value={canonicalizeAssessmentType(section.assignment.type)}
-                            onChange={(e) => {
-                              const newType = canonicalizeAssessmentType(e.target.value);
-                              const updated = [...sections];
-                              updated[secIdx].assignment.type = newType;
-                              const currentQuestions = updated[secIdx].assignment.questions || [];
-
-                              if (currentQuestions.length === 0) {
-                                // Automatically initialize the first question in the selected format!
-                                updated[secIdx].assignment.questions = [
-                                  createDefaultQuestion(newType),
-                                ];
-                              }
-                              setSections(updated);
-                            }}
-                            className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                          >
-                            <option value="Short Answer Question">Short Answer Question</option>
-                            <option value="Multiple Choice (MCQ)">Single Choice (MCQ - Single Option)</option>
-                            <option value="Multiple Select (Multi-Choice)">Multiple Choice (Multi-Select - Multiple Correct Answers)</option>
-                            <option value="Long Answer / Comprehensive">Long Answer / Comprehensive</option>
-                            <option value="Project / File Upload">Project / File Upload</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                          INSTRUCTIONS & PROBLEM STATEMENT
-                        </label>
-                        <textarea
-                          rows={3}
-                          value={section.assignment.description}
-                          onChange={(e) => {
-                            const updated = [...sections];
-                            updated[secIdx].assignment.description = e.target.value;
-                            setSections(updated);
-                          }}
-                          placeholder="e.g. Detailed problem statement and submission guidelines..."
-                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-3 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                          ADMIN MODEL / EXPECTED ANSWER (FOR AUTOMATIC EVALUATION & VALIDATION)
-                        </label>
-                        <textarea
-                          rows={3}
-                          value={section.assignment.modelAnswer || ""}
-                          onChange={(e) => {
-                            const updated = [...sections];
-                            updated[secIdx].assignment.modelAnswer = e.target.value;
-                            setSections(updated);
-                          }}
-                          placeholder="Enter the official model answer or key concepts. When students submit, their response is evaluated against this text."
-                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-3 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                        />
-                      </div>
-
-                      {/* PASSING OUT MARK THRESHOLD */}
-                      <div
-                        id={`field-assignment-passmark-${secIdx}`}
-                        className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl p-4 border transition-all ${
-                          fieldErrors[`assignment-passmark-${secIdx}`]
-                            ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
-                            : "bg-slate-50/80 dark:bg-surface-elevated border-slate-200/90 dark:border-slate-800"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 shrink-0">
-                            <Sliders className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-slate-900 dark:text-white">
-                              Minimum Passing Mark to Unlock Next Stage <span className="text-rose-500">*</span>
-                            </div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                              Score required for the student to pass this milestone (40% - 100%)
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="number"
-                            min="40"
-                            max="100"
-                            value={section.assignment.minPassingScore}
-                            onChange={(e) => {
-                              const val = Number(e.target.value);
-                              const updated = [...sections];
-                              updated[secIdx].assignment.minPassingScore = val;
-                              setSections(updated);
-                              if (val >= 40 && val <= 100) clearFieldError(`assignment-passmark-${secIdx}`);
-                            }}
-                            className={`w-16 rounded-lg border px-2.5 py-1.5 text-center text-xs font-bold text-slate-900 dark:text-white outline-none transition-all duration-200 ${
-                              fieldErrors[`assignment-passmark-${secIdx}`]
-                                ? "border-2 border-rose-500 ring-2 ring-rose-500/20 bg-white dark:bg-input-bg"
-                                : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB]"
-                            }`}
-                          />
-                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">%</span>
-                        </div>
-                      </div>
-                      {fieldErrors[`assignment-passmark-${secIdx}`] && (
-                        <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
-                          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                          <span>{fieldErrors[`assignment-passmark-${secIdx}`]}</span>
-                        </p>
-                      )}
-
-                      {/* ASSIGNMENT QUESTIONS BUILDER */}
-                      <div className="space-y-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated/70 p-4 sm:p-5">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2.5">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 shrink-0">
-                              <HelpCircle className="h-4 w-4" />
-                            </div>
-                            <div>
-                              <div className="text-xs font-bold text-slate-900 dark:text-white">
-                                Questions & Rubric Items ({section.assignment.questions?.length || 0})
-                              </div>
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                                Configure quiz questions or challenge prompts for this section milestone
-                              </div>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => addQuestionToAssignment(secIdx)}
-                            className="flex items-center gap-1.5 rounded-full border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 px-3.5 py-1.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer shadow-2xs"
-                          >
-                            <Plus className="h-3.5 w-3.5" /> <span>Add Question</span>
-                          </button>
-                        </div>
-
-                        {(!section.assignment.questions || section.assignment.questions.length === 0) ? (
-                          <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-800 p-6 text-center space-y-1">
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              No questions configured for this section milestone yet.
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => addQuestionToAssignment(secIdx)}
-                              className="text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
-                            >
-                              + Click here to add your first question
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            {section.assignment.questions.map((q, qIdx) => {
-                              const qType = canonicalizeAssessmentType(q.type || section.assignment.type);
-
-                              return (
-                                <div
-                                  key={q.id || qIdx}
-                                  id={`question-card-${q.id || qIdx}`}
-                                  className="rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-4 sm:p-5 space-y-4 shadow-2xs transition-all duration-300"
-                                >
-                                  <div className="flex items-start justify-between gap-3">
-                                    <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                                      <span className="shrink-0 rounded-lg bg-blue-100 dark:bg-blue-950/60 px-2.5 py-1 text-xs font-black text-[#2563EB] dark:text-blue-400 mt-0.5">
-                                        Q{qIdx + 1}
-                                      </span>
-                                      <div className="flex-1 min-w-0 space-y-2">
-                                        <input
-                                          type="text"
-                                          value={q.prompt}
-                                          onChange={(e) =>
-                                            updateQuestionPrompt(secIdx, qIdx, e.target.value)
-                                          }
-                                          placeholder={`Question ${qIdx + 1} prompt or problem statement...`}
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-input-bg px-3 py-2 text-xs font-bold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-
-                                        <div className="flex flex-wrap items-center gap-2">
-                                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                            Question Type:
-                                          </label>
-                                          <select
-                                            value={qType}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "type", e.target.value)
-                                            }
-                                            className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-[11px] font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                                          >
-                                            <option value="Short Answer Question">Short Answer Question</option>
-                                            <option value="Multiple Choice (MCQ)">Single Choice (MCQ - Single Option)</option>
-                                            <option value="Multiple Select (Multi-Choice)">Multiple Choice (Multi-Select - Multiple Correct Answers)</option>
-                                            <option value="Long Answer / Comprehensive">Long Answer / Comprehensive</option>
-                                            <option value="Coding Challenge / Test">Coding Challenge / Test</option>
-                                            <option value="Project / File Upload">Project / File Upload</option>
-                                          </select>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => removeQuestionFromAssignment(secIdx, qIdx)}
-                                      className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
-                                      title="Delete Question"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </button>
-                                  </div>
-
-                                  {/* 1. SHORT ANSWER QUESTION */}
-                                  {qType === "Short Answer Question" && (
-                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-blue-400 dark:border-blue-600">
-                                      <div className="rounded-xl bg-blue-50/70 dark:bg-blue-950/30 p-2.5 border border-blue-100 dark:border-blue-900/40 text-[11px] text-blue-900 dark:text-blue-300">
-                                        <span className="font-bold">Short Answer Evaluation: </span>
-                                        Students submit concise written answers. Provide the reference model answer and key mandatory concepts for automated or manual score allocation.
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Model / Reference Answer <span className="text-rose-500">*</span>
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.modelAnswer || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "modelAnswer", e.target.value)
-                                          }
-                                          placeholder="e.g. Java is platform-independent because the compiler converts source code into bytecode (.class). This bytecode runs on any operating system equipped with a compatible Java Virtual Machine (JVM)."
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Mandatory Keywords / Key Concepts (Comma-Separated)
-                                        </label>
-                                        <input
-                                          type="text"
-                                          value={q.keywords || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "keywords", e.target.value)
-                                          }
-                                          placeholder="e.g. Bytecode, JVM, platform-independent, WORA, Virtual Machine"
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-                                        <span className="mt-1 block text-[10px] text-slate-500 dark:text-slate-400">
-                                          AI evaluator verifies if student submission contains these essential concepts.
-                                        </span>
-                                      </div>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Max Marks / Score
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              max="100"
-                                              value={q.maxPoints ?? 10}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Points</span>
-                                          </div>
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Grading Hint / Explanation Note
-                                          </label>
-                                          <input
-                                            type="text"
-                                            value={q.explanation || ""}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "explanation", e.target.value)
-                                            }
-                                            placeholder="e.g. Award full score if bytecode and JVM role are explained."
-                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* 2. MULTIPLE CHOICE (MCQ - SINGLE OPTION) */}
-                                  {qType === "Multiple Choice (MCQ)" && (
-                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-emerald-400 dark:border-emerald-600">
-                                      <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                                        <span>Select the radio button next to the <strong>Single Correct Answer</strong>:</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => addChoiceToQuestion(secIdx, qIdx)}
-                                          className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
-                                        >
-                                          <Plus className="h-3 w-3" /> Add Choice
-                                        </button>
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        {(q.choices || []).map((choice, cIdx) => {
-                                          const isCorrect = (q.correctIndex ?? 0) === cIdx;
-                                          const letter = String.fromCharCode(65 + cIdx);
-
-                                          return (
-                                            <div
-                                              key={cIdx}
-                                              className={`flex items-center gap-2.5 rounded-xl border p-2.5 transition-colors ${
-                                                isCorrect
-                                                  ? "border-emerald-400 dark:border-emerald-600 bg-emerald-50/70 dark:bg-emerald-950/30"
-                                                  : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg"
-                                              }`}
-                                            >
-                                              <input
-                                                type="radio"
-                                                name={`q-correct-${secIdx}-${qIdx}`}
-                                                checked={isCorrect}
-                                                onChange={() => setQuestionCorrectIndex(secIdx, qIdx, cIdx)}
-                                                className="h-4 w-4 accent-emerald-600 cursor-pointer shrink-0 ml-1"
-                                                title="Click to mark this option as correct"
-                                              />
-                                              <span
-                                                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
-                                                  isCorrect
-                                                    ? "bg-emerald-600 text-white"
-                                                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                                                }`}
-                                              >
-                                                {letter}
-                                              </span>
-                                              <input
-                                                type="text"
-                                                value={choice}
-                                                onChange={(e) =>
-                                                  updateQuestionChoice(secIdx, qIdx, cIdx, e.target.value)
-                                                }
-                                                placeholder={`Option ${letter} text...`}
-                                                className="min-w-0 flex-1 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none font-medium"
-                                              />
-                                              {isCorrect && (
-                                                <span className="shrink-0 rounded-md bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-300">
-                                                  Correct Answer
-                                                </span>
-                                              )}
-                                              {(q.choices?.length || 0) > 2 && (
-                                                <button
-                                                  type="button"
-                                                  onClick={() => removeChoiceFromQuestion(secIdx, qIdx, cIdx)}
-                                                  className="shrink-0 p-1 text-slate-400 hover:text-rose-500 cursor-pointer rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                                                  title="Remove this choice"
-                                                >
-                                                  <X className="h-3.5 w-3.5" />
-                                                </button>
-                                              )}
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Explanation / Correct Answer Rationale
-                                          </label>
-                                          <input
-                                            type="text"
-                                            value={q.explanation || ""}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "explanation", e.target.value)
-                                            }
-                                            placeholder="Explain why this choice is correct (shown in score breakdown)..."
-                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                          />
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Points / Weightage
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              max="100"
-                                              value={q.maxPoints ?? 5}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Points</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* 3. MULTIPLE SELECT (MULTI-CHOICE - MULTIPLE CORRECT ANSWERS) */}
-                                  {qType === "Multiple Select (Multi-Choice)" && (
-                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-indigo-500 dark:border-indigo-400">
-                                      <div className="rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 p-2.5 border border-indigo-100 dark:border-indigo-900/40 text-[11px] text-indigo-900 dark:text-indigo-300">
-                                        <span className="font-bold">Multi-Select Assessment: </span>
-                                        Check all checkboxes next to the <strong>Multiple Correct Answers</strong>. Students must select all matching options to receive full score.
-                                      </div>
-
-                                      <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                                        <span>Select checkboxes for all valid correct choices:</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => addChoiceToQuestion(secIdx, qIdx)}
-                                          className="flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-                                        >
-                                          <Plus className="h-3 w-3" /> Add Choice
-                                        </button>
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        {(q.choices || []).map((choice, cIdx) => {
-                                          const isCorrect = Array.isArray(q.correctIndices)
-                                            ? q.correctIndices.includes(cIdx)
-                                            : (q.correctIndex ?? 0) === cIdx;
-                                          const letter = String.fromCharCode(65 + cIdx);
-
-                                          return (
-                                            <div
-                                              key={cIdx}
-                                              className={`flex items-center gap-2.5 rounded-xl border p-2.5 transition-colors ${
-                                                isCorrect
-                                                  ? "border-indigo-400 dark:border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/30"
-                                                  : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg"
-                                              }`}
-                                            >
-                                              <input
-                                                type="checkbox"
-                                                checked={isCorrect}
-                                                onChange={() => toggleQuestionCorrectIndex(secIdx, qIdx, cIdx)}
-                                                className="h-4 w-4 accent-indigo-600 rounded cursor-pointer shrink-0 ml-1"
-                                                title="Check to include this as one of the multiple correct answers"
-                                              />
-                                              <span
-                                                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
-                                                  isCorrect
-                                                    ? "bg-indigo-600 text-white"
-                                                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                                                }`}
-                                              >
-                                                {letter}
-                                              </span>
-                                              <input
-                                                type="text"
-                                                value={choice}
-                                                onChange={(e) =>
-                                                  updateQuestionChoice(secIdx, qIdx, cIdx, e.target.value)
-                                                }
-                                                placeholder={`Option ${letter} text...`}
-                                                className="min-w-0 flex-1 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none font-medium"
-                                              />
-                                              {isCorrect && (
-                                                <span className="shrink-0 rounded-md bg-indigo-100 dark:bg-indigo-950 border border-indigo-300 dark:border-indigo-800 px-2 py-0.5 text-[10px] font-bold text-indigo-800 dark:text-indigo-300">
-                                                  Correct Choice ✓
-                                                </span>
-                                              )}
-                                              {(q.choices?.length || 0) > 2 && (
-                                                <button
-                                                  type="button"
-                                                  onClick={() => removeChoiceFromQuestion(secIdx, qIdx, cIdx)}
-                                                  className="shrink-0 p-1 text-slate-400 hover:text-rose-500 cursor-pointer rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                                                  title="Remove this choice"
-                                                >
-                                                  <X className="h-3.5 w-3.5" />
-                                                </button>
-                                              )}
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Explanation / Multiple Choice Rationale
-                                          </label>
-                                          <input
-                                            type="text"
-                                            value={q.explanation || ""}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "explanation", e.target.value)
-                                            }
-                                            placeholder="Explain why these choices are correct..."
-                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-indigo-500"
-                                          />
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Points / Weightage
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              max="100"
-                                              value={q.maxPoints ?? 10}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-indigo-500"
-                                            />
-                                            <span className="text-xs text-slate-500">Points</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* 3. LONG ANSWER / COMPREHENSIVE */}
-                                  {qType === "Long Answer / Comprehensive" && (
-                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-purple-400 dark:border-purple-600">
-                                      <div className="rounded-xl bg-purple-50/70 dark:bg-purple-950/30 p-2.5 border border-purple-100 dark:border-purple-900/40 text-[11px] text-purple-900 dark:text-purple-300">
-                                        <span className="font-bold">Comprehensive Assessment: </span>
-                                        Students submit in-depth essays, architectural breakdowns, or case study responses. Define the detailed model answer and structured grading rubric.
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Comprehensive Model Answer & Key Expected Points
-                                        </label>
-                                        <textarea
-                                          rows={4}
-                                          value={q.modelAnswer || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "modelAnswer", e.target.value)
-                                          }
-                                          placeholder="Provide the complete ideal response, required architectural diagrams/steps, and technical arguments..."
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Evaluation Rubric & Marking Scheme
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.rubric || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "rubric", e.target.value)
-                                          }
-                                          placeholder="e.g.&#10;1. Architecture & Design (40% - 8 pts)&#10;2. Scalability & Fault Tolerance (30% - 6 pts)&#10;3. Error Handling & Edge Cases (30% - 6 pts)"
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs font-mono text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Minimum Word Count
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="20"
-                                              max="2000"
-                                              value={q.minWords ?? 100}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "minWords", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Words minimum</span>
-                                          </div>
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Max Marks / Score
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              max="100"
-                                              value={q.maxPoints ?? 20}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Points</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* 4. CODING CHALLENGE / TEST */}
-                                  {qType === "Coding Challenge / Test" && (
-                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-emerald-400 dark:border-emerald-600">
-                                      <div className="rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 p-2.5 border border-emerald-100 dark:border-emerald-900/40 text-[11px] text-emerald-900 dark:text-emerald-300">
-                                        <span className="font-bold">Automated Coding Evaluation: </span>
-                                        Students write and test code live in an integrated IDE editor. Configure the starter code template and automated test cases.
-                                      </div>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Target Programming Language
-                                          </label>
-                                          <select
-                                            value={q.language || "JavaScript"}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "language", e.target.value)
-                                            }
-                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                          >
-                                            <option value="JavaScript">JavaScript / Node.js</option>
-                                            <option value="TypeScript">TypeScript</option>
-                                            <option value="Python">Python 3</option>
-                                            <option value="Java">Java</option>
-                                            <option value="SAP ABAP">SAP ABAP</option>
-                                            <option value="C++">C++</option>
-                                            <option value="C#">C# / .NET</option>
-                                            <option value="SQL">SQL (PostgreSQL)</option>
-                                          </select>
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Max Marks / Score
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              max="100"
-                                              value={q.maxPoints ?? 25}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Points</span>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase">
-                                            Starter Code Template (Pre-filled in Student Editor)
-                                          </label>
-                                          <span className="text-[10px] text-slate-500 font-mono">Monospace editor stub</span>
-                                        </div>
-                                        <textarea
-                                          rows={4}
-                                          value={q.starterCode || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "starterCode", e.target.value)
-                                          }
-                                          placeholder="// Write your solution function here&#10;function solution(input) {&#10;  // Your code here&#10;  return input;&#10;}"
-                                          className="w-full font-mono text-[11px] rounded-lg border border-slate-800 bg-slate-950 text-emerald-400 p-3 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Automated Test Cases (Input & Expected Output)
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.testCases || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "testCases", e.target.value)
-                                          }
-                                          placeholder="Input: solution([1, 2, 3]) => Expected Output: 6&#10;Input: solution([4, 5]) => Expected Output: 9"
-                                          className="w-full font-mono text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-input-bg p-2.5 text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                                        />
-                                        <span className="mt-1 block text-[10px] text-slate-500 dark:text-slate-400">
-                                          Each line represents a test case parsed during automatic code execution.
-                                        </span>
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Instructor Reference Solution Code
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.solutionCode || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "solutionCode", e.target.value)
-                                          }
-                                          placeholder="// Complete working reference solution for evaluation runner comparison..."
-                                          className="w-full font-mono text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* 5. PROJECT / FILE UPLOAD */}
-                                  {qType === "Project / File Upload" && (
-                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-amber-400 dark:border-amber-600">
-                                      <div className="rounded-xl bg-amber-50/70 dark:bg-amber-950/30 p-2.5 border border-amber-100 dark:border-amber-900/40 text-[11px] text-amber-900 dark:text-amber-300">
-                                        <span className="font-bold">Project / File Submission: </span>
-                                        Students build and submit deliverables (e.g. ZIP file containing project code, architecture PDF, or report). Define format constraints, required deliverables, and evaluation checklist.
-                                      </div>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Accepted File Extensions
-                                          </label>
-                                          <input
-                                            type="text"
-                                            value={q.fileTypes || ".zip, .pdf, .docx"}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "fileTypes", e.target.value)
-                                            }
-                                            placeholder=".zip, .pdf, .docx"
-                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                                          />
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Max File Size
-                                          </label>
-                                          <select
-                                            value={q.maxFileSizeMb ?? 25}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "maxFileSizeMb", Number(e.target.value))
-                                            }
-                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                          >
-                                            <option value="10">10 MB</option>
-                                            <option value="25">25 MB (Standard)</option>
-                                            <option value="50">50 MB</option>
-                                            <option value="100">100 MB</option>
-                                          </select>
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Max Marks / Score
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              max="100"
-                                              value={q.maxPoints ?? 50}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Points</span>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Required Submission Deliverables / Checklist
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.checklist || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "checklist", e.target.value)
-                                          }
-                                          placeholder="e.g.&#10;1. Complete ZIP file containing all source code and assets&#10;2. Architecture & Design document (PDF)&#10;3. README.md with setup and deployment instructions"
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Grading Criteria & Verification Guide
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.modelAnswer || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "modelAnswer", e.target.value)
-                                          }
-                                          placeholder="Detail what the evaluator or verification pipeline will check when inspecting submitted archives..."
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-
-              {/* STEP 4: ANTI-SKIP OPTIONS & STAGE PROTECTION POLICY */}
-              {currentStep === 4 && (
-                <motion.div
-                  key="step-4"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
@@ -3757,7 +2566,7 @@ function AdminNewCourseContent() {
                       <Lock className="h-4 w-4" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 4: Anti-Skip Options & Integrity Rules</h2>
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 3: Anti-Skip Options & Integrity Rules</h2>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Prevent video scrubbing and enforce sequential milestones before unlocking assignments
                       </p>
@@ -3849,10 +2658,10 @@ function AdminNewCourseContent() {
                 </motion.div>
               )}
 
-              {/* STEP 5: ACCREDITED CERTIFICATE & FINAL PUBLISHING */}
-              {currentStep === 5 && (
+              {/* STEP 4: ACCREDITED CERTIFICATE & FINAL PUBLISHING */}
+              {currentStep === 4 && (
                 <motion.div
-                  key="step-5"
+                  key="step-4"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
@@ -3863,7 +2672,7 @@ function AdminNewCourseContent() {
                       <Award className="h-4 w-4" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 5: Accredited Certificate & Unlock Criteria</h2>
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 4: Accredited Certificate & Unlock Criteria</h2>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Configure verified credential issued upon completing all course stages
                       </p>
@@ -3965,7 +2774,7 @@ function AdminNewCourseContent() {
               )}
 
               <div className="flex items-center gap-2 sm:gap-2.5">
-                {currentStep < 5 ? (
+                {currentStep < 4 ? (
                   <button
                     type="button"
                     onClick={handleNextStep}

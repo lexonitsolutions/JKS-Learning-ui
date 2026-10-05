@@ -264,8 +264,16 @@ export default function CourseLearningHubPage({
       }
 
       if (!loadedCourse) {
-        loadedCourse = getStoredCourses()[0] || null;
-        if (loadedCourse) setCourse(loadedCourse);
+        const matching = getStoredCourses().find(
+          (c) =>
+            c.slug === slug ||
+            c.id === slug ||
+            c.slug?.toLowerCase() === slug?.toLowerCase()
+        );
+        if (matching) {
+          loadedCourse = matching;
+          setCourse(matching);
+        }
       }
 
       if (loadedCourse) {
