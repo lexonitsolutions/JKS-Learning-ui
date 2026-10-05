@@ -13,6 +13,7 @@ import {
   Eye,
   GraduationCap,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
@@ -38,7 +39,7 @@ interface StudentRosterItem {
   status: "Completed" | "In Progress" | "Needs Attention";
 }
 
-export default function InstructorStudentsPage() {
+function InstructorStudentsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialCourse = searchParams?.get("course") || "all";
@@ -460,3 +461,18 @@ export default function InstructorStudentsPage() {
     </>
   );
 }
+
+export default function InstructorStudentsPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex h-96 w-full items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[#2563EB]" />
+        </div>
+      }
+    >
+      <InstructorStudentsContent />
+    </React.Suspense>
+  );
+}
+

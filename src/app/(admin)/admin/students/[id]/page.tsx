@@ -38,6 +38,7 @@ import {
   Eye,
   X,
   FileCode,
+  Loader2,
   HelpCircle,
   CheckCircle,
   XCircle,
@@ -298,7 +299,7 @@ function parseTaskSubmissionDetails(task: CourseTaskItem): ParsedSubmissionDetai
   };
 }
 
-export default function AdminStudentDetailsPage() {
+function AdminStudentDetailsContent() {
   const params = useParams();
   const router = useRouter();
   const studentIdOrSlug = (params?.id as string) || "";
@@ -3594,3 +3595,18 @@ export default function AdminStudentDetailsPage() {
     </>
   );
 }
+
+export default function AdminStudentDetailsPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex h-96 w-full items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[#2563EB]" />
+        </div>
+      }
+    >
+      <AdminStudentDetailsContent />
+    </React.Suspense>
+  );
+}
+
