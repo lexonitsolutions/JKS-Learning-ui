@@ -6,6 +6,7 @@ import { ArrowLeft, Home, Loader2 } from "lucide-react";
 import { CourseDetailView } from "./course-detail-view";
 import { apiUrl } from "@/lib/api/base-url";
 import { transformBackendCourse } from "@/lib/data/courses-api";
+import { getFullCourseBySlug } from "@/lib/data/courses-store";
 import type { Course } from "@/lib/data/courses";
 import { jksAnalytics } from "@/lib/analytics/jks-analytics";
 
@@ -16,7 +17,7 @@ interface CourseDetailResolverProps {
 
 export function CourseDetailResolver({ slug, initialCourse }: CourseDetailResolverProps) {
   const [course, setCourse] = useState<Course | undefined>(initialCourse);
-  const [loading, setLoading] = useState<boolean>(!initialCourse);
+  const [loading, setLoading] = useState<boolean>(!initialCourse || !initialCourse.modules || initialCourse.modules.length === 0);
   const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
@@ -31,7 +32,11 @@ export function CourseDetailResolver({ slug, initialCourse }: CourseDetailResolv
   }, [course]);
 
   useEffect(() => {
-    if (initialCourse) return;
+    if (initialCourse && initialCourse.modules && initialCourse.modules.length > 0) {
+      setCourse(initialCourse);
+      setLoading(false);
+      return;
+    }
 
     let isMounted = true;
     async function resolveCourse() {
@@ -84,9 +89,17 @@ export function CourseDetailResolver({ slug, initialCourse }: CourseDetailResolv
             }
           }
         }
-      } catch {
-        // ignore
-      }
+      } catch {}
+
+      // Last resort: check client local store
+      try {
+        const local = getFullCourseBySlug(cleanSlug) || getFullCourseBySlug(slug);
+        if (local && isMounted) {
+          setCourse(transformBackendCourse(local as any));
+          setLoading(false);
+          return;
+        }
+      } catch {}
 
       if (isMounted) {
         setLoading(false);

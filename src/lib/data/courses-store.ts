@@ -41,6 +41,7 @@ export interface VideoItem {
   notes?: string;
   interviewQuestions?: VideoInterviewQuestion[];
   task?: VideoTask;
+  assignment?: SectionAssignment;
 }
 
 export interface SubSection {
@@ -251,6 +252,8 @@ export interface FullCourse {
   status: "Published" | "Draft";
   instructorUserIds?: string[];
   instructorName?: string;
+  syllabusTemplateId?: string | null;
+  syllabusTemplate?: any;
 }
 
 export interface StudentCourseProgress {
@@ -392,6 +395,7 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
     sections: course.sections,
     sectionsJson: course.sections,
     instructorUserIds: course.instructorUserIds || ["6aafc1a7d80072434f90eb89"],
+    syllabusTemplateId: course.syllabusTemplateId || null,
   };
 
   if (!isUpdate && course.id) {
@@ -436,6 +440,8 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
           : course.sections,
         instructorUserIds: dbCourse.instructorUserIds || course.instructorUserIds || ["6aafc1a7d80072434f90eb89"],
         instructorName: dbCourse.instructorUsers?.[0]?.name || course.instructorName || "Davood Khan",
+        syllabusTemplateId: dbCourse.syllabusTemplateId || course.syllabusTemplateId || null,
+        syllabusTemplate: dbCourse.syllabusTemplate || course.syllabusTemplate || null,
       };
     } else {
       const errText = await res.text();
@@ -852,11 +858,50 @@ export function getFullCourseBySlug(slug: string): FullCourse | undefined {
  * carries no assignment data, so it is only used as a last-resort skeleton.
  */
 export function normalizeDbCourse(dbCourse: any, existing?: FullCourse): FullCourse {
-  const rawSections = Array.isArray(dbCourse?.sectionsJson)
+  let rawSections = Array.isArray(dbCourse?.sectionsJson) && dbCourse.sectionsJson.length > 0
     ? dbCourse.sectionsJson
-    : Array.isArray(dbCourse?.sections)
+    : Array.isArray(dbCourse?.sections) && dbCourse.sections.length > 0
     ? dbCourse.sections
     : [];
+
+  if (rawSections.length === 0 && Array.isArray(dbCourse?.modules) && dbCourse.modules.length > 0) {
+    rawSections = dbCourse.modules.map((m: any, idx: number) => {
+      const subsections: SubSection[] = (m.topics || []).map((t: any, tIdx: number) => ({
+        id: `sub-${t.id || tIdx}`,
+        title: t.title || `Topic ${tIdx + 1}`,
+        order: t.order || tIdx + 1,
+        description: t.description || "",
+        videos: (t.videos || []).map((v: any, vIdx: number) => ({
+          id: `v-${v.id || vIdx}`,
+          title: v.title || `Video ${vIdx + 1}`,
+          durationSeconds: v.durationSeconds || 300,
+          durationFormatted: v.durationFormatted || "5:00",
+          videoType: (v.videoType as any) || "url",
+          videoUrl: v.videoUrl || v.providerAssetId || "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          order: v.order || vIdx + 1,
+          isFreeDemo: Boolean(v.isFreeDemo),
+          notes: v.notes || "",
+        })),
+      }));
+
+      return {
+        id: `sec-${m.id || idx}`,
+        title: m.title || `Module ${idx + 1}`,
+        order: m.order || idx + 1,
+        description: m.description || `Curriculum module for ${dbCourse?.title || "Course"}`,
+        subsections,
+        directVideos: [],
+        assignment: {
+          id: `asg-${m.id || idx}`,
+          title: `${m.title || "Module"} Practical Assessment`,
+          description: `Hands-on assessment and evaluation for ${m.title || "Module"}.`,
+          type: "Multiple Choice (MCQ)",
+          minPassingScore: 70,
+          questions: [],
+        },
+      };
+    });
+  }
 
   const sections: Section[] = rawSections.map((sec: any, idx: number) => ({
     id: sec.id || `sec-${idx + 1}`,

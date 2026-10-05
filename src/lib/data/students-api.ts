@@ -98,9 +98,19 @@ export interface AdminStudentDetail {
   submissions?: StudentAssessmentItem[];
 }
 
-export async function fetchAdminStudents(): Promise<AdminStudentRecord[]> {
+export async function fetchAdminStudents(query?: {
+  courseSlug?: string;
+  courseId?: string;
+  instructorId?: string;
+}): Promise<AdminStudentRecord[]> {
   try {
-    const res = await apiFetch("/admin/students", {
+    const params = new URLSearchParams();
+    if (query?.courseSlug && query.courseSlug !== "all") params.set("courseSlug", query.courseSlug);
+    if (query?.courseId) params.set("courseId", query.courseId);
+    if (query?.instructorId) params.set("instructorId", query.instructorId);
+
+    const queryString = params.toString() ? `?${params.toString()}` : "";
+    const res = await apiFetch(`/admin/students${queryString}`, {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });

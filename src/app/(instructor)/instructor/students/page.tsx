@@ -19,6 +19,9 @@ import { Reveal } from "@/lib/motion/reveal";
 import { fetchAdminStudents, type AdminStudentRecord } from "@/lib/data/students-api";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 
+import { useSearchParams, useRouter } from "next/navigation";
+import { useAllCourses } from "@/lib/data/courses-store";
+
 interface StudentRosterItem {
   id: string;
   slug: string;
@@ -26,6 +29,7 @@ interface StudentRosterItem {
   email: string;
   initials: string;
   courseTitle: string;
+  courseSlug: string;
   progressPercent: number;
   completedVideos: number;
   totalVideos: number;
@@ -35,20 +39,33 @@ interface StudentRosterItem {
 }
 
 export default function InstructorStudentsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialCourse = searchParams?.get("course") || "all";
+
   const session = useMockSession();
   const lecturerInitials = session?.initials || "LE";
 
+  const courses = useAllCourses();
+  const [selectedCourseSlug, setSelectedCourseSlug] = useState<string>(initialCourse);
   const [rawStudents, setRawStudents] = useState<AdminStudentRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
 
   useEffect(() => {
+    const courseParam = searchParams?.get("course");
+    if (courseParam) setSelectedCourseSlug(courseParam);
+  }, [searchParams]);
+
+  useEffect(() => {
     let isMounted = true;
     async function loadData() {
       setIsLoading(true);
       try {
-        const data = await fetchAdminStudents();
+        const data = await fetchAdminStudents({
+          courseSlug: selectedCourseSlug !== "all" ? selectedCourseSlug : undefined,
+        });
         if (isMounted) setRawStudents(data);
       } catch (err) {
         console.warn("Failed to load students:", err);
@@ -60,7 +77,7 @@ export default function InstructorStudentsPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [selectedCourseSlug]);
 
   const students: StudentRosterItem[] = rawStudents.map((s) => {
     const primaryEnrollment = s.enrollments?.[0];
@@ -87,6 +104,7 @@ export default function InstructorStudentsPage() {
       courseTitle:
         primaryEnrollment?.courseTitle ||
         (s.totalEnrolled > 0 ? `${s.totalEnrolled} Courses Enrolled` : "Enrolled Learner"),
+      courseSlug: primaryEnrollment?.courseSlug || selectedCourseSlug,
       progressPercent,
       completedVideos,
       totalVideos,
@@ -121,6 +139,41 @@ export default function InstructorStudentsPage() {
       />
 
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">
+        {/* Context Banner if course selected */}
+        {selectedCourseSlug !== "all" && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-blue-50/70 dark:bg-blue-950/30 rounded-2xl p-4 border border-blue-200/80 dark:border-blue-900/60">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#2563EB] text-white">
+                <BookOpen className="h-4 w-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563EB] dark:text-blue-400">
+                  Course-Specific Enrollment View
+                </span>
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                  {courses.find((c) => c.slug === selectedCourseSlug)?.title || selectedCourseSlug}
+                </h3>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/60 text-[#2563EB] dark:text-blue-300">
+                {rawStudents.length} Student{rawStudents.length === 1 ? "" : "s"} Enrolled
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCourseSlug("all");
+                  router.push("/instructor/students");
+                }}
+                className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white cursor-pointer px-2 py-1"
+              >
+                Clear Filter
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Filter and Search Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-1 items-center gap-3 max-w-md w-full">
@@ -128,7 +181,7 @@ export default function InstructorStudentsPage() {
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-400" />
               <input
                 type="text"
-                placeholder="Search students by name, email, or course…"
+                placeholder="Search students by name, email, or phone…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg py-2.5 pr-3 pl-9 text-xs font-medium text-slate-800 dark:text-white dark:placeholder-slate-400 outline-none shadow-xs transition-colors focus:border-[#2563EB]"
@@ -136,7 +189,29 @@ export default function InstructorStudentsPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Course Selector Dropdown */}
+            <select
+              value={selectedCourseSlug}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedCourseSlug(val);
+                if (val === "all") {
+                  router.push("/instructor/students");
+                } else {
+                  router.push(`/instructor/students?course=${encodeURIComponent(val)}`);
+                }
+              }}
+              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3.5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:border-[#2563EB] shadow-xs"
+            >
+              <option value="all">All Enrolled Courses</option>
+              {courses.map((c) => (
+                <option key={c.id || c.slug} value={c.slug}>
+                  {c.title}
+                </option>
+              ))}
+            </select>
+
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}

@@ -148,18 +148,39 @@ export function InAppVideoPlayer({
       cleanedUrl.includes("onedrive.live.com") ||
       cleanedUrl.includes("sharepoint.com"));
 
+  const [bunnyReloadKey, setBunnyReloadKey] = useState(0);
+
   // Check external embeds (YouTube, Vimeo, Bunny Stream, Google Drive, OneDrive)
   const isYouTube = (videoType === "url" || videoType === "upload") && (cleanedUrl.includes("youtube.com") || cleanedUrl.includes("youtu.be"));
   const isVimeo = (videoType === "url" || videoType === "upload") && cleanedUrl.includes("vimeo.com");
   const isBunnyIframe =
     cleanedUrl.includes("iframe.mediadelivery.net") ||
+    cleanedUrl.includes("player.mediadelivery.net") ||
     cleanedUrl.includes("video.bunnycdn.com/play");
   const isGoogleDrive = videoType === "gdrive" || cleanedUrl.includes("drive.google.com");
   const isOneDrive = !isTeams && !isOneDriveShareLink && Boolean(onedriveEmbedUrlCandidate);
 
+  // Build clean Bunny embed URL with responsive & preload params, avoiding forced unmuted autoplay lock
+  const getCleanBunnySrc = (raw: string, reloadKey: number) => {
+    if (!raw) return "";
+    try {
+      const urlObj = new URL(raw);
+      // Modern browsers block autoplay when unmuted, which freezes the player splash screen
+      if (urlObj.searchParams.has("autoplay") && !autoPlay) {
+        urlObj.searchParams.set("autoplay", "false");
+      }
+      if (reloadKey > 0) {
+        urlObj.searchParams.set("_r", String(reloadKey));
+      }
+      return urlObj.toString();
+    } catch {
+      return raw;
+    }
+  };
+
   const youTubeEmbedSrc = isYouTube ? getYouTubeEmbedUrl(cleanedUrl) : null;
   const vimeoEmbedSrc = isVimeo ? getVimeoEmbedUrl(cleanedUrl) : null;
-  const bunnyEmbedSrc = isBunnyIframe ? cleanedUrl : null;
+  const bunnyEmbedSrc = isBunnyIframe ? getCleanBunnySrc(cleanedUrl, bunnyReloadKey) : null;
   const gdriveEmbedSrc = isGoogleDrive ? (getGoogleDriveEmbedUrl(cleanedUrl) || cleanedUrl) : null;
   const onedriveEmbedSrc = isOneDrive ? onedriveEmbedUrlCandidate : null;
 
@@ -454,13 +475,33 @@ export function InAppVideoPlayer({
             className="h-full w-full border-0"
           />
         ) : bunnyEmbedSrc ? (
-          <iframe
-            src={bunnyEmbedSrc}
-            title={title}
-            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-            allowFullScreen
-            className="h-full w-full border-0"
-          />
+          <div className="relative h-full w-full group/bunny">
+            <iframe
+              key={`bunny-frame-${bunnyReloadKey}`}
+              src={bunnyEmbedSrc}
+              title={title}
+              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+              className="h-full w-full border-0"
+            />
+            {/* Bunny Stream Control Strip with Fast Reload */}
+            <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-2 rounded-xl bg-slate-950/85 backdrop-blur-md px-3 py-1 border border-slate-700/60 shadow-lg text-[11px] text-white">
+              <span className="flex items-center gap-1 text-[10px] font-extrabold text-blue-400 tracking-wide uppercase">
+                <Tv className="h-3 w-3" /> Bunny Stream HD
+              </span>
+              <span className="text-slate-600">|</span>
+              <button
+                type="button"
+                onClick={() => setBunnyReloadKey((k) => k + 1)}
+                className="flex items-center gap-1 text-[10.5px] font-bold text-slate-200 hover:text-white transition-colors cursor-pointer"
+                title="If video was recently uploaded or showing 'Processing video', click to refresh"
+              >
+                <RotateCcw className="h-2.5 w-2.5 text-blue-400" />
+                <span>Reload Stream</span>
+              </button>
+            </div>
+          </div>
         ) : gdriveEmbedSrc ? (
           <iframe
             src={gdriveEmbedSrc}

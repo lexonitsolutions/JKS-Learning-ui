@@ -48,6 +48,7 @@ import {
 import type { Track } from "@/lib/data/courses";
 import { mapBackendTrack } from "@/lib/data/courses-api";
 import { apiFetch } from "@/lib/api/base-url";
+import { fetchInstructors } from "@/lib/auth/use-mock-auth";
 import { InAppVideoPlayer } from "@/components/ui/in-app-video-player";
 import { CourseThumbnailUploader } from "@/components/admin/course-thumbnail-uploader";
 import {
@@ -55,7 +56,10 @@ import {
   uploadVideoToBunnyStream,
 } from "@/lib/data/videos-api";
 
-type StepNumber = 1 | 2 | 3 | 4 | 5;
+import { VideoAssignmentManager } from "@/components/admin/video-assignment-manager";
+import { SyllabusTemplateSelector } from "@/components/admin/syllabus-template-selector";
+
+type StepNumber = 1 | 2 | 3 | 4;
 
 interface StepTab {
   step: StepNumber;
@@ -65,11 +69,11 @@ interface StepTab {
 }
 
 const STEPS: StepTab[] = [
-  { step: 1, label: "1. Course Basics", shortLabel: "Basics", icon: Layers },
-  { step: 2, label: "2. Curriculum & Videos", shortLabel: "Curriculum", icon: Video },
-  { step: 3, label: "3. Assignments & Pass Marks", shortLabel: "Assignments", icon: ClipboardCheck },
-  { step: 4, label: "4. Anti-Skip & Security", shortLabel: "Anti-Skip", icon: Lock },
-  { step: 5, label: "5. Certificate & Publish", shortLabel: "Certificate", icon: Award },
+  { step: 1, label: "1. Course Basics & Syllabus", shortLabel: "Basics & Syllabus", icon: Layers },
+  { step: 2, label: "2. Curriculum, Videos & Assignments", shortLabel: "Curriculum & Assignments", icon: Video },
+  { step: 3, label: "3. Anti-Skip & Security", shortLabel: "Anti-Skip", icon: Lock },
+  { step: 4, label: "4. Certificate & Publish", shortLabel: "Certificate", icon: Award },
+
 ];
 
 function InstructorNewCourseContent() {
@@ -89,6 +93,7 @@ function InstructorNewCourseContent() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importSuccessMessage, setImportSuccessMessage] = useState<string | null>(null);
   const [expandedVideoId, setExpandedVideoId] = useState<string | null>(null);
+  const [selectedSyllabusTemplateId, setSelectedSyllabusTemplateId] = useState<string | null>(null);
 
   const clearFieldError = (fieldKey: string) => {
     setFieldErrors((prev) => {
@@ -140,6 +145,7 @@ function InstructorNewCourseContent() {
     setTimeout(() => setImportSuccessMessage(null), 6000);
   };
 
+
   // Scroll to top whenever step changes so user never encounters stuck scroll
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -149,6 +155,7 @@ function InstructorNewCourseContent() {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [track, setTrack] = useState<string>("Full Stack");
+  const [subTrack, setSubTrack] = useState<string>("");
   const [availableTracks, setAvailableTracks] = useState<string[]>([
     "Full Stack",
     "Frontend",
@@ -165,6 +172,75 @@ function InstructorNewCourseContent() {
   const [summary, setSummary] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
 
+  const TRACK_SUBTRACKS: Record<string, string[]> = {
+    SAP: [
+      "SAP B1",
+      "SAP Ariba",
+      "SAP S/4HANA",
+      "SAP ABAP",
+      "SAP FICO",
+      "SAP MM",
+      "SAP SD",
+      "SAP SuccessFactors",
+      "SAP Basis",
+    ],
+    "Full Stack": [
+      "Java Full Stack",
+      "MERN / Full Stack JavaScript",
+      "Python Full Stack",
+      ".NET Cloud Architecture",
+      "Spring Boot & Angular",
+    ],
+    Frontend: [
+      "React 19 & Next.js",
+      "Angular Enterprise Architecture",
+      "Vue.js & Nuxt Architect",
+      "React Native Mobile",
+    ],
+    DotNet: [
+      ".NET 9 Web API & Microservices",
+      "Azure Cloud Architecture",
+      "C# Enterprise Systems",
+      "Microservices & Kubernetes",
+    ],
+    "Cloud & DevOps": [
+      "AWS Cloud Architecture",
+      "Azure DevOps & CI/CD",
+      "Docker & Kubernetes",
+      "Terraform & GitOps",
+    ],
+    "Data Science & AI": [
+      "Applied Generative AI & LLMs",
+      "Python Data Science & ML",
+      "Data Engineering & PySpark",
+    ],
+  };
+
+  const getSubTracksForTrack = (selectedTrack: string): string[] => {
+    const norm = (selectedTrack || "").toLowerCase();
+    if (norm.includes("sap")) return TRACK_SUBTRACKS["SAP"];
+    if (norm.includes("front")) return TRACK_SUBTRACKS["Frontend"];
+    if (norm.includes("dotnet") || norm.includes(".net")) return TRACK_SUBTRACKS["DotNet"];
+    if (norm.includes("cloud") || norm.includes("devops")) return TRACK_SUBTRACKS["Cloud & DevOps"];
+    if (norm.includes("data") || norm.includes("ai")) return TRACK_SUBTRACKS["Data Science & AI"];
+    return TRACK_SUBTRACKS["Full Stack"];
+  };
+
+  // Step 1: Instructor / Faculty State
+  const [instructorsList, setInstructorsList] = useState<{ id: string; name: string; email: string }[]>([
+    { id: "6aafc1a7d80072434f90eb89", name: "Davood Khan", email: "pattandavood123@gmail.com" },
+    { id: "6aad83b294e145c985052247", name: "Jouli Srikanth", email: "joulisrikanth123@gmail.com" },
+  ]);
+  const [selectedInstructorId, setSelectedInstructorId] = useState<string>("6aafc1a7d80072434f90eb89");
+
+  useEffect(() => {
+    fetchInstructors()
+      .then((list) => {
+        if (list && list.length > 0) setInstructorsList(list);
+      })
+      .catch(() => {});
+  }, []);
+
   const createDefaultQuestion = (qType: string) => {
     const canonical = canonicalizeAssessmentType(qType);
     let defaultChoices: string[] = [];
@@ -173,7 +249,10 @@ function InstructorNewCourseContent() {
     let defaultRubric = "";
     let defaultPoints = 10;
 
-    if (canonical === "Multiple Choice (MCQ)") {
+    if (canonical === "Multiple Select (Multi-Choice)") {
+      defaultChoices = ["Option A", "Option B", "Option C", "Option D"];
+      defaultPoints = 10;
+    } else if (canonical === "Multiple Choice (MCQ)") {
       defaultChoices = ["Option A", "Option B", "Option C", "Option D"];
       defaultPoints = 5;
     } else if (canonical === "Project / File Upload") {
@@ -194,6 +273,7 @@ function InstructorNewCourseContent() {
       type: canonical,
       choices: defaultChoices,
       correctIndex: 0,
+      correctIndices: canonical === "Multiple Select (Multi-Choice)" ? [0, 1] : [0],
       modelAnswer: "",
       keywords: "",
       language: "JavaScript",
@@ -277,6 +357,138 @@ function InstructorNewCourseContent() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedSuccess, setPublishedSuccess] = useState(false);
 
+  // Auto-Save Draft State
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
+  const [draftPayload, setDraftPayload] = useState<any>(null);
+  const draftStorageKey = editSlug ? `jks_course_wizard_draft_${editSlug}` : "jks_course_wizard_draft_new";
+
+  // Check for saved draft on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(draftStorageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.savedAt) {
+          setDraftPayload(parsed);
+          setShowDraftBanner(true);
+          setDraftSavedAt(
+            new Date(parsed.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          );
+        }
+      }
+    } catch {}
+  }, [draftStorageKey]);
+
+  const handleRestoreDraft = () => {
+    if (!draftPayload) return;
+    if (draftPayload.title !== undefined) setTitle(draftPayload.title);
+    if (draftPayload.slug !== undefined) setSlug(draftPayload.slug);
+    if (draftPayload.track !== undefined) setTrack(draftPayload.track);
+    if (draftPayload.subTrack !== undefined) setSubTrack(draftPayload.subTrack);
+    if (draftPayload.customTrackInput !== undefined) setCustomTrackInput(draftPayload.customTrackInput);
+    if (draftPayload.level !== undefined) setLevel(draftPayload.level);
+    if (draftPayload.durationWeeks !== undefined) setDurationWeeks(draftPayload.durationWeeks);
+    if (draftPayload.price !== undefined) setPrice(draftPayload.price);
+    if (draftPayload.summary !== undefined) setSummary(draftPayload.summary);
+    if (draftPayload.thumbnailUrl !== undefined) setThumbnailUrl(draftPayload.thumbnailUrl);
+    if (draftPayload.sections !== undefined) setSections(draftPayload.sections);
+    if (draftPayload.selectedInstructorId !== undefined) setSelectedInstructorId(draftPayload.selectedInstructorId);
+    if (draftPayload.antiSkipEnforced !== undefined) setAntiSkipEnforced(draftPayload.antiSkipEnforced);
+    if (draftPayload.requireFullWatchToUnlockAssignment !== undefined) setRequireFullWatchToUnlockAssignment(draftPayload.requireFullWatchToUnlockAssignment);
+    if (draftPayload.preventForwardSeeking !== undefined) setPreventForwardSeeking(draftPayload.preventForwardSeeking);
+    if (draftPayload.playbackSpeedCap !== undefined) setPlaybackSpeedCap(draftPayload.playbackSpeedCap);
+    if (draftPayload.certificateTitle !== undefined) setCertificateTitle(draftPayload.certificateTitle);
+    if (draftPayload.requireAllVideosComplete !== undefined) setRequireAllVideosComplete(draftPayload.requireAllVideosComplete);
+    if (draftPayload.requireAllAssignmentsPassed !== undefined) setRequireAllAssignmentsPassed(draftPayload.requireAllAssignmentsPassed);
+    setShowDraftBanner(false);
+  };
+
+  const handleDiscardDraft = () => {
+    try {
+      localStorage.removeItem(draftStorageKey);
+    } catch {}
+    setShowDraftBanner(false);
+    setDraftSavedAt(null);
+    setDraftPayload(null);
+  };
+
+  // Debounced auto-save draft effect
+  useEffect(() => {
+    if (!title.trim() || isLoadingEdit) return;
+
+    setIsDraftSaving(true);
+    const timer = setTimeout(() => {
+      try {
+        const now = Date.now();
+        const payload = {
+          title,
+          slug,
+          track,
+          subTrack,
+          customTrackInput,
+          level,
+          durationWeeks,
+          price,
+          summary,
+          thumbnailUrl,
+          sections,
+          selectedInstructorId,
+          antiSkipEnforced,
+          requireFullWatchToUnlockAssignment,
+          preventForwardSeeking,
+          playbackSpeedCap,
+          certificateTitle,
+          requireAllVideosComplete,
+          requireAllAssignmentsPassed,
+          savedAt: now,
+        };
+        localStorage.setItem(draftStorageKey, JSON.stringify(payload));
+        setIsDraftSaving(false);
+        setDraftSavedAt(
+          new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+        );
+      } catch (err) {
+        console.warn("Failed to auto-save course wizard draft:", err);
+        setIsDraftSaving(false);
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [
+    title,
+    slug,
+    track,
+    subTrack,
+    customTrackInput,
+    level,
+    durationWeeks,
+    price,
+    summary,
+    thumbnailUrl,
+    sections,
+    selectedInstructorId,
+    antiSkipEnforced,
+    requireFullWatchToUnlockAssignment,
+    preventForwardSeeking,
+    playbackSpeedCap,
+    certificateTitle,
+    requireAllVideosComplete,
+    requireAllAssignmentsPassed,
+    isLoadingEdit,
+    draftStorageKey,
+  ]);
+
+  // Clean up draft on successful publishing
+  useEffect(() => {
+    if (publishedSuccess) {
+      try {
+        localStorage.removeItem(draftStorageKey);
+      } catch {}
+    }
+  }, [publishedSuccess, draftStorageKey]);
+
   // Load existing course when ?edit=<slug> is present
   useEffect(() => {
     if (!editSlug) return;
@@ -303,23 +515,67 @@ function InstructorNewCourseContent() {
         if (courseData && isMounted) {
           setIsEditMode(true);
           setExistingCourseId(courseData.id || null);
+          // Preserve original rating and enrollment count so updates don't overwrite them
           setOriginalRating(typeof courseData.rating === "number" ? courseData.rating : 5.0);
           setOriginalStudentsEnrolled(typeof courseData.studentsEnrolled === "number" ? courseData.studentsEnrolled : 0);
           setTitle(courseData.title || "");
           setSlug(courseData.slug || "");
           const mappedTrack = mapBackendTrack(courseData.track);
           setTrack(mappedTrack);
+          if (courseData.subTrack) setSubTrack(courseData.subTrack);
           if (courseData.level) setLevel(courseData.level);
           if (courseData.durationWeeks) setDurationWeeks(courseData.durationWeeks);
           if (courseData.priceCents !== undefined && courseData.priceCents !== null) {
             setPrice(Math.round(courseData.priceCents / 100));
           } else if (courseData.price !== undefined) {
             setPrice(courseData.price);
+          } else {
+            setPrice(0);
           }
           if (courseData.summary) setSummary(courseData.summary);
           if (courseData.thumbnail) setThumbnailUrl(courseData.thumbnail);
+          if (courseData.instructorUserIds && courseData.instructorUserIds.length > 0) {
+            setSelectedInstructorId(courseData.instructorUserIds[0]);
+          }
+          if (courseData.syllabusTemplateId) {
+            setSelectedSyllabusTemplateId(courseData.syllabusTemplateId);
+          }
 
-          const rawSections = courseData.sectionsJson || courseData.sections;
+          let rawSections = courseData.sectionsJson || courseData.sections;
+          if ((!Array.isArray(rawSections) || rawSections.length === 0) && Array.isArray(courseData.modules) && courseData.modules.length > 0) {
+            rawSections = courseData.modules.map((m: any, idx: number) => ({
+              id: `sec-${m.id || idx}`,
+              title: m.title || `Module ${idx + 1}`,
+              order: m.order || idx + 1,
+              description: m.description || "",
+              subsections: (m.topics || []).map((t: any, tIdx: number) => ({
+                id: `sub-${t.id || tIdx}`,
+                title: t.title || `Topic ${tIdx + 1}`,
+                order: t.order || tIdx + 1,
+                description: t.description || "",
+                videos: (t.videos || []).map((v: any, vIdx: number) => ({
+                  id: `v-${v.id || vIdx}`,
+                  title: v.title || `Video ${vIdx + 1}`,
+                  durationSeconds: v.durationSeconds || 300,
+                  durationFormatted: v.durationFormatted || "5:00",
+                  videoType: (v.videoType as any) || "url",
+                  videoUrl: v.videoUrl || v.providerAssetId || "",
+                  order: v.order || vIdx + 1,
+                  isFreeDemo: Boolean(v.isFreeDemo),
+                  notes: v.notes || "",
+                })),
+              })),
+              directVideos: [],
+              assignment: {
+                id: `asg-${m.id || idx}`,
+                title: `${m.title || "Module"} Practical Assessment`,
+                description: `Hands-on assessment and evaluation for ${m.title || "Module"}.`,
+                type: "Multiple Choice (MCQ)",
+                minPassingScore: 70,
+                questions: [],
+              },
+            }));
+          }
           if (Array.isArray(rawSections) && rawSections.length > 0) {
             const normalizedSections = rawSections.map((sec: any, idx: number) => {
               const asgType = canonicalizeAssessmentType(sec.assignment?.type);
@@ -337,22 +593,27 @@ function InstructorNewCourseContent() {
                   type: canonicalizeAssessmentType(rawQType),
                   choices: Array.isArray(q.choices) && q.choices.length > 0 ? q.choices : ["Option A", "Option B", "Option C", "Option D"],
                   correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
+                  correctIndices: Array.isArray(q.correctIndices)
+                    ? q.correctIndices
+                    : typeof q.correctIndex === "number"
+                    ? [q.correctIndex]
+                    : [0],
                   modelAnswer: q.modelAnswer || "",
-                  keywords: q.keywords || "",
-                  language: q.language || "JavaScript",
-                  starterCode: q.starterCode || "",
-                  testCases: q.testCases || "",
-                  structuredTestCases: Array.isArray(q.structuredTestCases) ? q.structuredTestCases : [],
-                  solutionCode: q.solutionCode || "",
-                  fileTypes: q.fileTypes || ".zip, .pdf, .docx",
-                  maxFileSizeMb: typeof q.maxFileSizeMb === "number" ? q.maxFileSizeMb : 25,
-                  checklist: q.checklist || "",
-                  rubric: q.rubric || "",
-                  minWords: typeof q.minWords === "number" ? q.minWords : 50,
-                  maxPoints: typeof q.maxPoints === "number" ? q.maxPoints : 10,
-                  explanation: q.explanation || "",
-                };
-              });
+                keywords: q.keywords || "",
+                language: q.language || "JavaScript",
+                starterCode: q.starterCode || "",
+                testCases: q.testCases || "",
+                structuredTestCases: Array.isArray(q.structuredTestCases) ? q.structuredTestCases : [],
+                solutionCode: q.solutionCode || "",
+                fileTypes: q.fileTypes || ".zip, .pdf, .docx",
+                maxFileSizeMb: typeof q.maxFileSizeMb === "number" ? q.maxFileSizeMb : 25,
+                checklist: q.checklist || "",
+                rubric: q.rubric || "",
+                minWords: typeof q.minWords === "number" ? q.minWords : 50,
+                maxPoints: typeof q.maxPoints === "number" ? q.maxPoints : 10,
+                explanation: q.explanation || "",
+              };
+            });
 
               return {
                 id: sec.id || `sec-${Date.now()}-${idx}`,
@@ -522,7 +783,10 @@ function InstructorNewCourseContent() {
       return { valid: true, message: "", step: 2 };
     }
 
-    if (step === 3) {
+    if (step === 3 || step === 4) {
+      return { valid: true, message: "", step };
+    }
+    if (false && step === 3) {
       for (let i = 0; i < sections.length; i++) {
         const sec = sections[i];
         if (!sec.assignment.title.trim()) {
@@ -555,7 +819,7 @@ function InstructorNewCourseContent() {
       return { valid: true, message: "", step: 4 };
     }
 
-    return { valid: true, message: "", step: 5 };
+    return { valid: true, message: "", step: 4 };
   };
 
   const validateStep = (step: StepNumber): { valid: boolean; message: string } => {
@@ -629,7 +893,7 @@ function InstructorNewCourseContent() {
       return;
     }
     setValidationError(null);
-    if (currentStep < 5) {
+    if (currentStep < 4) {
       setCurrentStep((currentStep + 1) as StepNumber);
     }
   };
@@ -668,62 +932,59 @@ function InstructorNewCourseContent() {
     setSections([...sections, newSec]);
   };
 
-  const removeSection = (id: string) => {
+  const removeSection = (secId: string) => {
     if (sections.length <= 1) return;
     setSections(
       sections
-        .filter((s) => s.id !== id)
+        .filter((s) => s.id !== secId)
         .map((s, idx) => ({ ...s, order: idx + 1 }))
     );
   };
 
-  const updateSectionField = (index: number, field: keyof Section, val: any) => {
+  const moveSection = (index: number, direction: "up" | "down") => {
+    if (direction === "up" && index === 0) return;
+    if (direction === "down" && index === sections.length - 1) return;
     const updated = [...sections];
-    (updated[index] as any)[field] = val;
-    setSections(updated);
+    const targetIdx = direction === "up" ? index - 1 : index + 1;
+    const temp = updated[index];
+    updated[index] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    setSections(updated.map((s, idx) => ({ ...s, order: idx + 1 })));
   };
 
   // Subsection handlers
-  const addSubsection = (sectionIndex: number) => {
+  const addSubsectionToSection = (sectionIndex: number) => {
     const updated = [...sections];
     const sec = updated[sectionIndex];
     const currentSubs = sec.subsections || [];
-    const newOrder = currentSubs.length + 1;
+    const newSubOrder = currentSubs.length + 1;
     const newSub: SubSection = {
       id: `sub-${Date.now()}`,
       title: "",
-      order: newOrder,
+      order: newSubOrder,
       videos: [],
     };
     sec.subsections = [...currentSubs, newSub];
     setSections(updated);
   };
 
-  const removeSubsection = (sectionIndex: number, subId: string) => {
+  const removeSubsection = (sectionIndex: number, subsectionId: string) => {
     const updated = [...sections];
     const sec = updated[sectionIndex];
     if (sec.subsections) {
       sec.subsections = sec.subsections
-        .filter((s) => s.id !== subId)
-        .map((s, idx) => ({ ...s, order: idx + 1 }));
+        .filter((sub) => sub.id !== subsectionId)
+        .map((sub, idx) => ({ ...sub, order: idx + 1 }));
     }
     setSections(updated);
-  };
-
-  const updateSubsectionTitle = (sectionIndex: number, subIndex: number, title: string) => {
-    const updated = [...sections];
-    if (updated[sectionIndex].subsections?.[subIndex]) {
-      updated[sectionIndex].subsections![subIndex].title = title;
-      setSections(updated);
-    }
   };
 
   // Video handlers
   const addDirectVideo = (sectionIndex: number) => {
     const updated = [...sections];
     const sec = updated[sectionIndex];
-    const currentVids = sec.directVideos || [];
-    const newOrder = currentVids.length + 1;
+    const currentVideos = sec.directVideos || [];
+    const newOrder = currentVideos.length + 1;
     const newVidId = `v-${Date.now()}`;
     const newVid: VideoItem = {
       id: newVidId,
@@ -734,7 +995,7 @@ function InstructorNewCourseContent() {
       videoUrl: "",
       order: newOrder,
     };
-    sec.directVideos = [...currentVids, newVid];
+    sec.directVideos = [...currentVideos, newVid];
     setSections(updated);
 
     setTimeout(() => {
@@ -806,12 +1067,12 @@ function InstructorNewCourseContent() {
     const asg = updated[sectionIndex].assignment;
     const currentQuestions = asg.questions || [];
     const qType = canonicalizeAssessmentType(asg.type);
-
     const newQId = `q-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const newQ = {
       ...createDefaultQuestion(qType),
       id: newQId,
     };
+
     asg.questions = [...currentQuestions, newQ];
     setSections(updated);
 
@@ -857,10 +1118,14 @@ function InstructorNewCourseContent() {
       if (field === "type") {
         const canonical = canonicalizeAssessmentType(val);
         q.type = canonical;
-        if (canonical === "Multiple Choice (MCQ)" && (!q.choices || q.choices.length === 0)) {
+        if (
+          (canonical === "Multiple Choice (MCQ)" || canonical === "Multiple Select (Multi-Choice)") &&
+          (!q.choices || q.choices.length === 0)
+        ) {
           q.choices = ["Option A", "Option B", "Option C", "Option D"];
           q.correctIndex = 0;
-          if (!q.maxPoints) q.maxPoints = 5;
+          q.correctIndices = canonical === "Multiple Select (Multi-Choice)" ? [0, 1] : [0];
+          if (!q.maxPoints) q.maxPoints = canonical === "Multiple Select (Multi-Choice)" ? 10 : 5;
         } else if (canonical === "Coding Challenge / Test") {
           if (!q.starterCode) {
             q.starterCode = "// Write your solution function here\nfunction solution(input) {\n  // Your code here\n  return input;\n}\n";
@@ -912,6 +1177,30 @@ function InstructorNewCourseContent() {
     const asg = updated[sectionIndex].assignment;
     if (asg.questions && asg.questions[questionIndex]) {
       asg.questions[questionIndex].correctIndex = correctIndex;
+      (asg.questions[questionIndex] as any).correctIndices = [correctIndex];
+    }
+    setSections(updated);
+  };
+
+  const toggleQuestionCorrectIndex = (
+    sectionIndex: number,
+    questionIndex: number,
+    choiceIndex: number
+  ) => {
+    const updated = [...sections];
+    const asg = updated[sectionIndex].assignment;
+    if (asg.questions && asg.questions[questionIndex]) {
+      const q = asg.questions[questionIndex] as any;
+      const current: number[] = Array.isArray(q.correctIndices)
+        ? [...q.correctIndices]
+        : typeof q.correctIndex === "number"
+        ? [q.correctIndex]
+        : [0];
+      const next = current.includes(choiceIndex)
+        ? current.filter((i: number) => i !== choiceIndex)
+        : [...current, choiceIndex].sort((a: number, b: number) => a - b);
+      q.correctIndices = next.length > 0 ? next : [choiceIndex];
+      q.correctIndex = q.correctIndices[0] ?? 0;
     }
     setSections(updated);
   };
@@ -987,6 +1276,7 @@ function InstructorNewCourseContent() {
     });
   };
 
+  // Direct Bunny Stream video file upload handler
   const handleVideoFileUpload = async (
     videoId: string,
     videoTitle: string,
@@ -994,6 +1284,14 @@ function InstructorNewCourseContent() {
     onSetUrl: (url: string, durationSeconds?: number, durationFormatted?: string) => void
   ) => {
     if (!file) return;
+
+    let detectedSeconds = 0;
+    let detectedFormatted = "";
+    try {
+      const meta = await getVideoDurationFromFile(file);
+      detectedSeconds = meta.seconds;
+      detectedFormatted = meta.formatted;
+    } catch {}
 
     setUploadProgress((prev) => ({
       ...prev,
@@ -1013,15 +1311,7 @@ function InstructorNewCourseContent() {
         }));
       });
 
-      let detectedSeconds = 0;
-    let detectedFormatted = "";
-    try {
-      const meta = await getVideoDurationFromFile(file);
-      detectedSeconds = meta.seconds;
-      detectedFormatted = meta.formatted;
-    } catch {}
-
-    const finalUrl = res.iframeEmbedUrl || res.playbackUrl || ticket.uploadUrl;
+      const finalUrl = res.iframeEmbedUrl || res.playbackUrl || ticket.uploadUrl;
       onSetUrl(finalUrl, detectedSeconds, detectedFormatted);
 
       setUploadProgress((prev) => ({
@@ -1031,7 +1321,7 @@ function InstructorNewCourseContent() {
     } catch (err: any) {
       console.warn("Bunny Stream direct upload fallback to local preview object URL:", err);
       const fallbackUrl = URL.createObjectURL(file);
-      onSetUrl(fallbackUrl);
+      onSetUrl(fallbackUrl, detectedSeconds, detectedFormatted);
       setUploadProgress((prev) => ({
         ...prev,
         [videoId]: { status: "ready", percent: 100, fileName: file.name },
@@ -1042,7 +1332,7 @@ function InstructorNewCourseContent() {
   // Save & Publish
   const handlePublishCourse = async (status: "Published" | "Draft" = "Published") => {
     // Validate stages 1 to 3 before submitting
-    for (let s = 1; s <= 3; s++) {
+    for (let s = 1; s <= 2; s++) {
       const check = validateStepWithField(s as StepNumber);
       if (!check.valid) {
         if (check.fieldId && check.fieldKey) {
@@ -1057,14 +1347,18 @@ function InstructorNewCourseContent() {
     setIsPublishing(true);
     setSaveError(null);
 
+    const selectedInstructor = instructorsList.find((i) => i.id === selectedInstructorId);
+
     const newCourse: FullCourse = {
       id: existingCourseId || `crs-${Date.now()}`,
       slug: slug || `course-${Date.now()}`,
       title,
       track: track as Track,
+      subTrack: subTrack.trim() || undefined,
       level,
       durationWeeks: Number(durationWeeks) || 12,
-      price: price !== "" && Number(price) >= 0 ? Number(price) : 19999,
+      price: price !== "" && !isNaN(Number(price)) && Number(price) >= 0 ? Number(price) : 0,
+      // Preserve existing rating and enrollment count when editing
       rating: isEditMode ? originalRating : 5.0,
       studentsEnrolled: isEditMode ? originalStudentsEnrolled : 0,
       summary,
@@ -1072,6 +1366,9 @@ function InstructorNewCourseContent() {
       sections,
       createdAt: new Date().toISOString(),
       status,
+      instructorUserIds: selectedInstructorId ? [selectedInstructorId] : ["6aafc1a7d80072434f90eb89"],
+      instructorName: selectedInstructor?.name || "Davood Khan",
+      syllabusTemplateId: selectedSyllabusTemplateId || null,
     };
 
     try {
@@ -1101,7 +1398,7 @@ function InstructorNewCourseContent() {
     <>
       <DashboardTopbar
         title={isEditMode ? "Edit Course" : "New Course"}
-        subtitle="Instructor Studio: Configure multi-section curriculum, anti-skip verification, passing marks, and certificates."
+        subtitle="Configure multi-section curriculum, anti-skip verification, passing marks, and certificates."
         userInitials="IN"
       />
 
@@ -1120,6 +1417,16 @@ function InstructorNewCourseContent() {
             <span className="hidden sm:inline text-xs font-semibold text-slate-900 dark:text-white">
               {isEditMode ? `Editing: ${title || "Course"}` : "Stage Workflow Course Builder"}
             </span>
+
+            {isDraftSaving ? (
+              <span className="hidden md:inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                <Loader2 className="h-3 w-3 animate-spin text-amber-600" /> Auto-saving draft...
+              </span>
+            ) : draftSavedAt ? (
+              <span className="hidden md:inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Auto-saved draft ({draftSavedAt})
+              </span>
+            ) : null}
           </div>
 
           <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
@@ -1158,7 +1465,7 @@ function InstructorNewCourseContent() {
         </div>
 
         {/* STEP PROGRESS BAR INDICATOR WITH SEQUENTIAL GATING */}
-        <div className="grid grid-cols-5 gap-1 sm:gap-2 rounded-2xl sm:rounded-[20px] border border-white/80 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary p-1 sm:p-2 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
+        <div className="grid grid-cols-4 gap-1 sm:gap-2 rounded-2xl sm:rounded-[20px] border border-white/80 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary p-1 sm:p-2 shadow-[0_8px_30px_rgb(20,50,100,0.04)] backdrop-blur-xl">
           {STEPS.map((s) => {
             const isActive = currentStep === s.step;
             const isDone = currentStep > s.step;
@@ -1204,6 +1511,35 @@ function InstructorNewCourseContent() {
             );
           })}
         </div>
+
+        {/* DRAFT RECOVERY BANNER */}
+        {showDraftBanner && (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-300 dark:border-amber-700/80 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-xs text-amber-900 dark:text-amber-200 shadow-xs">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>
+                Found an uncommitted auto-saved draft for this course{draftSavedAt ? ` from ${draftSavedAt}` : ""}.
+              </span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleRestoreDraft}
+                className="font-bold underline hover:no-underline text-amber-900 dark:text-amber-200 cursor-pointer"
+              >
+                Restore Draft
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={handleDiscardDraft}
+                className="text-amber-700 dark:text-amber-400 hover:text-amber-950 dark:hover:text-white cursor-pointer"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* VALIDATION ERROR BANNER */}
         {validationError && (
@@ -1321,11 +1657,11 @@ function InstructorNewCourseContent() {
                           setSlug(e.target.value);
                           if (e.target.value.trim().length >= 2) clearFieldError("slug");
                         }}
-                        placeholder="course-url-slug"
-                        className={`mt-1.5 w-full rounded-xl border px-4 py-2 text-xs font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-400 outline-none transition-all duration-200 ${
+                        placeholder="e.g. enterprise-distributed-systems"
+                        className={`mt-1.5 w-full rounded-xl border px-3.5 py-2 text-xs font-mono text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none transition-all duration-200 ${
                           fieldErrors.slug
                             ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
-                            : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB]"
+                            : "border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-surface-elevated focus:border-[#2563EB]"
                         }`}
                       />
                       {fieldErrors.slug && (
@@ -1335,71 +1671,114 @@ function InstructorNewCourseContent() {
                         </p>
                       )}
                     </div>
+                  </div>
 
+                  {/* ACADEMIC TRACK & SUB-TRACK SECTION */}
+                  <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated/40 p-4 space-y-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                        Academic Track / Category
-                      </label>
-                      <select
-                        value={track}
-                        onChange={(e) => {
-                          if (e.target.value === "__custom__") {
-                            setShowCustomTrackInput(true);
-                          } else {
-                            setShowCustomTrackInput(false);
-                            setTrack(e.target.value);
-                          }
-                        }}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-bold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
-                      >
-                        {availableTracks.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
-                          </option>
-                        ))}
-                        <option value="__custom__">+ Add Custom Track / Domain...</option>
-                      </select>
+                      <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                          Academic Track <span className="text-slate-400 font-normal lowercase">(select preset or edit directly)</span>
+                        </label>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Click to select preset, then edit the text freely below
+                        </span>
+                      </div>
 
-                      {showCustomTrackInput && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={customTrackInput}
-                            onChange={(e) => setCustomTrackInput(e.target.value)}
-                            placeholder="Type new domain track..."
-                            className="flex-1 rounded-lg border border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/30 px-3 py-1.5 text-xs font-semibold text-slate-900 dark:text-white outline-none"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (customTrackInput.trim()) {
-                                const newT = customTrackInput.trim();
-                                if (!availableTracks.includes(newT)) {
-                                  setAvailableTracks([...availableTracks, newT]);
+                      {/* Preset Track Pills */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                        {availableTracks.map((t) => {
+                          const isSelected =
+                            track.toLowerCase().trim() === t.toLowerCase().trim() ||
+                            (t === "SAP" && track.toLowerCase().includes("sap"));
+                          return (
+                            <button
+                              key={t}
+                              type="button"
+                              onClick={() => {
+                                setTrack(t);
+                                const subList = getSubTracksForTrack(t);
+                                if (subList.length > 0 && !subList.includes(subTrack)) {
+                                  setSubTrack(subList[0]);
                                 }
-                                setTrack(newT);
-                                setCustomTrackInput("");
-                                setShowCustomTrackInput(false);
-                              }
-                            }}
-                            className="rounded-lg bg-[#2563EB] px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700"
-                          >
-                            Add
-                          </button>
-                        </div>
-                      )}
+                              }}
+                              className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                                isSelected
+                                  ? "bg-[#2563EB] text-white shadow-xs scale-[1.02]"
+                                  : "bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400 dark:hover:border-blue-500"
+                              }`}
+                            >
+                              {t}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Editable Track Input */}
+                      <input
+                        type="text"
+                        value={track}
+                        onChange={(e) => setTrack(e.target.value)}
+                        placeholder="e.g. SAP, Full Stack, Frontend, DotNet, Cloud..."
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
+                      />
+                    </div>
+
+                    {/* SUB-TRACK SECTION */}
+                    <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800">
+                      <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                          <span>Sub-Track / Module Specialization</span>
+                          <span className="rounded bg-blue-100 dark:bg-blue-950/70 text-[#2563EB] dark:text-blue-300 px-1.5 py-0.5 text-[10px] font-bold">
+                            {track || "Track"}
+                          </span>
+                        </label>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Choose a sub-track or edit custom specialization
+                        </span>
+                      </div>
+
+                      {/* Dynamic Sub-Track Pills (SAP B1, SAP Ariba, SAP S/4HANA, etc.) */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                        {getSubTracksForTrack(track).map((st) => {
+                          const isSelected = subTrack.toLowerCase().trim() === st.toLowerCase().trim();
+                          return (
+                            <button
+                              key={st}
+                              type="button"
+                              onClick={() => setSubTrack(st)}
+                              className={`rounded-lg px-2.5 py-1 text-[11.5px] font-bold transition-all cursor-pointer ${
+                                isSelected
+                                  ? "bg-emerald-600 text-white shadow-xs scale-[1.02]"
+                                  : "bg-white dark:bg-surface-secondary border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-emerald-400 dark:hover:border-emerald-500"
+                              }`}
+                            >
+                              {st}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Editable Sub-Track Input */}
+                      <input
+                        type="text"
+                        value={subTrack}
+                        onChange={(e) => setSubTrack(e.target.value)}
+                        placeholder="e.g. SAP B1, SAP Ariba, SAP S/4HANA, or custom specialization..."
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/30"
+                      />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                        Difficulty Level
+                        Experience Level
                       </label>
                       <select
                         value={level}
-                        onChange={(e) => setLevel(e.target.value as any)}
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-bold text-slate-800 dark:text-white outline-none"
+                        onChange={(e) => setLevel(e.target.value as "Beginner" | "Intermediate" | "Advanced")}
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
                       >
                         <option value="Beginner">Beginner</option>
                         <option value="Intermediate">Intermediate</option>
@@ -1416,27 +1795,29 @@ function InstructorNewCourseContent() {
                         min="1"
                         max="52"
                         value={durationWeeks}
-                        onChange={(e) => setDurationWeeks(e.target.value)}
-                        placeholder="12"
-                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-4 py-2 text-xs font-semibold text-slate-900 dark:text-white outline-none"
+                        onChange={(e) => setDurationWeeks(e.target.value === "" ? "" : Number(e.target.value))}
+                        placeholder="e.g. 12"
+                        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
                       />
                     </div>
 
                     {/* Course Fee Field */}
                     <div id="field-course-price" className="transition-all">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                        Tuition Fee (₹ INR) <span className="text-rose-500">*</span>
+                        Course Fee (₹) <span className="text-rose-500">*</span>
                       </label>
                       <input
                         type="number"
                         min="0"
+                        step="500"
                         value={price}
                         onChange={(e) => {
-                          setPrice(e.target.value);
-                          if (e.target.value !== "" && Number(e.target.value) >= 0) clearFieldError("price");
+                          const val = e.target.value === "" ? "" : Number(e.target.value);
+                          setPrice(val);
+                          if (val !== "" && Number(val) >= 0) clearFieldError("price");
                         }}
-                        placeholder="19999"
-                        className={`mt-1.5 w-full rounded-xl border px-4 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none transition-all duration-200 ${
+                        placeholder="e.g. 19999"
+                        className={`mt-1.5 w-full rounded-xl border px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none transition-all duration-200 ${
                           fieldErrors.price
                             ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
                             : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB]"
@@ -1451,25 +1832,46 @@ function InstructorNewCourseContent() {
                     </div>
                   </div>
 
+                  {/* Assigned Faculty & Instructor */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Assigned Faculty / Lead Instructor
+                    </label>
+                    <select
+                      value={selectedInstructorId}
+                      onChange={(e) => setSelectedInstructorId(e.target.value)}
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
+                    >
+                      {instructorsList.map((inst) => (
+                        <option key={inst.id} value={inst.id}>
+                          {inst.name} ({inst.email})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                      Assigned instructor shown to students for mentorship and course credentials.
+                    </p>
+                  </div>
+
                   {/* Course Summary Field */}
                   <div id="field-course-summary" className="transition-all">
                     <div className="flex items-center justify-between">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                        Course Summary & Outcomes <span className="text-rose-500">*</span>
+                        Course Summary & Objectives <span className="text-rose-500">*</span>
                       </label>
                       <span className={`text-[11px] font-semibold transition-colors ${summary.trim().length >= 10 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-400"}`}>
                         {summary.trim().length}/10 min chars
                       </span>
                     </div>
                     <textarea
-                      rows={3}
+                      rows={2}
                       value={summary}
                       onChange={(e) => {
                         setSummary(e.target.value);
                         if (e.target.value.trim().length >= 10) clearFieldError("summary");
                       }}
-                      placeholder="Comprehensive overview of topics covered, industrial applications, and target proficiencies..."
-                      className={`mt-1.5 w-full rounded-xl border p-3.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none transition-all duration-200 ${
+                      placeholder="e.g. Deep dive into cloud-native microservices, event-driven architectures with Kafka, and resilient backend design..."
+                      className={`mt-1.5 w-full rounded-xl border p-3 text-xs font-medium text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none transition-all duration-200 ${
                         fieldErrors.summary
                           ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
                           : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB]"
@@ -1483,30 +1885,41 @@ function InstructorNewCourseContent() {
                     )}
                   </div>
 
-                  {/* THUMBNAIL UPLOADER */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                      Course Card Thumbnail Image
-                    </label>
-                    <CourseThumbnailUploader
-                      thumbnailUrl={thumbnailUrl}
-                      onThumbnailChange={setThumbnailUrl}
-                      title={title}
-                      track={track}
-                      level={level}
-                    />
-                  </div>
+                  {/* Thumbnail / Media Upload Box */}
+                  {/* Reusable Syllabus Template Selector */}
+                  <SyllabusTemplateSelector
+                    selectedTemplateId={selectedSyllabusTemplateId}
+                    onSelectTemplate={(tpl) => {
+                      if (!tpl) {
+                        setSelectedSyllabusTemplateId(null);
+                        return;
+                      }
+                      setSelectedSyllabusTemplateId(tpl.id);
+                    }}
+                    onImportModules={(importedSections: any) => {
+                      handleImportSections(importedSections, false);
+                    }}
+                  />
+
+                  {/* Thumbnail / Media Upload Box */}
+                  <CourseThumbnailUploader
+                    thumbnailUrl={thumbnailUrl}
+                    onThumbnailChange={setThumbnailUrl}
+                    title={title}
+                    track={track}
+                    level={level}
+                  />
                 </motion.div>
               )}
 
-              {/* STEP 2: MULTI-SECTION CURRICULUM & VIDEOS */}
+              {/* STEP 2: CURRICULUM, SECTIONS, SUBSECTIONS & VIDEOS */}
               {currentStep === 2 && (
                 <motion.div
                   key="step-2"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="space-y-6"
+                  className="space-y-4"
                 >
                   {importSuccessMessage && (
                     <div className="flex items-center justify-between rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-xs font-medium text-emerald-700 dark:text-emerald-300">
@@ -1524,40 +1937,42 @@ function InstructorNewCourseContent() {
                     </div>
                   )}
 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Curriculum Sections & Video Lectures</h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Create structured sections. Upload video files or embed YouTube/Vimeo URLs.
+                      <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Step 2: Sections, Subsections & Video Lessons</h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Upload video files or paste private URLs for every section & subsection.
                       </p>
                     </div>
+
                     <div className="flex items-center gap-2 flex-wrap">
                       <button
                         type="button"
                         onClick={() => setIsImportModalOpen(true)}
-                        className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/70 dark:bg-indigo-950/40 px-3.5 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer w-full sm:w-auto"
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/70 dark:bg-indigo-950/40 px-3.5 py-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer w-full sm:w-auto"
                       >
                         <ArrowDownToLine className="h-4 w-4 text-indigo-600 dark:text-indigo-400" /> Import from Existing Course
                       </button>
                       <button
                         type="button"
                         onClick={addSection}
-                        className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                        className="flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer w-full sm:w-auto"
                       >
                         <Plus className="h-4 w-4" /> Add Section
                       </button>
                     </div>
                   </div>
 
+                  {/* SECTIONS LIST */}
                   {sections.map((section, secIdx) => (
                     <div
                       key={section.id}
-                      className="rounded-[22px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-5 sm:p-6 shadow-xs space-y-5"
+                      className="rounded-[22px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] space-y-5 transition-all hover:border-[#2563EB]/40 dark:hover:border-blue-500/40"
                     >
-                      {/* Section Header */}
-                      <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
-                        <div id={`field-section-title-${secIdx}`} className="flex items-start gap-2 flex-1 min-w-0 transition-all">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-950/60 text-xs font-bold text-[#2563EB] dark:text-blue-400 mt-1">
+                      {/* Section Top Header */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                        <div id={`field-section-title-${secIdx}`} className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0 transition-all">
+                          <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-xs font-bold text-white shrink-0 mt-0.5">
                             {secIdx + 1}
                           </span>
                           <div className="flex-1 min-w-0">
@@ -1565,14 +1980,16 @@ function InstructorNewCourseContent() {
                               type="text"
                               value={section.title}
                               onChange={(e) => {
-                                updateSectionField(secIdx, "title", e.target.value);
+                                const updated = [...sections];
+                                updated[secIdx].title = e.target.value;
+                                setSections(updated);
                                 if (e.target.value.trim().length >= 2) clearFieldError(`section-title-${secIdx}`);
                               }}
                               placeholder={`Section ${secIdx + 1} Title (at least 2 chars)`}
-                              className={`w-full rounded-lg border px-2 py-1 text-sm font-bold text-slate-900 dark:text-white outline-none transition-all duration-200 ${
+                              className={`w-full rounded-lg border bg-white dark:bg-input-bg px-3 py-1.5 text-xs sm:text-sm font-bold text-slate-900 dark:text-white outline-none transition-all duration-200 ${
                                 fieldErrors[`section-title-${secIdx}`]
                                   ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
-                                  : "border-transparent hover:border-slate-200 dark:hover:border-slate-700 bg-transparent focus:border-[#2563EB] focus:bg-white dark:focus:bg-input-bg"
+                                  : "border-slate-200 dark:border-slate-700 focus:border-[#2563EB]"
                               }`}
                             />
                             {fieldErrors[`section-title-${secIdx}`] && (
@@ -1584,20 +2001,30 @@ function InstructorNewCourseContent() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center justify-end gap-1.5 shrink-0">
                           <button
                             type="button"
-                            onClick={() => addSubsection(secIdx)}
-                            className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
+                            onClick={() => moveSection(secIdx, "up")}
+                            disabled={secIdx === 0}
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30 cursor-pointer"
+                            title="Move Up"
                           >
-                            <Plus className="h-3 w-3" /> Add Subsection
+                            <ChevronUp className="h-4 w-4" />
                           </button>
-
+                          <button
+                            type="button"
+                            onClick={() => moveSection(secIdx, "down")}
+                            disabled={secIdx === sections.length - 1}
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30 cursor-pointer"
+                            title="Move Down"
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </button>
                           {sections.length > 1 && (
                             <button
                               type="button"
                               onClick={() => removeSection(section.id)}
-                              className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-1"
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
                               title="Delete Section"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -1606,43 +2033,85 @@ function InstructorNewCourseContent() {
                         </div>
                       </div>
 
-                      {/* SUBSECTIONS LIST */}
-                      <div className="space-y-4">
-                        {(section.subsections && section.subsections.length > 0) ? (
-                          <div className="space-y-3.5">
+                      {/* Dedicated Scroll Container for Section Body */}
+                      <div className="max-h-[640px] overflow-y-auto pr-1 sm:pr-2 space-y-5 custom-scrollbar">
+                        {/* Section Description */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          Section Description
+                        </label>
+                        <input
+                          type="text"
+                          value={section.description}
+                          onChange={(e) => {
+                            const updated = [...sections];
+                            updated[secIdx].description = e.target.value;
+                            setSections(updated);
+                          }}
+                          placeholder="Brief overview of concepts covered in this section..."
+                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
+                        />
+                      </div>
+
+                      {/* SUBSECTIONS AREA (OPTIONAL) */}
+                      <div className="space-y-3 rounded-xl bg-slate-50/70 dark:bg-surface-elevated p-3 sm:p-4 border border-slate-100 dark:border-slate-800">
+                        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-white">
+                            <FolderTree className="h-4 w-4 text-[#2563EB] dark:text-blue-400 shrink-0" />
+                            <span>Subsections ({section.subsections?.length || 0})</span>
+                            <span className="hidden sm:inline text-[11px] font-normal text-slate-400 dark:text-slate-400">Optional nested lesson groupings</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => addSubsectionToSection(secIdx)}
+                            className="flex items-center gap-1 rounded-lg border border-blue-200 dark:border-blue-800/80 bg-white dark:bg-input-bg px-2.5 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 shadow-xs hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+                          >
+                            <Plus className="h-3 w-3" /> Add Subsection
+                          </button>
+                        </div>
+
+                        {section.subsections && section.subsections.length > 0 ? (
+                          <div className="space-y-3 pl-1 sm:pl-3 border-l-2 border-blue-200 dark:border-blue-900/60">
                             {section.subsections.map((sub, subIdx) => (
                               <div
                                 key={sub.id}
-                                className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-3.5 sm:p-4 space-y-3"
+                                className="rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-3 sm:p-3.5 shadow-xs space-y-3"
                               >
-                                <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <FolderTree className="h-4 w-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                                    <span className="rounded bg-blue-100 dark:bg-blue-950/50 px-1.5 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-400 shrink-0">
+                                      {secIdx + 1}.{subIdx + 1}
+                                    </span>
                                     <input
                                       type="text"
                                       value={sub.title}
-                                      onChange={(e) => updateSubsectionTitle(secIdx, subIdx, e.target.value)}
-                                      placeholder={`Subsection ${secIdx + 1}.${subIdx + 1} Title`}
-                                      className="flex-1 min-w-0 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                                      onChange={(e) => {
+                                        const updated = [...sections];
+                                        if (updated[secIdx].subsections) {
+                                          updated[secIdx].subsections![subIdx].title = e.target.value;
+                                          setSections(updated);
+                                        }
+                                      }}
+                                      placeholder="Subsection Title"
+                                      className="flex-1 min-w-0 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                                     />
                                   </div>
                                   <button
                                     type="button"
                                     onClick={() => removeSubsection(secIdx, sub.id)}
-                                    className="text-slate-400 hover:text-rose-500 transition-colors p-1"
-                                    title="Remove Subsection"
+                                    className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors shrink-0"
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
                                   </button>
                                 </div>
 
                                 {/* Subsection Videos */}
-                                <div className="space-y-2 pl-2 sm:pl-3 border-l-2 border-purple-200 dark:border-purple-900/60">
+                                <div className="space-y-2.5 pl-1 sm:pl-3">
                                   {sub.videos.map((vid, vidIdx) => (
                                     <div
                                       key={vid.id}
                                       id={`video-card-${vid.id}`}
-                                      className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 space-y-2 transition-all duration-300"
+                                      className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-3 space-y-2.5 text-xs shadow-2xs transition-all duration-300"
                                     >
                                       <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -1663,47 +2132,79 @@ function InstructorNewCourseContent() {
                                         <button
                                           type="button"
                                           onClick={() => removeVideoFromSubsection(secIdx, subIdx, vid.id)}
-                                          className="text-slate-400 hover:text-rose-500"
+                                          className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors shrink-0"
+                                          title="Remove Video"
                                         >
                                           <Trash2 className="h-3.5 w-3.5" />
                                         </button>
                                       </div>
 
-                                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs">
-                                        <div className="sm:col-span-4 lg:col-span-3">
-                                          <select
-                                            value={vid.videoType}
-                                            onChange={(e) => {
-                                              const newType = e.target.value as VideoSourceType;
-                                              const updated = [...sections];
-                                              const currentVid = updated[secIdx].subsections![subIdx].videos[vidIdx];
-                                              currentVid.videoType = newType;
-                                              if (newType === "upload" && currentVid.videoUrl.includes("youtube.com")) {
-                                                currentVid.videoUrl = "";
-                                              }
-                                              setSections(updated);
-                                            }}
-                                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2 py-1.5 text-[11px] font-medium text-slate-800 dark:text-white outline-none"
-                                          >
-                                            <option value="upload">Upload Video File</option>
-                                            <option value="url">Paste Video URL</option>
-                                          </select>
-                                        </div>
-
-                                        <div className="sm:col-span-8 lg:col-span-7">
-                                          {vid.videoType === "url" ? (
-                                            <input
-                                              type="text"
-                                              value={vid.videoUrl}
+                                      {/* Subsection Video Source: Upload or Paste URL */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs">
+                                          <div className="sm:col-span-4 lg:col-span-3">
+                                            <select
+                                              value={vid.videoType}
                                               onChange={(e) => {
+                                                const newType = e.target.value as VideoSourceType;
                                                 const updated = [...sections];
-                                                updated[secIdx].subsections![subIdx].videos[vidIdx].videoUrl = e.target.value;
+                                                const currentVid = updated[secIdx].subsections![subIdx].videos[vidIdx];
+                                                currentVid.videoType = newType;
+                                                if (newType !== "upload") {
+                                                  currentVid.durationSeconds = 0;
+                                                  currentVid.durationFormatted = "";
+                                                }
+                                                if (newType === "upload" && (currentVid.videoUrl.includes("youtube.com") || currentVid.videoUrl.includes("drive.google.com") || currentVid.videoUrl.includes("onedrive"))) {
+                                                  currentVid.videoUrl = "";
+                                                }
                                                 setSections(updated);
                                               }}
-                                              placeholder="https://... private video URL (Vimeo, YouTube, etc.)"
-                                              className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1.5 text-[11px] font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-400 outline-none"
-                                            />
-                                          ) : (
+                                              className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2 py-1.5 text-[11px] font-medium text-slate-800 dark:text-white outline-none"
+                                            >
+                                              <option value="upload">Upload Video File</option>
+                                              <option value="url">Web URL (YouTube / Vimeo)</option>
+                                              <option value="gdrive">Google Drive Link</option>
+                                              <option value="onedrive">OneDrive Link</option>
+                                            </select>
+                                          </div>
+
+                                          <div className="sm:col-span-8 lg:col-span-7">
+                                            {vid.videoType === "url" ? (
+                                              <input
+                                                type="text"
+                                                value={vid.videoUrl}
+                                                onChange={(e) => {
+                                                  const updated = [...sections];
+                                                  updated[secIdx].subsections![subIdx].videos[vidIdx].videoUrl = e.target.value;
+                                                  setSections(updated);
+                                                }}
+                                                placeholder="https://... YouTube or Vimeo video link"
+                                                className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1.5 text-[11px] font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-400 outline-none"
+                                              />
+                                            ) : vid.videoType === "gdrive" ? (
+                                              <input
+                                                type="text"
+                                                value={vid.videoUrl}
+                                                onChange={(e) => {
+                                                  const updated = [...sections];
+                                                  updated[secIdx].subsections![subIdx].videos[vidIdx].videoUrl = e.target.value;
+                                                  setSections(updated);
+                                                }}
+                                                placeholder="https://drive.google.com/file/d/.../view (Google Drive share link)"
+                                                className="w-full rounded-md border border-blue-200 dark:border-blue-900 bg-white dark:bg-input-bg px-2.5 py-1.5 text-[11px] font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-400 outline-none"
+                                              />
+                                            ) : vid.videoType === "onedrive" ? (
+                                              <input
+                                                type="text"
+                                                value={vid.videoUrl}
+                                                onChange={(e) => {
+                                                  const updated = [...sections];
+                                                  updated[secIdx].subsections![subIdx].videos[vidIdx].videoUrl = e.target.value;
+                                                  setSections(updated);
+                                                }}
+                                                placeholder="https://1drv.ms/... or https://...-my.sharepoint.com/... (OneDrive link)"
+                                                className="w-full rounded-md border border-sky-200 dark:border-sky-900 bg-white dark:bg-input-bg px-2.5 py-1.5 text-[11px] font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-400 outline-none"
+                                              />
+                                            ) : (
                                             <div className="space-y-1.5">
                                               <div className="flex flex-wrap items-center gap-2">
                                                 <label className="flex items-center gap-1.5 cursor-pointer rounded-md border border-dashed border-blue-400 dark:border-blue-700 bg-blue-50/70 dark:bg-blue-950/40 px-3 py-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
@@ -1784,6 +2285,19 @@ function InstructorNewCourseContent() {
                                           </button>
                                         </div>
                                       </div>
+
+                                      {/* Video-Level Optional Assignment Manager */}
+                                      <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800">
+                                        <VideoAssignmentManager
+                                          video={vid}
+                                          videoIndexLabel={`Video ${vidIdx + 1}`}
+                                          onUpdate={(updatedVid) => {
+                                            const updated = [...sections];
+                                            updated[secIdx].subsections![subIdx].videos[vidIdx] = updatedVid;
+                                            setSections(updated);
+                                          }}
+                                        />
+                                      </div>
                                     </div>
                                   ))}
 
@@ -1799,7 +2313,7 @@ function InstructorNewCourseContent() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-[11px] text-slate-400 italic">No subsections added yet. You can add direct videos below.</p>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-400 italic">No subsections added yet. You can add direct videos below.</p>
                         )}
                       </div>
 
@@ -1869,19 +2383,31 @@ function InstructorNewCourseContent() {
                               </button>
                             </div>
 
+                            {/* Video Source Selector: Upload or Paste URL */}
                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs">
                               <div className="sm:col-span-4 lg:col-span-3">
                                 <select
                                   value={vid.videoType}
                                   onChange={(e) => {
+                                    const newType = e.target.value as VideoSourceType;
                                     const updated = [...sections];
-                                    updated[secIdx].directVideos![vidIdx].videoType = e.target.value as VideoSourceType;
+                                    const currentVid = updated[secIdx].directVideos![vidIdx];
+                                    currentVid.videoType = newType;
+                                    if (newType !== "upload") {
+                                      currentVid.durationSeconds = 0;
+                                      currentVid.durationFormatted = "";
+                                    }
+                                    if (newType === "upload" && (currentVid.videoUrl.includes("youtube.com") || currentVid.videoUrl.includes("drive.google.com") || currentVid.videoUrl.includes("onedrive"))) {
+                                      currentVid.videoUrl = "";
+                                    }
                                     setSections(updated);
                                   }}
                                   className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2 py-1.5 text-[11px] font-medium text-slate-800 dark:text-white outline-none"
                                 >
-                                  <option value="upload">Upload Video File (Bunny)</option>
-                                  <option value="url">Paste Private URL</option>
+                                  <option value="upload">Upload Video File</option>
+                                  <option value="url">Web URL (YouTube / Vimeo)</option>
+                                  <option value="gdrive">Google Drive Link</option>
+                                  <option value="onedrive">OneDrive Link</option>
                                 </select>
                               </div>
 
@@ -1897,6 +2423,30 @@ function InstructorNewCourseContent() {
                                     }}
                                     placeholder="https://... YouTube, Vimeo, or Bunny Stream URL"
                                     className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1.5 text-[11px] font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-400 outline-none"
+                                  />
+                                ) : vid.videoType === "gdrive" ? (
+                                  <input
+                                    type="text"
+                                    value={vid.videoUrl}
+                                    onChange={(e) => {
+                                      const updated = [...sections];
+                                      updated[secIdx].directVideos![vidIdx].videoUrl = e.target.value;
+                                      setSections(updated);
+                                    }}
+                                    placeholder="https://drive.google.com/file/d/.../view (Google Drive share link)"
+                                    className="w-full rounded-md border border-blue-200 dark:border-blue-900 bg-white dark:bg-input-bg px-2.5 py-1.5 text-[11px] font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-400 outline-none"
+                                  />
+                                ) : vid.videoType === "onedrive" ? (
+                                  <input
+                                    type="text"
+                                    value={vid.videoUrl}
+                                    onChange={(e) => {
+                                      const updated = [...sections];
+                                      updated[secIdx].directVideos![vidIdx].videoUrl = e.target.value;
+                                      setSections(updated);
+                                    }}
+                                    placeholder="https://1drv.ms/... or https://...-my.sharepoint.com/... (OneDrive link)"
+                                    className="w-full rounded-md border border-sky-200 dark:border-sky-900 bg-white dark:bg-input-bg px-2.5 py-1.5 text-[11px] font-mono text-slate-700 dark:text-slate-300 dark:placeholder-slate-400 outline-none"
                                   />
                                 ) : (
                                   <div className="space-y-1.5">
@@ -1972,7 +2522,7 @@ function InstructorNewCourseContent() {
                                   className={`flex w-full items-center justify-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-bold transition-colors cursor-pointer ${
                                     vid.videoUrl
                                       ? "bg-blue-100 dark:bg-blue-950/70 text-[#2563EB] dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/60"
-                                      : "bg-slate-100 dark:bg-surface-elevated text-slate-400 cursor-not-allowed"
+                                      : "bg-slate-100 dark:bg-surface-elevated text-slate-400 dark:text-slate-400 cursor-not-allowed"
                                   }`}
                                   title="Test In-App Player"
                                 >
@@ -1981,982 +2531,31 @@ function InstructorNewCourseContent() {
                               </div>
                             </div>
 
-                            {/* Interview Questions & Video Task Accordion Button */}
-                            <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
-                              <button
-                                type="button"
-                                onClick={() => setExpandedVideoId(expandedVideoId === vid.id ? null : vid.id)}
-                                className="flex items-center gap-1.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
-                              >
-                                <HelpCircle className="h-3.5 w-3.5" />
-                                <span>
-                                  Interview Questions ({(vid.interviewQuestions || []).length}) &amp; Task (
-                                  {vid.task?.title ? "Configured" : "None"})
-                                </span>
-                                {expandedVideoId === vid.id ? (
-                                  <ChevronUp className="h-3 w-3 ml-0.5" />
-                                ) : (
-                                  <ChevronDown className="h-3 w-3 ml-0.5" />
-                                )}
-                              </button>
+                            {/* Video-Level Optional Assignment Manager */}
+                            <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800">
+                              <VideoAssignmentManager
+                                video={vid}
+                                videoIndexLabel={`Video ${vidIdx + 1}`}
+                                onUpdate={(updatedVid) => {
+                                  const updated = [...sections];
+                                  updated[secIdx].directVideos![vidIdx] = updatedVid;
+                                  setSections(updated);
+                                }}
+                              />
                             </div>
-
-                            {/* EXPANDED CONFIGURATION PANEL */}
-                            {expandedVideoId === vid.id && (
-                              <div className="rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/20 dark:bg-blue-950/20 p-3 space-y-4 text-xs animate-in fade-in slide-in-from-top-1">
-                                {/* 1. Interview Questions */}
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                                      <HelpCircle className="h-3.5 w-3.5 text-[#2563EB]" />
-                                      Video Interview Questions ({(vid.interviewQuestions || []).length})
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const updated = [...sections];
-                                        const target = updated[secIdx].directVideos![vidIdx];
-                                        const list = target.interviewQuestions || [];
-                                        target.interviewQuestions = [
-                                          ...list,
-                                          { id: `iq-${Date.now()}-${list.length + 1}`, question: "", answer: "" },
-                                        ];
-                                        setSections(updated);
-                                      }}
-                                      className="rounded-md bg-white dark:bg-surface-elevated border border-blue-200 dark:border-blue-800 px-2 py-0.5 text-[10.5px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
-                                    >
-                                      + Add Interview Question
-                                    </button>
-                                  </div>
-
-                                  {(vid.interviewQuestions || []).length === 0 ? (
-                                    <p className="text-[11px] text-slate-400 italic">
-                                      No interview questions attached to this video yet. Click &ldquo;+ Add Interview Question&rdquo; to attach technical screening questions.
-                                    </p>
-                                  ) : (
-                                    <div className="space-y-2">
-                                      {vid.interviewQuestions!.map((iq, qIdx) => (
-                                        <div
-                                          key={iq.id || qIdx}
-                                          className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-2.5 space-y-1.5 shadow-2xs"
-                                        >
-                                          <div className="flex items-center justify-between gap-2">
-                                            <span className="font-bold text-slate-700 dark:text-slate-300 text-[10.5px]">
-                                              Question #{qIdx + 1}
-                                            </span>
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                const updated = [...sections];
-                                                const target = updated[secIdx].directVideos![vidIdx];
-                                                target.interviewQuestions = target.interviewQuestions!.filter(
-                                                  (_, i) => i !== qIdx
-                                                );
-                                                setSections(updated);
-                                              }}
-                                              className="text-slate-400 hover:text-rose-500 cursor-pointer"
-                                            >
-                                              <Trash2 className="h-3 w-3" />
-                                            </button>
-                                          </div>
-                                          <input
-                                            type="text"
-                                            value={iq.question}
-                                            onChange={(e) => {
-                                              const updated = [...sections];
-                                              updated[secIdx].directVideos![vidIdx].interviewQuestions![qIdx].question =
-                                                e.target.value;
-                                              setSections(updated);
-                                            }}
-                                            placeholder="Interview Question prompt..."
-                                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                          />
-                                          <textarea
-                                            rows={2}
-                                            value={iq.answer || ""}
-                                            onChange={(e) => {
-                                              const updated = [...sections];
-                                              updated[secIdx].directVideos![vidIdx].interviewQuestions![qIdx].answer =
-                                                e.target.value;
-                                              setSections(updated);
-                                            }}
-                                            placeholder="Expected technical model answer..."
-                                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                          />
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* 2. Video Task */}
-                                <div className="space-y-2 pt-2 border-t border-blue-100 dark:border-blue-900/50">
-                                  <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                                    <ClipboardCheck className="h-3.5 w-3.5 text-[#2563EB]" />
-                                    Attached Video Task / Practical Exercise
-                                  </span>
-
-                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                    <div className="sm:col-span-2">
-                                      <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                        Task Title
-                                      </label>
-                                      <input
-                                        type="text"
-                                        value={vid.task?.title || ""}
-                                        onChange={(e) => {
-                                          const updated = [...sections];
-                                          const target = updated[secIdx].directVideos![vidIdx];
-                                          target.task = {
-                                            description: "",
-                                            instructions: "",
-                                            submissionType: "text",
-                                            points: 100,
-                                            ...target.task,
-                                            title: e.target.value,
-                                          };
-                                          setSections(updated);
-                                        }}
-                                        placeholder="e.g. Implement Architecture Demo"
-                                        className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                      />
-                                    </div>
-                                    <div>
-                                      <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                        Submission Type
-                                      </label>
-                                      <select
-                                        value={vid.task?.submissionType || "text"}
-                                        onChange={(e) => {
-                                          const updated = [...sections];
-                                          const target = updated[secIdx].directVideos![vidIdx];
-                                          target.task = {
-                                            title: "",
-                                            description: "",
-                                            instructions: "",
-                                            points: 100,
-                                            ...target.task,
-                                            submissionType: e.target.value as any,
-                                          };
-                                          setSections(updated);
-                                        }}
-                                        className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                      >
-                                        <option value="text">Text / Code Submission</option>
-                                        <option value="file">File Upload (.zip, .pdf)</option>
-                                        <option value="link">Project Link (GitHub / Deploy)</option>
-                                      </select>
-                                    </div>
-                                  </div>
-
-                                  <div>
-                                    <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                      Task Instructions &amp; Submission Criteria
-                                    </label>
-                                    <textarea
-                                      rows={2}
-                                      value={vid.task?.instructions || vid.task?.description || ""}
-                                      onChange={(e) => {
-                                        const updated = [...sections];
-                                        const target = updated[secIdx].directVideos![vidIdx];
-                                        target.task = {
-                                          title: "",
-                                          submissionType: "text",
-                                          points: 100,
-                                          ...target.task,
-                                          description: e.target.value,
-                                          instructions: e.target.value,
-                                        };
-                                        setSections(updated);
-                                      }}
-                                      placeholder="Explain the task deliverables and requirements..."
-                                      className="mt-0.5 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            )}
                           </div>
                         ))}
                       </div>
+                      </div>
                     </div>
                   ))}
                 </motion.div>
               )}
 
-              {/* STEP 3: ASSIGNMENTS & PASSING MARKS */}
+              {/* STEP 3: ANTI-SKIP OPTIONS & STAGE PROTECTION POLICY */}
               {currentStep === 3 && (
                 <motion.div
                   key="step-3"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="space-y-5"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 bg-[#ECFDF5]/70 dark:bg-emerald-950/30 p-4 text-xs text-slate-700 dark:text-slate-300">
-                    <div>
-                      <div className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400">
-                        <ClipboardCheck className="h-4 w-4" />
-                        Section Milestones & Minimum Passing Thresholds
-                      </div>
-                      <p className="mt-1 leading-relaxed text-slate-600 dark:text-slate-400">
-                        Specify the evaluation criteria and pass out marks for each section. Students must achieve this score to unlock subsequent sections.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsImportModalOpen(true)}
-                      className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-white dark:bg-emerald-900/40 px-3 py-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-200 shadow-xs hover:bg-emerald-50 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer shrink-0"
-                    >
-                      <ArrowDownToLine className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                      Import Curriculum & Assignments
-                    </button>
-                  </div>
-
-                  {sections.map((section, secIdx) => (
-                    <div
-                      key={section.id}
-                      className="rounded-[22px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-5 sm:p-6 shadow-xs space-y-4"
-                    >
-                      <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 dark:bg-slate-800 text-xs font-bold text-white shrink-0">
-                            {secIdx + 1}
-                          </span>
-                          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                            ASSIGNMENT FOR: {section.title || `Section ${secIdx + 1}`}
-                          </h3>
-                        </div>
-                        <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                          Section {secIdx + 1} Requirement
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                        <div id={`field-assignment-title-${secIdx}`} className="sm:col-span-8 transition-all">
-                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                            ASSIGNMENT TITLE <span className="text-rose-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={section.assignment.title}
-                            onChange={(e) => {
-                              const updated = [...sections];
-                              updated[secIdx].assignment.title = e.target.value;
-                              setSections(updated);
-                              if (e.target.value.trim().length > 0) clearFieldError(`assignment-title-${secIdx}`);
-                            }}
-                            placeholder="e.g. Stage 1 MCQ Assessment or Capstone Project"
-                            className={`mt-1 w-full rounded-lg border px-3.5 py-2 text-xs font-semibold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none transition-all duration-200 ${
-                              fieldErrors[`assignment-title-${secIdx}`]
-                                ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
-                                : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB]"
-                            }`}
-                          />
-                          {fieldErrors[`assignment-title-${secIdx}`] && (
-                            <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-rose-600 dark:text-rose-400 animate-in fade-in slide-in-from-top-1">
-                              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                              <span>{fieldErrors[`assignment-title-${secIdx}`]}</span>
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="sm:col-span-4">
-                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                            ASSESSMENT TYPE
-                          </label>
-                          <select
-                            value={canonicalizeAssessmentType(section.assignment.type)}
-                            onChange={(e) => {
-                              const newType = canonicalizeAssessmentType(e.target.value);
-                              const updated = [...sections];
-                              updated[secIdx].assignment.type = newType;
-                              const currentQuestions = updated[secIdx].assignment.questions || [];
-
-                              if (currentQuestions.length === 0) {
-                                // Automatically initialize the first question in the selected format!
-                                updated[secIdx].assignment.questions = [
-                                  createDefaultQuestion(newType),
-                                ];
-                              }
-                              setSections(updated);
-                            }}
-                            className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                          >
-                            <option value="Short Answer Question">Short Answer Question</option>
-                            <option value="Multiple Choice (MCQ)">Multiple Choice (MCQ)</option>
-                            <option value="Long Answer / Comprehensive">Long Answer / Comprehensive</option>
-                            <option value="Project / File Upload">Project / File Upload</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                          INSTRUCTIONS & PROBLEM STATEMENT
-                        </label>
-                        <textarea
-                          rows={3}
-                          value={section.assignment.description}
-                          onChange={(e) => {
-                            const updated = [...sections];
-                            updated[secIdx].assignment.description = e.target.value;
-                            setSections(updated);
-                          }}
-                          placeholder="e.g. Detailed problem statement and submission guidelines..."
-                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-3 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                          ADMIN MODEL / EXPECTED ANSWER (FOR AUTOMATIC EVALUATION & VALIDATION)
-                        </label>
-                        <textarea
-                          rows={3}
-                          value={section.assignment.modelAnswer || ""}
-                          onChange={(e) => {
-                            const updated = [...sections];
-                            updated[secIdx].assignment.modelAnswer = e.target.value;
-                            setSections(updated);
-                          }}
-                          placeholder="Enter the official model answer or key concepts. When students submit, their response is evaluated against this text."
-                          className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-3 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                        />
-                      </div>
-
-                      {/* PASSING OUT MARK THRESHOLD */}
-                      <div
-                        id={`field-assignment-passmark-${secIdx}`}
-                        className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl p-4 border transition-all ${
-                          fieldErrors[`assignment-passmark-${secIdx}`]
-                            ? "border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/40 dark:bg-rose-950/25"
-                            : "bg-slate-50/80 dark:bg-surface-elevated border-slate-200/90 dark:border-slate-800"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 shrink-0">
-                            <Sliders className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-slate-900 dark:text-white">
-                              Minimum Passing Mark to Unlock Next Stage <span className="text-rose-500">*</span>
-                            </div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                              Score required for the student to pass this milestone (40% - 100%)
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="number"
-                            min="40"
-                            max="100"
-                            value={section.assignment.minPassingScore}
-                            onChange={(e) => {
-                              const val = Number(e.target.value);
-                              const updated = [...sections];
-                              updated[secIdx].assignment.minPassingScore = val;
-                              setSections(updated);
-                              if (val >= 40 && val <= 100) clearFieldError(`assignment-passmark-${secIdx}`);
-                            }}
-                            className={`w-16 rounded-lg border px-2.5 py-1.5 text-center text-xs font-bold text-slate-900 dark:text-white outline-none transition-all duration-200 ${
-                              fieldErrors[`assignment-passmark-${secIdx}`]
-                                ? "border-2 border-rose-500 ring-2 ring-rose-500/20 bg-white dark:bg-input-bg"
-                                : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg focus:border-[#2563EB]"
-                            }`}
-                          />
-                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">%</span>
-                        </div>
-                      </div>
-                      {fieldErrors[`assignment-passmark-${secIdx}`] && (
-                        <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
-                          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                          <span>{fieldErrors[`assignment-passmark-${secIdx}`]}</span>
-                        </p>
-                      )}
-
-                      {/* ASSIGNMENT QUESTIONS BUILDER */}
-                      <div className="space-y-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated/70 p-4 sm:p-5">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2.5">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 shrink-0">
-                              <HelpCircle className="h-4 w-4" />
-                            </div>
-                            <div>
-                              <div className="text-xs font-bold text-slate-900 dark:text-white">
-                                Questions & Rubric Items ({section.assignment.questions?.length || 0})
-                              </div>
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                                Configure quiz questions or challenge prompts for this section milestone
-                              </div>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => addQuestionToAssignment(secIdx)}
-                            className="flex items-center gap-1.5 rounded-full border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 px-3.5 py-1.5 text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer shadow-2xs"
-                          >
-                            <Plus className="h-3.5 w-3.5" /> <span>Add Question</span>
-                          </button>
-                        </div>
-
-                        {(!section.assignment.questions || section.assignment.questions.length === 0) ? (
-                          <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-800 p-6 text-center space-y-1">
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              No questions configured for this section milestone yet.
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => addQuestionToAssignment(secIdx)}
-                              className="text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
-                            >
-                              + Click here to add your first question
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            {section.assignment.questions.map((q, qIdx) => {
-                              const qType = canonicalizeAssessmentType(q.type || section.assignment.type);
-
-                              return (
-                                <div
-                                  key={q.id || qIdx}
-                                  id={`question-card-${q.id || qIdx}`}
-                                  className="rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-4 sm:p-5 space-y-4 shadow-2xs transition-all duration-300"
-                                >
-                                  <div className="flex items-start justify-between gap-3">
-                                    <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                                      <span className="shrink-0 rounded-lg bg-blue-100 dark:bg-blue-950/60 px-2.5 py-1 text-xs font-black text-[#2563EB] dark:text-blue-400 mt-0.5">
-                                        Q{qIdx + 1}
-                                      </span>
-                                      <div className="flex-1 min-w-0 space-y-2">
-                                        <input
-                                          type="text"
-                                          value={q.prompt}
-                                          onChange={(e) =>
-                                            updateQuestionPrompt(secIdx, qIdx, e.target.value)
-                                          }
-                                          placeholder={`Question ${qIdx + 1} prompt or problem statement...`}
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-input-bg px-3 py-2 text-xs font-bold text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-
-                                        <div className="flex flex-wrap items-center gap-2">
-                                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                            Question Type:
-                                          </label>
-                                          <select
-                                            value={qType}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "type", e.target.value)
-                                            }
-                                            className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-[11px] font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                                          >
-                                            <option value="Short Answer Question">Short Answer Question</option>
-                                            <option value="Multiple Choice (MCQ)">Multiple Choice (MCQ)</option>
-                                            <option value="Long Answer / Comprehensive">Long Answer / Comprehensive</option>
-                                            <option value="Coding Challenge / Test">Coding Challenge / Test</option>
-                                            <option value="Project / File Upload">Project / File Upload</option>
-                                          </select>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => removeQuestionFromAssignment(secIdx, qIdx)}
-                                      className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
-                                      title="Delete Question"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </button>
-                                  </div>
-
-                                  {/* 1. SHORT ANSWER QUESTION */}
-                                  {qType === "Short Answer Question" && (
-                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-blue-400 dark:border-blue-600">
-                                      <div className="rounded-xl bg-blue-50/70 dark:bg-blue-950/30 p-2.5 border border-blue-100 dark:border-blue-900/40 text-[11px] text-blue-900 dark:text-blue-300">
-                                        <span className="font-bold">Short Answer Evaluation: </span>
-                                        Students submit concise written answers. Provide the reference model answer and key mandatory concepts for automated or manual score allocation.
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Model / Reference Answer <span className="text-rose-500">*</span>
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.modelAnswer || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "modelAnswer", e.target.value)
-                                          }
-                                          placeholder="e.g. Java is platform-independent because the compiler converts source code into bytecode (.class). This bytecode runs on any operating system equipped with a compatible Java Virtual Machine (JVM)."
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Mandatory Keywords / Key Concepts (Comma-Separated)
-                                        </label>
-                                        <input
-                                          type="text"
-                                          value={q.keywords || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "keywords", e.target.value)
-                                          }
-                                          placeholder="e.g. Bytecode, JVM, platform-independent, WORA, Virtual Machine"
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-2 text-xs text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-                                        <span className="mt-1 block text-[10px] text-slate-500 dark:text-slate-400">
-                                          AI evaluator verifies if student submission contains these essential concepts.
-                                        </span>
-                                      </div>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Max Marks / Score
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              max="100"
-                                              value={q.maxPoints ?? 10}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Points</span>
-                                          </div>
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Grading Hint / Explanation Note
-                                          </label>
-                                          <input
-                                            type="text"
-                                            value={q.explanation || ""}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "explanation", e.target.value)
-                                            }
-                                            placeholder="e.g. Award full score if bytecode and JVM role are explained."
-                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* 2. MULTIPLE CHOICE (MCQ) */}
-                                  {qType === "Multiple Choice (MCQ)" && (
-                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-emerald-400 dark:border-emerald-600">
-                                      <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                                        <span>Select the radio button next to the <strong>Correct Answer</strong>:</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => addChoiceToQuestion(secIdx, qIdx)}
-                                          className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
-                                        >
-                                          <Plus className="h-3 w-3" /> Add Choice
-                                        </button>
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        {(q.choices || []).map((choice, cIdx) => {
-                                          const isCorrect = (q.correctIndex ?? 0) === cIdx;
-                                          const letter = String.fromCharCode(65 + cIdx);
-
-                                          return (
-                                            <div
-                                              key={cIdx}
-                                              className={`flex items-center gap-2.5 rounded-xl border p-2.5 transition-colors ${
-                                                isCorrect
-                                                  ? "border-emerald-400 dark:border-emerald-600 bg-emerald-50/70 dark:bg-emerald-950/30"
-                                                  : "border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg"
-                                              }`}
-                                            >
-                                              <input
-                                                type="radio"
-                                                name={`q-correct-inst-${secIdx}-${qIdx}`}
-                                                checked={isCorrect}
-                                                onChange={() => setQuestionCorrectIndex(secIdx, qIdx, cIdx)}
-                                                className="h-4 w-4 accent-emerald-600 cursor-pointer shrink-0 ml-1"
-                                                title="Click to mark this option as correct"
-                                              />
-                                              <span
-                                                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
-                                                  isCorrect
-                                                    ? "bg-emerald-600 text-white"
-                                                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                                                }`}
-                                              >
-                                                {letter}
-                                              </span>
-                                              <input
-                                                type="text"
-                                                value={choice}
-                                                onChange={(e) =>
-                                                  updateQuestionChoice(secIdx, qIdx, cIdx, e.target.value)
-                                                }
-                                                placeholder={`Option ${letter} text...`}
-                                                className="min-w-0 flex-1 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none font-medium"
-                                              />
-                                              {isCorrect && (
-                                                <span className="shrink-0 rounded-md bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-300">
-                                                  Correct Answer
-                                                </span>
-                                              )}
-                                              {(q.choices?.length || 0) > 2 && (
-                                                <button
-                                                  type="button"
-                                                  onClick={() => removeChoiceFromQuestion(secIdx, qIdx, cIdx)}
-                                                  className="shrink-0 p-1 text-slate-400 hover:text-rose-500 cursor-pointer rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                                                  title="Remove this choice"
-                                                >
-                                                  <X className="h-3.5 w-3.5" />
-                                                </button>
-                                              )}
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Explanation / Correct Answer Rationale
-                                          </label>
-                                          <input
-                                            type="text"
-                                            value={q.explanation || ""}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "explanation", e.target.value)
-                                            }
-                                            placeholder="Explain why this choice is correct (shown in score breakdown)..."
-                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                          />
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Points / Weightage
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              max="100"
-                                              value={q.maxPoints ?? 5}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Points</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* 3. LONG ANSWER / COMPREHENSIVE */}
-                                  {qType === "Long Answer / Comprehensive" && (
-                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-purple-400 dark:border-purple-600">
-                                      <div className="rounded-xl bg-purple-50/70 dark:bg-purple-950/30 p-2.5 border border-purple-100 dark:border-purple-900/40 text-[11px] text-purple-900 dark:text-purple-300">
-                                        <span className="font-bold">Comprehensive Assessment: </span>
-                                        Students submit in-depth essays, architectural breakdowns, or case study responses. Define the detailed model answer and structured grading rubric.
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Comprehensive Model Answer & Key Expected Points
-                                        </label>
-                                        <textarea
-                                          rows={4}
-                                          value={q.modelAnswer || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "modelAnswer", e.target.value)
-                                          }
-                                          placeholder="Provide the complete ideal response, required architectural diagrams/steps, and technical arguments..."
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Evaluation Rubric & Marking Scheme
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.rubric || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "rubric", e.target.value)
-                                          }
-                                          placeholder="e.g.&#10;1. Architecture & Design (40% - 8 pts)&#10;2. Scalability & Fault Tolerance (30% - 6 pts)&#10;3. Error Handling & Edge Cases (30% - 6 pts)"
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs font-mono text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Minimum Word Count
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="20"
-                                              max="2000"
-                                              value={q.minWords ?? 100}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "minWords", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Words minimum</span>
-                                          </div>
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Max Marks / Score
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              max="100"
-                                              value={q.maxPoints ?? 20}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Points</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* 4. CODING CHALLENGE / TEST */}
-                                  {qType === "Coding Challenge / Test" && (
-                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-emerald-400 dark:border-emerald-600">
-                                      <div className="rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 p-2.5 border border-emerald-100 dark:border-emerald-900/40 text-[11px] text-emerald-900 dark:text-emerald-300">
-                                        <span className="font-bold">Automated Coding Evaluation: </span>
-                                        Students write and test code live in an integrated IDE editor. Configure the starter code template and automated test cases.
-                                      </div>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Target Programming Language
-                                          </label>
-                                          <select
-                                            value={q.language || "JavaScript"}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "language", e.target.value)
-                                            }
-                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                          >
-                                            <option value="JavaScript">JavaScript / Node.js</option>
-                                            <option value="TypeScript">TypeScript</option>
-                                            <option value="Python">Python 3</option>
-                                            <option value="Java">Java</option>
-                                            <option value="SAP ABAP">SAP ABAP</option>
-                                            <option value="C++">C++</option>
-                                            <option value="C#">C# / .NET</option>
-                                            <option value="SQL">SQL (PostgreSQL)</option>
-                                          </select>
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Max Marks / Score
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              max="100"
-                                              value={q.maxPoints ?? 25}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Points</span>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase">
-                                            Starter Code Template (Pre-filled in Student Editor)
-                                          </label>
-                                          <span className="text-[10px] text-slate-500 font-mono">Monospace editor stub</span>
-                                        </div>
-                                        <textarea
-                                          rows={4}
-                                          value={q.starterCode || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "starterCode", e.target.value)
-                                          }
-                                          placeholder="// Write your solution function here&#10;function solution(input) {&#10;  // Your code here&#10;  return input;&#10;}"
-                                          className="w-full font-mono text-[11px] rounded-lg border border-slate-800 bg-slate-950 text-emerald-400 p-3 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Automated Test Cases (Input & Expected Output)
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.testCases || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "testCases", e.target.value)
-                                          }
-                                          placeholder="Input: solution([1, 2, 3]) => Expected Output: 6&#10;Input: solution([4, 5]) => Expected Output: 9"
-                                          className="w-full font-mono text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-input-bg p-2.5 text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                                        />
-                                        <span className="mt-1 block text-[10px] text-slate-500 dark:text-slate-400">
-                                          Each line represents a test case parsed during automatic code execution.
-                                        </span>
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Instructor Reference Solution Code
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.solutionCode || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "solutionCode", e.target.value)
-                                          }
-                                          placeholder="// Complete working reference solution for evaluation runner comparison..."
-                                          className="w-full font-mono text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* 5. PROJECT / FILE UPLOAD */}
-                                  {qType === "Project / File Upload" && (
-                                    <div className="space-y-3 pl-1.5 sm:pl-3 border-l-2 border-amber-400 dark:border-amber-600">
-                                      <div className="rounded-xl bg-amber-50/70 dark:bg-amber-950/30 p-2.5 border border-amber-100 dark:border-amber-900/40 text-[11px] text-amber-900 dark:text-amber-300">
-                                        <span className="font-bold">Project / File Submission: </span>
-                                        Students build and submit deliverables (e.g. ZIP file containing project code, architecture PDF, or report). Define format constraints, required deliverables, and evaluation checklist.
-                                      </div>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Accepted File Extensions
-                                          </label>
-                                          <input
-                                            type="text"
-                                            value={q.fileTypes || ".zip, .pdf, .docx"}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "fileTypes", e.target.value)
-                                            }
-                                            placeholder=".zip, .pdf, .docx"
-                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                                          />
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Max File Size
-                                          </label>
-                                          <select
-                                            value={q.maxFileSizeMb ?? 25}
-                                            onChange={(e) =>
-                                              updateQuestionField(secIdx, qIdx, "maxFileSizeMb", Number(e.target.value))
-                                            }
-                                            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                          >
-                                            <option value="10">10 MB</option>
-                                            <option value="25">25 MB (Standard)</option>
-                                            <option value="50">50 MB</option>
-                                            <option value="100">100 MB</option>
-                                          </select>
-                                        </div>
-
-                                        <div>
-                                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                            Max Marks / Score
-                                          </label>
-                                          <div className="flex items-center gap-2">
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              max="100"
-                                              value={q.maxPoints ?? 50}
-                                              onChange={(e) =>
-                                                updateQuestionField(secIdx, qIdx, "maxPoints", Number(e.target.value))
-                                              }
-                                              className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                                            />
-                                            <span className="text-xs text-slate-500">Points</span>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Required Submission Deliverables / Checklist
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.checklist || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "checklist", e.target.value)
-                                          }
-                                          placeholder="e.g.&#10;1. Complete ZIP file containing all source code and assets&#10;2. Architecture & Design document (PDF)&#10;3. README.md with setup and deployment instructions"
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-800 dark:text-slate-200 dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                                          Grading Criteria & Verification Guide
-                                        </label>
-                                        <textarea
-                                          rows={3}
-                                          value={q.modelAnswer || ""}
-                                          onChange={(e) =>
-                                            updateQuestionField(secIdx, qIdx, "modelAnswer", e.target.value)
-                                          }
-                                          placeholder="Detail what the evaluator or verification pipeline will check when inspecting submitted archives..."
-                                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-[#2563EB]"
-                                        />
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-
-              {/* STEP 4: ANTI-SKIP OPTIONS & STAGE PROTECTION POLICY */}
-              {currentStep === 4 && (
-                <motion.div
-                  key="step-4"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
@@ -2967,7 +2566,7 @@ function InstructorNewCourseContent() {
                       <Lock className="h-4 w-4" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 4: Anti-Skip Options & Integrity Rules</h2>
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 3: Anti-Skip Options & Integrity Rules</h2>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Prevent video scrubbing and enforce sequential milestones before unlocking assignments
                       </p>
@@ -3059,10 +2658,10 @@ function InstructorNewCourseContent() {
                 </motion.div>
               )}
 
-              {/* STEP 5: ACCREDITED CERTIFICATE & FINAL PUBLISHING */}
-              {currentStep === 5 && (
+              {/* STEP 4: ACCREDITED CERTIFICATE & FINAL PUBLISHING */}
+              {currentStep === 4 && (
                 <motion.div
-                  key="step-5"
+                  key="step-4"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
@@ -3073,7 +2672,7 @@ function InstructorNewCourseContent() {
                       <Award className="h-4 w-4" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 5: Accredited Certificate & Unlock Criteria</h2>
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Step 4: Accredited Certificate & Unlock Criteria</h2>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Configure verified credential issued upon completing all course stages
                       </p>
@@ -3175,7 +2774,7 @@ function InstructorNewCourseContent() {
               )}
 
               <div className="flex items-center gap-2 sm:gap-2.5">
-                {currentStep < 5 ? (
+                {currentStep < 4 ? (
                   <button
                     type="button"
                     onClick={handleNextStep}
@@ -3274,36 +2873,64 @@ function InstructorNewCourseContent() {
                   <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Total Videos</div>
                 </div>
                 <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3">
-                  <div className="text-lg font-extrabold text-amber-700 dark:text-amber-300">
-                    {sections.reduce((acc, s) => acc + (s.assignment.questions?.length || 0), 0)}
-                  </div>
-                  <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Questions</div>
+                  <div className="text-lg font-extrabold text-amber-700 dark:text-amber-400">{sections.length}</div>
+                  <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Assignments</div>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => handlePublishCourse("Published")}
-                disabled={isPublishing}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] py-3 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {publishedSuccess ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4 animate-bounce" />
-                    <span>{isEditMode ? "Updated Successfully!" : "Course Published!"}</span>
-                  </>
-                ) : isPublishing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin text-white" />
-                    <span>{isEditMode ? "Saving & Updating..." : "Publishing & Syncing..."}</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4" />
-                    <span>{isEditMode ? "Save & Update Course" : "Publish & Activate Course"}</span>
-                  </>
-                )}
-              </button>
+              {/* Anti-Skip & Certification Meta */}
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-4 space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Track:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{track}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Anti-Skip:</span>
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">100% Enforced</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Avg Pass Mark:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {Math.round(
+                      sections.reduce((acc, s) => acc + (s.assignment.minPassingScore || 0), 0) /
+                        (sections.length || 1)
+                    )}
+                    %
+                  </span>
+                </div>
+                <div className="flex justify-between border-t border-slate-200/80 dark:border-slate-800 pt-2 text-sm font-extrabold">
+                  <span className="text-slate-700 dark:text-slate-300">Course Price:</span>
+                  <span className="text-[#2563EB] dark:text-blue-400">
+                    {price !== "" && Number(price) >= 0
+                      ? `₹${Number(price).toLocaleString("en-IN")}`
+                      : "₹0"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Primary Action Button */}
+              <div className="space-y-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => handlePublishCourse("Published")}
+                  disabled={isPublishing}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2563EB] py-3 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:bg-blue-700 transition-all hover:scale-[1.02] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {publishedSuccess ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 animate-bounce" /> {isEditMode ? "Updated Successfully!" : "Published Successfully!"}
+                    </>
+                  ) : isPublishing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-white" /> {isEditMode ? "Saving & Updating..." : "Publishing & Syncing..."}
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" /> {isEditMode ? "Save & Update Course" : "Publish & Activate Course"}
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

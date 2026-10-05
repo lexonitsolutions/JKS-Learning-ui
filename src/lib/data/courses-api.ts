@@ -51,41 +51,164 @@ export function mapBackendTrack(track: string): Track {
  */
 export const REAL_DB_COURSES: Course[] = [];
 
+export function extractModulesAndTopics(bc: any): { title: string; topics: string[] }[] {
+  // 1. Try sections from sectionsJson or sections
+  let rawSections: any[] = [];
+  if (Array.isArray(bc.sectionsJson)) {
+    rawSections = bc.sectionsJson;
+  } else if (typeof bc.sectionsJson === "string") {
+    try {
+      const parsed = JSON.parse(bc.sectionsJson);
+      if (Array.isArray(parsed)) rawSections = parsed;
+    } catch {}
+  }
+  if (rawSections.length === 0 && Array.isArray(bc.sections)) {
+    rawSections = bc.sections;
+  }
+
+  if (rawSections.length > 0) {
+    return rawSections.map((s: any, idx: number) => {
+      const title = (s.title || s.name || `Module ${idx + 1}`).trim();
+      const topicList: string[] = [];
+
+      // Direct video lectures
+      if (Array.isArray(s.directVideos)) {
+        for (const v of s.directVideos) {
+          const t = typeof v === "string" ? v : v?.title;
+          if (t && t.trim()) topicList.push(t.trim());
+        }
+      }
+
+      // Subsections and their videos
+      if (Array.isArray(s.subsections)) {
+        for (const sub of s.subsections) {
+          if (sub.title && sub.title.trim()) {
+            topicList.push(sub.title.trim());
+          }
+          if (Array.isArray(sub.videos) && sub.videos.length > 0) {
+            for (const v of sub.videos) {
+              const t = typeof v === "string" ? v : v?.title;
+              if (t && t.trim() && (!sub.title || sub.title.trim().toLowerCase() !== t.trim().toLowerCase())) {
+                topicList.push(t.trim());
+              }
+            }
+          }
+        }
+      }
+
+      // Explicit topics array
+      if (Array.isArray(s.topics)) {
+        for (const item of s.topics) {
+          const t = typeof item === "string" ? item : item?.title;
+          if (t && t.trim()) topicList.push(t.trim());
+        }
+      }
+
+      // Fallback: description or assignment title
+      if (topicList.length === 0) {
+        if (s.assignment?.title && s.assignment.title.trim()) {
+          topicList.push(s.assignment.title.trim());
+        } else if (s.description && s.description.trim()) {
+          topicList.push(s.description.trim());
+        } else {
+          topicList.push(`${title} Core Concepts & Implementation`);
+        }
+      }
+
+      return {
+        title,
+        topics: Array.from(new Set(topicList)),
+      };
+    });
+  }
+
+  // 2. Try relational modules from database
+  if (Array.isArray(bc.modules) && bc.modules.length > 0) {
+    return bc.modules.map((m: any, idx: number) => {
+      const title = (m.title || `Module ${idx + 1}`).trim();
+      const topicList: string[] = [];
+
+      if (Array.isArray(m.topics)) {
+        for (const t of m.topics) {
+          if (Array.isArray(t.videos) && t.videos.length > 0) {
+            for (const v of t.videos) {
+              if (v?.title && v.title.trim()) topicList.push(v.title.trim());
+            }
+          }
+          if (t.title && t.title.trim() && !t.title.includes("Lectures") && !t.title.includes("Overview")) {
+            topicList.push(t.title.trim());
+          }
+        }
+      }
+
+      if (topicList.length === 0) {
+        if (m.description && m.description.trim()) {
+          topicList.push(m.description.trim());
+        } else {
+          topicList.push(`${title} Core Architecture & Practice`);
+        }
+      }
+
+      return {
+        title,
+        topics: Array.from(new Set(topicList)),
+      };
+    });
+  }
+
+  // 3. Fallback to client localStorage catalog if available
+  if (typeof window !== "undefined" && bc.slug) {
+    try {
+      const raw = localStorage.getItem("jks_courses_catalog_v4");
+      if (raw) {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list)) {
+          const match = list.find((c: any) => c.slug === bc.slug || c.id === bc.id);
+          if (match && Array.isArray(match.sections) && match.sections.length > 0) {
+            return extractModulesAndTopics({ sections: match.sections });
+          }
+        }
+      }
+    } catch {}
+  }
+
+  return [];
+}
+
 export function transformBackendCourse(bc: BackendCourse): Course {
   const track = mapBackendTrack(bc.track);
-
-  let modules: { title: string; topics: string[] }[] = [];
-  if (Array.isArray(bc.sectionsJson) && bc.sectionsJson.length > 0) {
-    modules = bc.sectionsJson.map((s: any) => ({
-      title: s.title || "Module",
-      topics:
-        s.subsections?.map((sub: any) => sub.title) ||
-        s.directVideos?.map((v: any) => v.title) ||
-        ["Curriculum Lecture Topics"],
-    }));
-  } else if (bc.modules && bc.modules.length > 0) {
-    modules = bc.modules.map((m) => ({
-      title: m.title,
-      topics:
-        m.topics && m.topics.length > 0
-          ? m.topics.map((t) => t.title)
-          : ["Architecture & Foundations", "Practical Exercises & Labs"],
-    }));
-  }
+  const modules = extractModulesAndTopics(bc);
 
   // Extract first available video from sectionsJson or modules if demo video exists
   let demoVideoUrl = "";
   let demoVideoTitle = "";
-  if (Array.isArray(bc.sectionsJson)) {
-    for (const sec of bc.sectionsJson) {
-      if (Array.isArray(sec.directVideos) && sec.directVideos.length > 0) {
-        const firstVid = sec.directVideos[0];
-        if (firstVid.videoUrl || firstVid.bunnyVideoId) {
-          demoVideoUrl = firstVid.videoUrl || `https://iframe.mediadelivery.net/embed/754986/${firstVid.bunnyVideoId}`;
-          demoVideoTitle = firstVid.title || `${bc.title} Demo`;
-          break;
+  const rawSections: any[] = Array.isArray(bc.sectionsJson)
+    ? bc.sectionsJson
+    : Array.isArray((bc as any).sections)
+    ? (bc as any).sections
+    : [];
+
+  for (const sec of rawSections) {
+    if (Array.isArray(sec.directVideos) && sec.directVideos.length > 0) {
+      const firstVid = sec.directVideos[0];
+      if (firstVid.videoUrl || firstVid.bunnyVideoId) {
+        demoVideoUrl = firstVid.videoUrl || `https://iframe.mediadelivery.net/embed/754986/${firstVid.bunnyVideoId}`;
+        demoVideoTitle = firstVid.title || `${bc.title} Demo`;
+        break;
+      }
+    }
+    if (Array.isArray(sec.subsections)) {
+      for (const sub of sec.subsections) {
+        if (Array.isArray(sub.videos) && sub.videos.length > 0) {
+          const firstVid = sub.videos[0];
+          if (firstVid.videoUrl || firstVid.bunnyVideoId) {
+            demoVideoUrl = firstVid.videoUrl || `https://iframe.mediadelivery.net/embed/754986/${firstVid.bunnyVideoId}`;
+            demoVideoTitle = firstVid.title || `${bc.title} Demo`;
+            break;
+          }
         }
       }
+      if (demoVideoUrl) break;
     }
   }
 
