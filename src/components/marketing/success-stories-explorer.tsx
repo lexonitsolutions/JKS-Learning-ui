@@ -16,6 +16,10 @@ import {
   ChevronRight,
   Building,
   GraduationCap,
+  SlidersHorizontal,
+  ChevronDown,
+  ChevronUp,
+  X,
 } from "lucide-react";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +68,10 @@ export function SuccessStoriesExplorer() {
   const [selectedCategory, setSelectedCategory] = useState<"All" | CareerCategory>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [spotlightStoryId, setSpotlightStoryId] = useState<string>("priya-nair");
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  const activeFilterCount =
+    (selectedTrack !== "All" ? 1 : 0) + (selectedCategory !== "All" ? 1 : 0);
 
   const filteredStories = useMemo(() => {
     return TESTIMONIALS.filter((story) => {
@@ -82,8 +90,10 @@ export function SuccessStoriesExplorer() {
   }, [selectedTrack, selectedCategory, searchQuery]);
 
   const spotlightStory = useMemo(() => {
-    return TESTIMONIALS.find((s) => s.id === spotlightStoryId) || TESTIMONIALS[0];
-  }, [spotlightStoryId]);
+    if (filteredStories.length === 0) return null;
+    const match = filteredStories.find((s) => s.id === spotlightStoryId);
+    return match || filteredStories[0];
+  }, [filteredStories, spotlightStoryId]);
 
   return (
     <section id="stories-explorer" className="py-20 lg:py-28 bg-bg-light/60 dark:bg-background/60 transition-colors duration-300">
@@ -103,21 +113,172 @@ export function SuccessStoriesExplorer() {
             </p>
           </div>
 
-          {/* Search Box */}
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-text-body/60 dark:text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search alumni, roles, companies..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-border dark:border-slate-800 bg-white dark:bg-input-bg pl-10 pr-4 py-2.5 text-sm text-text-heading dark:text-white shadow-xs placeholder:text-text-body/50 dark:placeholder:text-slate-400 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/10 transition-all"
-            />
+          {/* Search Box & Mobile Filter Trigger */}
+          <div className="flex flex-col gap-2.5 w-full md:w-auto">
+            <div className="relative w-full md:w-72">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-text-body/60 dark:text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search alumni, roles, companies..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-xl border border-border dark:border-slate-800 bg-white dark:bg-input-bg pl-10 pr-4 py-2.5 text-sm text-text-heading dark:text-white shadow-xs placeholder:text-text-body/50 dark:placeholder:text-slate-400 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/10 transition-all"
+              />
+            </div>
+
+            {/* Mobile Filter Toggle Button */}
+            <div className="flex md:hidden items-center justify-between gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setMobileFilterOpen((v) => !v)}
+                className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer ${
+                  mobileFilterOpen || activeFilterCount > 0
+                    ? "border-primary-blue bg-blue-50/80 dark:bg-blue-950/40 text-primary-blue dark:text-blue-400 shadow-xs"
+                    : "border-border dark:border-slate-800 bg-white dark:bg-surface-secondary text-text-body dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-elevated"
+                }`}
+                aria-label="Toggle filter options"
+                aria-expanded={mobileFilterOpen}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                <span>Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="flex h-4.5 min-w-[18px] px-1 items-center justify-center rounded-full bg-primary-fill text-[10px] font-bold text-white">
+                    {activeFilterCount}
+                  </span>
+                )}
+                {mobileFilterOpen ? (
+                  <ChevronUp className="h-3.5 w-3.5 ml-0.5 text-slate-400" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5 ml-0.5 text-slate-400" />
+                )}
+              </button>
+
+              {activeFilterCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedTrack("All");
+                    setSelectedCategory("All");
+                  }}
+                  className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+
+            {/* Mobile Active Filter Tags (when drawer is closed) */}
+            {!mobileFilterOpen && activeFilterCount > 0 && (
+              <div className="flex md:hidden flex-wrap items-center gap-1.5 pt-1">
+                {selectedTrack !== "All" && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 px-2.5 py-0.5 text-[11px] font-medium text-primary-blue dark:text-blue-400">
+                    Track: {selectedTrack}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTrack("All")}
+                      className="hover:text-blue-700"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {selectedCategory !== "All" && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                    Type: {selectedCategory}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategory("All")}
+                      className="hover:text-slate-900"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Filter Controls */}
-        <div className="mt-8 flex flex-col gap-4">
+        {/* Mobile Collapsible Filter Options Panel */}
+        <AnimatePresence>
+          {mobileFilterOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="md:hidden overflow-hidden rounded-2xl border border-blue-100 dark:border-slate-800 bg-white dark:bg-surface-secondary p-4 shadow-lg shadow-blue-500/5 mt-4 flex flex-col gap-4"
+            >
+              <div>
+                <div className="text-[11px] font-bold text-text-heading dark:text-white uppercase tracking-wider mb-2 flex items-center justify-between">
+                  <span>Domain Track</span>
+                  {selectedTrack !== "All" && (
+                    <span className="text-primary-blue dark:text-blue-400 text-[10px] font-semibold">
+                      active
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {TRACKS.map((t) => (
+                    <button
+                      key={t.value}
+                      onClick={() => setSelectedTrack(t.value)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                        selectedTrack === t.value
+                          ? "bg-primary-fill text-white shadow-xs"
+                          : "bg-slate-50 dark:bg-surface-elevated border border-border dark:border-slate-800 text-text-body dark:text-slate-300"
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[11px] font-bold text-text-heading dark:text-white uppercase tracking-wider mb-2 flex items-center justify-between">
+                  <span>Transition Type</span>
+                  {selectedCategory !== "All" && (
+                    <span className="text-primary-blue dark:text-blue-400 text-[10px] font-semibold">
+                      active
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {CATEGORIES.map((c) => (
+                    <button
+                      key={c.value}
+                      onClick={() => setSelectedCategory(c.value)}
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition-all cursor-pointer ${
+                        selectedCategory === c.value
+                          ? "bg-slate-900 dark:bg-blue-600 text-white"
+                          : "bg-slate-50 dark:bg-surface-elevated border border-border dark:border-slate-800 text-text-body dark:text-slate-300"
+                      }`}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-border/60 dark:border-slate-800">
+                <span className="text-xs text-text-body dark:text-slate-400 font-medium">
+                  {filteredStories.length} {filteredStories.length === 1 ? "story" : "stories"} found
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="rounded-lg bg-primary-fill px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-600 cursor-pointer"
+                >
+                  Done
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Desktop Filter Controls */}
+        <div className="mt-8 hidden md:flex flex-col gap-4">
           {/* Domain Track Tabs */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-bold text-text-heading dark:text-white mr-2 uppercase tracking-wider">
@@ -160,11 +321,12 @@ export function SuccessStoriesExplorer() {
         </div>
 
         {/* Featured Spotlight Career Deep-Dive */}
-        <div className="mt-8 sm:mt-12 overflow-hidden rounded-3xl border border-blue-200/80 dark:border-blue-900/60 bg-gradient-to-br from-white via-blue-50/40 to-cyan-50/20 dark:from-surface-secondary dark:via-surface-elevated dark:to-surface-secondary p-4 sm:p-8 lg:p-10 shadow-lg shadow-blue-500/5 dark:shadow-black/40">
-          <div className="flex items-center gap-2 text-[11px] sm:text-xs font-bold text-primary-blue dark:text-blue-400 uppercase tracking-wider mb-4 sm:mb-6">
-            <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
-            <span className="truncate">Featured Career Transformation Spotlight</span>
-          </div>
+        {spotlightStory && (
+          <div className="mt-8 sm:mt-12 overflow-hidden rounded-3xl border border-blue-200/80 dark:border-blue-900/60 bg-gradient-to-br from-white via-blue-50/40 to-cyan-50/20 dark:from-surface-secondary dark:via-surface-elevated dark:to-surface-secondary p-4 sm:p-8 lg:p-10 shadow-lg shadow-blue-500/5 dark:shadow-black/40">
+            <div className="flex items-center gap-2 text-[11px] sm:text-xs font-bold text-primary-blue dark:text-blue-400 uppercase tracking-wider mb-4 sm:mb-6">
+              <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
+              <span className="truncate">Featured Career Transformation Spotlight</span>
+            </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
             {/* Left: Candidate Info & Journey */}
@@ -279,6 +441,7 @@ export function SuccessStoriesExplorer() {
             </div>
           </div>
         </div>
+      )}
 
         {/* Stories Grid */}
         <div className="mt-12">
