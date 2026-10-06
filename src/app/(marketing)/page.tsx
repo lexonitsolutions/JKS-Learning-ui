@@ -183,12 +183,12 @@ export default async function HomePage() {
               </Link>
             </MagneticButton>
           </Reveal>
-          <Reveal variant="scale-in" className="rounded-2xl border border-slate-700/60 bg-slate-900/60 p-8 backdrop-blur-md shadow-xl">
+          <Reveal variant="scale-in" className="rounded-2xl border border-slate-700/60 bg-slate-900/60 p-5 sm:p-8 backdrop-blur-md shadow-xl">
             <div className="flex items-center justify-between">
               <span className="text-label text-slate-400 font-semibold">Sample Report</span>
               <span className="text-label text-emerald-400 font-bold">Interview Ready</span>
             </div>
-            <div className="mt-6 grid grid-cols-2 gap-4">
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
               {SAMPLE_SCORES.map(([label, score]) => (
                 <AnimatedScoreBar key={label} label={label} score={score} />
               ))}
@@ -217,21 +217,23 @@ export default async function HomePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-600 dark:to-indigo-700">
+      <section className="relative z-10 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-600 dark:to-indigo-700">
         <Reveal variant="scale-in" className="mx-auto max-w-[1280px] px-6 py-16 text-center lg:px-16">
           <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">Ready to build a career-ready skillset?</h2>
           <p className="mx-auto mt-3 max-w-xl text-sm sm:text-base text-blue-100 font-medium leading-relaxed">
             Join thousands of learners upskilling with structured courses and AI-driven
             interview practice.
           </p>
-          <MagneticButton className="mt-8 inline-block">
-            <Link
-              href="/courses"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-bold text-blue-600 shadow-xl hover:bg-slate-50 hover:text-blue-700 hover:scale-105 transition-all cursor-pointer"
-            >
-              Explore Courses <ArrowRight className="h-4 w-4" />
-            </Link>
-          </MagneticButton>
+          <div className="mt-8 inline-block relative z-20">
+            <MagneticButton>
+              <Link
+                href="/courses"
+                className="relative z-20 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-bold text-blue-600 shadow-xl hover:bg-slate-50 hover:text-blue-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              >
+                Explore Courses <ArrowRight className="h-4 w-4" />
+              </Link>
+            </MagneticButton>
+          </div>
         </Reveal>
       </section>
     </>

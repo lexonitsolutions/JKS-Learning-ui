@@ -38,11 +38,13 @@ export function AnimatedScoreBar({
   }, [reducedMotion, percent]);
 
   return (
-    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3 hover:bg-white/[0.04] transition-colors">
-      <div className="flex items-center justify-between text-xs mb-2">
-        <span className="font-semibold text-slate-200">{label}</span>
-        <div className="flex items-center gap-1.5 font-mono">
-          <span className="font-bold text-cyan-300">{score}</span>
+    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-2.5 sm:p-3 hover:bg-white/[0.04] transition-colors">
+      <div className="flex items-center justify-between gap-1.5 text-xs mb-2">
+        <span className="font-semibold text-slate-200 text-[11px] sm:text-xs truncate" title={label}>
+          {label}
+        </span>
+        <div className="flex items-center gap-1 font-mono shrink-0 ml-auto text-right">
+          <span className="font-bold text-cyan-300 text-[11px] sm:text-xs">{score}</span>
           <span className="text-[10px] text-slate-400">/ 100</span>
         </div>
       </div>

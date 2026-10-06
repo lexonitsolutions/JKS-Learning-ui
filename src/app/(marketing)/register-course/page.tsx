@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { JksLogo } from "@/components/common/jks-logo";
 import { registerCourseOnline, createInvoice, type Invoice } from "@/lib/data/invoices-store";
+import { enrollStudentCourse } from "@/lib/data/courses-store";
 import { InvoiceModal } from "@/components/common/invoice-modal";
 import { validateCoupon } from "@/lib/data/enrollments-api";
 
@@ -287,6 +288,10 @@ function CourseRegistrationContent() {
       });
 
       setGeneratedInvoice(invoice);
+      const studentEmail = studentInfo.email || authenticatedEmail;
+      if (studentEmail) {
+        enrollStudentCourse(selectedCourse.slug, studentEmail);
+      }
       setShowInvoiceModal(true);
       setStep(4);
     } catch (err: any) {
@@ -913,19 +918,26 @@ function CourseRegistrationContent() {
             )}
 
             <div className="flex flex-col sm:flex-row items-center gap-3 justify-center pt-4">
+              <Link
+                href={`/dashboard/my-courses/${selectedCourse.slug}`}
+                className="flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-6 py-3.5 text-xs font-bold text-white shadow-md shadow-emerald-600/25 transition-all cursor-pointer"
+              >
+                Continue to Course <ArrowRight className="h-4 w-4" />
+              </Link>
+
               <button
                 type="button"
                 onClick={() => setShowInvoiceModal(true)}
                 className="flex items-center gap-2 rounded-xl bg-primary-fill px-6 py-3.5 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-all cursor-pointer"
               >
-                <Printer className="h-4 w-4" /> View &amp; Print Official Tax Invoice PDF
+                <Printer className="h-4 w-4" /> View &amp; Print Tax Invoice PDF
               </button>
 
               <Link
                 href="/dashboard/my-courses"
                 className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated px-6 py-3.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-surface-hover transition-all"
               >
-                Launch Student Dashboard <ArrowRight className="h-4 w-4" />
+                My Courses <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>

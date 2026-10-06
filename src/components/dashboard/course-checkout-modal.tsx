@@ -246,9 +246,6 @@ export function CourseCheckoutModal({
     setEnrollmentError(null);
 
     try {
-      // Simulate banking gateway handshake & verification
-      await new Promise((resolve) => setTimeout(resolve, 1400));
-
       const invoice = await registerCourseOnline({
         studentName: trimmedName,
         studentEmail: effectiveEmail,
@@ -272,16 +269,8 @@ export function CourseCheckoutModal({
         batchTiming: selectedBatch,
       });
 
-      // Synchronize in-app course enrollment if auto-approved by 100% coupon or free course
-      const isAutoApproved = Boolean(
-        invoice.isAutoApproved ||
-        invoice.enrollmentStatus === "ACTIVE" ||
-        isFreeCourse ||
-        isFullDiscount
-      );
-      if (isAutoApproved) {
-        enrollStudentCourse(course.slug, effectiveEmail);
-      }
+      // Synchronize in-app course enrollment immediately so "Continue to Course" is ready without delay
+      enrollStudentCourse(course.slug, effectiveEmail);
 
       // Synchronize student profile details across local storage and broadcast updates
       if (typeof window !== "undefined") {
@@ -856,32 +845,28 @@ export function CourseCheckoutModal({
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 max-w-md mx-auto">
-              {generatedInvoice?.isAutoApproved || isFullDiscount ? (
-                <Link
-                  href={`/dashboard/my-courses/${course.slug}`}
-                  onClick={onClose}
-                  className="w-full sm:flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-3 text-xs font-bold text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
-                >
-                  <span>Start Learning Now</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              ) : (
-                <Link
-                  href="/dashboard/my-courses"
-                  onClick={onClose}
-                  className="w-full sm:flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 px-5 py-3 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all cursor-pointer"
-                >
-                  <span>Go to My Courses</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              )}
+              <Link
+                href={`/dashboard/my-courses/${course.slug}`}
+                onClick={onClose}
+                className="w-full sm:flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+              >
+                <span>Continue to Course</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/dashboard/my-courses"
+                onClick={onClose}
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer dark:border-slate-700 dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover"
+              >
+                <span>All Courses</span>
+              </Link>
               <Link
                 href="/dashboard/payments"
                 onClick={onClose}
                 className="w-full sm:w-auto flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer dark:border-slate-700 dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover"
               >
                 <FileText className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                <span>View Receipt</span>
+                <span>Receipt</span>
               </Link>
             </div>
           </div>
