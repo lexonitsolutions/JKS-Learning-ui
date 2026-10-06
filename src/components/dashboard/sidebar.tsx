@@ -193,13 +193,13 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
     ? (session?.email && session.email !== "admin@jkslearning.dev" ? session.email : "lexonitservices@gmail.com")
     : isInstructor
     ? (session?.email ?? "")
-    : (session?.email ?? clerkEmail ?? "");
+    : (clerkEmail || session?.email || "");
 
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" && session.name !== "Ava Desai" ? session.name : "Lexon Administrator")
     : isInstructor
     ? (session?.name ?? "Lecturer")
-    : (session?.name ?? clerkName ?? "Student");
+    : (clerkName || session?.name || "Student");
 
   const userAvatarUrl =
     customAvatar ||

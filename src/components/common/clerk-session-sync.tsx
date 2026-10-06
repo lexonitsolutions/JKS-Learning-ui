@@ -101,7 +101,16 @@ export function ClerkSessionSync() {
 
           const res = await fetch(apiUrl("/auth/clerk-sync"), {
             method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email,
+              name: session.name,
+              avatarUrl: user.imageUrl,
+              clerkUserId: user.id,
+            }),
             credentials: "include",
             signal: AbortSignal.timeout(10000),
           });

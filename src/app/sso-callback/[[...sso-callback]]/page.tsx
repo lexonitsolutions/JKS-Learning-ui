@@ -205,7 +205,7 @@ export default function SSOCallbackPage() {
         signUpForceRedirectUrl="/auth-redirect"
         signInFallbackRedirectUrl="/auth-redirect"
         signUpFallbackRedirectUrl="/auth-redirect"
-        continueSignUpUrl="/sign-up"
+        continueSignUpUrl="/auth-redirect"
       />
     </div>
   );

@@ -373,12 +373,17 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   const handleSocialAuth = async (strategy: "oauth_google" | "oauth_github") => {
     setOauthError(null);
 
-    // If already signed in, immediately navigate to target
-    if (isSignedIn || session) {
-      const isSuperAdmin = session?.email?.toLowerCase() === "lexonitservices@gmail.com";
-      const isAdmin = isSuperAdmin || session?.role === "admin";
-      window.location.assign(isAdmin ? "/admin" : from);
+    // If already signed in via Clerk, go to /auth-redirect to ensure full sync
+    if (isSignedIn && clerkUser) {
+      const clerkEmail = (clerkUser.primaryEmailAddress?.emailAddress || "").toLowerCase();
+      const isSuperAdmin = clerkEmail === "lexonitservices@gmail.com" || session?.role === "admin";
+      window.location.assign(isSuperAdmin ? "/admin" : from || "/dashboard");
       return;
+    }
+
+    // Clear any stale mock session cookies before initiating real OAuth
+    if (session) {
+      logoutMockSession();
     }
 
     if (!isSignInLoaded || !signIn) {

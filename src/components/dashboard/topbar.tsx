@@ -146,7 +146,9 @@ export function DashboardTopbar({
     ? (session?.initials ?? userInitials ?? "LE")
     : clerkUser?.firstName && clerkUser?.lastName
     ? `${clerkUser.firstName[0]}${clerkUser.lastName[0]}`.toUpperCase()
-    : (session?.initials ?? userInitials ?? (clerkName ? clerkName.slice(0, 2).toUpperCase() : "ST"));
+    : clerkName
+    ? clerkName.slice(0, 2).toUpperCase()
+    : (session?.initials ?? userInitials ?? "ST");
 
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" && session.name !== "Ava Desai" ? session.name : "Lexon Administrator")
