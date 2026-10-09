@@ -219,8 +219,8 @@ function VelocityPerformanceChart() {
 export default function InstructorDashboardPage() {
   const [selectedSemester] = useState("This Semester");
   const session = useMockSession();
-  const lecturerName = session?.name || "Lecturer";
-  const lecturerInitials = session?.initials || "LE";
+  const lecturerName = session?.name || "Tutor";
+  const lecturerInitials = session?.initials || "TU";
   const liveCourses = useAllCourses();
 
   const [students, setStudents] = useState<AdminStudentRecord[]>([]);
@@ -268,7 +268,7 @@ export default function InstructorDashboardPage() {
   return (
     <>
       <DashboardTopbar
-        title="Lecturer Command Center"
+        title="Tutor Command Center"
         subtitle="Manage curriculum velocity, student assessments, live doubt sessions, and academic excellence."
         userInitials={lecturerInitials}
       />

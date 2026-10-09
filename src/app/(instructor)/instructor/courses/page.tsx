@@ -45,7 +45,7 @@ export default function InstructorCoursesPage() {
       <DashboardTopbar
         title="My Courses & Curriculum"
         subtitle="Manage lectures, upload multi-section videos, configure anti-skip settings, and review syllabus."
-        userInitials={session?.initials || "LE"}
+        userInitials={session?.initials || "TU"}
       />
 
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">

@@ -406,10 +406,14 @@ export interface UserProfileUpdate {
   avatarPublicId?: string | null;
 }
 
-export async function fetchMyProfile(): Promise<UserProfileDto | null> {
+export async function fetchMyProfile(email?: string): Promise<UserProfileDto | null> {
   try {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (email) {
+      headers["x-user-email"] = email.toLowerCase().trim();
+    }
     const res = await apiFetch("/users/profile", {
-      headers: { "Content-Type": "application/json" },
+      headers,
       cache: "no-store",
     });
     if (res.ok) {
@@ -422,12 +426,17 @@ export async function fetchMyProfile(): Promise<UserProfileDto | null> {
 }
 
 export async function updateMyProfile(
-  dto: UserProfileUpdate
+  dto: UserProfileUpdate,
+  email?: string
 ): Promise<{ success: boolean; data?: UserProfileDto; error?: string }> {
   try {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (email) {
+      headers["x-user-email"] = email.toLowerCase().trim();
+    }
     const res = await apiFetch("/users/profile", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(dto),
     });
     if (res.ok) {

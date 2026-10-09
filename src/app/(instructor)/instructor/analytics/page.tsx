@@ -27,7 +27,7 @@ import { useMockSession } from "@/lib/auth/use-mock-auth";
 
 export default function InstructorAnalyticsPage() {
   const session = useMockSession();
-  const lecturerInitials = session?.initials || "LE";
+  const lecturerInitials = session?.initials || "TU";
   const liveCourses = useAllCourses();
 
   const [students, setStudents] = useState<AdminStudentRecord[]>([]);

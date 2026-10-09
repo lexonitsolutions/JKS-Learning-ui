@@ -40,7 +40,7 @@ interface SubmissionItem {
 
 export default function InstructorAssessmentsPage() {
   const session = useMockSession();
-  const lecturerInitials = session?.initials || "LE";
+  const lecturerInitials = session?.initials || "TU";
 
   const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);

@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useUser, useClerk, useAuth } from "@clerk/nextjs";
-import { useMockSession, performLogout } from "@/lib/auth/use-mock-auth";
+import { useMockSession, performLogout, logoutMockSession } from "@/lib/auth/use-mock-auth";
+import { SESSION_COOKIE_NAME, encodeSession, type MockSession } from "@/lib/auth/session";
 import { JksLogo } from "@/components/common/jks-logo";
 import { GooglePhoneModal } from "@/components/common/google-phone-modal";
 import { apiUrl } from "@/lib/api/base-url";
@@ -17,6 +18,9 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+
+const SESSION_CHANGE_EVENT = "jks-mock-session-change";
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 export default function AuthRedirectPage() {
   const { user, isLoaded } = useUser();
@@ -34,15 +38,91 @@ export default function AuthRedirectPage() {
   const hasInitiatedSync = useRef(false);
 
   useEffect(() => {
-    const fallbackTimer = setTimeout(() => setShowFallback(true), 6000);
+    const fallbackTimer = setTimeout(() => setShowFallback(true), 5000);
     return () => clearTimeout(fallbackTimer);
   }, []);
+
+  // Helper to establish real session in cookie and localStorage immediately
+  const establishRealSession = useCallback((backendUser?: any) => {
+    if (!user) return;
+
+    const email = (
+      user.primaryEmailAddress?.emailAddress ||
+      user.emailAddresses?.[0]?.emailAddress ||
+      ""
+    ).toLowerCase().trim();
+
+    if (!email) return;
+
+    const fullName =
+      backendUser?.name ||
+      user.fullName ||
+      [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+      user.username ||
+      email.split("@")[0] ||
+      "Student";
+
+    const initials =
+      user.firstName && user.lastName
+        ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+        : fullName.slice(0, 2).toUpperCase();
+
+    const isSuperAdmin = email === "lexonitservices@gmail.com";
+    const isAdmin =
+      isSuperAdmin ||
+      backendUser?.role === "SUPER_ADMIN" ||
+      backendUser?.role === "ADMIN";
+    const isInstructor = backendUser?.role === "INSTRUCTOR";
+    const role: "student" | "instructor" | "admin" = isAdmin
+      ? "admin"
+      : isInstructor
+      ? "instructor"
+      : "student";
+
+    const userSession: MockSession = {
+      email,
+      name: isSuperAdmin ? "Lexon Administrator" : fullName,
+      initials: isSuperAdmin ? "LX" : initials,
+      role,
+      phone: backendUser?.phone || undefined,
+      status: backendUser?.status || "ACTIVE",
+    };
+
+    // Write real session cookie so dashboard never loads a fake mock student profile
+    document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(userSession)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
+
+    try {
+      localStorage.setItem(
+        "jks_auth_user",
+        JSON.stringify({
+          email,
+          name: userSession.name,
+          role,
+          status: userSession.status,
+          avatar: backendUser?.avatarUrl || user.imageUrl,
+          phone: backendUser?.phone || null,
+        })
+      );
+      if (user.imageUrl) {
+        localStorage.setItem("jks_student_avatar_v2", user.imageUrl);
+      }
+    } catch {}
+
+    window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+    return { email, fullName, role, target: isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard" };
+  }, [user]);
 
   const executeSync = useCallback(async () => {
     if (!user) return;
 
     setSyncStatus("syncing");
     setErrorMessage(null);
+
+    // Immediately establish real session from Google user so any navigation shows real profile
+    const sessionInfo = establishRealSession();
+    if (sessionInfo) {
+      setResolvedTargetUrl(sessionInfo.target);
+    }
 
     const email = (
       user?.primaryEmailAddress?.emailAddress ||
@@ -58,8 +138,24 @@ export default function AuthRedirectPage() {
       return;
     }
 
+    const fullName =
+      user.fullName ||
+      [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+      user.username ||
+      email.split("@")[0] ||
+      "Student";
+
     try {
-      const token = await getToken();
+      // Retry fetching token with small delay if session is still settling
+      let token: string | null = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          token = await getToken();
+          if (token) break;
+        } catch {}
+        await new Promise((resolve) => setTimeout(resolve, 400));
+      }
+
       if (!token) {
         throw new Error("Unable to retrieve authentication token from security session.");
       }
@@ -70,8 +166,14 @@ export default function AuthRedirectPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          email,
+          name: fullName,
+          avatarUrl: user.imageUrl,
+          clerkUserId: user.id,
+        }),
         credentials: "include",
-        signal: AbortSignal.timeout(12000),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (res.status === 403) {
@@ -102,32 +204,10 @@ export default function AuthRedirectPage() {
         } catch {}
       }
 
-      // Check role and compute target URL
-      const isSuperAdmin = email === "lexonitservices@gmail.com";
-      const isAdmin =
-        isSuperAdmin ||
-        backendUser?.role === "SUPER_ADMIN" ||
-        backendUser?.role === "ADMIN";
-      const isInstructor = backendUser?.role === "INSTRUCTOR";
-      const target = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
+      // Re-establish session with full backend user records (including role/phone)
+      const updatedInfo = establishRealSession(backendUser);
+      const target = updatedInfo?.target || "/dashboard";
       setResolvedTargetUrl(target);
-
-      // Save user session
-      if (typeof window !== "undefined" && backendUser) {
-        try {
-          localStorage.setItem(
-            "jks_auth_user",
-            JSON.stringify({
-              email,
-              name: backendUser.name,
-              role: isAdmin ? "admin" : isInstructor ? "instructor" : "student",
-              status: backendUser.status || "ACTIVE",
-              avatar: backendUser.avatarUrl || user.imageUrl,
-              phone: backendUser.phone || null,
-            })
-          );
-        } catch {}
-      }
 
       setSyncStatus("success");
 
@@ -136,8 +216,9 @@ export default function AuthRedirectPage() {
       const hasPhoneInProfile =
         rawPhone.length >= 10 && rawPhone !== "null" && rawPhone !== "undefined";
 
+      const isAdminUser = updatedInfo?.role === "admin";
       const shouldAskPhone =
-        !isAdmin && (!hasPhoneInProfile || Boolean(data?.needsPhone) || isNewUser);
+        !isAdminUser && (!hasPhoneInProfile || Boolean(data?.needsPhone) || isNewUser);
 
       if (isNewUser) {
         jksAnalytics.signup("clerk_oauth");
@@ -146,24 +227,22 @@ export default function AuthRedirectPage() {
       }
 
       if (shouldAskPhone) {
-        // Halt automatic navigation and display the official phone number completion modal
         setShowPhoneModal(true);
       } else {
-        // User already has phone number in profile — proceed smoothly to target
         setTimeout(() => {
           window.location.replace(target);
-        }, 800);
+        }, 600);
       }
     } catch (err: any) {
       console.error("[AuthRedirect] clerk-sync failed:", err);
       setSyncStatus("error");
       setErrorMessage(
         err?.message?.includes("timed out")
-          ? "Database connection timed out. Please check your internet connection."
-          : "Encountered a connection issue while synchronizing your account."
+          ? "Database connection timed out. Please check your internet connection and retry."
+          : "Encountered a connection issue while synchronizing your account with the database."
       );
     }
-  }, [user, getToken, signOut]);
+  }, [user, getToken, signOut, establishRealSession]);
 
   useEffect(() => {
     if (!isLoaded || !user) return;
@@ -180,6 +259,12 @@ export default function AuthRedirectPage() {
   const handleRetry = () => {
     hasInitiatedSync.current = false;
     void executeSync();
+  };
+
+  const handleContinueDirectly = () => {
+    // Ensure real user session is stored before navigating
+    establishRealSession();
+    window.location.replace(resolvedTargetUrl);
   };
 
   const userEmail =
@@ -229,6 +314,14 @@ export default function AuthRedirectPage() {
               </button>
               <button
                 type="button"
+                onClick={handleContinueDirectly}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/30 py-2.5 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100/50 dark:hover:bg-blue-900/50 transition-all cursor-pointer"
+              >
+                <span>Continue to Dashboard</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   void performLogout(signOut);
                   window.location.replace("/login");
@@ -265,16 +358,17 @@ export default function AuthRedirectPage() {
               </p>
             </div>
 
-            {/* Subtle Escape Link if connection takes time */}
+            {/* Escape link if connection takes time — safely sets real session before redirect */}
             {showFallback && syncStatus !== "success" && (
               <div className="pt-2 text-xs text-slate-400 dark:text-slate-500">
                 Taking longer than usual?{" "}
-                <Link
-                  href="/dashboard"
-                  className="font-semibold text-blue-600 dark:text-blue-400 underline underline-offset-2"
+                <button
+                  type="button"
+                  onClick={handleContinueDirectly}
+                  className="font-semibold text-blue-600 dark:text-blue-400 underline underline-offset-2 hover:text-blue-700 dark:hover:text-blue-300 transition-colors cursor-pointer"
                 >
                   Continue to Dashboard
-                </Link>
+                </button>
               </div>
             )}
           </div>

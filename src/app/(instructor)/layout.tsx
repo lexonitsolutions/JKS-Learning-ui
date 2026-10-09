@@ -58,7 +58,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
             Access Restricted
           </h2>
           <p className="mt-2 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-            Only lecturers registered and approved by the Administrator (<strong>lexonitservices@gmail.com</strong>) are authorized to access the Lecturer workspace.
+            Only tutors registered and approved by the Administrator (<strong>lexonitservices@gmail.com</strong>) are authorized to access the Tutor workspace.
           </p>
           {session?.email && (
             <div className="mt-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 p-2.5 text-xs text-slate-600 dark:text-slate-300 font-medium">

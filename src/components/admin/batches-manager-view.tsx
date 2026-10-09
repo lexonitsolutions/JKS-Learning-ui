@@ -145,7 +145,7 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
     <>
       <DashboardTopbar
         title="Academic Batches & Cohorts"
-        subtitle="Live hierarchy view: Instructors → Assigned Curricula → Enrolled Cohort Students."
+        subtitle="Live hierarchy view: Tutors → Assigned Curricula → Enrolled Cohort Students."
         userInitials={role === "admin" ? "AD" : "IN"}
       />
 
@@ -177,7 +177,7 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
                 <Sparkles className="h-3 w-3" /> Teaching
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Verified instructors roster</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Verified tutors roster</p>
           </div>
 
           <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-surface-secondary/95 p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl">
@@ -251,7 +251,7 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
             }`}
           >
             <Users className="h-3.5 w-3.5" />
-            <span>All Instructors ({instructors.length})</span>
+            <span>All Tutors ({instructors.length})</span>
           </button>
 
           {selectedInstructor && (
@@ -323,7 +323,7 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-secondary px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-[#2563EB] dark:hover:text-blue-400 shadow-2xs transition-all cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Back to {selectedCourseId ? "Assigned Courses" : "All Instructors"}</span>
+              <span>Back to {selectedCourseId ? "Assigned Courses" : "All Tutors"}</span>
             </button>
           )}
         </div>
@@ -342,25 +342,25 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <h3 className="font-extrabold text-slate-900 dark:text-white text-sm uppercase tracking-wider">
-                      Faculty & Academic Instructors
+                      Faculty & Academic Tutors
                     </h3>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-300 border border-blue-200 dark:border-blue-900">
-                      Step 1: Select Instructor
+                      Step 1: Select Tutor
                     </span>
                   </div>
                   <span className="text-xs text-slate-400 font-medium">
-                    {filteredInstructors.length} Instructor{filteredInstructors.length === 1 ? "" : "s"}
+                    {filteredInstructors.length} Tutor{filteredInstructors.length === 1 ? "" : "s"}
                   </span>
                 </div>
 
                 {filteredInstructors.length === 0 ? (
                   <div className="rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 p-12 text-center text-slate-400 max-w-md mx-auto">
                     <Users className="h-8 w-8 mx-auto mb-2 text-slate-300 dark:text-slate-700" />
-                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No instructors found</p>
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No tutors found</p>
                     <p className="text-xs text-slate-400 mt-1">
                       {searchQuery.trim()
-                        ? `No instructors matched "${searchQuery}".`
-                        : "No instructors registered in the system yet."}
+                        ? `No tutors matched "${searchQuery}".`
+                        : "No tutors registered in the system yet."}
                     </p>
                   </div>
                 ) : (
@@ -589,7 +589,7 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/60 px-2.5 py-0.5 rounded-md">
-                          Faculty: {selectedInstructor.name}
+                          Tutor: {selectedInstructor.name}
                         </span>
                         <span
                           className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md border ${getTrackBadgeStyle(

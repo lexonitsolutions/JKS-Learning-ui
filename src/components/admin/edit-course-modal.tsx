@@ -722,7 +722,7 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
               {/* Assigned Faculty & Instructor */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Assigned Faculty / Lead Instructor
+                  Assigned Lead Tutor / Faculty
                 </label>
                 <select
                   value={selectedInstructorId}

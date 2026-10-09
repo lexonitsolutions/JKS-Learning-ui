@@ -167,8 +167,13 @@ export default function StudentProfilePage() {
 
   // Load Real Data from Backend DB on mount
   useEffect(() => {
-    if (session?.name) {
+    if (clerkName) {
+      setName(clerkName);
+    } else if (session?.name) {
       setName(session.name);
+    }
+    if (clerkUser?.imageUrl) {
+      setAvatar(clerkUser.imageUrl);
     }
     if (session?.phone) {
       setPhone(session.phone);

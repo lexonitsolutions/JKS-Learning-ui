@@ -1944,7 +1944,7 @@ export default function CourseLearningHubPage({
 
                   {/* Instructor Section */}
                   <div className="border-t border-slate-100 pt-6 space-y-4 dark:border-slate-800">
-                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Instructor &amp; Faculty</h3>
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Tutor &amp; Faculty</h3>
 
                     <div className="flex flex-col sm:flex-row items-start gap-4">
                       <div className="relative h-16 w-16 shrink-0 rounded-2xl border border-slate-200 overflow-hidden bg-slate-900 dark:border-slate-700 flex items-center justify-center p-2">
@@ -2359,7 +2359,7 @@ export default function CourseLearningHubPage({
                           {q.hasInstructorResponse && (
                             <div className="rounded-xl bg-emerald-50/80 border border-emerald-200/80 p-2.5 text-[11px] text-emerald-800 flex items-center gap-1.5 dark:bg-emerald-950/40 dark:border-emerald-900/40 dark:text-emerald-300">
                               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                              <span className="font-semibold">Instructor verified answer available below</span>
+                              <span className="font-semibold">Tutor verified answer available below</span>
                             </div>
                           )}
 
@@ -2383,7 +2383,7 @@ export default function CourseLearningHubPage({
                                       <span>{ans.author}</span>
                                       {ans.isInstructorVerified && (
                                         <span className="rounded bg-blue-600 text-white px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider">
-                                          Instructor
+                                          Tutor
                                         </span>
                                       )}
                                     </div>

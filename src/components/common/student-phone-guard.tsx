@@ -68,7 +68,7 @@ export function StudentPhoneGuard() {
 
     // 2. Query backend profile to check real database record
     try {
-      const profile = await fetchMyProfile();
+      const profile = await fetchMyProfile(email);
       if (profile) {
         const phoneDigits = String(profile.phone || "").replace(/[^0-9]/g, "");
         if (phoneDigits.length >= 10) {
