@@ -294,8 +294,8 @@ export default function AdminCoursesPage() {
                 >
                   <div className="flex items-start gap-3">
                     <div className="relative h-14 w-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200/80 dark:border-slate-700">
-                      {c.thumbnailUrl ? (
-                        <img src={c.thumbnailUrl} alt={c.title} className="h-full w-full object-cover" />
+                      {c.thumbnail ? (
+                        <img src={c.thumbnail} alt={c.title} className="h-full w-full object-cover" />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center font-bold text-xs text-blue-600 bg-blue-50 dark:bg-blue-950/60">
                           {c.track || "JKS"}
