@@ -2966,12 +2966,15 @@ function InstructorNewCourseContent() {
               />
             </div>
 
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span>Verified: In-app embedded frame without external redirection.</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-400">
+              <span className="flex items-center gap-1.5 text-slate-400">
+                <span className="inline-block h-2 w-2 rounded-full bg-blue-400 animate-pulse shrink-0" />
+                <span>Note: Newly uploaded videos take 1–2 mins to transcode. If showing <em>Processing video</em>, click <strong>Reload Stream</strong> (top-right) once ready.</span>
+              </span>
               <button
                 type="button"
                 onClick={() => setPreviewVideo(null)}
-                className="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
+                className="self-end sm:self-auto rounded-lg bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
               >
                 Close Preview
               </button>
