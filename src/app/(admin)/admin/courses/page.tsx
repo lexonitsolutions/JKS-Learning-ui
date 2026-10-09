@@ -273,17 +273,115 @@ export default function AdminCoursesPage() {
           </TiltCard>
         </Reveal>
 
-        {/* Main Courses Table */}
+        {/* Mobile View: Dedicated Responsive Course Cards with Direct Edit & Actions */}
+        <div className="md:hidden space-y-3">
+          {filteredCourses.length === 0 ? (
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-surface-secondary p-8 text-center text-slate-500">
+              <BookOpen className="h-8 w-8 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+              <p className="text-sm font-semibold">No courses found</p>
+            </div>
+          ) : (
+            filteredCourses.map((c) => {
+              const totalSec = c.sections?.length || 0;
+              const totalVid = (c.sections || []).reduce(
+                (acc, s) => acc + (s.directVideos?.length || 0) + (s.subsections || []).reduce((subAcc, sub) => subAcc + (sub.videos?.length || 0), 0),
+                0
+              );
+              return (
+                <div
+                  key={c.id}
+                  className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-surface-secondary p-4 shadow-xs space-y-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="relative h-14 w-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200/80 dark:border-slate-700">
+                      {c.thumbnailUrl ? (
+                        <img src={c.thumbnailUrl} alt={c.title} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center font-bold text-xs text-blue-600 bg-blue-50 dark:bg-blue-950/60">
+                          {c.track || "JKS"}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="rounded-md bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300">
+                          {c.track}
+                        </span>
+                        <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold ${
+                          c.status === "Published"
+                            ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                            : "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+                        }`}>
+                          {c.status}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate mt-1">
+                        {c.title}
+                      </h4>
+                      <p className="text-[11px] text-slate-400 font-mono truncate">/{c.slug}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 py-2 border-y border-slate-100 dark:border-slate-800/80 text-center text-xs">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-medium">Price</span>
+                      <span className="font-bold text-slate-900 dark:text-white">₹{c.price?.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-medium">Curriculum</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-300">{totalSec} Sec • {totalVid} Vid</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-medium">Rating</span>
+                      <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-0.5">
+                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                        {c.rating?.toFixed(1) || "5.0"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Actions Bar — Directly Accessible on Mobile */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <Link
+                      href={`/admin/courses/new?edit=${encodeURIComponent(c.slug || c.id)}`}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white py-2.5 text-xs font-bold shadow-xs transition-colors"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      <span>Edit Course</span>
+                    </Link>
+                    <Link
+                      href={`/dashboard/my-courses/${c.slug}`}
+                      className="flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 p-2.5 text-xs font-bold hover:bg-slate-50 transition-colors"
+                      title="View Learning UI"
+                    >
+                      <Eye className="h-4 w-4 text-emerald-600" />
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setCourseToDelete(c)}
+                      className="flex items-center justify-center rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 p-2.5 text-xs font-bold hover:bg-red-100 transition-colors cursor-pointer"
+                      title="Delete Course"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Main Courses Table (Desktop & Tablet) */}
         <div
           ref={tableRef}
-          className={`w-full max-w-full rounded-[22px] border transition-all duration-300 ${
+          className={`hidden md:block w-full max-w-full rounded-[22px] border transition-all duration-300 ${
             isHeaderStuck
               ? "border-blue-500/30 shadow-[0_12px_36px_-6px_rgba(20,50,100,0.12)] dark:shadow-[0_12px_36px_-6px_rgba(0,0,0,0.7)]"
               : "border-white/70 dark:border-slate-800/80 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none"
-          } bg-white/80 dark:bg-surface-secondary/90 p-3 sm:p-4 backdrop-blur-xl overflow-x-clip`}
+          } bg-white/80 dark:bg-surface-secondary/90 p-3 sm:p-4 backdrop-blur-xl overflow-hidden`}
         >
-          <div className="w-full overflow-x-clip [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            <table className="w-full text-left text-xs border-separate border-spacing-y-1.5">
+          <div className="w-full overflow-x-auto [scrollbar-width:thin]">
+            <table className="w-full text-left text-xs border-separate border-spacing-y-1.5 min-w-[760px]">
               <colgroup><col className="w-[32%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[17%]" /><col className="w-[8%]" /><col className="w-[13%]" /><col className="w-[10%]" /></colgroup>
               <thead className="sticky top-16 sm:top-20 z-20 transition-all duration-300">
                 <tr className="border-none relative">
