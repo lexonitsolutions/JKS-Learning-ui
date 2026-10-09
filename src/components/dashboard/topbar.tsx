@@ -30,6 +30,7 @@ import { useMockSession, performLogout } from "@/lib/auth/use-mock-auth";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useNotifications } from "@/lib/data/notifications-store";
+import { GlobalSearchTrigger } from "@/components/common/global-search-modal";
 
 
 
@@ -143,7 +144,7 @@ export function DashboardTopbar({
   const resolvedInitials = isAdmin
     ? (session?.initials && session.initials !== "AD" ? session.initials : "LX")
     : isInstructor
-    ? (session?.initials ?? userInitials ?? "LE")
+    ? (session?.initials ?? userInitials ?? "TU")
     : clerkUser?.firstName && clerkUser?.lastName
     ? `${clerkUser.firstName[0]}${clerkUser.lastName[0]}`.toUpperCase()
     : clerkName
@@ -153,7 +154,7 @@ export function DashboardTopbar({
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" && session.name !== "Ava Desai" ? session.name : "Lexon Administrator")
     : isInstructor
-    ? (session?.name ?? "Lecturer")
+    ? (session?.name ?? "Tutor")
     : (clerkName || session?.name || "Student");
 
   const userEmail = isAdmin
@@ -247,7 +248,26 @@ export function DashboardTopbar({
           </div>
         </div>
 
+        {/* Global Search Bar (Center / Responsive) */}
+        <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-sm xl:max-w-md mx-2 lg:mx-4">
+          <GlobalSearchTrigger
+            className="w-full"
+            placeholder={
+              isAdmin
+                ? "Search students, tutors, courses, logs… (⌘K)"
+                : isInstructor
+                ? "Search courses, curricula, students… (⌘K)"
+                : "Search courses, quizzes, notes… (⌘K)"
+            }
+          />
+        </div>
+
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          {/* Mobile search trigger icon */}
+          <div className="md:hidden">
+            <GlobalSearchTrigger variant="icon" />
+          </div>
+
           {/* Dark / Light Theme Toggle */}
           <ThemeToggle variant="ghost" />
 
@@ -497,7 +517,7 @@ export function DashboardTopbar({
                           {userName}
                         </p>
                         <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300">
-                          {roleType}
+                          {roleType === "instructor" ? "tutor" : roleType}
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">

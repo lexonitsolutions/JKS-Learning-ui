@@ -39,7 +39,7 @@ export default function AdminInstructorsPage() {
   const handleDeleteInstructor = async (id: string, email: string, name: string) => {
     if (
       !confirm(
-        `Revoke lecturer access for ${name} (${email})? Their account is deleted and they will no longer be able to sign in.`,
+        `Revoke tutor access for ${name} (${email})? Their account is deleted and they will no longer be able to sign in.`,
       )
     ) {
       return;
@@ -65,8 +65,8 @@ export default function AdminInstructorsPage() {
   return (
     <>
       <DashboardTopbar
-        title="Lecturers & Faculty"
-        subtitle={`${instructors.length} authorized enterprise lecturers. Only lecturers added here can access the Lecturer workspace.`}
+        title="Tutors & Mentors"
+        subtitle={`${instructors.length} authorized enterprise tutors. Only tutors added here can access the Tutor workspace.`}
         userInitials="LX"
       />
 
@@ -78,7 +78,7 @@ export default function AdminInstructorsPage() {
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search lecturers by name, email, or track…"
+                placeholder="Search tutors by name, email, or track…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-slate-800 outline-none shadow-xs transition-colors focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
@@ -86,7 +86,7 @@ export default function AdminInstructorsPage() {
             </div>
           </div>
 
-          {/* New Instructor Button - Right Corner */}
+          {/* New Tutor Button - Right Corner */}
           <div className="flex justify-end">
             <button
               type="button"
@@ -94,7 +94,7 @@ export default function AdminInstructorsPage() {
               className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-[#2563EB] px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:bg-blue-700 transition-all hover:scale-[1.02] cursor-pointer"
             >
               <Plus className="h-4 w-4 stroke-[2.5]" />
-              <span>Add New Lecturer</span>
+              <span>Add New Tutor</span>
             </button>
           </div>
         </div>
@@ -109,23 +109,23 @@ export default function AdminInstructorsPage() {
         <div className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900/40 dark:bg-blue-950/20 text-xs text-blue-900 dark:text-blue-200">
           <ShieldCheck className="h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
           <p>
-            <strong>Workspace Access Policy:</strong> Only lecturers added in this directory are authorized to sign in to the <strong>Lecturer Command Center</strong>. Use their real working emails to onboard them.
+            <strong>Workspace Access Policy:</strong> Only tutors added in this directory are authorized to sign in to the <strong>Tutor Command Center</strong>. Use their real working emails to onboard them.
           </p>
         </div>
 
-        {/* Empty State if No Lecturers */}
+        {/* Empty State if No Tutors */}
         {filteredInstructors.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-200 bg-white/60 p-12 text-center dark:border-slate-800 dark:bg-surface-secondary/50">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-400 mb-4">
               <Users className="h-7 w-7 stroke-[1.8]" />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              {searchQuery ? "No matching lecturers found" : "No lecturers onboarded yet"}
+              {searchQuery ? "No matching tutors found" : "No tutors onboarded yet"}
             </h3>
             <p className="mt-1.5 max-w-md text-xs text-slate-500 dark:text-slate-400">
               {searchQuery
                 ? "Try searching with a different name or email."
-                : "Add lecturers with their real emails. Once registered here, they will immediately be granted access to the Lecturer Workspace."}
+                : "Add tutors with their real emails. Once registered here, they will immediately be granted access to the Tutor Workspace."}
             </p>
             {!searchQuery && (
               <button
@@ -134,7 +134,7 @@ export default function AdminInstructorsPage() {
                 className="mt-5 flex items-center gap-2 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition-all cursor-pointer shadow-sm"
               >
                 <Plus className="h-4 w-4 stroke-[2.5]" />
-                <span>Onboard First Lecturer</span>
+                <span>Onboard First Tutor</span>
               </button>
             )}
           </div>
@@ -158,7 +158,7 @@ export default function AdminInstructorsPage() {
                         <button
                           type="button"
                           onClick={() => setEditingInstructor(inst)}
-                          title="Edit lecturer profile"
+                          title="Edit tutor profile"
                           className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-blue-50 hover:text-[#2563EB] dark:hover:bg-blue-950/40 dark:hover:text-blue-400 transition-colors cursor-pointer"
                         >
                           <Pencil className="h-3.5 w-3.5" />

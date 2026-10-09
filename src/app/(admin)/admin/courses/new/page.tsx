@@ -1835,7 +1835,7 @@ function AdminNewCourseContent() {
                   {/* Assigned Faculty & Instructor */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                      Assigned Faculty / Lead Instructor
+                      Assigned Lead Tutor / Faculty
                     </label>
                     <select
                       value={selectedInstructorId}
@@ -1849,7 +1849,7 @@ function AdminNewCourseContent() {
                       ))}
                     </select>
                     <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                      Assigned instructor shown to students for mentorship and course credentials.
+                      Assigned tutor shown to students for mentorship and course credentials.
                     </p>
                   </div>
 

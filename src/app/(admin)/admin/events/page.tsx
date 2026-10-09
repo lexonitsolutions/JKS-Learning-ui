@@ -407,8 +407,8 @@ export default function AdminEventsPage() {
                         <div className="text-xs font-bold text-slate-900 dark:text-white truncate" title={event.speakerName || "JKS Faculty Mentor"}>
                           {event.speakerName || "JKS Faculty Mentor"}
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate" title={event.speakerRole || "Instructor & Technical Lead"}>
-                          {event.speakerRole || "Instructor & Technical Lead"}
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate" title={event.speakerRole || "Tutor & Technical Lead"}>
+                          {event.speakerRole || "Tutor & Technical Lead"}
                         </div>
                       </div>
                     </div>

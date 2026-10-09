@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import {
   Phone,
   ShieldCheck,
@@ -14,7 +15,7 @@ import {
   Lock,
 } from "lucide-react";
 import { JksLogo } from "./jks-logo";
-import { apiUrl } from "@/lib/api/base-url";
+import { apiFetch } from "@/lib/api/base-url";
 
 interface GooglePhoneModalProps {
   isOpen: boolean;
@@ -47,6 +48,8 @@ export function GooglePhoneModal({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const { getToken } = useAuth();
 
   if (!isOpen) return null;
 
@@ -99,42 +102,57 @@ export function GooglePhoneModal({
     setIsSubmitting(true);
 
     try {
+      let token: string | null | undefined = accessToken;
+      if (!token) {
+        try {
+          token = await getToken?.();
+        } catch {}
+      }
+      if (!token && typeof window !== "undefined") {
+        token = localStorage.getItem("jks_access_token");
+      }
+
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
-
-      const token =
-        accessToken ||
-        (typeof window !== "undefined" ? localStorage.getItem("jks_access_token") : null);
 
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      // Try updating via /users/profile first
-      const res = await fetch(apiUrl("/users/profile"), {
+      const normalizedEmail = (userEmail || "").trim().toLowerCase();
+      if (normalizedEmail) {
+        headers["x-user-email"] = normalizedEmail;
+      }
+
+      const rawUser =
+        typeof window !== "undefined" ? localStorage.getItem("jks_auth_user") : null;
+      if (rawUser) {
+        headers["x-mock-session"] = encodeURIComponent(rawUser);
+      }
+
+      // Try updating via /users/profile using apiFetch
+      let res = await apiFetch("/users/profile", {
         method: "PATCH",
         headers,
-        credentials: "include",
         body: JSON.stringify({ phone: check.fullFormatted }),
       });
 
       if (!res.ok) {
         // Fallback to /me
-        const fallbackRes = await fetch(apiUrl("/me"), {
+        res = await apiFetch("/me", {
           method: "PATCH",
           headers,
-          credentials: "include",
           body: JSON.stringify({ phone: check.fullFormatted }),
         });
+      }
 
-        if (!fallbackRes.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(
-            errData.message ||
-              `Unable to update profile. Server responded with status ${res.status}.`
-          );
-        }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(
+          errData.message ||
+            `Unable to update profile. Server responded with status ${res.status}.`
+        );
       }
 
       setIsSuccess(true);

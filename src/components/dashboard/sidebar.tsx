@@ -59,12 +59,12 @@ const STUDENT_SEC_NAV: NavItem[] = [
 
 const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/instructors", label: "Tutors", icon: GraduationCap },
   { href: "/admin/batches", label: "Batches", icon: FolderTree },
   { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/syllabus", label: "Syllabus", icon: FileText },
   { href: "/admin/events", label: "Events", icon: Calendar, badge: "New" },
-  { href: "/admin/instructors", label: "Instructors", icon: GraduationCap },
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
   { href: "/admin/activity-logs", label: "Activity Logs", icon: Activity },
@@ -198,7 +198,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" && session.name !== "Ava Desai" ? session.name : "Lexon Administrator")
     : isInstructor
-    ? (session?.name ?? "Lecturer")
+    ? (session?.name ?? "Tutor")
     : (clerkName || session?.name || "Student");
 
   const userAvatarUrl =
@@ -211,10 +211,10 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
   const userInitials = isAdmin
     ? "AD"
     : isInstructor
-    ? (session?.initials ?? "RK")
+    ? (session?.initials ?? "TU")
     : (session?.initials ?? (clerkName ? clerkName.slice(0, 2).toUpperCase() : "ST"));
 
-  const userRole = isAdmin ? "Administrator" : isInstructor ? "Faculty / Lecturer" : "Student";
+  const userRole = isAdmin ? "Administrator" : isInstructor ? "Faculty / Tutor" : "Student";
 
 
   const renderNavGroup = (items: NavItem[]) => {
@@ -669,7 +669,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                 <div className="flex items-center gap-2">
                   <JksLogo size="sm" href="/" />
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-300">
-                    {isAdmin ? "Admin" : isInstructor ? "Faculty" : "Student"}
+                    {isAdmin ? "Admin" : isInstructor ? "Tutor" : "Student"}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
