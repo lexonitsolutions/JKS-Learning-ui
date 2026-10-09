@@ -19,6 +19,7 @@ import {
   FolderTree,
   ChevronDown,
   ChevronUp,
+  ChevronsUpDown,
   Lock,
   Award,
   ShieldCheck,
@@ -333,6 +334,33 @@ function InstructorNewCourseContent() {
       },
     },
   ]);
+
+  // Section & Subsection Collapse/Minimize State (Stage 2)
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [collapsedSubsections, setCollapsedSubsections] = useState<Record<string, boolean>>({});
+
+  const toggleSectionCollapse = (sectionId: string) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [sectionId]: !prev[sectionId],
+    }));
+  };
+
+  const toggleSubsectionCollapse = (subId: string) => {
+    setCollapsedSubsections((prev) => ({
+      ...prev,
+      [subId]: !prev[subId],
+    }));
+  };
+
+  const toggleAllSectionsCollapse = () => {
+    const allCollapsed = sections.every((s) => !!collapsedSections[s.id]);
+    const next: Record<string, boolean> = {};
+    sections.forEach((s) => {
+      next[s.id] = !allCollapsed;
+    });
+    setCollapsedSections(next);
+  };
 
   // Step 3: Anti-Skip Settings State
   const [antiSkipEnforced, setAntiSkipEnforced] = useState(true);
@@ -1949,6 +1977,15 @@ function InstructorNewCourseContent() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <button
                         type="button"
+                        onClick={toggleAllSectionsCollapse}
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer w-full sm:w-auto"
+                        title={sections.every((s) => !!collapsedSections[s.id]) ? "Expand all sections" : "Collapse all sections"}
+                      >
+                        <ChevronsUpDown className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                        <span>{sections.every((s) => !!collapsedSections[s.id]) ? "Expand All" : "Collapse All"}</span>
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => setIsImportModalOpen(true)}
                         className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/70 dark:bg-indigo-950/40 px-3.5 py-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer w-full sm:w-auto"
                       >
@@ -1965,7 +2002,13 @@ function InstructorNewCourseContent() {
                   </div>
 
                   {/* SECTIONS LIST */}
-                  {sections.map((section, secIdx) => (
+                  {sections.map((section, secIdx) => {
+                    const directVideoCount = section.directVideos?.length || 0;
+                    const subVideoCount = section.subsections?.reduce((acc, sub) => acc + (sub.videos?.length || 0), 0) || 0;
+                    const totalSectionLessons = directVideoCount + subVideoCount;
+                    const isSectionCollapsed = !!collapsedSections[section.id];
+
+                    return (
                     <div
                       key={section.id}
                       className="rounded-[22px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.04)] space-y-5 transition-all hover:border-[#2563EB]/40 dark:hover:border-blue-500/40"
@@ -1973,9 +2016,14 @@ function InstructorNewCourseContent() {
                       {/* Section Top Header */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
                         <div id={`field-section-title-${secIdx}`} className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0 transition-all">
-                          <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-xs font-bold text-white shrink-0 mt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => toggleSectionCollapse(section.id)}
+                            className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-xs font-bold text-white shrink-0 mt-0.5 hover:bg-[#2563EB] dark:hover:bg-blue-600 transition-colors cursor-pointer"
+                            title={isSectionCollapsed ? "Click to expand section" : "Click to collapse section"}
+                          >
                             {secIdx + 1}
-                          </span>
+                          </button>
                           <div className="flex-1 min-w-0">
                             <input
                               type="text"
@@ -2002,7 +2050,30 @@ function InstructorNewCourseContent() {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-end gap-1.5 shrink-0">
+                        <div className="flex items-center justify-end gap-1.5 shrink-0 flex-wrap">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                            <Video className="h-3 w-3 text-[#2563EB] dark:text-blue-400" />
+                            <span>{totalSectionLessons} {totalSectionLessons === 1 ? "lesson" : "lessons"}</span>
+                            {(section.subsections?.length || 0) > 0 && (
+                              <span>· {section.subsections?.length} sub</span>
+                            )}
+                          </span>
+
+                          {/* Section Collapse / Expand Toggle Button with Indicator Icon */}
+                          <button
+                            type="button"
+                            onClick={() => toggleSectionCollapse(section.id)}
+                            className={`flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                              isSectionCollapsed
+                                ? "border-blue-300 dark:border-blue-800 bg-blue-50/80 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50"
+                                : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-surface-hover"
+                            }`}
+                            title={isSectionCollapsed ? "Expand Section" : "Collapse Section"}
+                          >
+                            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isSectionCollapsed ? "" : "rotate-180"}`} />
+                            <span className="text-[11px] font-semibold">{isSectionCollapsed ? "Expand" : "Collapse"}</span>
+                          </button>
+
                           <button
                             type="button"
                             onClick={() => moveSection(secIdx, "up")}
@@ -2034,7 +2105,8 @@ function InstructorNewCourseContent() {
                         </div>
                       </div>
 
-                      {/* Dedicated Scroll Container for Section Body */}
+                      {/* Dedicated Scroll Container for Section Body - Hidden when Collapsed */}
+                      {!isSectionCollapsed && (
                       <div className="max-h-[640px] overflow-y-auto pr-1 sm:pr-2 space-y-5 custom-scrollbar">
                         {/* Section Description */}
                       <div>
@@ -2073,16 +2145,24 @@ function InstructorNewCourseContent() {
 
                         {section.subsections && section.subsections.length > 0 ? (
                           <div className="space-y-3 pl-1 sm:pl-3 border-l-2 border-blue-200 dark:border-blue-900/60">
-                            {section.subsections.map((sub, subIdx) => (
+                            {section.subsections.map((sub, subIdx) => {
+                              const isSubCollapsed = !!collapsedSubsections[sub.id];
+
+                              return (
                               <div
                                 key={sub.id}
                                 className="rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-3 sm:p-3.5 shadow-xs space-y-3"
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <span className="rounded bg-blue-100 dark:bg-blue-950/50 px-1.5 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-400 shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleSubsectionCollapse(sub.id)}
+                                      className="rounded bg-blue-100 dark:bg-blue-950/50 px-1.5 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-400 shrink-0 hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors cursor-pointer"
+                                      title={isSubCollapsed ? "Click to expand subsection" : "Click to collapse subsection"}
+                                    >
                                       {secIdx + 1}.{subIdx + 1}
-                                    </span>
+                                    </button>
                                     <input
                                       type="text"
                                       value={sub.title}
@@ -2097,16 +2177,38 @@ function InstructorNewCourseContent() {
                                       className="flex-1 min-w-0 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
                                     />
                                   </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeSubsection(secIdx, sub.id)}
-                                    className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors shrink-0"
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </button>
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+                                      <Video className="h-3 w-3 text-[#2563EB] dark:text-blue-400" />
+                                      <span>{sub.videos?.length || 0}</span>
+                                    </span>
+                                    {/* Subsection Collapse/Expand Toggle with Indicator Icon */}
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleSubsectionCollapse(sub.id)}
+                                      className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-bold transition-all cursor-pointer ${
+                                        isSubCollapsed
+                                          ? "border-blue-300 dark:border-blue-800 bg-blue-50/80 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 hover:bg-blue-100"
+                                          : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-hover"
+                                      }`}
+                                      title={isSubCollapsed ? "Expand Subsection" : "Collapse Subsection"}
+                                    >
+                                      <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${isSubCollapsed ? "" : "rotate-180"}`} />
+                                      <span className="hidden sm:inline">{isSubCollapsed ? "Expand" : "Collapse"}</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => removeSubsection(secIdx, sub.id)}
+                                      className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-1"
+                                      title="Remove Subsection"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
                                 </div>
 
-                                {/* Subsection Videos */}
+                                {/* Subsection Videos - Hidden when Collapsed */}
+                                {!isSubCollapsed && (
                                 <div className="space-y-2.5 pl-1 sm:pl-3">
                                   {sub.videos.map((vid, vidIdx) => (
                                     <div
@@ -2310,8 +2412,10 @@ function InstructorNewCourseContent() {
                                     <Plus className="h-3 w-3" /> Add video to subsection
                                   </button>
                                 </div>
+                                )}
                               </div>
-                            ))}
+                            );
+                            })}
                           </div>
                         ) : (
                           <p className="text-[11px] text-slate-400 dark:text-slate-400 italic">No subsections added yet. You can add direct videos below.</p>
@@ -2548,8 +2652,10 @@ function InstructorNewCourseContent() {
                         ))}
                       </div>
                       </div>
+                      )}
                     </div>
-                  ))}
+                  );
+                  })}
                 </motion.div>
               )}
 
