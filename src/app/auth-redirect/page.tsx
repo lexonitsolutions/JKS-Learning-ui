@@ -112,17 +112,19 @@ export default function AuthRedirectPage() {
     return { email, fullName, role, target: isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard" };
   }, [user]);
 
-  const executeSync = useCallback(async () => {
+  const executeSync = useCallback(() => {
     if (!user) return;
 
-    setSyncStatus("syncing");
-    setErrorMessage(null);
-
-    // Immediately establish real session from Google user so any navigation shows real profile
+    // 1. Immediately establish real session from Google user synchronously
     const sessionInfo = establishRealSession();
-    if (sessionInfo) {
-      setResolvedTargetUrl(sessionInfo.target);
-    }
+    const target = sessionInfo?.target || "/dashboard";
+    setResolvedTargetUrl(target);
+    setSyncStatus("success");
+
+    // Track analytics
+    try {
+      jksAnalytics.login("clerk_oauth");
+    } catch {}
 
     const email = (
       user?.primaryEmailAddress?.emailAddress ||
@@ -132,12 +134,6 @@ export default function AuthRedirectPage() {
       .toLowerCase()
       .trim();
 
-    if (!email) {
-      setSyncStatus("error");
-      setErrorMessage("No primary email found in authentication profile.");
-      return;
-    }
-
     const fullName =
       user.fullName ||
       [user.firstName, user.lastName].filter(Boolean).join(" ") ||
@@ -145,110 +141,64 @@ export default function AuthRedirectPage() {
       email.split("@")[0] ||
       "Student";
 
-    try {
-      // Retry fetching token with small delay if session is still settling
-      let token: string | null = null;
-      for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-          token = await getToken();
-          if (token) break;
-        } catch {}
-        await new Promise((resolve) => setTimeout(resolve, 400));
+    // 2. Fire backend clerk-sync in the background without blocking page redirect
+    void (async () => {
+      try {
+        const token = await getToken().catch(() => null);
+        if (token && email) {
+          const res = await fetch(apiUrl("/auth/clerk-sync"), {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+              "x-user-email": email,
+            },
+            body: JSON.stringify({
+              email,
+              name: fullName,
+              avatarUrl: user.imageUrl,
+              clerkUserId: user.id,
+            }),
+            credentials: "include",
+            signal: AbortSignal.timeout(4000),
+          });
+
+          if (res.status === 403) {
+            await performLogout(signOut);
+            window.location.replace("/login?blocked=1");
+            return;
+          }
+
+          if (res.ok) {
+            const data = await res.json().catch(() => ({}));
+            if (data?.accessToken && typeof window !== "undefined") {
+              try {
+                localStorage.setItem("jks_access_token", data.accessToken);
+              } catch {}
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("[AuthRedirect] background clerk-sync:", err);
       }
+    })();
 
-      if (!token) {
-        throw new Error("Unable to retrieve authentication token from security session.");
-      }
-
-      const res = await fetch(apiUrl("/auth/clerk-sync"), {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          name: fullName,
-          avatarUrl: user.imageUrl,
-          clerkUserId: user.id,
-        }),
-        credentials: "include",
-        signal: AbortSignal.timeout(10000),
-      });
-
-      if (res.status === 403) {
-        // Account blocked by administrator
-        await performLogout(signOut);
-        window.location.replace("/login?blocked=1");
-        return;
-      }
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setSyncStatus("error");
-        setErrorMessage(
-          errorData.message ||
-            "Unable to synchronize your account with the database. Please check your network and retry."
-        );
-        return;
-      }
-
-      const data = await res.json();
-      const backendUser = data?.user;
-      const isNewUser = Boolean(data?.isNewUser);
-
-      if (data?.accessToken && typeof window !== "undefined") {
-        setAccessToken(data.accessToken);
-        try {
-          localStorage.setItem("jks_access_token", data.accessToken);
-        } catch {}
-      }
-
-      // Re-establish session with full backend user records (including role/phone)
-      const updatedInfo = establishRealSession(backendUser);
-      const target = updatedInfo?.target || "/dashboard";
-      setResolvedTargetUrl(target);
-
-      setSyncStatus("success");
-
-      // Verify whether student has a valid phone number recorded in their profile
-      const rawPhone = String(backendUser?.phone || "").trim();
-      const hasPhoneInProfile =
-        rawPhone.length >= 10 && rawPhone !== "null" && rawPhone !== "undefined";
-
-      const isAdminUser = updatedInfo?.role === "admin";
-      const shouldAskPhone =
-        !isAdminUser && (!hasPhoneInProfile || Boolean(data?.needsPhone) || isNewUser);
-
-      if (isNewUser) {
-        jksAnalytics.signup("clerk_oauth");
-      } else {
-        jksAnalytics.login("clerk_oauth");
-      }
-
-      if (shouldAskPhone) {
-        setShowPhoneModal(true);
-      } else {
-        setTimeout(() => {
-          window.location.replace(target);
-        }, 600);
-      }
-    } catch (err: any) {
-      console.error("[AuthRedirect] clerk-sync failed:", err);
-      setSyncStatus("error");
-      setErrorMessage(
-        err?.message?.includes("timed out")
-          ? "Database connection timed out. Please check your internet connection and retry."
-          : "Encountered a connection issue while synchronizing your account with the database."
-      );
-    }
+    // 3. Immediately redirect to student dashboard (or admin if staff)
+    window.location.replace(target);
   }, [user, getToken, signOut, establishRealSession]);
 
   useEffect(() => {
-    if (!isLoaded || !user) return;
+    if (!isLoaded) return;
+    if (!user) {
+      // If loaded but no user found, fallback after brief grace period
+      const timer = setTimeout(() => {
+        window.location.replace("/login");
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
     if (hasInitiatedSync.current) return;
     hasInitiatedSync.current = true;
-    void executeSync();
+    executeSync();
   }, [isLoaded, user, executeSync]);
 
   const handlePhoneSuccess = (_savedPhone: string) => {
