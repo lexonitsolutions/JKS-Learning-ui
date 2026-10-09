@@ -691,16 +691,16 @@ export function GlobalSearchModal({
     return ["All", ...Array.from(set)];
   }, [allItems]);
 
-  // Filtered items based on query & category
+  // Filtered items based on query & category — only populate when user enters text
   const filteredResults = useMemo(() => {
     const q = query.toLowerCase().trim();
+    if (!q) return []; // Open empty without preloaded data
+
     return allItems.filter((item) => {
       // Category filter
       if (activeCategory !== "All" && item.category !== activeCategory) {
         return false;
       }
-
-      if (!q) return true;
 
       // Multi-term matching
       const words = q.split(/\s+/).filter(Boolean);
@@ -923,38 +923,50 @@ export function GlobalSearchModal({
               })}
             </div>
 
-            {/* Zero Query Quick Searches Helper */}
-            {!query.trim() && (
-              <div className="px-3.5 sm:px-5 py-3 border-b border-slate-100/80 dark:border-slate-800/50 bg-slate-50/50 dark:bg-surface/20">
-                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
-                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                  <span>Popular Searches</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  {popularSuggestions.map((topic) => (
-                    <button
-                      key={topic}
-                      type="button"
-                      onClick={() => {
-                        setQuery(topic);
-                        inputRef.current?.focus();
-                      }}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 hover:border-blue-400 hover:text-[#2563EB] dark:hover:text-blue-300 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
-                    >
-                      <Search className="h-3 w-3 text-slate-400" />
-                      <span>{topic}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Search Results List */}
+            {/* Search Content Area */}
             <div
               ref={listRef}
               className="custom-modal-scrollbar flex-1 overflow-y-auto p-2 sm:p-3 divide-y divide-slate-100/60 dark:divide-slate-800/40 min-h-[220px] max-h-[500px]"
             >
-              {filteredResults.length > 0 ? (
+              {!query.trim() ? (
+                /* Clean Initial Empty State — No preloaded data */
+                <div className="flex flex-col items-center justify-center py-10 sm:py-14 px-4 text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 mb-3 shadow-2xs">
+                    <Search className="h-6 w-6 stroke-[2]" />
+                  </div>
+                  <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                    Search JKS Learning
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1 leading-relaxed">
+                    Start typing to search courses, curriculum modules, assessments, mock interviews, tutors, and learning tools.
+                  </p>
+
+                  {/* Quick Search Suggestions */}
+                  <div className="mt-5 w-full max-w-md">
+                    <div className="flex items-center justify-center gap-1.5 text-[10.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2.5">
+                      <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                      <span>Popular Suggestions</span>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+                      {popularSuggestions.map((topic) => (
+                        <button
+                          key={topic}
+                          type="button"
+                          onClick={() => {
+                            setQuery(topic);
+                            inputRef.current?.focus();
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 hover:border-blue-400 hover:text-[#2563EB] dark:hover:text-blue-300 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
+                        >
+                          <Search className="h-3 w-3 text-slate-400" />
+                          <span>{topic}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : filteredResults.length > 0 ? (
+                /* Dynamic Matching Results while entering data */
                 filteredResults.map((item, index) => {
                   const isSelected = index === selectedIndex;
                   const Icon = item.icon;
@@ -1024,6 +1036,7 @@ export function GlobalSearchModal({
                   );
                 })
               ) : (
+                /* No matching results state */
                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mb-3">
                     <Search className="h-6 w-6 stroke-[1.8]" />

@@ -125,7 +125,7 @@ export function InteractiveHero() {
   return (
     <section
       ref={containerRef}
-      className="relative min-h-[92vh] sm:min-h-screen w-full overflow-hidden bg-gradient-to-b from-[#FAFBFD] via-[#F4F7FC] to-[#EDF2FA] dark:from-background dark:via-surface dark:to-surface-secondary text-slate-900 dark:text-slate-100 flex flex-col justify-between pt-8 sm:pt-14 pb-0"
+      className="relative w-full overflow-hidden bg-gradient-to-b from-[#FAFBFD] via-[#F4F7FC] to-[#EDF2FA] dark:from-background dark:via-surface dark:to-surface-secondary text-slate-900 dark:text-slate-100 flex flex-col items-center pt-8 sm:pt-12 md:pt-14 pb-0"
     >
       {/* Ambient Brand Blue & Cyan Glow Orbs */}
       <div
@@ -207,10 +207,10 @@ export function InteractiveHero() {
       </div>
 
       {/* 3D Perspective Ground Grid Floor & Character Stage */}
-      <div className="relative z-10 mx-auto mt-6 sm:mt-8 w-full max-w-5xl flex-1 flex flex-col items-center justify-end px-4 overflow-visible">
+      <div className="relative z-10 mx-auto mt-6 sm:mt-10 w-full max-w-5xl flex flex-col items-center justify-end px-3 sm:px-4 overflow-visible">
         {/* 3D Perspective Grid Plane */}
         <div
-          className="pointer-events-none absolute bottom-0 left-1/2 h-[340px] sm:h-[460px] w-full sm:w-[130%] -translate-x-1/2 opacity-70 contain-paint"
+          className="pointer-events-none absolute bottom-0 left-1/2 h-[300px] sm:h-[420px] w-full sm:w-[130%] -translate-x-1/2 opacity-70 contain-paint"
           style={{
             transform: "perspective(600px) rotateX(60deg)",
             transformOrigin: "bottom center",
@@ -242,8 +242,8 @@ export function InteractiveHero() {
                 width={480}
                 height={520}
                 priority
-                sizes="(max-width: 640px) 320px, (max-width: 1024px) 440px, 480px"
-                className="relative z-20 h-auto max-h-[380px] sm:max-h-[460px] w-auto object-contain sm:drop-shadow-[0_20px_35px_rgba(15,23,42,0.18)]"
+                sizes="(max-width: 640px) 290px, (max-width: 1024px) 440px, 480px"
+                className="relative z-20 h-auto max-h-[320px] sm:max-h-[440px] w-auto object-contain sm:drop-shadow-[0_20px_35px_rgba(15,23,42,0.18)]"
               />
 
               {/* Ground Shadow */}
@@ -254,48 +254,53 @@ export function InteractiveHero() {
             </motion.div>
           </div>
 
-          {/* Floating Badge 1: Top-Left */}
+          {/* Floating Badge 1: Top-Left (Calibrated for mobile & desktop) */}
           <div
             ref={badgeLeftRef}
-            className="absolute top-12 sm:top-20 left-1 sm:left-4 z-30 max-w-[185px] sm:max-w-[220px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] sm:backdrop-blur-xl transition-transform hover:scale-105"
+            className="absolute top-2 xs:top-6 sm:top-20 -left-1 xs:left-1 sm:left-4 z-30 max-w-[135px] xs:max-w-[155px] sm:max-w-[220px] rounded-xl sm:rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-2 xs:p-2.5 sm:p-3.5 shadow-[0_6px_20px_rgba(30,50,90,0.12)] sm:shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-800 dark:text-slate-100">
-              <span className="flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5 text-[#1E5EFF] dark:text-blue-400" /> 8,140+ Students
+            <div className="flex items-center justify-between text-[9.5px] xs:text-[10px] sm:text-[11px] font-bold text-slate-800 dark:text-slate-100">
+              <span className="flex items-center gap-1 sm:gap-1.5 truncate">
+                <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#1E5EFF] dark:text-blue-400 shrink-0" />
+                <span>8,140+ Students</span>
               </span>
             </div>
-            <p className="mt-0.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">Active enrollments this month</p>
+            <p className="mt-0.5 text-[8px] xs:text-[8.5px] sm:text-[10px] font-medium text-slate-500 dark:text-slate-400">
+              <span className="sm:hidden">Active enrollments</span>
+              <span className="hidden sm:inline">Active enrollments this month</span>
+            </p>
             {/* Mini Progress Bar */}
-            <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+            <div className="mt-1.5 sm:mt-2 h-1 sm:h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <div className="h-full w-[88%] rounded-full bg-gradient-to-r from-[#1E5EFF] to-cyan-500" />
             </div>
           </div>
 
-          {/* Floating Badge 2: Right */}
+          {/* Floating Badge 2: Right (Calibrated for mobile & desktop) */}
           <div
             ref={badgeRightRef}
-            className="absolute top-28 sm:top-36 right-1 sm:right-2 z-30 max-w-[200px] sm:max-w-[250px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] sm:backdrop-blur-xl transition-transform hover:scale-105"
+            className="absolute top-14 xs:top-18 sm:top-36 -right-1 xs:right-1 sm:right-2 z-30 max-w-[145px] xs:max-w-[165px] sm:max-w-[250px] rounded-xl sm:rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-2 xs:p-2.5 sm:p-3.5 shadow-[0_6px_20px_rgba(30,50,90,0.12)] sm:shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/60 font-bold text-[10px] text-[#1E5EFF] dark:text-blue-400">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex h-5 w-5 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/60 font-bold text-[8.5px] sm:text-[10px] text-[#1E5EFF] dark:text-blue-400">
                 DR
               </div>
-              <div className="text-left">
-                <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800 dark:text-slate-100">
-                  <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> Daniel (TCS)
+              <div className="text-left min-w-0">
+                <div className="flex items-center gap-1 text-[9.5px] sm:text-[11px] font-bold text-slate-800 dark:text-slate-100 truncate">
+                  <CheckCircle2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-emerald-600 dark:text-emerald-400 shrink-0" /> Daniel (TCS)
                 </div>
-                <div className="text-[9px] font-semibold text-[#1E5EFF] dark:text-blue-400">Tier-1 Frontend Placement</div>
+                <div className="text-[8px] sm:text-[9px] font-semibold text-[#1E5EFF] dark:text-blue-400 truncate">Tier-1 Placement</div>
               </div>
             </div>
-            <p className="mt-1.5 text-[10px] text-slate-600 dark:text-slate-300 leading-snug">
-              &quot;Cleared Google Tier-1 Mock Interview with 94% score! 🚀&quot;
+            <p className="mt-1 sm:mt-1.5 text-[8px] xs:text-[8.5px] sm:text-[10px] text-slate-600 dark:text-slate-300 leading-snug">
+              <span className="sm:hidden">&quot;Cleared Mock with 94% score! 🚀&quot;</span>
+              <span className="hidden sm:inline">&quot;Cleared Google Tier-1 Mock Interview with 94% score! 🚀&quot;</span>
             </p>
           </div>
 
-          {/* Floating Badge 3: Bottom-Left */}
+          {/* Floating Badge 3: Bottom-Left (Tablet & Desktop) */}
           <div
             ref={badgeBottomRef}
-            className="absolute bottom-16 sm:bottom-24 left-1 sm:left-0 z-30 rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 px-3.5 py-2.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] sm:backdrop-blur-xl transition-transform hover:scale-105 hidden sm:block"
+            className="hidden sm:block absolute bottom-16 sm:bottom-24 left-2 sm:left-0 z-30 rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 px-3.5 py-2.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
             <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
               <span className="relative flex h-2 w-2">
