@@ -15,12 +15,11 @@
  */
 // Production API endpoint target synced with Railway
 const DEFAULT_API_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://jks-learning-backend-production-c2eb.up.railway.app"
-    : "http://localhost:4000";
+  process.env.NEXT_PUBLIC_API_URL?.trim() ||
+  "https://jks-learning-backend-production-c2eb.up.railway.app";
 
 function resolveBaseUrl(): string {
-  let raw = process.env.NEXT_PUBLIC_API_URL?.trim();
+  let raw = process.env.NEXT_PUBLIC_API_URL?.trim() || DEFAULT_API_URL;
   if (!raw) return DEFAULT_API_URL;
   // If the protocol was omitted (e.g. "jks-learning-backend-production-c2eb.up.railway.app"),
   // automatically prepend "https://" so fetch() receives a valid absolute URL.

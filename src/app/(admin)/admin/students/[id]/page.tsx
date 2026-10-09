@@ -869,7 +869,7 @@ function AdminStudentDetailsContent() {
                   <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Student Discussion Feed</h4>
                   <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated/70 p-3.5 space-y-1 text-xs">
                     <div className="font-bold text-slate-900 dark:text-white">How does Virtual Thread scheduling differ from ForkJoinPool in Java 21?</div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400">Asked by student 2 days ago · 3 Instructor Replies</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">Asked by student 2 days ago · 3 Tutor Replies</div>
                   </div>
                 </div>
               )}
@@ -3359,7 +3359,7 @@ function AdminStudentDetailsContent() {
                   <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-blue-900 dark:text-blue-200">
-                      Instructor / System Evaluation:{" "}
+                      Tutor / System Evaluation:{" "}
                     </span>
                     <span className="text-blue-800 dark:text-blue-300">
                       {selectedTaskModal.remarks}

@@ -129,7 +129,7 @@ export function EditInstructorModal({
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  Edit Lecturer Profile
+                  Edit Tutor Profile
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   Update credentials, track responsibilities, and access status.
@@ -276,7 +276,7 @@ export function EditInstructorModal({
                 ) : (
                   <>
                     <UserCheck className="h-3.5 w-3.5" />
-                    <span>Update Lecturer</span>
+                    <span>Update Tutor</span>
                   </>
                 )}
               </button>

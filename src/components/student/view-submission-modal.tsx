@@ -162,7 +162,7 @@ export function ViewSubmissionModal({
               }`}
             >
               <ShieldCheck className="h-4 w-4" />
-              <span>Instructor Evaluation &amp; Feedback</span>
+              <span>Tutor Evaluation &amp; Feedback</span>
             </div>
             <p className="text-xs text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed pl-5.5 font-medium">
               &quot;{feedback}&quot;
@@ -180,7 +180,7 @@ export function ViewSubmissionModal({
                   Assessment Did Not Pass Passing Criteria
                 </div>
                 <div className="text-[11px] text-rose-700 dark:text-rose-300">
-                  You are eligible to review the instructor feedback and submit a new attempt.
+                  You are eligible to review the tutor feedback and submit a new attempt.
                 </div>
               </div>
             </div>
@@ -349,7 +349,7 @@ export function ViewSubmissionModal({
                     File Archive: {submission.uploadedFileName}
                   </span>
                 ) : (
-                  "Task response submitted for instructor review."
+                  "Task response submitted for tutor review."
                 )}
               </p>
             </div>

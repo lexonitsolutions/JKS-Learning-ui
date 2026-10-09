@@ -16,12 +16,14 @@ import {
   ChevronDown,
   Shield,
   GraduationCap,
+  Search,
 } from "lucide-react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useMockSession, logoutMockSession, performLogout } from "@/lib/auth/use-mock-auth";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { JksLogo } from "@/components/common/jks-logo";
 import { ThemeToggle } from "@/components/common/theme-toggle";
+import { GlobalSearchTrigger, openGlobalSearch } from "@/components/common/global-search-modal";
 
 const BASE_NAV_LINKS = [
   { href: "/courses", label: "Courses" },
@@ -159,6 +161,9 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2.5 xl:gap-3 shrink-0 ml-auto">
+          {/* Global Search Trigger (Classic Search Icon Button) */}
+          <GlobalSearchTrigger variant="icon" />
+
           {/* Theme Toggle Button */}
           <div className="shrink-0 scale-90 sm:scale-95 xl:scale-100">
             <ThemeToggle />
@@ -322,6 +327,24 @@ export function SiteHeader() {
                   </div>
                 </div>
               )}
+
+              {/* Quick Mobile Search */}
+              <div className="pb-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    openGlobalSearch();
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 px-3.5 py-2.5 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-[#2563EB] dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 transition-all cursor-pointer shadow-2xs"
+                >
+                  <Search className="h-4 w-4 text-[#2563EB] dark:text-blue-400 shrink-0" />
+                  <span className="flex-1 text-left">Search courses, tutors, topics…</span>
+                  <kbd className="rounded bg-white dark:bg-slate-800 px-1.5 py-0.5 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-400">
+                    ⌘K
+                  </kbd>
+                </button>
+              </div>
 
               {/* Navigation sections */}
               <div className="space-y-1">

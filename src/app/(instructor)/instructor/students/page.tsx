@@ -45,7 +45,7 @@ function InstructorStudentsContent() {
   const initialCourse = searchParams?.get("course") || "all";
 
   const session = useMockSession();
-  const lecturerInitials = session?.initials || "LE";
+  const lecturerInitials = session?.initials || "TU";
 
   const courses = useAllCourses();
   const [selectedCourseSlug, setSelectedCourseSlug] = useState<string>(initialCourse);

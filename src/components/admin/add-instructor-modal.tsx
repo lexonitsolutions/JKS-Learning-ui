@@ -122,10 +122,10 @@ export function AddInstructorModal({
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  Add New Instructor & Industry Mentor
+                  Add New Tutor & Industry Mentor
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Onboard expert trainers and assign curriculum tracks
+                  Onboard expert tutors and assign curriculum tracks
                 </p>
               </div>
             </div>
@@ -146,7 +146,7 @@ export function AddInstructorModal({
                   <CheckCircle2 className="h-6 w-6 stroke-[2.5]" />
                 </div>
                 <h4 className="text-base font-bold text-slate-900 dark:text-white">
-                  Instructor Added &amp; Welcome Email Dispatched!
+                  Tutor Added &amp; Welcome Email Dispatched!
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
                   An official welcome email with login email and initial password has been sent to{" "}
@@ -164,7 +164,7 @@ export function AddInstructorModal({
                   <button
                     type="button"
                     onClick={() => {
-                      const text = `JKS Learning Instructor Credentials\nName: ${createdCredentials.name}\nEmail: ${createdCredentials.email}\nPassword: ${createdCredentials.password}\nLogin Portal: ${window.location.origin}/sign-in`;
+                      const text = `JKS Learning Tutor Credentials\nName: ${createdCredentials.name}\nEmail: ${createdCredentials.email}\nPassword: ${createdCredentials.password}\nLogin Portal: ${window.location.origin}/sign-in`;
                       navigator.clipboard.writeText(text);
                       setIsCopied(true);
                       setTimeout(() => setIsCopied(false), 2000);
@@ -442,7 +442,7 @@ export function AddInstructorModal({
                     </>
                   ) : (
                     <>
-                      <Sparkles className="h-4 w-4" /> Save &amp; Invite Instructor
+                      <Sparkles className="h-4 w-4" /> Save &amp; Invite Tutor
                     </>
                   )}
                 </button>

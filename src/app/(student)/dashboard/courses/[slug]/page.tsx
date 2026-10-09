@@ -18,7 +18,7 @@ export default async function StudentCourseDetailPage({
     <>
       <DashboardTopbar
         title={course?.title ? course.title : "Course Overview"}
-        subtitle="Review syllabus, instructor details, and enrollment options."
+        subtitle="Review syllabus, tutor details, and enrollment options."
       />
       <div className="flex-1 p-2 sm:p-4 lg:p-6">
         <CourseDetailResolver slug={slug} initialCourse={course} />

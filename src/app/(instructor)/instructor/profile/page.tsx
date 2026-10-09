@@ -18,13 +18,13 @@ import { useMockSession } from "@/lib/auth/use-mock-auth";
 
 export default function InstructorProfilePage() {
   const session = useMockSession();
-  const [name, setName] = useState(session?.name || "Lecturer");
+  const [name, setName] = useState(session?.name || "Tutor");
   const [email, setEmail] = useState(session?.email || "");
   const [title, setTitle] = useState("Lead Trainer & Principal Enterprise Architect");
   const [track, setTrack] = useState("Java & Full Stack Track");
   const [officeHours, setOfficeHours] = useState("Monday & Thursday: 6:00 PM - 8:00 PM IST");
   const [bio, setBio] = useState(
-    "Enterprise faculty instructor with specialized industry experience across production microservices, distributed architectures, and modern cloud platforms."
+    "Enterprise tutor and faculty mentor with specialized industry experience across production microservices, distributed architectures, and modern cloud platforms."
   );
   const [saved, setSaved] = useState(false);
 
@@ -36,7 +36,7 @@ export default function InstructorProfilePage() {
     }
   }, [session]);
 
-  const initials = session?.initials || name.slice(0, 2).toUpperCase() || "LE";
+  const initials = session?.initials || name.slice(0, 2).toUpperCase() || "TU";
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +47,7 @@ export default function InstructorProfilePage() {
   return (
     <>
       <DashboardTopbar
-        title="Lecturer Profile & Office Hours"
+        title="Tutor Profile & Office Hours"
         subtitle="Manage public faculty biography, track specializations, and mentorship consultation slots."
         userInitials={initials}
       />

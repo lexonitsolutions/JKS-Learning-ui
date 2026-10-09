@@ -653,7 +653,7 @@ export default function AdminSettingsPage() {
                     <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-surface-elevated dark:hover:border-blue-500/50 transition-colors">
                       <div>
                         <div className="text-xs font-bold text-slate-900 dark:text-white">Notify on Submissions</div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Alerts instructors when a capstone needs grading.</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Alerts tutors when a capstone needs grading.</div>
                       </div>
                       <input
                         type="checkbox"

@@ -8,6 +8,7 @@ import { WebsiteChatbot } from "@/components/common/website-chatbot";
 import { ClerkSessionSync } from "@/components/common/clerk-session-sync";
 import { ThemeProvider } from "@/lib/theme/theme-context";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { GlobalSearchModal } from "@/components/common/global-search-modal";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -68,6 +69,7 @@ export default function RootLayout({
             <ChunkErrorHandler />
             <PageTransitionProvider>
               {children}
+              <GlobalSearchModal />
               <WebsiteChatbot />
             </PageTransitionProvider>
           </ClerkProvider>
