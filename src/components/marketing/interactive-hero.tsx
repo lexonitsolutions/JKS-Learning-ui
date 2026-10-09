@@ -125,7 +125,7 @@ export function InteractiveHero() {
   return (
     <section
       ref={containerRef}
-      className="relative min-h-[92vh] sm:min-h-screen w-full overflow-hidden bg-gradient-to-b from-[#FAFBFD] via-[#F4F7FC] to-[#EDF2FA] dark:from-background dark:via-surface dark:to-surface-secondary text-slate-900 dark:text-slate-100 flex flex-col justify-between pt-8 sm:pt-14 pb-0"
+      className="relative w-full overflow-hidden bg-gradient-to-b from-[#FAFBFD] via-[#F4F7FC] to-[#EDF2FA] dark:from-background dark:via-surface dark:to-surface-secondary text-slate-900 dark:text-slate-100 flex flex-col items-center pt-8 sm:pt-12 md:pt-14 pb-0"
     >
       {/* Ambient Brand Blue & Cyan Glow Orbs */}
       <div
@@ -204,13 +204,25 @@ export function InteractiveHero() {
             <span>Practice AI Mock</span>
           </Link>
         </motion.div>
+
+        {/* Mobile-Only Stat Highlights (neatly organized without overlapping character) */}
+        <div className="sm:hidden mt-5 flex flex-wrap items-center justify-center gap-2">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white/90 dark:bg-surface-secondary/90 px-3 py-1 shadow-2xs text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+            <Users className="h-3.5 w-3.5 text-[#1E5EFF] dark:text-blue-400" />
+            <span>8,140+ Students Enrolled</span>
+          </div>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white/90 dark:bg-surface-secondary/90 px-3 py-1 shadow-2xs text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>Tier-1 Placements</span>
+          </div>
+        </div>
       </div>
 
       {/* 3D Perspective Ground Grid Floor & Character Stage */}
-      <div className="relative z-10 mx-auto mt-6 sm:mt-8 w-full max-w-5xl flex-1 flex flex-col items-center justify-end px-4 overflow-visible">
+      <div className="relative z-10 mx-auto mt-6 sm:mt-10 w-full max-w-5xl flex flex-col items-center justify-end px-4 overflow-visible">
         {/* 3D Perspective Grid Plane */}
         <div
-          className="pointer-events-none absolute bottom-0 left-1/2 h-[340px] sm:h-[460px] w-full sm:w-[130%] -translate-x-1/2 opacity-70 contain-paint"
+          className="pointer-events-none absolute bottom-0 left-1/2 h-[300px] sm:h-[420px] w-full sm:w-[130%] -translate-x-1/2 opacity-70 contain-paint"
           style={{
             transform: "perspective(600px) rotateX(60deg)",
             transformOrigin: "bottom center",
@@ -242,8 +254,8 @@ export function InteractiveHero() {
                 width={480}
                 height={520}
                 priority
-                sizes="(max-width: 640px) 320px, (max-width: 1024px) 440px, 480px"
-                className="relative z-20 h-auto max-h-[380px] sm:max-h-[460px] w-auto object-contain sm:drop-shadow-[0_20px_35px_rgba(15,23,42,0.18)]"
+                sizes="(max-width: 640px) 290px, (max-width: 1024px) 440px, 480px"
+                className="relative z-20 h-auto max-h-[340px] sm:max-h-[440px] w-auto object-contain sm:drop-shadow-[0_20px_35px_rgba(15,23,42,0.18)]"
               />
 
               {/* Ground Shadow */}
@@ -254,10 +266,10 @@ export function InteractiveHero() {
             </motion.div>
           </div>
 
-          {/* Floating Badge 1: Top-Left */}
+          {/* Floating Badge 1: Top-Left (Tablet & Desktop) */}
           <div
             ref={badgeLeftRef}
-            className="absolute top-12 sm:top-20 left-1 sm:left-4 z-30 max-w-[185px] sm:max-w-[220px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] sm:backdrop-blur-xl transition-transform hover:scale-105"
+            className="hidden sm:block absolute top-16 sm:top-20 left-2 sm:left-4 z-30 max-w-[220px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
             <div className="flex items-center justify-between text-[11px] font-bold text-slate-800 dark:text-slate-100">
               <span className="flex items-center gap-1.5">
@@ -271,10 +283,10 @@ export function InteractiveHero() {
             </div>
           </div>
 
-          {/* Floating Badge 2: Right */}
+          {/* Floating Badge 2: Right (Tablet & Desktop) */}
           <div
             ref={badgeRightRef}
-            className="absolute top-28 sm:top-36 right-1 sm:right-2 z-30 max-w-[200px] sm:max-w-[250px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] sm:backdrop-blur-xl transition-transform hover:scale-105"
+            className="hidden sm:block absolute top-28 sm:top-36 right-2 sm:right-2 z-30 max-w-[250px] rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-3 sm:p-3.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/60 font-bold text-[10px] text-[#1E5EFF] dark:text-blue-400">
@@ -292,10 +304,10 @@ export function InteractiveHero() {
             </p>
           </div>
 
-          {/* Floating Badge 3: Bottom-Left */}
+          {/* Floating Badge 3: Bottom-Left (Tablet & Desktop) */}
           <div
             ref={badgeBottomRef}
-            className="absolute bottom-16 sm:bottom-24 left-1 sm:left-0 z-30 rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 px-3.5 py-2.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] sm:backdrop-blur-xl transition-transform hover:scale-105 hidden sm:block"
+            className="hidden sm:block absolute bottom-16 sm:bottom-24 left-2 sm:left-0 z-30 rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 px-3.5 py-2.5 shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
             <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
               <span className="relative flex h-2 w-2">

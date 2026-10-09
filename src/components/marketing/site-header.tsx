@@ -161,8 +161,13 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2.5 xl:gap-3 shrink-0 ml-auto">
-          {/* Global Search Trigger (Classic Search Icon Button) */}
-          <GlobalSearchTrigger variant="icon" />
+          {/* Global Search Bar on Desktop & Icon on Mobile */}
+          <div className="hidden lg:flex items-center">
+            <GlobalSearchTrigger variant="bar" className="w-44 xl:w-56" placeholder="Search courses, tracks… (⌘K)" />
+          </div>
+          <div className="lg:hidden">
+            <GlobalSearchTrigger variant="icon" />
+          </div>
 
           {/* Theme Toggle Button */}
           <div className="shrink-0 scale-90 sm:scale-95 xl:scale-100">

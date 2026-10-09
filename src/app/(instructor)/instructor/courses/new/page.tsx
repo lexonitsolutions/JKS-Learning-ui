@@ -64,16 +64,16 @@ type StepNumber = 1 | 2 | 3 | 4;
 interface StepTab {
   step: StepNumber;
   label: string;
+  midLabel: string;
   shortLabel: string;
   icon: React.ElementType;
 }
 
 const STEPS: StepTab[] = [
-  { step: 1, label: "1. Course Basics & Syllabus", shortLabel: "Basics & Syllabus", icon: Layers },
-  { step: 2, label: "2. Curriculum, Videos & Assignments", shortLabel: "Curriculum & Assignments", icon: Video },
-  { step: 3, label: "3. Anti-Skip & Security", shortLabel: "Anti-Skip", icon: Lock },
-  { step: 4, label: "4. Certificate & Publish", shortLabel: "Certificate", icon: Award },
-
+  { step: 1, label: "1. Course Basics & Syllabus", midLabel: "Basics & Syllabus", shortLabel: "Basics", icon: Layers },
+  { step: 2, label: "2. Curriculum, Videos & Assignments", midLabel: "Curriculum & Videos", shortLabel: "Curriculum", icon: Video },
+  { step: 3, label: "3. Anti-Skip & Security", midLabel: "Anti-Skip Security", shortLabel: "Anti-Skip", icon: Lock },
+  { step: 4, label: "4. Certificate & Publish", midLabel: "Certificate", shortLabel: "Certificate", icon: Award },
 ];
 
 function InstructorNewCourseContent() {
@@ -1476,7 +1476,7 @@ function InstructorNewCourseContent() {
                 key={s.step}
                 type="button"
                 onClick={() => handleStepClick(s.step)}
-                className={`flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 rounded-xl p-1.5 sm:px-3 sm:py-2 text-center sm:text-left transition-all ${
+                className={`flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 rounded-xl p-1.5 sm:px-3 sm:py-2 text-center sm:text-left transition-all min-w-0 w-full overflow-hidden ${
                   isActive
                     ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
                     : isDone
@@ -1505,8 +1505,9 @@ function InstructorNewCourseContent() {
                     s.step
                   )}
                 </div>
-                <span className="hidden lg:inline truncate text-xs font-bold">{s.label}</span>
-                <span className="inline lg:hidden text-[10px] sm:text-xs font-medium sm:font-bold truncate">{s.shortLabel}</span>
+                <span className="hidden xl:inline truncate text-xs font-bold">{s.label}</span>
+                <span className="hidden sm:inline xl:hidden truncate text-xs font-bold">{s.midLabel}</span>
+                <span className="inline sm:hidden text-[10.5px] font-bold truncate max-w-full">{s.shortLabel}</span>
               </button>
             );
           })}
