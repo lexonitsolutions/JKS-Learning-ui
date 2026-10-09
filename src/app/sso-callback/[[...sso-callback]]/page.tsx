@@ -24,9 +24,9 @@ const STEPS = [
 ];
 
 // Paces the checklist against the real handshake.
-const STEP_MS = 1000;
+const STEP_MS = 600;
 // How long before we offer a prominent manual escape hatch.
-const SLOW_MS = 3500;
+const SLOW_MS = 1500;
 
 export default function SSOCallbackPage() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -36,7 +36,7 @@ export default function SSOCallbackPage() {
 
   // Instant redirect as soon as Clerk confirms session
   useEffect(() => {
-    if (isLoaded && isSignedIn) {
+    if ((isLoaded && isSignedIn) || (typeof window !== "undefined" && (window as any).Clerk?.user)) {
       window.location.replace("/auth-redirect");
     }
   }, [isLoaded, isSignedIn]);
@@ -46,12 +46,12 @@ export default function SSOCallbackPage() {
       setTimeout(() => setStep(1), STEP_MS),
       setTimeout(() => setStep(2), STEP_MS * 2),
       setTimeout(() => setIsSlow(true), SLOW_MS),
-      // Fallback redirect after 6.5s in case session exists in cookies
+      // Fast fallback redirect after 1.8s in case session exists in cookies
       setTimeout(() => {
         if (typeof window !== "undefined") {
           window.location.replace("/auth-redirect");
         }
-      }, 6500),
+      }, 1800),
     ];
     return () => timers.forEach(clearTimeout);
   }, []);

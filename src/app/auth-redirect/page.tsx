@@ -38,33 +38,47 @@ export default function AuthRedirectPage() {
   const hasInitiatedSync = useRef(false);
 
   useEffect(() => {
-    const fallbackTimer = setTimeout(() => setShowFallback(true), 5000);
+    const fallbackTimer = setTimeout(() => setShowFallback(true), 800);
     return () => clearTimeout(fallbackTimer);
   }, []);
 
   // Helper to establish real session in cookie and localStorage immediately
-  const establishRealSession = useCallback((backendUser?: any) => {
-    if (!user) return;
+  const establishRealSession = useCallback((customUser?: any, backendUser?: any) => {
+    const candidateUser =
+      customUser ||
+      user ||
+      (typeof window !== "undefined" ? (window as any).Clerk?.user : null);
 
-    const email = (
-      user.primaryEmailAddress?.emailAddress ||
-      user.emailAddresses?.[0]?.emailAddress ||
+    let email = (
+      candidateUser?.primaryEmailAddress?.emailAddress ||
+      candidateUser?.emailAddresses?.[0]?.emailAddress ||
       ""
     ).toLowerCase().trim();
 
-    if (!email) return;
+    if (!email && typeof window !== "undefined") {
+      try {
+        const stored = JSON.parse(localStorage.getItem("jks_auth_user") || "{}");
+        if (stored?.email) email = stored.email.toLowerCase().trim();
+      } catch {}
+    }
+
+    if (!email && session?.email) {
+      email = session.email.toLowerCase().trim();
+    }
+
+    if (!email) return null;
 
     const fullName =
       backendUser?.name ||
-      user.fullName ||
-      [user.firstName, user.lastName].filter(Boolean).join(" ") ||
-      user.username ||
+      candidateUser?.fullName ||
+      [candidateUser?.firstName, candidateUser?.lastName].filter(Boolean).join(" ") ||
+      candidateUser?.username ||
       email.split("@")[0] ||
       "Student";
 
     const initials =
-      user.firstName && user.lastName
-        ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+      candidateUser?.firstName && candidateUser?.lastName
+        ? `${candidateUser.firstName[0]}${candidateUser.lastName[0]}`.toUpperCase()
         : fullName.slice(0, 2).toUpperCase();
 
     const isSuperAdmin = email === "lexonitservices@gmail.com";
@@ -99,24 +113,30 @@ export default function AuthRedirectPage() {
           name: userSession.name,
           role,
           status: userSession.status,
-          avatar: backendUser?.avatarUrl || user.imageUrl,
+          avatar: backendUser?.avatarUrl || candidateUser?.imageUrl,
           phone: backendUser?.phone || null,
         })
       );
-      if (user.imageUrl) {
-        localStorage.setItem("jks_student_avatar_v2", user.imageUrl);
+      if (candidateUser?.imageUrl) {
+        localStorage.setItem("jks_student_avatar_v2", candidateUser.imageUrl);
       }
     } catch {}
 
     window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
     return { email, fullName, role, target: isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard" };
-  }, [user]);
+  }, [user, session]);
 
-  const executeSync = useCallback(() => {
-    if (!user) return;
+  const executeSync = useCallback((customUser?: any) => {
+    if (hasInitiatedSync.current) return;
+    hasInitiatedSync.current = true;
+
+    const candidateUser =
+      customUser ||
+      user ||
+      (typeof window !== "undefined" ? (window as any).Clerk?.user : null);
 
     // 1. Immediately establish real session from Google user synchronously
-    const sessionInfo = establishRealSession();
+    const sessionInfo = establishRealSession(candidateUser);
     const target = sessionInfo?.target || "/dashboard";
     setResolvedTargetUrl(target);
     setSyncStatus("success");
@@ -126,80 +146,98 @@ export default function AuthRedirectPage() {
       jksAnalytics.login("clerk_oauth");
     } catch {}
 
-    const email = (
-      user?.primaryEmailAddress?.emailAddress ||
-      user?.emailAddresses?.[0]?.emailAddress ||
-      ""
-    )
-      .toLowerCase()
-      .trim();
-
-    const fullName =
-      user.fullName ||
-      [user.firstName, user.lastName].filter(Boolean).join(" ") ||
-      user.username ||
-      email.split("@")[0] ||
-      "Student";
+    const email = (sessionInfo?.email || "").toLowerCase().trim();
+    const fullName = sessionInfo?.fullName || "Student";
 
     // 2. Fire backend clerk-sync in the background without blocking page redirect
-    void (async () => {
-      try {
-        const token = await getToken().catch(() => null);
-        if (token && email) {
-          const res = await fetch(apiUrl("/auth/clerk-sync"), {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-              "x-user-email": email,
-            },
-            body: JSON.stringify({
-              email,
-              name: fullName,
-              avatarUrl: user.imageUrl,
-              clerkUserId: user.id,
-            }),
-            credentials: "include",
-            signal: AbortSignal.timeout(4000),
-          });
+    if (candidateUser && email) {
+      void (async () => {
+        try {
+          const token = await (getToken().catch(() => null) || (window as any).Clerk?.session?.getToken());
+          if (token && email) {
+            const res = await fetch(apiUrl("/auth/clerk-sync"), {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "x-user-email": email,
+              },
+              body: JSON.stringify({
+                email,
+                name: fullName,
+                avatarUrl: candidateUser.imageUrl,
+                clerkUserId: candidateUser.id,
+              }),
+              credentials: "include",
+              signal: AbortSignal.timeout(3000),
+            });
 
-          if (res.status === 403) {
-            await performLogout(signOut);
-            window.location.replace("/login?blocked=1");
-            return;
-          }
+            if (res.status === 403) {
+              await performLogout(signOut);
+              window.location.replace("/login?blocked=1");
+              return;
+            }
 
-          if (res.ok) {
-            const data = await res.json().catch(() => ({}));
-            if (data?.accessToken && typeof window !== "undefined") {
-              try {
-                localStorage.setItem("jks_access_token", data.accessToken);
-              } catch {}
+            if (res.ok) {
+              const data = await res.json().catch(() => ({}));
+              if (data?.accessToken && typeof window !== "undefined") {
+                try {
+                  localStorage.setItem("jks_access_token", data.accessToken);
+                } catch {}
+              }
             }
           }
+        } catch (err) {
+          console.warn("[AuthRedirect] background clerk-sync:", err);
         }
-      } catch (err) {
-        console.warn("[AuthRedirect] background clerk-sync:", err);
-      }
-    })();
+      })();
+    }
 
-    // 3. Immediately redirect to student dashboard (or admin if staff)
+    // 3. Immediately redirect to student dashboard (or admin if staff) with zero delay!
     window.location.replace(target);
   }, [user, getToken, signOut, establishRealSession]);
 
   useEffect(() => {
-    if (!isLoaded) return;
-    if (!user) {
-      // If loaded but no user found, fallback after brief grace period
-      const timer = setTimeout(() => {
-        window.location.replace("/login");
-      }, 1500);
-      return () => clearTimeout(timer);
+    // 1. If user already available in React hook, execute immediately
+    if (user) {
+      executeSync(user);
+      return;
     }
-    if (hasInitiatedSync.current) return;
-    hasInitiatedSync.current = true;
-    executeSync();
-  }, [isLoaded, user, executeSync]);
+
+    // 2. If Clerk global user is already attached on window, execute immediately
+    if (typeof window !== "undefined" && (window as any).Clerk?.user) {
+      executeSync((window as any).Clerk.user);
+      return;
+    }
+
+    // 3. If Clerk is available on window, register listener to execute the microsecond user is ready
+    let unsubscribe: any = null;
+    if (typeof window !== "undefined" && (window as any).Clerk?.addListener) {
+      try {
+        unsubscribe = (window as any).Clerk.addListener((payload: any) => {
+          if (payload?.user) {
+            executeSync(payload.user);
+          }
+        });
+      } catch {}
+    }
+
+    // 4. Ultra-fast safety timeout (800ms):
+    // Never make the user wait on auth-redirect!
+    // After 800ms, redirect immediately to target/dashboard regardless
+    const safetyTimer = setTimeout(() => {
+      executeSync();
+    }, 800);
+
+    return () => {
+      clearTimeout(safetyTimer);
+      if (typeof unsubscribe === "function") {
+        try {
+          unsubscribe();
+        } catch {}
+      }
+    };
+  }, [user, isLoaded, executeSync]);
 
   const handlePhoneSuccess = (_savedPhone: string) => {
     setShowPhoneModal(false);
