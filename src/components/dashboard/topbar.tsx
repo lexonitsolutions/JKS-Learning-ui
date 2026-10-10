@@ -248,25 +248,9 @@ export function DashboardTopbar({
           </div>
         </div>
 
-        {/* Global Search Bar (Center / Responsive) */}
-        <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-sm xl:max-w-md mx-2 lg:mx-4">
-          <GlobalSearchTrigger
-            className="w-full"
-            placeholder={
-              isAdmin
-                ? "Search students, tutors, courses, logs… (⌘K)"
-                : isInstructor
-                ? "Search courses, curricula, students… (⌘K)"
-                : "Search courses, quizzes, notes… (⌘K)"
-            }
-          />
-        </div>
-
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Mobile search trigger icon */}
-          <div className="md:hidden">
-            <GlobalSearchTrigger variant="icon" />
-          </div>
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* Global Search Icon Trigger (Desktop & Mobile - keeps headings cleanly aligned) */}
+          <GlobalSearchTrigger variant="ghost" />
 
           {/* Dark / Light Theme Toggle */}
           <ThemeToggle variant="ghost" />
