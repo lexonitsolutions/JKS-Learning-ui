@@ -72,6 +72,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     setFormError(null);
 
     if (!event) return;
+    if (event.hasEnded || event.status === "COMPLETED") {
+      setFormError("Registration is closed: this event has already ended.");
+      return;
+    }
     if (!fullName.trim() || !email.trim() || !mobile.trim()) {
       setFormError("Full Name, Email Address, and Mobile Number are required.");
       return;
@@ -114,6 +118,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
       setFormError(res.error || "Failed to complete registration.");
     }
   };
+
+  const isClosed = Boolean(
+    event && (event.isSoldOut || event.hasEnded || event.status === "COMPLETED")
+  );
+  const hasEnded = Boolean(event && (event.hasEnded || event.status === "COMPLETED"));
 
   if (isLoading) {
     return (
@@ -194,7 +203,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   Free Admission
                 </span>
 
-                {event.isSoldOut && (
+                {hasEnded && (
+                  <span className="rounded-full bg-slate-500/15 border border-slate-500/30 px-3 py-1 text-xs font-bold text-slate-600 dark:text-slate-300">
+                    Completed
+                  </span>
+                )}
+
+                {!hasEnded && event.isSoldOut && (
                   <span className="rounded-full bg-rose-500/15 border border-rose-500/30 px-3 py-1 text-xs font-bold text-rose-600 dark:text-rose-400">
                     Sold Out
                   </span>
@@ -346,10 +361,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   <div className="font-semibold text-slate-900 dark:text-white">
                     {event.mode === "ONLINE" ? "Live Interactive Stream" : "In-Person Classroom"}
                   </div>
-                  <div className="text-slate-500 dark:text-slate-400 mt-0.5">{event.venueOrLink}</div>
-                  {event.mode === "ONLINE" && (
+                  {event.venueOrLink && (
+                    <div className="text-slate-500 dark:text-slate-400 mt-0.5">{event.venueOrLink}</div>
+                  )}
+                  {event.mode !== "OFFLINE" && (
                     <div className="mt-2 text-[11px] text-[#1E5EFF] dark:text-blue-300 italic">
-                      * The direct meeting access link will be emailed to your inbox upon registration.
+                      * The direct meeting access link is shared only in the confirmation email after you register.
                     </div>
                   )}
                 </div>
@@ -456,7 +473,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           required
-                          disabled={event.isSoldOut || isSubmitting}
+                          disabled={isClosed || isSubmitting}
                           className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/60 dark:bg-slate-900/60 pl-9 pr-3 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-hidden disabled:opacity-50"
                         />
                       </div>
@@ -474,7 +491,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
-                          disabled={event.isSoldOut || isSubmitting}
+                          disabled={isClosed || isSubmitting}
                           className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/60 dark:bg-slate-900/60 pl-9 pr-3 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-hidden disabled:opacity-50"
                         />
                       </div>
@@ -494,7 +511,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                           value={mobile}
                           onChange={(e) => setMobile(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
                           required
-                          disabled={event.isSoldOut || isSubmitting}
+                          disabled={isClosed || isSubmitting}
                           className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/60 dark:bg-slate-900/60 pl-9 pr-3 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-hidden disabled:opacity-50 font-mono"
                         />
                       </div>
@@ -509,14 +526,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         placeholder="Any specific architecture topics or doubts you'd like covered..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        disabled={event.isSoldOut || isSubmitting}
+                        disabled={isClosed || isSubmitting}
                         className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/60 dark:bg-slate-900/60 p-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-hidden disabled:opacity-50 leading-relaxed"
                       />
                     </div>
 
                     <button
                       type="submit"
-                      disabled={event.isSoldOut || isSubmitting}
+                      disabled={isClosed || isSubmitting}
                       className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-[#1E5EFF] hover:bg-blue-600 py-3 text-xs font-bold text-white shadow-lg shadow-blue-500/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? (
@@ -524,8 +541,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                           <Loader2 className="h-4 w-4 animate-spin" />
                           <span>Confirming Registration...</span>
                         </>
-                      ) : event.isSoldOut ? (
-                        <span>Registrations Closed (Sold Out)</span>
+                      ) : isClosed ? (
+                        <span>{hasEnded ? "Registration Closed (Event Ended)" : "Registrations Closed (Sold Out)"}</span>
                       ) : (
                         <>
                           <CheckCircle2 className="h-4 w-4" />

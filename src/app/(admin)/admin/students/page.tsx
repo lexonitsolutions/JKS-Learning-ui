@@ -502,8 +502,8 @@ export default function AdminStudentsPage() {
   return (
     <>
       <DashboardTopbar
-        title="Students Directory"
-        subtitle={`${students.length} registered students across all enterprise curriculum tracks.`}
+        title="Learners"
+        subtitle={`${students.length} ${students.length === 1 ? "learner" : "learners"}`}
         userInitials="LX"
       />
 

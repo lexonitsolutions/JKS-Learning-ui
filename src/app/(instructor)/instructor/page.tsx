@@ -268,8 +268,8 @@ export default function InstructorDashboardPage() {
   return (
     <>
       <DashboardTopbar
-        title="Tutor Command Center"
-        subtitle="Manage curriculum velocity, student assessments, live doubt sessions, and academic excellence."
+        title="Overview"
+        subtitle=""
         userInitials={lecturerInitials}
       />
 
@@ -300,7 +300,7 @@ export default function InstructorDashboardPage() {
                 <div className="flex flex-wrap items-center gap-3 pt-2 sm:pt-3">
                   <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white backdrop-blur-md border border-white/20 shadow-xs">
                     <span>🔥</span>
-                    <span>Database Synchronized</span>
+                    <span>Up to date</span>
                   </div>
 
                   <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white backdrop-blur-md border border-white/20 shadow-xs">

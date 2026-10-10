@@ -228,7 +228,7 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
                     <td className="py-3.5 px-2 font-mono text-slate-500 text-[11px] align-top">999293</td>
                     <td className="py-3.5 px-2 align-top">
                       <div className="font-bold text-slate-900 text-xs">{item.description}</div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">Live Faculty Mentorship + Production Capstones + Placement Support</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">Live Tutor Mentorship + Production Capstones + Placement Support</div>
                     </td>
                     <td className="py-3.5 px-2 text-center font-mono align-top">{item.qty}</td>
                     <td className="py-3.5 px-2 text-right font-mono font-medium align-top">₹{item.unitPrice.toLocaleString("en-IN")}</td>
@@ -248,7 +248,7 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
                   <div className="font-bold text-slate-900 text-xs">{item.description}</div>
                   <span className="font-mono text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded shrink-0">Qty: {item.qty}</span>
                 </div>
-                <div className="text-[11px] text-slate-500">Live Faculty Mentorship + Capstones + Placement Support</div>
+                <div className="text-[11px] text-slate-500">Live Tutor Mentorship + Capstones + Placement Support</div>
                 <div className="flex justify-between items-center border-t border-slate-200 pt-2 text-xs">
                   <span className="text-slate-500 text-[11px]">SAC: 999293</span>
                   <div className="text-right">

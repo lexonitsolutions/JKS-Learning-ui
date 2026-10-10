@@ -1304,7 +1304,7 @@ function AdminStudentDetailsContent() {
               </div>
 
               <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
-                <span className="text-xs text-slate-500 dark:text-slate-400">Graded by Lead Faculty Dr. Rohit Kapoor</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">Graded by tutor</span>
                 <button
                   type="button"
                   onClick={() => setActiveAssignmentSection(null)}

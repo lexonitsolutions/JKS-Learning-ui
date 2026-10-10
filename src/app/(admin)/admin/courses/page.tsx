@@ -92,7 +92,7 @@ export default function AdminCoursesPage() {
       price: newCourse.price !== "" && !isNaN(parseInt(newCourse.price.replace(/,/g, ""), 10)) ? parseInt(newCourse.price.replace(/,/g, ""), 10) : 0,
       rating: 5.0,
       studentsEnrolled: 0,
-      summary: "Comprehensive multi-stage enterprise engineering curriculum.",
+      summary: "Multi-stage engineering curriculum.",
       thumbnail: newCourse.thumbnailUrl || "",
       createdAt: new Date().toISOString(),
       status: "Published",
@@ -152,6 +152,43 @@ export default function AdminCoursesPage() {
 
 
   const totalEnrolled = courses.reduce((acc, c) => acc + (c.studentsEnrolled || 0), 0);
+
+  const hasActiveFilter = searchQuery.trim() !== "" || selectedTrack !== "All";
+  const emptyState = (
+    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#2563EB] ring-1 ring-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:ring-blue-900/50">
+        <BookOpen className="h-6 w-6" />
+      </div>
+      <h3 className="mt-4 text-base font-bold text-slate-900 dark:text-white">
+        {hasActiveFilter ? "No courses match your filters" : "No courses yet"}
+      </h3>
+      <p className="mt-1 max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+        {hasActiveFilter
+          ? "Try a different search term or track."
+          : "Create your first course to start building your catalog."}
+      </p>
+      {hasActiveFilter ? (
+        <button
+          type="button"
+          onClick={() => {
+            setSearchQuery("");
+            setSelectedTrack("All");
+          }}
+          className="mt-5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-xs transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-surface-elevated dark:text-slate-200 dark:hover:bg-surface-hover"
+        >
+          Clear filters
+        </button>
+      ) : (
+        <Link
+          href="/admin/courses/new"
+          className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2.5 text-xs font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] transition-colors hover:bg-blue-700"
+        >
+          <Plus className="h-4 w-4 stroke-[2.5]" />
+          <span>New course</span>
+        </Link>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -234,20 +271,20 @@ export default function AdminCoursesPage() {
           <TiltCard>
             <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Active Courses</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Courses</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400">
                   <BookOpen className="h-4 w-4" />
                 </div>
               </div>
               <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">{courses.length}</div>
-              <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Live in active catalog</div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">{courses.filter((c) => c.status === "Published").length} published</div>
             </div>
           </TiltCard>
 
           <TiltCard>
             <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Enrolled Students</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Enrolled learners</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
                   <TrendingUp className="h-4 w-4" />
                 </div>
@@ -262,13 +299,13 @@ export default function AdminCoursesPage() {
           <TiltCard>
             <div className="rounded-2xl border border-white/70 dark:border-slate-800/80 bg-white/75 dark:bg-surface-secondary/90 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Protected Video Player</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Video protection</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
                   <Award className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">100% In-App</div>
-              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">No external redirect &amp; Anti-Skip enabled</div>
+              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">On</div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">In-app playback with anti-skip</div>
             </div>
           </TiltCard>
         </Reveal>
@@ -276,9 +313,8 @@ export default function AdminCoursesPage() {
         {/* Mobile View: Dedicated Responsive Course Cards with Direct Edit & Actions */}
         <div className="md:hidden space-y-3">
           {filteredCourses.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-surface-secondary p-8 text-center text-slate-500">
-              <BookOpen className="h-8 w-8 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-              <p className="text-sm font-semibold">No courses found</p>
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-surface-secondary">
+              {emptyState}
             </div>
           ) : (
             filteredCourses.map((c) => {
@@ -372,22 +408,28 @@ export default function AdminCoursesPage() {
         </div>
 
         {/* Main Courses Table (Desktop & Tablet) */}
+        {filteredCourses.length === 0 && (
+          <div className="hidden md:block w-full rounded-[22px] border border-white/70 dark:border-slate-800/80 bg-white/80 dark:bg-surface-secondary/90 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
+            {emptyState}
+          </div>
+        )}
+        {filteredCourses.length > 0 && (
         <div
           ref={tableRef}
           className={`hidden md:block w-full max-w-full rounded-[22px] border transition-all duration-300 ${
             isHeaderStuck
               ? "border-blue-500/30 shadow-[0_12px_36px_-6px_rgba(20,50,100,0.12)] dark:shadow-[0_12px_36px_-6px_rgba(0,0,0,0.7)]"
               : "border-white/70 dark:border-slate-800/80 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none"
-          } bg-white/80 dark:bg-surface-secondary/90 p-3 sm:p-4 backdrop-blur-xl overflow-hidden`}
+          } bg-white/80 dark:bg-surface-secondary/90 p-3 sm:p-4 backdrop-blur-xl overflow-hidden xl:overflow-visible`}
         >
-          <div className="w-full overflow-x-auto [scrollbar-width:thin]">
+          <div className="w-full overflow-x-auto xl:overflow-visible [scrollbar-width:thin]">
             <table className="w-full text-left text-xs border-separate border-spacing-y-1.5 min-w-[760px]">
               <colgroup><col className="w-[32%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[17%]" /><col className="w-[8%]" /><col className="w-[13%]" /><col className="w-[10%]" /></colgroup>
-              <thead className="sticky top-16 sm:top-20 z-20 transition-all duration-300">
+              <thead>
                 <tr className="border-none relative">
                   {/* 1. Course Name & Structure */}
                   <th
-                    className={`w-[32%] pb-3.5 pt-3.5 pr-3 pl-3 sm:pl-4 sticky top-16 sm:top-20 z-20 transition-all duration-300 first:rounded-l-xl ${
+                    className={`xl:sticky xl:top-20 xl:z-20 w-[32%] pb-3.5 pt-3.5 pr-3 pl-3 sm:pl-4 transition-all duration-300 first:rounded-l-xl ${
                       isHeaderStuck
                         ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
                         : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
@@ -406,7 +448,7 @@ export default function AdminCoursesPage() {
 
                   {/* 2. Track */}
                   <th
-                    className={`w-[10%] px-2.5 sm:px-3 pb-3.5 pt-3.5 sticky top-16 sm:top-20 z-20 transition-all duration-300 ${
+                    className={`xl:sticky xl:top-20 xl:z-20 w-[10%] px-2.5 sm:px-3 pb-3.5 pt-3.5 transition-all duration-300 ${
                       isHeaderStuck
                         ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
                         : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
@@ -420,7 +462,7 @@ export default function AdminCoursesPage() {
 
                   {/* 3. Price */}
                   <th
-                    className={`w-[10%] px-2.5 sm:px-3 pb-3.5 pt-3.5 sticky top-16 sm:top-20 z-20 transition-all duration-300 ${
+                    className={`xl:sticky xl:top-20 xl:z-20 w-[10%] px-2.5 sm:px-3 pb-3.5 pt-3.5 transition-all duration-300 ${
                       isHeaderStuck
                         ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
                         : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
@@ -434,7 +476,7 @@ export default function AdminCoursesPage() {
 
                   {/* 4. Sections & Videos */}
                   <th
-                    className={`w-[17%] px-2.5 sm:px-3 pb-3.5 pt-3.5 sticky top-16 sm:top-20 z-20 transition-all duration-300 ${
+                    className={`xl:sticky xl:top-20 xl:z-20 w-[17%] px-2.5 sm:px-3 pb-3.5 pt-3.5 transition-all duration-300 ${
                       isHeaderStuck
                         ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
                         : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
@@ -448,7 +490,7 @@ export default function AdminCoursesPage() {
 
                   {/* 5. Rating */}
                   <th
-                    className={`w-[8%] px-2 sm:px-3 pb-3.5 pt-3.5 text-center sticky top-16 sm:top-20 z-20 transition-all duration-300 ${
+                    className={`xl:sticky xl:top-20 xl:z-20 w-[8%] px-2 sm:px-3 pb-3.5 pt-3.5 text-center transition-all duration-300 ${
                       isHeaderStuck
                         ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
                         : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
@@ -462,7 +504,7 @@ export default function AdminCoursesPage() {
 
                   {/* 6. Status */}
                   <th
-                    className={`w-[13%] px-2.5 sm:px-3 pb-3.5 pt-3.5 text-center sticky top-16 sm:top-20 z-20 transition-all duration-300 ${
+                    className={`xl:sticky xl:top-20 xl:z-20 w-[13%] px-2.5 sm:px-3 pb-3.5 pt-3.5 text-center transition-all duration-300 ${
                       isHeaderStuck
                         ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
                         : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
@@ -476,7 +518,7 @@ export default function AdminCoursesPage() {
 
                   {/* 7. Action */}
                   <th
-                    className={`w-[10%] px-2.5 sm:px-3 pb-3.5 pt-3.5 text-center sticky top-16 sm:top-20 z-20 transition-all duration-300 last:rounded-r-xl ${
+                    className={`xl:sticky xl:top-20 xl:z-20 w-[10%] px-2.5 sm:px-3 pb-3.5 pt-3.5 text-center transition-all duration-300 last:rounded-r-xl ${
                       isHeaderStuck
                         ? "bg-white/95 dark:bg-[#070D1E]/95 backdrop-blur-2xl border-b border-blue-500/40 shadow-sm"
                         : "bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80"
@@ -490,17 +532,7 @@ export default function AdminCoursesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredCourses.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-12 text-center text-slate-500 dark:text-slate-400">
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <BookOpen className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-                        <p className="text-sm font-semibold">No courses found in database</p>
-                        <p className="text-xs text-slate-400">Create a new course using the &ldquo;New Course&rdquo; button above.</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
+                {(
                   filteredCourses.map((c, index) => {
                     const sectionCount = c.sections?.length || 0;
                     const totalVids = (c.sections || []).reduce((acc, s) => {
@@ -649,6 +681,7 @@ export default function AdminCoursesPage() {
             </table>
           </div>
         </div>
+        )}
       </div>
 
       {/* Course Creation Modal */}

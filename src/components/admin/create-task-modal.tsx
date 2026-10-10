@@ -147,11 +147,15 @@ export function CreateTaskModal({
       if (liveTemplates && liveTemplates.length > 0) {
         setAvailableTemplates(liveTemplates);
         if (initialAssessment) {
-          const matched = liveTemplates.find(
-            (t) =>
-              t.id === initialAssessment.id ||
-              t.title.toLowerCase().trim() === initialAssessment.title.toLowerCase().trim()
-          );
+          // Match by id first; fall back to title only within the same course.
+          const matched =
+            liveTemplates.find((t) => t.id === initialAssessment.id) ||
+            liveTemplates.find(
+              (t) =>
+                t.title.toLowerCase().trim() === initialAssessment.title.toLowerCase().trim() &&
+                (t.courseTitle || "").toLowerCase().trim() ===
+                  (initialAssessment.courseTitle || "").toLowerCase().trim()
+            );
           if (matched) {
             setSelectedTemplateId(matched.id);
             applyAssessmentTemplate(matched);
@@ -502,7 +506,7 @@ export function CreateTaskModal({
         });
 
         // Record students assigned
-        recordAssessmentAssigned(title.trim(), selectedStudentEmails);
+        recordAssessmentAssigned(title.trim(), selectedStudentEmails, courseTitle);
 
         // Notify parent
         if (onBatchCreated && res.tasks.length > 0) {

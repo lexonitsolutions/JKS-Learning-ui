@@ -93,7 +93,7 @@ export default function AdminNotificationsPage() {
     <>
       <DashboardTopbar
         title="Admin Notifications"
-        subtitle="Real-time alerts for student enrollments, assignment submissions, tutor actions, and system milestones."
+        subtitle="Alerts for enrollments, submissions and approvals."
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4 max-w-5xl mx-auto w-full">

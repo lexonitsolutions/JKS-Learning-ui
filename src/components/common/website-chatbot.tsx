@@ -197,6 +197,17 @@ export function WebsiteChatbot() {
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ pointerX: number; pointerY: number; startX: number; startY: number } | null>(null);
   const hasDraggedRef = useRef(false);
+  const launcherRef = useRef<HTMLDivElement | null>(null);
+  const isOpenRef = useRef(false);
+
+  // Chat Window Element & Ref for scroll isolation
+  const chatWindowRef = useRef<HTMLDivElement | null>(null);
+  const [chatWindowEl, setChatWindowEl] = useState<HTMLDivElement | null>(null);
+
+  const setChatWindowNode = useCallback((node: HTMLDivElement | null) => {
+    chatWindowRef.current = node;
+    setChatWindowEl(node);
+  }, []);
 
   // Scroll Container Ref and State
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -259,35 +270,56 @@ export function WebsiteChatbot() {
     fetchCourses();
   }, [isAllowedPage]);
 
-  // Initialize and persist draggable position
+  // The launcher always starts in the bottom-right corner. Dragging only moves
+  // it for the current open session; closing the chat glides it back home.
+  const getCornerPos = () => ({
+    x: Math.max(12, window.innerWidth - 76),
+    y: Math.max(12, window.innerHeight - 76),
+  });
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     try {
-      const saved = localStorage.getItem("jks_chatbot_launcher_pos");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (typeof parsed.x === "number" && typeof parsed.y === "number") {
-          const clampedX = Math.max(12, Math.min(window.innerWidth - 68, parsed.x));
-          const clampedY = Math.max(12, Math.min(window.innerHeight - 68, parsed.y));
-          setLauncherPos({ x: clampedX, y: clampedY });
-          return;
-        }
-      }
+      localStorage.removeItem("jks_chatbot_launcher_pos"); // old saved position
     } catch {}
-
-    // Default position: bottom-right
-    setLauncherPos({
-      x: Math.max(12, window.innerWidth - 76),
-      y: Math.max(12, window.innerHeight - 76),
-    });
+    setLauncherPos(getCornerPos());
   }, []);
+
+  // Return to the corner whenever the chat closes.
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+    if (!isOpen && typeof window !== "undefined") setLauncherPos(getCornerPos());
+  }, [isOpen]);
+
+  // Close when the user taps or clicks anywhere outside the chat and launcher.
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleOutside = (e: PointerEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (chatWindowRef.current?.contains(target)) return;
+      if (launcherRef.current?.contains(target)) return;
+      setIsOpen(false);
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("pointerdown", handleOutside, true);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("pointerdown", handleOutside, true);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [isOpen]);
 
   // Window resize handler to keep launcher inside viewport
   useEffect(() => {
     const handleResize = () => {
       setLauncherPos((prev) => {
         if (!prev) return null;
+        if (!isOpenRef.current) {
+          return { x: Math.max(12, window.innerWidth - 76), y: Math.max(12, window.innerHeight - 76) };
+        }
         return {
           x: Math.max(12, Math.min(window.innerWidth - 68, prev.x)),
           y: Math.max(12, Math.min(window.innerHeight - 68, prev.y)),
@@ -342,12 +374,6 @@ export function WebsiteChatbot() {
     setIsDragging(false);
     (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
 
-    if (launcherPos) {
-      try {
-        localStorage.setItem("jks_chatbot_launcher_pos", JSON.stringify(launcherPos));
-      } catch {}
-    }
-
     // If movement was negligible, treat as a normal click toggle
     if (!hasDraggedRef.current) {
       setIsOpen((prev) => !prev);
@@ -385,6 +411,140 @@ export function WebsiteChatbot() {
       setTimeout(() => scrollToBottom(true), 60);
     }
   }, [messages, isTyping, isOpen, scrollToBottom]);
+
+  // Scroll Isolation: Prevent background page from scrolling when mouse wheel or touch is used inside chatbot
+  useEffect(() => {
+    if (!isOpen || !chatWindowEl) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const scrollEl = scrollContainerRef.current;
+      if (!scrollEl) {
+        e.preventDefault();
+        return;
+      }
+
+      // Check if event occurred inside an inner scrollable element (e.g. textarea or nested list)
+      let targetEl: HTMLElement | null = e.target as HTMLElement | null;
+      let scrollTarget: HTMLElement = scrollEl;
+
+      while (targetEl && targetEl !== chatWindowEl) {
+        if (
+          targetEl.tagName === "TEXTAREA" ||
+          (targetEl !== scrollEl && targetEl.scrollHeight > targetEl.clientHeight)
+        ) {
+          const style = window.getComputedStyle(targetEl);
+          if (style.overflowY === "auto" || style.overflowY === "scroll") {
+            scrollTarget = targetEl;
+            break;
+          }
+        }
+        targetEl = targetEl.parentElement;
+      }
+
+      // If wheel occurred on non-scrollable parts of the chat window (header, footer, buttons, borders)
+      if (!scrollEl.contains(e.target as Node) && scrollTarget === scrollEl) {
+        e.preventDefault();
+        return;
+      }
+
+      // If the scroll target doesn't have overflow content to scroll
+      if (scrollTarget.scrollHeight <= scrollTarget.clientHeight) {
+        e.preventDefault();
+        return;
+      }
+
+      // Calculate scroll delta in pixels
+      let delta = e.deltaY;
+      if (e.deltaMode === 1) {
+        delta *= 24; // DOM_DELTA_LINE (Firefox)
+      } else if (e.deltaMode === 2) {
+        delta *= scrollTarget.clientHeight; // DOM_DELTA_PAGE
+      }
+
+      // Prevent horizontal trackpad swipes from triggering browser history navigation
+      if (Math.abs(e.deltaX) > Math.abs(delta) && Math.abs(e.deltaX) > 10) {
+        e.preventDefault();
+        return;
+      }
+
+      const { scrollTop, scrollHeight, clientHeight } = scrollTarget;
+      const maxScroll = scrollHeight - clientHeight;
+
+      // If scrolling up while at top, or down while at bottom, prevent bubbling to background page
+      if ((delta < 0 && scrollTop <= 0) || (delta > 0 && scrollTop >= maxScroll)) {
+        e.preventDefault();
+        return;
+      }
+
+      // Perform contained scroll and prevent background page scroll propagation
+      scrollTarget.scrollTop = Math.max(0, Math.min(maxScroll, scrollTop + delta));
+      e.preventDefault();
+    };
+
+    let touchStartY = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const scrollEl = scrollContainerRef.current;
+      if (!scrollEl) {
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
+
+      let targetEl: HTMLElement | null = e.target as HTMLElement | null;
+      let scrollTarget: HTMLElement = scrollEl;
+
+      while (targetEl && targetEl !== chatWindowEl) {
+        if (
+          targetEl.tagName === "TEXTAREA" ||
+          (targetEl !== scrollEl && targetEl.scrollHeight > targetEl.clientHeight)
+        ) {
+          const style = window.getComputedStyle(targetEl);
+          if (style.overflowY === "auto" || style.overflowY === "scroll") {
+            scrollTarget = targetEl;
+            break;
+          }
+        }
+        targetEl = targetEl.parentElement;
+      }
+
+      // If touching non-scrollable header or footer outside the scroll container
+      if (!scrollEl.contains(e.target as Node) && scrollTarget === scrollEl) {
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
+
+      // If scroll container has no overflow
+      if (scrollTarget.scrollHeight <= scrollTarget.clientHeight) {
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
+
+      const currentY = e.touches[0].clientY;
+      const delta = touchStartY - currentY; // > 0 = scrolling down, < 0 = scrolling up
+      const { scrollTop, scrollHeight, clientHeight } = scrollTarget;
+      const maxScroll = scrollHeight - clientHeight;
+
+      // If at boundary and trying to scroll beyond, prevent background scroll
+      if ((delta < 0 && scrollTop <= 0) || (delta > 0 && scrollTop >= maxScroll)) {
+        if (e.cancelable) e.preventDefault();
+      }
+    };
+
+    chatWindowEl.addEventListener("wheel", handleWheel, { passive: false });
+    chatWindowEl.addEventListener("touchstart", handleTouchStart, { passive: true });
+    chatWindowEl.addEventListener("touchmove", handleTouchMove, { passive: false });
+
+    return () => {
+      chatWindowEl.removeEventListener("wheel", handleWheel);
+      chatWindowEl.removeEventListener("touchstart", handleTouchStart);
+      chatWindowEl.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [isOpen, chatWindowEl]);
 
   if (!isAllowedPage) {
     return null;
@@ -672,6 +832,9 @@ export function WebsiteChatbot() {
         left: `${launcherPos.x}px`,
         top: `${launcherPos.y}px`,
         zIndex: 50,
+        transition: isDragging
+          ? "none"
+          : "left 0.45s cubic-bezier(0.16, 1, 0.3, 1), top 0.45s cubic-bezier(0.16, 1, 0.3, 1)",
       }
     : {
         position: "fixed",
@@ -684,6 +847,7 @@ export function WebsiteChatbot() {
     <>
       {/* Draggable Launcher Container */}
       <div
+        ref={launcherRef}
         style={launcherStyle}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -763,11 +927,14 @@ export function WebsiteChatbot() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            ref={setChatWindowNode}
+            data-lenis-prevent
+            initial={{ opacity: 0, y: 24, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.96 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-20 right-3 sm:right-6 sm:bottom-24 z-50 flex h-[540px] sm:h-[580px] max-h-[84vh] sm:max-h-[82vh] w-[calc(100vw-1.5rem)] max-w-[365px] sm:max-w-[400px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-[0_20px_50px_-10px_rgba(15,23,42,0.35)] dark:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.85)] backdrop-blur-xl"
+            exit={{ opacity: 0, y: 24, scale: 0.9, transition: { duration: 0.28, ease: [0.4, 0, 0.2, 1] } }}
+            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            style={{ overscrollBehavior: "contain", transformOrigin: "bottom right" }}
+            className="fixed bottom-20 right-3 sm:right-6 sm:bottom-24 z-50 flex h-[540px] sm:h-[580px] max-h-[84vh] sm:max-h-[82vh] w-[calc(100vw-1.5rem)] max-w-[365px] sm:max-w-[400px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-[0_20px_50px_-10px_rgba(15,23,42,0.35)] dark:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.85)] backdrop-blur-xl overscroll-contain"
           >
             {/* Chatbot Luxury Header */}
             <div className="relative overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 p-3 sm:p-3.5 text-white shrink-0 border-b border-white/10">
@@ -846,6 +1013,7 @@ export function WebsiteChatbot() {
               style={{
                 WebkitOverflowScrolling: "touch",
                 overscrollBehavior: "contain",
+                overscrollBehaviorY: "contain",
                 scrollbarWidth: "thin",
               }}
             >

@@ -139,8 +139,8 @@ function InstructorStudentsContent() {
         title="Faculty Student Roster"
         subtitle={
           isLoading
-            ? "Connecting to database records..."
-            : `${students.length} real students registered in database across course tracks.`
+            ? "Loading…"
+            : `${students.length} ${students.length === 1 ? "learner" : "learners"}`
         }
         userInitials={lecturerInitials}
       />

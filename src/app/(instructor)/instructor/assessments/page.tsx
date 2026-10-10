@@ -155,7 +155,7 @@ export default function InstructorAssessmentsPage() {
         title="Assessments & Submission Grading"
         subtitle={
           isLoading
-            ? "Connecting to database records..."
+            ? "Loading…"
             : `${submissions.length} real student submissions retrieved live from database.`
         }
         userInitials={lecturerInitials}

@@ -36,7 +36,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { getStoredCourses, type FullCourse } from "@/lib/data/courses-store";
 import { fetchInstructors, useMockSession, type StoredInstructor } from "@/lib/auth/use-mock-auth";
-import { ADMIN_STUDENTS } from "@/lib/data/admin";
 import { getStoredLeads } from "@/lib/data/leads-store";
 import {
   fetchAdminStudents,
@@ -283,19 +282,6 @@ export function GlobalSearchModal({
         }
       >();
 
-      // 1. Fallback mock students from ADMIN_STUDENTS
-      ADMIN_STUDENTS.forEach((st, idx) => {
-        if (!st.name) return;
-        const key = (st.email || st.name).toLowerCase().trim();
-        studentMap.set(key, {
-          id: `mock-${idx}`,
-          name: st.name,
-          email: st.email || "",
-          status: st.status || "Active",
-          enrolledCount: st.enrolledCourses || 1,
-        });
-      });
-
       // 2. Real learners from Leaderboard
       leaderboardUsers.forEach((lb) => {
         if (!lb.name) return;
@@ -306,7 +292,7 @@ export function GlobalSearchModal({
           name: lb.name,
           email: lb.email || existing?.email || "",
           status: existing?.status || "Active",
-          enrolledCount: existing?.enrolledCount || 1,
+          enrolledCount: existing?.enrolledCount ?? 0,
           track: lb.track || existing?.track,
         });
       });
@@ -346,7 +332,7 @@ export function GlobalSearchModal({
                 email: u.email || existing?.email || "",
                 phone: u.phone || existing?.phone,
                 status: existing?.status || "Active",
-                enrolledCount: existing?.enrolledCount || 1,
+                enrolledCount: existing?.enrolledCount ?? 0,
                 track: existing?.track,
               });
             }
@@ -371,7 +357,7 @@ export function GlobalSearchModal({
                 name: fullName,
                 email: primaryEmail || existing?.email || "",
                 status: existing?.status || "Active",
-                enrolledCount: existing?.enrolledCount || 1,
+                enrolledCount: existing?.enrolledCount ?? 0,
                 track: existing?.track,
               });
             }
@@ -387,7 +373,7 @@ export function GlobalSearchModal({
               name: session.name,
               email: session.email || existing?.email || "",
               status: existing?.status || "Active",
-              enrolledCount: existing?.enrolledCount || 1,
+              enrolledCount: existing?.enrolledCount ?? 0,
               track: existing?.track,
             });
           }
@@ -470,20 +456,15 @@ export function GlobalSearchModal({
       items.push(...buildStudentSearchItems());
 
       // Tutors
-      const tutorList = tutors.length > 0
-        ? tutors
-        : [
-            { id: "t1", name: "Davood Khan", email: "davood@jkslearning.dev", role: "Lead Full Stack Tutor", assignedCourses: 4 },
-            { id: "t2", name: "Dr. Rohit Kapoor", email: "rohit@jkslearning.dev", role: "Principal Cloud & Java Tutor", assignedCourses: 3 },
-          ];
+      const tutorList = tutors;
 
       tutorList.forEach((tut) => {
         items.push({
           id: `admin-tutor-${tut.id}`,
           title: tut.name,
-          subtitle: `${tut.role} • ${tut.email} • ${tut.assignedCourses || 1} Assigned Course(s)`,
+          subtitle: `${tut.role} • ${tut.email} • ${tut.assignedCourses ?? 0} Assigned Course(s)`,
           category: "Tutors",
-          href: "/admin/instructors",
+          href: "/admin/tutors",
           icon: GraduationCap,
           badge: "Tutor",
           badgeColor: "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300",
@@ -522,9 +503,9 @@ export function GlobalSearchModal({
           title: "Tutors Directory & Onboarding",
           subtitle: "Manage authorized tutors, assign tracks, and onboard new faculty",
           category: "Tutors",
-          href: "/admin/instructors",
+          href: "/admin/tutors",
           icon: GraduationCap,
-          badge: "Faculty",
+          badge: "Tutor",
         },
         {
           id: "admin-nav-batches",
@@ -594,14 +575,6 @@ export function GlobalSearchModal({
           icon: Megaphone,
         },
         {
-          id: "admin-nav-ai",
-          title: "AI Mock Interview Analytics",
-          subtitle: "View student AI interview transcriptions, scores, and readiness",
-          category: "Assessments",
-          href: "/admin/ai-interviews",
-          icon: BrainCircuit,
-        },
-        {
           id: "admin-nav-payments",
           title: "Invoices & Revenue Transactions",
           subtitle: "Payment verification, invoice generation, and revenue statements",
@@ -652,8 +625,8 @@ export function GlobalSearchModal({
       items.push(
         {
           id: "inst-dashboard",
-          title: "Instructor Dashboard",
-          subtitle: "Lecturer overview, student progress tracking, and batch updates",
+          title: "Tutor Dashboard",
+          subtitle: "Learner progress and cohort updates",
           category: "Operations",
           href: "/instructor",
           icon: Activity,
@@ -711,7 +684,7 @@ export function GlobalSearchModal({
         },
         {
           id: "inst-analytics",
-          title: "Instructor Class Analytics",
+          title: "Tutor Analytics",
           subtitle: "Student watch times, quiz pass rates, and assignment completion velocity",
           category: "Operations",
           href: "/instructor/analytics",
@@ -719,7 +692,7 @@ export function GlobalSearchModal({
         },
         {
           id: "inst-profile",
-          title: "Instructor Faculty Profile",
+          title: "Tutor Profile",
           subtitle: "Bio, teaching credentials, and assigned department tracks",
           category: "Operations",
           href: "/instructor/profile",
@@ -1174,7 +1147,7 @@ export function GlobalSearchModal({
         },
         {
           id: "pub-page-login",
-          title: "Student / Faculty Sign In",
+          title: "Sign In",
           subtitle: "Access your dashboard, lecture recordings, and mock tests",
           category: "Pages",
           href: "/login",
@@ -1187,31 +1160,39 @@ export function GlobalSearchModal({
     return items;
   }, [effectiveMode, courses, tutors, students, leaderboardUsers, pathname]);
 
-  // Available categories for filter tabs
+  const matchesQuery = useCallback((item: SearchResultItem, q: string) => {
+    const words = q.split(/\s+/).filter(Boolean);
+    const textToSearch = `${item.title} ${item.subtitle || ""} ${item.category} ${(item.tags || []).join(" ")}`.toLowerCase();
+    return words.every((word) => textToSearch.includes(word));
+  }, []);
+
+  // Everything matching the typed text, before the category filter is applied.
+  const queryMatches = useMemo(() => {
+    const q = query.toLowerCase().trim();
+    if (!q) return [];
+    return allItems.filter((item) => matchesQuery(item, q));
+  }, [allItems, query, matchesQuery]);
+
+  // Filter tabs, with the number of results each one would show for this query.
   const categories = useMemo(() => {
     const set = new Set<string>();
     allItems.forEach((i) => set.add(i.category));
     return ["All", ...Array.from(set)];
   }, [allItems]);
 
-  // Filtered items based on query & category — only populate when user enters text
-  const filteredResults = useMemo(() => {
-    const q = query.toLowerCase().trim();
-    if (!q) return []; // Open empty without preloaded data
-
-    return allItems.filter((item) => {
-      // Category filter
-      if (activeCategory !== "All" && item.category !== activeCategory) {
-        return false;
-      }
-
-      // Multi-term matching
-      const words = q.split(/\s+/).filter(Boolean);
-      const textToSearch = `${item.title} ${item.subtitle || ""} ${item.category} ${(item.tags || []).join(" ")}`.toLowerCase();
-
-      return words.every((word) => textToSearch.includes(word));
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: queryMatches.length };
+    queryMatches.forEach((i) => {
+      counts[i.category] = (counts[i.category] || 0) + 1;
     });
-  }, [allItems, query, activeCategory]);
+    return counts;
+  }, [queryMatches]);
+
+  // Only populate when the user enters text
+  const filteredResults = useMemo(() => {
+    if (activeCategory === "All") return queryMatches;
+    return queryMatches.filter((item) => item.category === activeCategory);
+  }, [queryMatches, activeCategory]);
 
   // Adjust selectedIndex if it goes out of bounds
   useEffect(() => {
@@ -1406,10 +1387,8 @@ export function GlobalSearchModal({
               {categories.map((cat) => {
                 const active = activeCategory === cat;
                 const CatIcon = getCategoryIcon(cat);
-                const count =
-                  cat === "All"
-                    ? allItems.length
-                    : allItems.filter((i) => i.category === cat).length;
+                const count = categoryCounts[cat] ?? 0;
+                const hasQuery = query.trim().length > 0;
 
                 return (
                   <button
@@ -1424,15 +1403,17 @@ export function GlobalSearchModal({
                   >
                     <CatIcon className={`h-3.5 w-3.5 shrink-0 ${active ? "text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200"}`} />
                     <span>{cat}</span>
-                    <span
-                      className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
-                        active
-                          ? "bg-white/20 text-white"
-                          : "bg-slate-200/60 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                      }`}
-                    >
-                      {count}
-                    </span>
+                    {hasQuery && (
+                      <span
+                        className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                          active
+                            ? "bg-white/20 text-white"
+                            : "bg-slate-200/60 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    )}
                   </button>
                 );
               })}

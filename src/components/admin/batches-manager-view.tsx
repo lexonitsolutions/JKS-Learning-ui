@@ -144,8 +144,8 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
   return (
     <>
       <DashboardTopbar
-        title="Academic Batches & Cohorts"
-        subtitle="Live hierarchy view: Tutors → Assigned Curricula → Enrolled Cohort Students."
+        title="Cohorts"
+        subtitle=""
         userInitials={role === "admin" ? "AD" : "IN"}
       />
 

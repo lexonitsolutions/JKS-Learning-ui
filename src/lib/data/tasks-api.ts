@@ -267,6 +267,20 @@ const DEFAULT_MASTER_ASSESSMENTS: ReusableAssessment[] = [
   },
 ];
 
+/**
+ * Two assessments are the same one only if BOTH course and title match. Several
+ * courses reuse generic titles ("Section 1: ... Practical Task"); matching by
+ * title alone made one course's template overwrite another's questions, so a
+ * reviewer saw a Machine Learning question under a Java task.
+ */
+function sameAssessment(
+  a: { title: string; courseTitle?: string },
+  b: { title: string; courseTitle?: string }
+): boolean {
+  const norm = (v?: string) => (v || "").toLowerCase().trim();
+  return norm(a.title) === norm(b.title) && norm(a.courseTitle) === norm(b.courseTitle);
+}
+
 export function normalizeTaskQuestion(q: any, fallbackIndex = 0): TaskQuestion {
   const rawType = String(q?.type || "").toUpperCase().trim();
   let taskType: TaskQuestion["type"] = "SHORT_ANSWER";
@@ -350,7 +364,8 @@ export function extractCourseAssignments(courses: FullCourse[]): ReusableAssessm
       }
 
       result.push({
-        id: asg.id || `course-asg-${courseId}-${secIdx}`,
+        // Assignment ids like "asg-1" repeat across courses, so scope by course.
+        id: `course-asg-${courseId}-${asg.id || secIdx}`,
         title,
         description:
           asg.description?.trim() ||
@@ -468,10 +483,10 @@ export async function fetchAllReusableAssessments(): Promise<ReusableAssessment[
             existing.questions = t.questions.map((q, idx) => normalizeTaskQuestion(q, idx));
           }
         } else {
-          // Check if it matches by title only
+          // Same title AND same course only - never merge across courses.
           let foundByTitle: ReusableAssessment | undefined;
           for (const item of assignmentMap.values()) {
-            if (item.title.toLowerCase().trim() === t.title.toLowerCase().trim()) {
+            if (sameAssessment(item, t)) {
               foundByTitle = item;
               break;
             }
@@ -542,8 +557,8 @@ export async function fetchAllReusableAssessments(): Promise<ReusableAssessment[
 
 export function saveStoredMasterAssessment(assessment: Omit<ReusableAssessment, "id" | "createdAt" | "timesAssigned" | "assignedStudents">): ReusableAssessment {
   const existing = getStoredMasterAssessments();
-  const foundIdx = existing.findIndex((a) => a.title.trim().toLowerCase() === assessment.title.trim().toLowerCase());
-  
+  const foundIdx = existing.findIndex((a) => sameAssessment(a, assessment));
+
   const record: ReusableAssessment = {
     ...assessment,
     id: foundIdx >= 0 ? existing[foundIdx].id : `asm-${Date.now()}`,
@@ -567,9 +582,13 @@ export function saveStoredMasterAssessment(assessment: Omit<ReusableAssessment, 
   return record;
 }
 
-export function recordAssessmentAssigned(title: string, studentEmails: string[]) {
+export function recordAssessmentAssigned(
+  title: string,
+  studentEmails: string[],
+  courseTitle?: string
+) {
   const existing = getStoredMasterAssessments();
-  const foundIdx = existing.findIndex((a) => a.title.trim().toLowerCase() === title.trim().toLowerCase());
+  const foundIdx = existing.findIndex((a) => sameAssessment(a, { title, courseTitle }));
   if (foundIdx >= 0) {
     const updated = [...existing];
     const prevList = updated[foundIdx].assignedStudents || [];

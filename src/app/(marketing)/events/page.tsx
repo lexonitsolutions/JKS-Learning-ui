@@ -28,6 +28,7 @@ export default function PublicEventsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [modeFilter, setModeFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [timeTab, setTimeTab] = useState<"UPCOMING" | "COMPLETED">("UPCOMING");
 
   useEffect(() => {
     async function load() {
@@ -41,6 +42,8 @@ export default function PublicEventsPage() {
 
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
+      const ended = Boolean(e.hasEnded) || e.status === "COMPLETED";
+      if (timeTab === "UPCOMING" ? ended : !ended) return false;
       const matchMode = modeFilter === "ALL" || e.mode === modeFilter;
       const q = searchQuery.toLowerCase().trim();
       const matchSearch =
@@ -50,7 +53,7 @@ export default function PublicEventsPage() {
         (e.speakerName && e.speakerName.toLowerCase().includes(q));
       return matchMode && matchSearch;
     });
-  }, [events, modeFilter, searchQuery]);
+  }, [events, modeFilter, searchQuery, timeTab]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0B1020] text-slate-900 dark:text-white transition-colors duration-200">
@@ -99,6 +102,27 @@ export default function PublicEventsPage() {
       <section className="relative mx-auto max-w-[1280px] px-6 lg:px-16 pb-24">
         {/* Filter Controls Strip */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-white/5 p-3 shadow-xs dark:shadow-none backdrop-blur-md mb-10">
+          {/* Upcoming / Completed */}
+          <div className="flex items-center gap-1.5">
+            {([
+              { id: "UPCOMING", label: "Upcoming" },
+              { id: "COMPLETED", label: "Completed" },
+            ] as const).map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setTimeTab(tab.id)}
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  timeTab === tab.id
+                    ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
           {/* Mode Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
             {[
@@ -209,7 +233,11 @@ export default function PublicEventsPage() {
                     </div>
 
                     {/* Seat status badge */}
-                    {event.isSoldOut ? (
+                    {event.hasEnded || event.status === "COMPLETED" ? (
+                      <div className="absolute top-3 right-3 z-10 rounded-full bg-slate-700 px-3 py-1 text-[11px] font-black text-white shadow-md">
+                        Completed
+                      </div>
+                    ) : event.isSoldOut ? (
                       <div className="absolute top-3 right-3 z-10 rounded-full bg-rose-500 px-3 py-1 text-[11px] font-black text-white shadow-md">
                         Sold Out
                       </div>
@@ -262,12 +290,18 @@ export default function PublicEventsPage() {
                       <Link
                         href={`/events/${event.slug}`}
                         className={`flex items-center justify-center gap-2 w-full rounded-xl py-2.5 text-xs font-bold transition-all shadow-xs ${
-                          event.isSoldOut
+                          event.isSoldOut || event.hasEnded || event.status === "COMPLETED"
                             ? "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700"
                             : "bg-[#1E5EFF] text-white hover:bg-blue-600 shadow-blue-500/20 hover:scale-[1.02]"
                         }`}
                       >
-                        <span>{event.isSoldOut ? "View Event Details" : "Register Free Now"}</span>
+                        <span>
+                          {event.hasEnded || event.status === "COMPLETED"
+                            ? "View Event Details"
+                            : event.isSoldOut
+                              ? "View Event Details"
+                              : "Register Free Now"}
+                        </span>
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     </div>

@@ -153,8 +153,8 @@ export default function AdminActivityLogsPage() {
   return (
     <>
       <DashboardTopbar
-        title="Platform Activity & Audit Logs"
-        subtitle="Real-time system events, student progression milestones, tutor submissions, and forensic audit records."
+        title="Activity log"
+        subtitle=""
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">
@@ -166,7 +166,7 @@ export default function AdminActivityLogsPage() {
                 {[
                   { id: "ALL", label: "All Activity", icon: Activity },
                   { id: "STUDENTS", label: "Students", icon: Users },
-                  { id: "TUTORS", label: "Tutors / Instructors", icon: GraduationCap },
+                  { id: "TUTORS", label: "Tutors", icon: GraduationCap },
                   { id: "ENROLLMENTS", label: "Enrollments", icon: BookOpen },
                   { id: "ASSIGNMENTS", label: "Assignments", icon: ClipboardCheck },
                   { id: "COURSES", label: "Courses", icon: BookOpen },

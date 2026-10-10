@@ -75,16 +75,11 @@ const ADMIN_EXPLORE_SECTIONS = [
     href: "/admin/playground",
     icon: Code2,
   },
-  {
-    label: "AI Mock Interviews",
-    href: "/admin/ai-interviews",
-    icon: Sparkles,
-  },
 ];
 
 export function DashboardTopbar({
   title = "Welcome back 👋",
-  subtitle = "Here's what's happening with your platform today.",
+  subtitle = "",
   userInitials,
   badgeNotification = true,
   children,
@@ -340,7 +335,7 @@ export function DashboardTopbar({
               <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2]" />
               {unreadCount > 0 ? (
                 <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white ring-2 ring-white/80 dark:ring-slate-950 animate-in zoom-in-50">
-                  {unreadCount > 9 ? "9+" : unreadCount}
+                  {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               ) : null}
             </button>
