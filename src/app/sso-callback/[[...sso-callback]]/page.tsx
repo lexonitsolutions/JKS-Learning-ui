@@ -26,7 +26,7 @@ const STEPS = [
 // Paces the checklist against the real handshake.
 const STEP_MS = 600;
 // How long before we offer a prominent manual escape hatch.
-const SLOW_MS = 1500;
+const SLOW_MS = 8000;
 
 export default function SSOCallbackPage() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -46,12 +46,11 @@ export default function SSOCallbackPage() {
       setTimeout(() => setStep(1), STEP_MS),
       setTimeout(() => setStep(2), STEP_MS * 2),
       setTimeout(() => setIsSlow(true), SLOW_MS),
-      // Fast fallback redirect after 1.8s in case session exists in cookies
-      setTimeout(() => {
-        if (typeof window !== "undefined") {
-          window.location.replace("/auth-redirect");
-        }
-      }, 1800),
+      // NOTE: there is deliberately no timed redirect here. A blind redirect
+      // after a couple of seconds tore the page down while Clerk was still
+      // finishing the Google handshake, so /auth-redirect then found no signed-in
+      // user and bounced to /login. <AuthenticateWithRedirectCallback> below, and
+      // the isSignedIn effect above, navigate the moment the session is real.
     ];
     return () => timers.forEach(clearTimeout);
   }, []);
@@ -171,7 +170,7 @@ export default function SSOCallbackPage() {
                   Opening taking longer than usual?
                 </p>
                 <p className="mt-1 text-[11px] font-medium leading-relaxed text-amber-800/85 dark:text-amber-300/80">
-                  Your identity may already be authorized. You can jump directly to your dashboard or re-authenticate:
+                  Sign-in is still finishing. You can keep waiting, or start again:
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 pt-0.5">
