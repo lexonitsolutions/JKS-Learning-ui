@@ -57,6 +57,12 @@ function InstructorStudentsContent() {
   useEffect(() => {
     const courseParam = searchParams?.get("course");
     if (courseParam) setSelectedCourseSlug(courseParam);
+
+    const searchParam = searchParams?.get("search");
+    if (searchParam) {
+      setSearchQuery(searchParam);
+      setSelectedCourseSlug("all");
+    }
   }, [searchParams]);
 
   useEffect(() => {
