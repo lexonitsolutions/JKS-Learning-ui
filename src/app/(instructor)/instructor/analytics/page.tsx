@@ -194,7 +194,7 @@ export default function InstructorAnalyticsPage() {
                 <BarChart3 className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">Live Module Completion Velocity</h3>
               </div>
-              <span className="text-xs text-slate-400 dark:text-slate-400 font-medium">Real-Time Cohorts</span>
+              <span className="text-xs text-slate-400 dark:text-slate-400 font-medium">Cohorts</span>
             </div>
 
             <div className="space-y-3 pt-2">

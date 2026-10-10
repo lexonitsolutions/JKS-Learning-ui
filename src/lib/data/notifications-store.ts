@@ -142,6 +142,33 @@ function safeGetNotifications(storageKey: string): AppNotification[] {
   }
 }
 
+/**
+ * The list endpoint is capped (50), so counting unread items in it can never
+ * exceed 50 and a "9+" badge hides the real number. The server reports the true
+ * unread total; it is kept next to the cached list. -1 means "not known yet".
+ */
+const unreadKeyFor = (storageKey: string) => `${storageKey}:unread`;
+
+function safeGetServerUnread(storageKey: string): number {
+  if (typeof window === "undefined") return -1;
+  try {
+    const raw = localStorage.getItem(unreadKeyFor(storageKey));
+    if (raw === null) return -1;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 ? n : -1;
+  } catch {
+    return -1;
+  }
+}
+
+function safeSetServerUnread(storageKey: string, count: number) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(unreadKeyFor(storageKey), String(Math.max(0, Math.floor(count))));
+    window.dispatchEvent(new Event(NOTIFICATIONS_EVENT));
+  } catch {}
+}
+
 function safeSetNotifications(storageKey: string, notifs: AppNotification[]) {
   if (typeof window === "undefined") return;
   try {
@@ -212,6 +239,9 @@ export async function fetchLiveNotifications(
         ? data
         : [];
       const normalized = list.map(normalizeNotification);
+      if (typeof data?.unreadCount === "number") {
+        safeSetServerUnread(storageKey, data.unreadCount);
+      }
       safeSetNotifications(storageKey, normalized);
       return normalized;
     }
@@ -228,7 +258,10 @@ export async function markNotificationRead(
 ) {
   const key = getNotificationsStorageKey(role, email);
   const current = safeGetNotifications(key);
+  const wasUnread = current.some((n) => n.id === id && !n.read);
   const updated = current.map((n) => (n.id === id ? { ...n, read: true } : n));
+  const knownUnread = safeGetServerUnread(key);
+  if (wasUnread && knownUnread > 0) safeSetServerUnread(key, knownUnread - 1);
   safeSetNotifications(key, updated);
 
   try {
@@ -245,6 +278,7 @@ export async function markAllNotificationsRead(
   const key = getNotificationsStorageKey(role, email);
   const current = safeGetNotifications(key);
   const updated = current.map((n) => ({ ...n, read: true }));
+  safeSetServerUnread(key, 0);
   safeSetNotifications(key, updated);
 
   try {
@@ -259,6 +293,7 @@ export function clearNotifications(
   email?: string
 ) {
   const key = getNotificationsStorageKey(role, email);
+  safeSetServerUnread(key, 0);
   safeSetNotifications(key, []);
 }
 
@@ -284,7 +319,13 @@ export function useNotifications(
     () => EMPTY_NOTIFS
   );
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const serverUnread = useSyncExternalStore(
+    subscribeNotifications,
+    () => safeGetServerUnread(storageKey),
+    () => -1
+  );
+  const unreadCount =
+    serverUnread >= 0 ? serverUnread : notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
     // 1. Initial background fetch to populate real data
@@ -294,6 +335,8 @@ export function useNotifications(
     const cleanupSse = setupRealtimeSse((newNotif) => {
       const current = safeGetNotifications(storageKey);
       if (!current.some((x) => x.id === newNotif.id)) {
+        const knownUnread = safeGetServerUnread(storageKey);
+        if (!newNotif.read && knownUnread >= 0) safeSetServerUnread(storageKey, knownUnread + 1);
         safeSetNotifications(storageKey, [newNotif, ...current]);
       }
     });

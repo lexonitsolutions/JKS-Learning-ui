@@ -26,7 +26,7 @@ import {
   fetchAdminEvents,
   updateAdminEvent,
   deleteAdminEvent,
-  getExportEventRegistrationsUrl,
+  downloadEventRegistrations,
   type EventItem,
   type EventStatus,
 } from "@/lib/data/events-api";
@@ -59,6 +59,15 @@ export default function AdminEventsPage() {
       alert(res.error || "Failed to update event status.");
     }
     setTogglingEventId(null);
+  };
+
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const handleDownloadAttendees = async (event: EventItem) => {
+    setDownloadingId(event.id);
+    const res = await downloadEventRegistrations(event.id);
+    setDownloadingId(null);
+    if (!res.success) showToast(res.error || "Failed to download the attendee list.");
   };
 
   const loadEvents = useCallback(async () => {
@@ -107,8 +116,8 @@ export default function AdminEventsPage() {
   return (
     <>
       <DashboardTopbar
-        title="Event Management"
-        subtitle="Create, schedule, publish events, track student registrations, and export attendance rosters."
+        title="Events"
+        subtitle=""
         userInitials="LX"
       />
 
@@ -123,19 +132,7 @@ export default function AdminEventsPage() {
 
         {/* Page Header / Top Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                Live Masterclasses &amp; Workshops
-              </h2>
-              <span className="rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-bold text-[#1E5EFF] dark:text-blue-400 border border-blue-500/20">
-                Active Schedule
-              </span>
-            </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Create, schedule, publish events, track student registrations, and export attendance rosters.
-            </p>
-          </div>
+          <div />
 
           <div className="flex items-center gap-3">
             <Link
@@ -144,7 +141,7 @@ export default function AdminEventsPage() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors"
             >
               <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
-              <span>Public Events Directory</span>
+              <span>Public events page</span>
             </Link>
 
             <Link
@@ -167,7 +164,7 @@ export default function AdminEventsPage() {
             </div>
           </div>
           <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{totalEvents}</div>
-          <p className="mt-0.5 text-[11px] text-slate-400">Scheduled in database</p>
+          <p className="mt-0.5 text-[11px] text-slate-400">Scheduled</p>
         </div>
 
         <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-surface-secondary/80 p-4 shadow-xs">
@@ -363,7 +360,7 @@ export default function AdminEventsPage() {
                       {event.title}
                     </h3>
                     <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 min-h-[2rem] leading-relaxed">
-                      {event.description || "Live interactive masterclass with hands-on enterprise concepts."}
+                      {event.description || "Live masterclass with hands-on practice."}
                     </p>
                   </div>
 
@@ -404,11 +401,11 @@ export default function AdminEventsPage() {
                         {event.speakerName ? event.speakerName.slice(0, 2).toUpperCase() : "JK"}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-bold text-slate-900 dark:text-white truncate" title={event.speakerName || "JKS Faculty Mentor"}>
-                          {event.speakerName || "JKS Faculty Mentor"}
+                        <div className="text-xs font-bold text-slate-900 dark:text-white truncate" title={event.speakerName || "JKS Tutor"}>
+                          {event.speakerName || "JKS Tutor"}
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate" title={event.speakerRole || "Tutor & Technical Lead"}>
-                          {event.speakerRole || "Tutor & Technical Lead"}
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate" title={event.speakerRole || "Tutor"}>
+                          {event.speakerRole || "Tutor"}
                         </div>
                       </div>
                     </div>
@@ -479,14 +476,15 @@ export default function AdminEventsPage() {
                   {/* Utility Action Icons */}
                   <div className="flex items-center gap-1 shrink-0">
                     {/* Export DOCX */}
-                    <a
-                      href={getExportEventRegistrationsUrl(event.id)}
-                      download
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadAttendees(event)}
+                      disabled={downloadingId === event.id}
                       className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-elevated text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover hover:text-[#1E5EFF] transition-colors"
                       title="Download Attendee List (.docx)"
                     >
                       <Download className="h-3.5 w-3.5" />
-                    </a>
+                    </button>
 
                     {/* Edit Event */}
                     <Link

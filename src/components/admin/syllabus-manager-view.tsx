@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   BookOpen,
   Search,
@@ -54,16 +54,31 @@ export function SyllabusManagerView({ role }: SyllabusManagerViewProps) {
   const [modules, setModules] = useState<SyllabusModuleItem[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
 
+  const latestLoadRef = useRef(0);
+
   const loadTemplates = async () => {
+    // Responses can arrive out of order while typing; only the latest wins, so
+    // an older (broader) result never overwrites the filtered list.
+    const loadId = ++latestLoadRef.current;
     setIsLoading(true);
     setError(null);
     try {
       const data = await fetchSyllabusTemplates(searchQuery, selectedTrack);
-      setTemplates(data || []);
+      if (loadId !== latestLoadRef.current) return;
+      const q = searchQuery.trim().toLowerCase();
+      setTemplates(
+        (data || []).filter(
+          (t) =>
+            !q ||
+            t.title.toLowerCase().includes(q) ||
+            t.keyword.toLowerCase().includes(q)
+        )
+      );
     } catch (err: any) {
+      if (loadId !== latestLoadRef.current) return;
       setError(err.message || "Failed to load syllabus templates");
     } finally {
-      setIsLoading(false);
+      if (loadId === latestLoadRef.current) setIsLoading(false);
     }
   };
 

@@ -114,10 +114,21 @@ export default function AdminAnalyticsPage() {
   };
 
   const renderDelta = (delta?: MetricDelta, isPercentage = false) => {
-    if (!delta || delta.changePercent === 0) {
+    // No earlier data to compare against: show a dash, never a made-up percentage.
+    if (!delta || delta.changePercent === null || delta.changePercent === undefined) {
+      return (
+        <span
+          className="text-[10px] sm:text-xs font-semibold text-slate-400"
+          title="No data for the previous period"
+        >
+          —
+        </span>
+      );
+    }
+    if (delta.changePercent === 0) {
       return (
         <span className="text-[10px] sm:text-xs font-semibold text-slate-400">
-          No prior change
+          No change vs prev
         </span>
       );
     }
@@ -150,7 +161,7 @@ export default function AdminAnalyticsPage() {
       <>
         <DashboardTopbar
           title="Website Analytics"
-          subtitle="Real-time website traffic and visitor engagement powered by Google Analytics 4."
+          subtitle="Website traffic from Google Analytics"
           userInitials="AD"
         />
         <div className="p-4 sm:p-6 lg:p-8">
@@ -181,7 +192,7 @@ export default function AdminAnalyticsPage() {
     <>
       <DashboardTopbar
         title="Website Analytics"
-        subtitle="Real-time traffic, visitor paths, and marketing engagement from Google Analytics 4."
+        subtitle="Website traffic from Google Analytics"
         userInitials="AD"
       />
 
