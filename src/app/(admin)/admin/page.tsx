@@ -27,6 +27,7 @@ import {
   type PendingEnrollmentItem,
 } from "@/lib/data/students-api";
 import { fetchInvoicesFromApi, type Invoice } from "@/lib/data/invoices-store";
+import { fetchPendingCompletions, type PendingCompletionItem } from "@/lib/data/certificates-api";
 import { apiFetch } from "@/lib/api/base-url";
 import { useAllCourses } from "@/lib/data/courses-store";
 
@@ -47,6 +48,8 @@ export default function AdminDashboardPage() {
   const [students, setStudents] = useState<AdminStudentRecord[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [pendingEnrollments, setPendingEnrollments] = useState<PendingEnrollmentItem[]>([]);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [pendingCompletions, setPendingCompletions] = useState<PendingCompletionItem[]>([]);
   const [summary, setSummary] = useState<PlatformSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -56,12 +59,14 @@ export default function AdminDashboardPage() {
     else setIsLoading(true);
 
     try {
-      const [studentsData, invoicesData, pendingData] = await Promise.all([
+      const [studentsData, invoicesData, pendingData, completionsData] = await Promise.all([
         fetchAdminStudents(),
         fetchInvoicesFromApi(),
         fetchPendingEnrollments().catch(() => []),
+        fetchPendingCompletions().catch(() => []),
       ]);
       setPendingEnrollments(Array.isArray(pendingData) ? pendingData : []);
+      setPendingCompletions(Array.isArray(completionsData) ? completionsData : []);
 
       // Enrich progress from live localStorage tracking if present
       const enrichedStudents = (studentsData || []).map((student) => {
@@ -96,11 +101,16 @@ export default function AdminDashboardPage() {
         if (sumRes.ok) {
           const sumJson = await sumRes.json();
           setSummary(sumJson);
+          setLoadFailed(false);
+        } else {
+          setLoadFailed(true);
         }
       } catch (e) {
+        setLoadFailed(true);
         console.warn("Analytics summary endpoint unavailable, deriving from records:", e);
       }
     } catch (err) {
+      setLoadFailed(true);
       console.warn("Failed to load admin dashboard live data:", (err as Error)?.message || err);
     } finally {
       setIsLoading(false);
@@ -266,46 +276,79 @@ export default function AdminDashboardPage() {
     },
   ];
 
-  // Dynamic revenue chart points based on selected range's settled volume
+  // Revenue chart: real settled invoices bucketed by day (month views) or by
+  // month (quarter / year). Values are in lakhs; the chart scales its own axis.
   const chartData: DataPoint[] = useMemo(() => {
-    const baseDaily = rangeRevenue > 0 ? +(rangeRevenue / 100000).toFixed(2) : 0.6;
-    const points: DataPoint[] = [];
-    for (let day = 1; day <= 30; day++) {
-      const multiplier = 0.6 + (day / 30) * 0.4 + (Math.sin(day) * 0.1);
-      points.push({
-        day,
-        revenue: Math.max(0.1, +(baseDaily * multiplier).toFixed(2)),
+    const now = new Date();
+    const invoiceDate = (inv: Invoice) => {
+      const raw = (inv as any).paidAt || inv.issueDate || (inv as any).createdAt || (inv as any).date;
+      return raw ? new Date(raw) : now;
+    };
+    const toLakhs = (rupees: number) => +(rupees / 100000).toFixed(4);
+    const monthShort = (m: number) =>
+      new Date(2000, m, 1).toLocaleDateString("en-IN", { month: "short" });
+
+    if (selectedRange === "This Month" || selectedRange === "Last Month") {
+      const ref =
+        selectedRange === "This Month"
+          ? new Date(now.getFullYear(), now.getMonth(), 1)
+          : new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const daysInMonth = new Date(ref.getFullYear(), ref.getMonth() + 1, 0).getDate();
+      const lastDay = selectedRange === "This Month" ? now.getDate() : daysInMonth;
+      const perDay = new Array(lastDay).fill(0);
+      filteredInvoices.forEach((inv) => {
+        const d = invoiceDate(inv);
+        if (d.getDate() <= lastDay) perDay[d.getDate() - 1] += inv.totalAmount || 0;
       });
+      return perDay.map((rupees, i) => ({
+        day: i + 1,
+        label: String(i + 1),
+        revenue: toLakhs(rupees),
+      }));
     }
-    return points;
-  }, [rangeRevenue]);
+
+    const firstMonth = selectedRange === "This Quarter" ? Math.floor(now.getMonth() / 3) * 3 : 0;
+    const monthCount = now.getMonth() - firstMonth + 1;
+    const perMonth = new Array(monthCount).fill(0);
+    filteredInvoices.forEach((inv) => {
+      const idx = invoiceDate(inv).getMonth() - firstMonth;
+      if (idx >= 0 && idx < monthCount) perMonth[idx] += inv.totalAmount || 0;
+    });
+    return perMonth.map((rupees, i) => ({
+      day: firstMonth + i + 1,
+      label: monthShort(firstMonth + i),
+      revenue: toLakhs(rupees),
+    }));
+  }, [filteredInvoices, selectedRange]);
 
   return (
     <>
       {/* Top Header */}
       <DashboardTopbar
-        title="Admin Dashboard"
-        subtitle="Real-time operational overview connected directly to PostgreSQL database."
+        title="Overview"
+        subtitle=""
         userInitials="LX"
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
-        {/* Real-time sync bar */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Database Status: Connected (PostgreSQL / Supabase)</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => loadData(true)}
-            disabled={isRefreshing}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors disabled:opacity-50"
+        {/* Shown only when the API can't be reached */}
+        {loadFailed && (
+          <div
+            role="alert"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 px-4 py-3 text-xs font-semibold text-rose-700 dark:text-rose-300"
           >
-            <RefreshCw className={`h-3.5 w-3.5 text-slate-500 dark:text-slate-400 ${isRefreshing ? "animate-spin text-blue-600 dark:text-blue-400" : ""}`} />
-            <span>{isRefreshing ? "Syncing DB..." : "Refresh Data"}</span>
-          </button>
-        </div>
+            <span>Can't reach the server. The figures below may be out of date.</span>
+            <button
+              type="button"
+              onClick={() => loadData(true)}
+              disabled={isRefreshing}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-rose-300 dark:border-rose-800 bg-white dark:bg-surface-secondary px-3 py-1.5 text-xs font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-950/50 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+              <span>Retry</span>
+            </button>
+          </div>
+        )}
 
         {/* Pending Approvals Alert Banner */}
         {pendingEnrollments.length > 0 && (
@@ -337,6 +380,47 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
         )}
+
+        {/* Pending Course Completions Alert Banner */}
+        {pendingCompletions.length > 0 && (() => {
+          const oldest = pendingCompletions
+            .map((p) => new Date(p.requestedAt).getTime())
+            .filter((t) => Number.isFinite(t))
+            .sort((a, b) => a - b)[0];
+          const waitingSince = oldest
+            ? new Date(oldest).toLocaleDateString("en-IN", { day: "numeric", month: "short" })
+            : null;
+          return (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 rounded-[20px] border border-emerald-300/80 dark:border-emerald-700/80 bg-gradient-to-r from-emerald-50/90 via-teal-50/80 to-emerald-50/90 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-emerald-950/40 p-4 sm:p-5 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl transition-all">
+              <div className="flex items-center gap-3.5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-xs">
+                  <GraduationCap className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="font-extrabold text-emerald-900 dark:text-emerald-200 text-sm sm:text-base flex items-center gap-2">
+                    <span>Course Completions Awaiting Approval</span>
+                    <span className="rounded-full bg-emerald-600 text-white text-[11px] px-2 py-0.5 font-black">
+                      {pendingCompletions.length} Pending
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-800/80 dark:text-emerald-300/80 mt-0.5">
+                    {pendingCompletions.length === 1
+                      ? "1 student has completed a course"
+                      : `${pendingCompletions.length} students have completed a course`}
+                    {waitingSince ? `, the oldest waiting since ${waitingSince}` : ""}. Approve to issue their certificates.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/admin/certificates?tab=pending"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-4 py-2.5 text-xs font-bold shadow-xs transition-all whitespace-nowrap cursor-pointer shrink-0"
+              >
+                <span>Review Completions</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          );
+        })()}
 
         {/* 4 Real KPI Cards */}
         <Reveal variant="stagger" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
@@ -391,7 +475,7 @@ export default function AdminDashboardPage() {
                   <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
                     Revenue Overview
                   </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Live settled revenue from database invoices</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Paid invoices</p>
                 </div>
                 <div className="relative" ref={dropdownRef}>
                   <button
@@ -455,20 +539,19 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
-                    Real Student Enrollments
+                    Recent enrollments
                   </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Live enrolled student records and milestones</p>
                 </div>
                 <Link
                   href="/admin/students"
                   className="group flex items-center gap-1 text-xs font-semibold text-[#2563EB] dark:text-blue-400 hover:underline"
                 >
-                  <span>View all students</span>
+                  <span>View all learners</span>
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </div>
 
-              {/* Table of Real Enrollments */}
+              {/* Recent enrollments table */}
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-left text-xs min-w-[450px]">
                   <thead>
@@ -481,11 +564,21 @@ export default function AdminDashboardPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
                     {recentEnrollments.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="py-8 text-center text-slate-400 dark:text-slate-400 text-xs">
-                          {isLoading ? "Loading real database records..." : "No active student enrollments found in database."}
-                        </td>
-                      </tr>
+                      isLoading ? (
+                        Array.from({ length: 4 }).map((_, i) => (
+                          <tr key={`skeleton-${i}`} aria-hidden="true">
+                            <td colSpan={4} className="py-3">
+                              <div className="h-8 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800/70" />
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className="py-8 text-center text-slate-400 dark:text-slate-400 text-xs">
+                            No enrollments yet.
+                          </td>
+                        </tr>
+                      )
                     ) : (
                       recentEnrollments.slice(0, 5).map((row) => {
                         const ratingScore =
@@ -536,14 +629,14 @@ export default function AdminDashboardPage() {
                   <Sparkles className="h-3.5 w-3.5" />
                 </div>
                 <span className="font-medium">
-                  {totalStudents} real students registered in database • {totalEnrollmentsCount} active course enrollments
+                  {totalStudents} {totalStudents === 1 ? "learner" : "learners"} · {totalEnrollmentsCount} {totalEnrollmentsCount === 1 ? "enrollment" : "enrollments"}
                 </span>
               </div>
               <Link
                 href="/admin/students"
                 className="font-bold text-[#2563EB] dark:text-blue-400 hover:underline self-end sm:self-auto"
               >
-                Manage Roster →
+                Manage learners →
               </Link>
             </div>
           </div>

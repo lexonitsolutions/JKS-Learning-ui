@@ -4,42 +4,31 @@ import React, { useState, useId } from "react";
 import { motion } from "framer-motion";
 
 export interface DataPoint {
+  /** Position in the series (day of month, or month number). */
   day: number;
+  /** Revenue in lakhs of rupees. */
   revenue: number;
+  /** X-axis / tooltip label, e.g. "5" or "Oct". Defaults to `day`. */
+  label?: string;
 }
 
-export const REVENUE_30_DAYS: DataPoint[] = [
-  { day: 1, revenue: 5.0 },
-  { day: 2, revenue: 5.4 },
-  { day: 3, revenue: 6.8 },
-  { day: 4, revenue: 8.0 },
-  { day: 5, revenue: 8.5 },
-  { day: 6, revenue: 7.3 },
-  { day: 7, revenue: 6.5 },
-  { day: 8, revenue: 7.2 },
-  { day: 9, revenue: 7.0 },
-  { day: 10, revenue: 7.8 },
-  { day: 11, revenue: 7.5 },
-  { day: 12, revenue: 9.8 },
-  { day: 13, revenue: 9.0 },
-  { day: 14, revenue: 7.0 },
-  { day: 15, revenue: 6.5 },
-  { day: 16, revenue: 6.8 },
-  { day: 17, revenue: 7.2 },
-  { day: 18, revenue: 10.2 },
-  { day: 19, revenue: 10.0 },
-  { day: 20, revenue: 10.5 },
-  { day: 21, revenue: 10.3 },
-  { day: 22, revenue: 11.5 },
-  { day: 23, revenue: 12.0 },
-  { day: 24, revenue: 14.0 },
-  { day: 25, revenue: 15.0 },
-  { day: 26, revenue: 14.2 },
-  { day: 27, revenue: 13.0 },
-  { day: 28, revenue: 12.0 },
-  { day: 29, revenue: 13.0 },
-  { day: 30, revenue: 14.2 },
-];
+/** Smallest "round" axis maximum (1, 2, 2.5, 5, 10 x 10^n) that fits the data. */
+function niceAxisMax(maxValue: number): number {
+  if (!Number.isFinite(maxValue) || maxValue <= 0) return 1;
+  const exponent = Math.floor(Math.log10(maxValue));
+  const base = Math.pow(10, exponent);
+  for (const step of [1, 2, 2.5, 5, 10]) {
+    if (maxValue <= step * base) return step * base;
+  }
+  return 10 * base;
+}
+
+/** Revenue values are in lakhs; show small amounts in thousands instead of 0.0L. */
+function formatLakhs(value: number): string {
+  if (value === 0) return "₹0";
+  if (value >= 1) return `₹${+value.toFixed(2)}L`;
+  return `₹${Math.round(value * 100)}K`;
+}
 
 // Helper to create smooth cubic bezier curve
 function getSplinePath(points: { x: number; y: number }[]): string {
@@ -67,7 +56,7 @@ function getSplinePath(points: { x: number; y: number }[]): string {
 }
 
 export function RevenueChart({
-  data = REVENUE_30_DAYS,
+  data = [],
 }: {
   data?: DataPoint[];
 }) {
@@ -84,10 +73,12 @@ export function RevenueChart({
 
   const chartW = width - paddingLeft - paddingRight;
   const chartH = height - paddingTop - paddingBottom;
-  const maxVal = 15.0; // ₹15L max axis
+  // Scale the axis to the data so the line is never clipped at the top.
+  const maxVal = niceAxisMax(Math.max(0, ...data.map((d) => d.revenue)));
+  const lastIndex = Math.max(1, data.length - 1);
 
   const points = data.map((d, index) => {
-    const x = paddingLeft + (index / (data.length - 1)) * chartW;
+    const x = paddingLeft + (index / lastIndex) * chartW;
     const y = paddingTop + chartH - (d.revenue / maxVal) * chartH;
     return { x, y, data: d, index };
   });
@@ -95,19 +86,26 @@ export function RevenueChart({
   const linePath = getSplinePath(points);
   const areaPath = `${linePath} L ${paddingLeft + chartW},${paddingTop + chartH} L ${paddingLeft},${paddingTop + chartH} Z`;
 
-  // Y-axis ticks: 0, 5, 10, 15
-  const yTicks = [
-    { label: "₹15L", value: 15.0 },
-    { label: "₹10L", value: 10.0 },
-    { label: "₹5L", value: 5.0 },
-    { label: "₹0", value: 0.0 },
-  ];
+  // Y-axis: four evenly spaced ticks from the scaled maximum down to zero.
+  const yTicks = [1, 2 / 3, 1 / 3, 0].map((f) => ({
+    value: maxVal * f,
+    label: formatLakhs(+(maxVal * f).toFixed(4)),
+  }));
 
-  // X-axis ticks: 1, 5, 10, 15, 20, 25, 30
-  const xTicks = [1, 5, 10, 15, 20, 25, 30];
+  // X-axis: at most ~7 evenly spaced labels, always including first and last.
+  const tickEvery = Math.max(1, Math.ceil(data.length / 7));
+  const xTickIndexes = new Set<number>();
+  data.forEach((_, i) => {
+    if (i % tickEvery === 0 || i === data.length - 1) xTickIndexes.add(i);
+  });
+  // Drop the penultimate label if it would collide with the last one.
+  if (data.length > 1 && (data.length - 1) % tickEvery !== 0) {
+    const prev = Math.floor((data.length - 1) / tickEvery) * tickEvery;
+    if (data.length - 1 - prev < tickEvery / 2) xTickIndexes.delete(prev);
+  }
 
-  // Selected points with dots (matching reference image key points)
-  const keyDays = new Set([1, 5, 8, 10, 12, 14, 18, 20, 22, 24, 25, 27, 30]);
+  // Dots only where there is revenue (or on hover) so empty ranges stay clean.
+  const showDot = (d: DataPoint) => d.revenue > 0 && data.length <= 31;
 
   return (
     <div className="relative w-full select-none">
@@ -129,7 +127,7 @@ export function RevenueChart({
         {yTicks.map((tick) => {
           const y = paddingTop + chartH - (tick.value / maxVal) * chartH;
           return (
-            <g key={tick.label}>
+            <g key={tick.value}>
               <text
                 x={paddingLeft - 10}
                 y={y + 4}
@@ -154,19 +152,18 @@ export function RevenueChart({
         })}
 
         {/* X-axis labels */}
-        {xTicks.map((day) => {
-          const index = data.findIndex((d) => d.day === day);
-          if (index === -1) return null;
-          const x = paddingLeft + (index / (data.length - 1)) * chartW;
+        {Array.from(xTickIndexes).map((index) => {
+          const point = data[index];
+          const x = paddingLeft + (index / lastIndex) * chartW;
           return (
             <text
-              key={day}
+              key={`${point.day}-${index}`}
               x={x}
               y={height - 6}
               textAnchor="middle"
               className="fill-slate-400 dark:fill-slate-500 text-[11px] font-medium"
             >
-              {day}
+              {point.label ?? point.day}
             </text>
           );
         })}
@@ -195,13 +192,13 @@ export function RevenueChart({
 
         {/* Key circular points (matching reference) */}
         {points.map((p) => {
-          const isKey = keyDays.has(p.data.day);
+          const isKey = showDot(p.data);
           const isHovered = hoveredIndex === p.index;
 
           if (!isKey && !isHovered) return null;
 
           return (
-            <g key={p.data.day} className="cursor-pointer">
+            <g key={`${p.data.day}-${p.index}`} className="cursor-pointer">
               {/* Outer pulsing ring on hover */}
               {isHovered && (
                 <circle
@@ -231,7 +228,7 @@ export function RevenueChart({
           const bandWidth = chartW / data.length;
           return (
             <rect
-              key={`band-${p.data.day}`}
+              key={`band-${p.index}`}
               x={p.x - bandWidth / 2}
               y={paddingTop}
               width={bandWidth}
@@ -269,8 +266,10 @@ export function RevenueChart({
             top: `${(points[hoveredIndex].y / height) * 100 - 8}%`,
           }}
         >
-          <div className="text-[10px] font-normal text-slate-300 dark:text-slate-400">Day {points[hoveredIndex].data.day}</div>
-          <div>₹{points[hoveredIndex].data.revenue.toFixed(1)}L</div>
+          <div className="text-[10px] font-normal text-slate-300 dark:text-slate-400">
+            {points[hoveredIndex].data.label ? points[hoveredIndex].data.label : `Day ${points[hoveredIndex].data.day}`}
+          </div>
+          <div>{formatLakhs(points[hoveredIndex].data.revenue)}</div>
         </div>
       )}
     </div>

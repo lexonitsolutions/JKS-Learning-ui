@@ -138,7 +138,7 @@ export default function AdminLeadsPage() {
     <>
       <DashboardTopbar
         title="Leads & Admissions CRM"
-        subtitle="Real-time prospective student inquiries captured from AI Chatbot and Website forms."
+        subtitle="Enquiries from the chatbot and website forms."
         userInitials="AD"
       />
 

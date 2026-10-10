@@ -34,6 +34,12 @@ export interface EventItem {
   sections?: EventSectionItem[] | null;
   registeredCount?: number;
   isSoldOut?: boolean;
+  /** Public API only: the event's end time has passed. */
+  hasEnded?: boolean;
+  /** Public API only: published, not ended, not sold out. */
+  registrationOpen?: boolean;
+  /** Public API only: the join link is withheld until registration. */
+  joinLinkHidden?: boolean;
   availableSpots?: number | null;
   createdAt: string;
   updatedAt: string;
@@ -243,6 +249,41 @@ export async function fetchAdminEventRegistrations(
   }
 }
 
-export function getExportEventRegistrationsUrl(eventId: string): string {
-  return apiUrl(`/admin/events/${eventId}/registrations/export`);
+/**
+ * Download the attendee list. A plain <a href> cannot do this: the browser's
+ * navigation does not carry our Authorization/Clerk token, so the API answered
+ * 401. Fetch it through apiFetch (which attaches credentials) and save the blob.
+ */
+export async function downloadEventRegistrations(
+  eventId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await apiFetch(`/admin/events/${eventId}/registrations/export`, {
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      let message = "Failed to download the attendee list.";
+      try {
+        const body = await res.json();
+        if (body?.message) message = String(body.message);
+      } catch {}
+      return { success: false, error: message };
+    }
+    const blob = await res.blob();
+    const disposition = res.headers.get("Content-Disposition") || "";
+    const match = /filename="?([^";]+)"?/i.exec(disposition);
+    const filename = match?.[1] || `event-registrations-${eventId}.docx`;
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Network error." };
+  }
 }

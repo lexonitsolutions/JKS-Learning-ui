@@ -395,7 +395,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-surface-secondary p-6 shadow-xs space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
             <User className="h-4 w-4 text-[#1E5EFF]" />
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Speaker & Mentor Details</h2>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Speaker details</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">

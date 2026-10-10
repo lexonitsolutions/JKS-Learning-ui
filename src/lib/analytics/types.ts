@@ -1,7 +1,8 @@
 export interface MetricDelta {
   value: number;
   previousValue: number;
-  changePercent: number;
+  /** null when the earlier period had no data to compare against. */
+  changePercent: number | null;
 }
 
 export interface GA4Overview {

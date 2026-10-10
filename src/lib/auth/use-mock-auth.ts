@@ -60,7 +60,7 @@ export type LoginResult = { ok: true; session: MockSession } | { ok: false; erro
  * login and produced a STUDENT), and the browser-local list was itself the
  * authorization check for the lecturer workspace — editable from devtools.
  *
- * They are real INSTRUCTOR users now, behind /admin/instructors.
+ * They are real INSTRUCTOR users now, behind /admin/tutors.
  */
 export interface StoredInstructor {
   id: string;
@@ -102,7 +102,7 @@ function toStoredInstructor(row: ApiInstructor): StoredInstructor {
 
 export async function fetchInstructors(): Promise<StoredInstructor[]> {
   try {
-    const res = await apiFetch("/admin/instructors", {
+    const res = await apiFetch("/admin/tutors", {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });
@@ -126,7 +126,7 @@ export async function createInstructor(input: {
   phone?: string;
 }): Promise<InstructorMutationResult> {
   try {
-    const res = await apiFetch("/admin/instructors", {
+    const res = await apiFetch("/admin/tutors", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -166,7 +166,7 @@ export async function updateInstructor(
   }
 ): Promise<InstructorMutationResult> {
   try {
-    const res = await apiFetch(`/admin/instructors/${encodeURIComponent(id)}`, {
+    const res = await apiFetch(`/admin/tutors/${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -194,7 +194,7 @@ export async function deleteInstructor(
   id: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
-    const res = await apiFetch(`/admin/instructors/${encodeURIComponent(id)}`, {
+    const res = await apiFetch(`/admin/tutors/${encodeURIComponent(id)}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
     });

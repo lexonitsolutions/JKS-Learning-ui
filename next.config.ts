@@ -3,6 +3,12 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    // One word for one thing: the admin section is "Tutors".
+    return [
+      { source: "/admin/instructors", destination: "/admin/tutors", permanent: true },
+    ];
+  },
   turbopack: {
     root: path.resolve(__dirname),
   },

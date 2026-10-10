@@ -54,7 +54,7 @@ export function EditInstructorModal({
     if (instructor) {
       setName(instructor.name || "");
       setEmail(instructor.email || "");
-      setRole(instructor.role || "Lead Technical Faculty");
+      setRole(instructor.role || "Lead Technical Tutor");
       setPhone(instructor.phone || "");
       setStatus(instructor.status || "Active");
       setNewPassword("");
@@ -87,7 +87,7 @@ export function EditInstructorModal({
       email: email.trim().toLowerCase(),
       phone: cleanedPhone || undefined,
       password: newPassword.trim() || undefined,
-      role: role.trim() || "Lead Technical Faculty",
+      role: role.trim() || "Lead Technical Tutor",
       status,
     });
 

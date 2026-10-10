@@ -235,7 +235,7 @@ export function AddInstructorModal({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                    {name || "Instructor Full Name"}
+                    {name || "Tutor full name"}
                   </div>
                   <div className="text-[11px] text-[#2563EB] dark:text-blue-400 font-medium truncate">
                     {role || "Designation & Track"}

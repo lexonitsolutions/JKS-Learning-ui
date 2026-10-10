@@ -29,6 +29,8 @@ interface ReviewTaskModalProps {
   onReviewed: (updatedTask: IndividualTask) => void;
 }
 
+const LEGACY_DEFAULT_FEEDBACK = "Demonstrated sound understanding of core concepts. Great job!";
+
 export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTaskModalProps) {
   const submission = task?.submission;
   const answers = submission?.answers || {};
@@ -66,17 +68,15 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
 
       setScore(initialScore);
 
+      // Feedback starts empty: the reviewer writes it. Only feedback they already
+      // saved is shown again; the old canned "Great job!" text is never pre-filled.
       const existingFeedback =
         task.submission?.instructorFeedback ?? task.submission?.feedback;
 
-      if (existingFeedback && existingFeedback !== "Demonstrated sound understanding of core concepts. Great job!") {
+      if (existingFeedback && existingFeedback !== LEGACY_DEFAULT_FEEDBACK) {
         setFeedback(existingFeedback);
-      } else if (initialScore < 50 || task.status === "Failed") {
-        setFeedback(
-          `Assessment did not meet passing criteria (${evaluationResult.correctCount}/${questions.length} correct). Please review the curriculum notes and retry.`
-        );
       } else {
-        setFeedback("Demonstrated sound understanding of core concepts. Great job!");
+        setFeedback("");
       }
     }
   }, [task, evaluationResult]);
@@ -84,6 +84,10 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
   if (!isOpen || !task) return null;
 
   const handleReviewSubmit = async (targetStatus: "Completed" | "Failed") => {
+    if (!feedback.trim()) {
+      setErrorMessage("Please write feedback for the student before submitting the review.");
+      return;
+    }
     setIsSubmitting(true);
     setReviewAction(targetStatus);
     setErrorMessage(null);
@@ -97,18 +101,12 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
       if (finalScore >= 50) {
         finalScore = evaluationResult.score < 50 ? evaluationResult.score : Math.min(finalScore, 40);
       }
-      if (!finalFeedback || finalFeedback === "Demonstrated sound understanding of core concepts. Great job!") {
-        finalFeedback = `Assessment did not meet passing criteria (${evaluationResult.correctCount}/${questions.length} correct). Please review instructor remarks and retry.`;
-      }
     } else {
       // Completed
       if (finalScore < 50 && evaluationResult.score >= 50) {
         finalScore = evaluationResult.score;
       } else if (finalScore < 50) {
         finalScore = 60; // minimum passing mark for approved completion
-      }
-      if (!finalFeedback) {
-        finalFeedback = "Demonstrated sound understanding of core concepts. Great job!";
       }
     }
 

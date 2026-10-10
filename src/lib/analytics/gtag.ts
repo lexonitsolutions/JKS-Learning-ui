@@ -7,11 +7,26 @@ declare global {
   }
 }
 
+/** Staff-only areas: their traffic is never sent to GA4 (it would top the "Top Pages" list). */
+const STAFF_PATH_PREFIXES = ["/admin", "/instructor"];
+
+export function isStaffPath(path: string | null | undefined): boolean {
+  if (!path) return false;
+  return STAFF_PATH_PREFIXES.some(
+    (prefix) => path === prefix || path.startsWith(`${prefix}/`) || path.startsWith(`${prefix}?`)
+  );
+}
+
+function isTrackingSuppressed(): boolean {
+  return typeof window !== "undefined" && isStaffPath(window.location.pathname);
+}
+
 /**
  * Log page views to GA4 safely
  */
 export function pageview(url: string, title?: string) {
   if (typeof window === "undefined" || !window.gtag || !GA_MEASUREMENT_ID) return;
+  if (isTrackingSuppressed()) return;
   window.gtag("event", "page_view", {
     page_path: url,
     page_title: title || (typeof document !== "undefined" ? document.title : undefined),
@@ -57,6 +72,7 @@ function sanitizeParams(params?: Record<string, any>): Record<string, any> {
  */
 export function event(action: string, params?: Record<string, any>) {
   if (typeof window === "undefined" || !window.gtag || !GA_MEASUREMENT_ID) return;
+  if (isTrackingSuppressed()) return;
   const safeParams = sanitizeParams(params);
   window.gtag("event", action, safeParams);
 }

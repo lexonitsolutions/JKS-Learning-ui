@@ -147,6 +147,10 @@ export default function AdminAssessmentsPage() {
   }, [tasks, statusFilter, selectedCourse, searchQuery]);
 
   const handleOpenAssignModal = (tpl?: ReusableAssessment, isReuse?: boolean) => {
+    if (tpl && (tpl.questions?.length || 0) === 0) {
+      showToast("This assessment has no questions yet. Add questions before assigning it.");
+      return;
+    }
     setReassignAssessment(tpl || null);
     setIsReuseMode(Boolean(isReuse || tpl));
     setIsCreateModalOpen(true);
@@ -415,7 +419,13 @@ export default function AdminAssessmentsPage() {
                       <button
                         type="button"
                         onClick={() => handleOpenAssignModal(tpl)}
-                        className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                        disabled={(tpl.questions?.length || 0) === 0}
+                        title={
+                          (tpl.questions?.length || 0) === 0
+                            ? "Add questions to this assessment before assigning it"
+                            : "Assign to students"
+                        }
+                        className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-700 dark:disabled:text-slate-400 disabled:hover:bg-slate-300"
                       >
                         <Repeat className="h-3 w-3" />
                         <span>Assign to Students</span>

@@ -58,18 +58,17 @@ const STUDENT_SEC_NAV: NavItem[] = [
 ];
 
 const ADMIN_MAIN_NAV: NavItem[] = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/instructors", label: "Tutors", icon: GraduationCap },
-  { href: "/admin/batches", label: "Batches", icon: FolderTree },
-  { href: "/admin/students", label: "Students", icon: Users },
+  { href: "/admin", label: "Overview", icon: LayoutDashboard },
+  { href: "/admin/tutors", label: "Tutors", icon: GraduationCap },
+  { href: "/admin/batches", label: "Cohorts", icon: FolderTree },
+  { href: "/admin/students", label: "Learners", icon: Users },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/syllabus", label: "Syllabus", icon: FileText },
   { href: "/admin/events", label: "Events", icon: Calendar, badge: "New" },
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
-  { href: "/admin/activity-logs", label: "Activity Logs", icon: Activity },
+  { href: "/admin/activity-logs", label: "Activity log", icon: Activity },
   { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone, badge: "Soon" },
-  { href: "/admin/ai-interviews", label: "AI Interviews", icon: BrainCircuit, badge: "Soon" },
 ];
 
 
@@ -214,7 +213,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
     ? (session?.initials ?? "TU")
     : (session?.initials ?? (clerkName ? clerkName.slice(0, 2).toUpperCase() : "ST"));
 
-  const userRole = isAdmin ? "Administrator" : isInstructor ? "Faculty / Tutor" : "Student";
+  const userRole = isAdmin ? "Administrator" : isInstructor ? "Tutor" : "Student";
 
 
   const renderNavGroup = (items: NavItem[]) => {
@@ -482,7 +481,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
               {/* Compact Role Badge on the right */}
               <span className="text-[9.5px] font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0">
-                {isAdmin ? "Admin" : isInstructor ? "Faculty" : "Student"}
+                {isAdmin ? "Admin" : isInstructor ? "Tutor" : "Student"}
               </span>
             </div>
           ) : (
@@ -562,7 +561,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                     {userName}
                   </div>
                   <div className="truncate text-[11px] text-text-muted">
-                    {isInstructor ? "Faculty ID: JKS.L0047" : userEmail}
+                    {userEmail}
                   </div>
                 </div>
               </div>

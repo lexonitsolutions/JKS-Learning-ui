@@ -21,7 +21,7 @@ import {
 import {
   fetchAdminEventById,
   fetchAdminEventRegistrations,
-  getExportEventRegistrationsUrl,
+  downloadEventRegistrations,
   type EventItem,
   type EventRegistrationItem,
 } from "@/lib/data/events-api";
@@ -34,6 +34,16 @@ export default function EventRegistrationsPage({ params }: { params: Promise<{ i
   const [registrations, setRegistrations] = useState<EventRegistrationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    setExportError(null);
+    const res = await downloadEventRegistrations(eventId);
+    setIsExporting(false);
+    if (!res.success) setExportError(res.error || "Failed to download the attendee list.");
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -127,14 +137,20 @@ export default function EventRegistrationsPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Action: Export to DOCX */}
-        <a
-          href={getExportEventRegistrationsUrl(event.id)}
-          download
-          className="inline-flex items-center gap-2 rounded-xl bg-[#1E5EFF] hover:bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02]"
-        >
-          <Download className="h-4 w-4" />
-          <span>Export to Word (.docx)</span>
-        </a>
+        <div className="flex flex-col items-end gap-1">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={isExporting}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#1E5EFF] hover:bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100"
+          >
+            <Download className="h-4 w-4" />
+            <span>{isExporting ? "Preparing..." : "Export to Word (.docx)"}</span>
+          </button>
+          {exportError && (
+            <span className="text-[11px] font-semibold text-rose-600">{exportError}</span>
+          )}
+        </div>
       </div>
 
       {/* Event Meta Summary Card */}
@@ -165,9 +181,9 @@ export default function EventRegistrationsPage({ params }: { params: Promise<{ i
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Speaker</span>
             <div className="mt-1 font-bold text-slate-800 dark:text-slate-200">
-              {event.speakerName || "JKS Faculty"}
+              {event.speakerName || "JKS Tutor"}
             </div>
-            <div className="text-[11px] text-slate-500">{event.speakerRole || "Guest Mentor"}</div>
+            <div className="text-[11px] text-slate-500">{event.speakerRole || "Guest speaker"}</div>
           </div>
 
           <div>

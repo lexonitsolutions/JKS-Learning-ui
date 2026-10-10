@@ -229,7 +229,7 @@ function AdminCertificatesContent() {
     <>
       <DashboardTopbar
         title="Certificates"
-        subtitle={`${certificates.length} cryptographically verified certificates issued to real graduates in database.`}
+        subtitle={`${certificates.length} issued`}
         userInitials="AD"
       />
 
@@ -735,10 +735,10 @@ function AdminCertificatesContent() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    Issue Authentic Certificate
+                    Issue certificate
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Generates a cryptographically verified credential in MongoDB
+                    Choose a learner and a course they have completed.
                   </p>
                 </div>
               </div>
