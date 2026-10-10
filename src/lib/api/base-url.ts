@@ -89,6 +89,37 @@ export class ApiError extends Error {
  * so a request without `credentials: "include"` is anonymous. Most call sites
  * here were missing it.
  */
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * The Clerk session token for the signed-in user, or null.
+ *
+ * Right after a page load Clerk's script is still starting, so `Clerk.session`
+ * is briefly undefined even though the user IS signed in. Requests made in that
+ * window used to go out with no credentials at all and come back 401 (the
+ * notification list and live stream were the first calls on every page). When
+ * Clerk's own cookies say a session exists, wait for it instead of giving up.
+ */
+async function getClerkToken(): Promise<string | null> {
+  const w = window as any;
+  const looksSignedIn =
+    /(?:^|; )__client_uat=(?!0(?:;|$))[^;]+/.test(document.cookie) ||
+    /(?:^|; )__session=/.test(document.cookie);
+
+  const deadline = Date.now() + 4000;
+  while (!w.Clerk?.session && looksSignedIn && Date.now() < deadline) {
+    if (w.Clerk?.loaded && !w.Clerk.session) break; // loaded, genuinely signed out
+    await sleep(50);
+  }
+
+  if (!w.Clerk?.session) return null;
+  try {
+    return (await w.Clerk.session.getToken()) || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers || {});
 
@@ -99,12 +130,7 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
       // Our own session is the httpOnly accessToken cookie (sent via
       // credentials: "include" below). Only a live Clerk session token is
       // attached as a Bearer header.
-      let token: string | null = null;
-      if ((window as any).Clerk?.session) {
-        try {
-          token = await (window as any).Clerk.session.getToken();
-        } catch {}
-      }
+      const token = await getClerkToken();
       if (token && !headers.has("Authorization")) {
         headers.set("Authorization", `Bearer ${token}`);
       }

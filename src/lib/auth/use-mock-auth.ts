@@ -490,6 +490,17 @@ export async function performLogout(clerkSignOut?: () => Promise<unknown>) {
     console.warn("[Logout] Clerk signOut caught error:", err);
   }
 
+  // Make sure the API has dropped its own session cookie before leaving. The
+  // fire-and-forget call in logoutMockSession() can be cancelled by the redirect,
+  // which would leave this account's cookie behind for the next person to sign
+  // in on this browser.
+  try {
+    await Promise.race([
+      apiFetch("/auth/logout", { method: "POST" }).catch(() => {}),
+      new Promise((resolve) => setTimeout(resolve, 1500)),
+    ]);
+  } catch {}
+
   if (typeof window !== "undefined") {
     window.location.replace("/login");
   }
