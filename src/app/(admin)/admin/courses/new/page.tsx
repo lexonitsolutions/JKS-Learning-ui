@@ -1975,18 +1975,18 @@ function AdminNewCourseContent() {
                   )}
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
+                    <div className="min-w-0">
                       <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Step 2: Sections, Subsections & Video Lessons</h2>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Upload video files or paste private URLs for every section & subsection.
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0 sm:justify-end">
                       <button
                         type="button"
                         onClick={toggleAllSectionsCollapse}
-                        className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer w-full sm:w-auto"
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer shrink-0"
                         title={sections.every((s) => !!collapsedSections[s.id]) ? "Expand all sections" : "Collapse all sections"}
                       >
                         <ChevronsUpDown className="h-4 w-4 text-slate-500 dark:text-slate-400" />
@@ -1995,16 +1995,19 @@ function AdminNewCourseContent() {
                       <button
                         type="button"
                         onClick={() => setIsImportModalOpen(true)}
-                        className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/70 dark:bg-indigo-950/40 px-3.5 py-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer w-full sm:w-auto"
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/70 dark:bg-indigo-950/40 px-3 py-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer shrink-0"
+                        title="Import from Existing Course"
                       >
-                        <ArrowDownToLine className="h-4 w-4 text-indigo-600 dark:text-indigo-400" /> Import from Existing Course
+                        <ArrowDownToLine className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        <span>Import Course</span>
                       </button>
                       <button
                         type="button"
                         onClick={addSection}
-                        className="flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer w-full sm:w-auto"
+                        className="flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer shrink-0"
                       >
-                        <Plus className="h-4 w-4" /> Add Section
+                        <Plus className="h-4 w-4" />
+                        <span>Add Section</span>
                       </button>
                     </div>
                   </div>
