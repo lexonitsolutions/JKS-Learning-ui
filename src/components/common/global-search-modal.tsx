@@ -44,6 +44,7 @@ import {
   type AdminStudentRecord,
   type LeaderboardItem,
 } from "@/lib/data/students-api";
+import { TESTIMONIALS } from "@/lib/data/testimonials";
 
 export type SearchContextMode = "auto" | "public" | "student" | "admin" | "instructor";
 
@@ -108,9 +109,13 @@ export function GlobalSearchModal({
     setSelectedIndex(0);
   }, [isControlled, controlledOnClose]);
 
-  // Pre-hydrate from localStorage cache and pre-fetch on mount
+  // Pre-hydrate from localStorage cache and pre-fetch on mount for admin/instructor
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    const isAdminOrInstructor = pathname.startsWith("/admin") || pathname.startsWith("/instructor");
+    if (!isAdminOrInstructor) return;
+
     try {
       const cachedStudents = localStorage.getItem("jks_students_roster_cache_v2");
       if (cachedStudents) {
@@ -131,7 +136,6 @@ export function GlobalSearchModal({
       }
     } catch {}
 
-    // Background pre-fetch so students are immediately searchable before modal even opens
     void fetchAdminStudents()
       .then((res) => {
         if (res && Array.isArray(res) && res.length > 0) setStudents(res);
@@ -145,20 +149,18 @@ export function GlobalSearchModal({
         }
       })
       .catch(() => {});
-  }, []);
+  }, [pathname]);
 
   const session = useMockSession();
 
-  // Determine current effective mode
+  // Determine current effective mode based strictly on active route
   const effectiveMode: "public" | "student" | "admin" | "instructor" = useMemo(() => {
     if (mode !== "auto") return mode;
     if (pathname.startsWith("/admin")) return "admin";
     if (pathname.startsWith("/instructor")) return "instructor";
     if (pathname.startsWith("/dashboard")) return "student";
-    if (session?.role === "admin") return "admin";
-    if (session?.role === "instructor") return "instructor";
     return "public";
-  }, [mode, pathname, session?.role]);
+  }, [mode, pathname]);
 
   // Load courses, tutors, and fresh students whenever search opens
   useEffect(() => {
@@ -177,24 +179,25 @@ export function GlobalSearchModal({
       })
       .catch(() => {});
 
-    // Fetch live enrolled students from backend
-    void fetchAdminStudents()
-      .then((res) => {
-        if (res && Array.isArray(res) && res.length > 0) {
-          setStudents(res);
-        }
-      })
-      .catch(() => {});
+    // Only query student roster when in admin or instructor workspaces
+    if (effectiveMode === "admin" || effectiveMode === "instructor") {
+      void fetchAdminStudents()
+        .then((res) => {
+          if (res && Array.isArray(res) && res.length > 0) {
+            setStudents(res);
+          }
+        })
+        .catch(() => {});
 
-    // Fetch leaderboard learners from backend
-    void fetchLeaderboardData()
-      .then((res) => {
-        if (res && Array.isArray(res.leaderboard) && res.leaderboard.length > 0) {
-          setLeaderboardUsers(res.leaderboard);
-        }
-      })
-      .catch(() => {});
-  }, [isOpen]);
+      void fetchLeaderboardData()
+        .then((res) => {
+          if (res && Array.isArray(res.leaderboard) && res.leaderboard.length > 0) {
+            setLeaderboardUsers(res.leaderboard);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen, effectiveMode]);
 
   // Listen to Global keyboard shortcuts (Ctrl+K, Cmd+K, '/')
   useEffect(() => {
@@ -876,80 +879,42 @@ export function GlobalSearchModal({
 
     // --- 3. PUBLIC MARKETING ITEMS ---
     if (effectiveMode === "public") {
-      // Courses Catalog
+      // 1. Courses Catalog & Engineering Tracks
       courses.forEach((c) => {
         items.push({
-          id: `pub-course-${c.slug}`,
+          id: `pub-course-${c.slug || c.id}`,
           title: c.title,
           subtitle: `${c.track} Track • ${c.durationWeeks || 12} Weeks • ₹${c.price.toLocaleString()} • Lead Tutor: ${c.instructorName || "Davood Khan"}`,
           category: "Courses",
-          href: `/courses`,
+          href: c.slug ? `/courses/${c.slug}` : `/courses`,
           icon: BookOpen,
-          badge: "Curriculum",
+          badge: "Course",
           badgeColor: "bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-300",
-          tags: ["course", "catalog", c.track.toLowerCase(), c.slug, c.summary?.toLowerCase() || ""],
+          tags: [
+            "course",
+            "courses",
+            "curriculum",
+            "syllabus",
+            "catalog",
+            c.track.toLowerCase(),
+            c.slug.toLowerCase(),
+            ...(c.subTrack ? [c.subTrack.toLowerCase()] : []),
+            ...(c.summary ? [c.summary.toLowerCase()] : []),
+          ],
         });
       });
 
-      // Tutors
-      items.push(
-        {
-          id: "pub-tutor-davood",
-          title: "Davood Khan",
-          subtitle: "Lead Full Stack & Enterprise Cloud Tutor • 12+ years experience",
-          category: "Tutors",
-          href: "/about",
-          icon: GraduationCap,
-          badge: "Lead Tutor",
-          tags: ["tutor", "mentor", "faculty", "trainer", "davood", "full stack"],
-        },
-        {
-          id: "pub-tutor-rohit",
-          title: "Dr. Rohit Kapoor",
-          subtitle: "Principal Enterprise Systems & SAP Tutor • Enterprise Architect",
-          category: "Tutors",
-          href: "/about",
-          icon: GraduationCap,
-          badge: "Senior Tutor",
-          tags: ["tutor", "mentor", "faculty", "trainer", "rohit", "sap"],
-        }
-      );
-
-      // Events & Masterclasses
-      items.push(
-        {
-          id: "pub-event-webinar",
-          title: "Live Tech Masterclasses & Webinars",
-          subtitle: "Upcoming interactive workshops with senior industry leaders",
-          category: "Events",
-          href: "/events",
-          icon: Calendar,
-          badge: "Upcoming",
-          tags: ["event", "webinar", "workshop", "masterclass"],
-        },
-        {
-          id: "pub-event-bootcamp",
-          title: "Enterprise Architecture Weekend Bootcamp",
-          subtitle: "Deep dive into microservices, event streams, and real-time Kafka",
-          category: "Events",
-          href: "/events",
-          icon: Calendar,
-          badge: "Free Registration",
-          tags: ["bootcamp", "kafka", "microservices"],
-        }
-      );
-
-      // Learning Tracks
+      // Key Curated Tracks
       items.push(
         {
           id: "pub-track-java",
           title: "Java Full Stack Developer Track",
-          subtitle: "Java 21, Spring Boot, Microservices, Docker, React, AWS",
+          subtitle: "Java 21, Spring Boot, Microservices, Docker, React, AWS Cloud",
           category: "Courses",
           href: "/courses",
           icon: Laptop,
           badge: "Most Popular",
-          tags: ["java", "spring boot", "backend", "full stack"],
+          tags: ["course", "courses", "java", "spring boot", "backend", "full stack", "docker", "aws"],
         },
         {
           id: "pub-track-react",
@@ -959,7 +924,7 @@ export function GlobalSearchModal({
           href: "/courses",
           icon: Laptop,
           badge: "High Demand",
-          tags: ["frontend", "react", "nextjs", "javascript"],
+          tags: ["course", "courses", "frontend", "react", "nextjs", "javascript", "typescript", "tailwind"],
         },
         {
           id: "pub-track-sap",
@@ -969,7 +934,7 @@ export function GlobalSearchModal({
           href: "/courses",
           icon: Laptop,
           badge: "Enterprise",
-          tags: ["sap", "abap", "s4hana", "erp"],
+          tags: ["course", "courses", "sap", "abap", "s4hana", "erp", "fiori", "ricefw"],
         },
         {
           id: "pub-track-dotnet",
@@ -979,45 +944,233 @@ export function GlobalSearchModal({
           href: "/courses",
           icon: Laptop,
           badge: "Cloud",
-          tags: ["dotnet", "c#", "azure", "microservices"],
+          tags: ["course", "courses", "dotnet", "c#", "azure", "microservices", "aspnet"],
+        },
+        {
+          id: "pub-track-python",
+          title: "Python Machine Learning & AI Engineering Track",
+          subtitle: "NumPy, Pandas, PyTorch, Scikit-learn, Neural Networks & NLP",
+          category: "Courses",
+          href: "/courses",
+          icon: Laptop,
+          badge: "AI Track",
+          tags: ["course", "courses", "python", "machine learning", "ai", "deep learning", "pytorch"],
+        },
+        {
+          id: "pub-catalog-hub",
+          title: "Browse All Engineering Courses",
+          subtitle: "Explore all industry-grade engineering tracks, JKS master series & verified certifications",
+          category: "Courses",
+          href: "/courses",
+          icon: BookOpen,
+          badge: "Catalog",
+          tags: ["course", "courses", "all courses", "browse", "catalog"],
         }
       );
 
-      // Site Pages
-      items.push(
-        {
-          id: "pub-page-ai-interview",
-          title: "AI Mock Interview Practice",
-          subtitle: "Simulate real engineering interviews with real-time feedback",
-          category: "Pages",
-          href: "/ai-mock-interview",
-          icon: BrainCircuit,
-          badge: "Featured",
-        },
-        {
-          id: "pub-page-success",
-          title: "Student Success Stories & Placements",
-          subtitle: "Read verified placement records, salary hikes, and alumni reviews",
-          category: "Pages",
+      // 2. Success Stories & Verified Alumni Placements
+      items.push({
+        id: "pub-stories-overview",
+        title: "Student Success Stories & Placements",
+        subtitle: "Read verified placement records, salary hikes, and alumni reviews at top tech firms",
+        category: "Stories",
+        href: "/success-stories",
+        icon: Trophy,
+        badge: "Verified Placements",
+        badgeColor: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
+        tags: ["success", "stories", "story", "placements", "reviews", "alumni", "hiring", "jobs"],
+      });
+
+      TESTIMONIALS.forEach((t) => {
+        items.push({
+          id: `pub-story-${t.id}`,
+          title: `${t.name} — ${t.role}`,
+          subtitle: `${t.company} • ${t.salaryHike || ""} • Capstone: ${t.capstone}`,
+          category: "Stories",
           href: "/success-stories",
           icon: Award,
+          badge: t.placedCompany || "Placed",
+          badgeColor: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
+          tags: [
+            "success",
+            "story",
+            "stories",
+            "placement",
+            "alumni",
+            "testimonial",
+            t.name.toLowerCase(),
+            t.placedCompany.toLowerCase(),
+            t.track.toLowerCase(),
+            ...(t.role ? t.role.toLowerCase().split(/\s+/) : []),
+          ],
+        });
+      });
+
+      items.push({
+        id: "pub-hiring-partners",
+        title: "Top Hiring Partners Network",
+        subtitle: "Deloitte, Razorpay, Infosys, PwC, Swiggy, Capgemini, Oracle, TCS, IBM & more",
+        category: "Stories",
+        href: "/success-stories",
+        icon: Users,
+        badge: "Hiring Partners",
+        tags: ["deloitte", "razorpay", "infosys", "pwc", "swiggy", "capgemini", "oracle", "tcs", "ibm", "partners", "companies"],
+      });
+
+      // 3. AI Mock Interview Practice & Diagnostic Reports
+      items.push(
+        {
+          id: "pub-ai-interview-main",
+          title: "AI Mock Interview Practice Simulator",
+          subtitle: "Simulate real engineering interviews with real-time adaptive questioning & scoring",
+          category: "AI Tools",
+          href: "/ai-mock-interview",
+          icon: BrainCircuit,
+          badge: "AI Powered",
+          badgeColor: "bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-300",
+          tags: ["ai", "mock", "interview", "simulator", "practice", "system design", "coding", "technical interview"],
         },
         {
-          id: "pub-page-about",
+          id: "pub-ai-adaptive",
+          title: "Adaptive Technical & System Design Questioning",
+          subtitle: "Non-linear conversational AI calibrated to React, Java Spring, SAP S/4HANA & Microservices",
+          category: "AI Tools",
+          href: "/ai-mock-interview",
+          icon: Sparkles,
+          badge: "Adaptive",
+          tags: ["ai", "adaptive", "questions", "interview", "react", "java", "sap", "dotnet", "system design"],
+        },
+        {
+          id: "pub-ai-diagnostic",
+          title: "Instant 5-Axis Diagnostic Reports",
+          subtitle: "Scored across Technical Depth, Problem Solving, Communication, Answer Quality & Confidence",
+          category: "AI Tools",
+          href: "/ai-mock-interview",
+          icon: ClipboardCheck,
+          badge: "Report",
+          tags: ["ai", "diagnostic", "score", "feedback", "report", "evaluation", "metrics"],
+        },
+        {
+          id: "pub-ai-roadmap",
+          title: "Targeted Interview Action Roadmap",
+          subtitle: "Identified weak spots automatically convert into an actionable study checklist with direct lesson links",
+          category: "AI Tools",
+          href: "/ai-mock-interview",
+          icon: TrendingUp,
+          badge: "Roadmap",
+          tags: ["ai", "roadmap", "action plan", "study checklist", "interview prep"],
+        }
+      );
+
+      // 4. Live Events, Webinars & Bootcamps
+      items.push(
+        {
+          id: "pub-event-webinars",
+          title: "Live Tech Masterclasses & Interactive Webinars",
+          subtitle: "Weekly live coding workshops, system architecture sessions & faculty Q&A",
+          category: "Events",
+          href: "/events",
+          icon: Calendar,
+          badge: "Upcoming",
+          badgeColor: "bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300",
+          tags: ["event", "events", "webinar", "masterclass", "workshop", "live", "session"],
+        },
+        {
+          id: "pub-event-bootcamp",
+          title: "Enterprise Architecture Weekend Bootcamp",
+          subtitle: "Deep dive into distributed systems, event streams, and real-time Kafka",
+          category: "Events",
+          href: "/events",
+          icon: Calendar,
+          badge: "Free Registration",
+          tags: ["event", "events", "bootcamp", "kafka", "microservices", "architecture"],
+        },
+        {
+          id: "pub-event-cloud",
+          title: "Cloud Native Microservices & Docker Hands-On",
+          subtitle: "Container orchestration, API gateways, and production CI/CD workflows",
+          category: "Events",
+          href: "/events",
+          icon: Calendar,
+          badge: "Interactive",
+          tags: ["event", "events", "cloud", "docker", "kubernetes", "microservices"],
+        },
+        {
+          id: "pub-event-sap",
+          title: "SAP S/4HANA Migration & Clean Core Masterclass",
+          subtitle: "Enterprise ERP modernization, ABAP Cloud, and Fiori architectural design",
+          category: "Events",
+          href: "/events",
+          icon: Calendar,
+          badge: "Enterprise",
+          tags: ["event", "events", "sap", "s4hana", "abap", "fiori", "erp"],
+        }
+      );
+
+      // 5. About Page & Platform Philosophy
+      items.push(
+        {
+          id: "pub-about-main",
           title: "About JKS Learning",
-          subtitle: "Our mission, expert faculty, industry credentials, and training methodology",
-          category: "Pages",
+          subtitle: "Learn Today. Build Tomorrow — Our mission, enterprise credentials & curriculum philosophy",
+          category: "About",
           href: "/about",
           icon: Users,
+          badge: "About Us",
+          tags: ["about", "about page", "jks", "jks learning", "mission", "vision", "who we are", "overview"],
         },
+        {
+          id: "pub-about-why",
+          title: "Why JKS Learning — The Core Advantage",
+          subtitle: "Anti-skip video enforcement, verified credentials, and production-grade project training",
+          category: "About",
+          href: "/about",
+          icon: Award,
+          badge: "Advantage",
+          tags: ["about", "why jks", "methodology", "anti-skip", "verification", "hands-on"],
+        },
+        {
+          id: "pub-about-faculty",
+          title: "Expert Mentors & Faculty",
+          subtitle: "Meet Davood Khan (Lead Full Stack), Dr. Rohit Kapoor (Cloud & SAP) & industry leaders",
+          category: "About",
+          href: "/about",
+          icon: GraduationCap,
+          badge: "Mentors",
+          tags: ["about", "mentors", "faculty", "tutors", "davood", "rohit", "instructors", "teachers"],
+        },
+        {
+          id: "pub-about-experience",
+          title: "Learning That Goes Beyond The Classroom",
+          subtitle: "Real-world capstones, peer code reviews, mock interviews, and career readiness",
+          category: "About",
+          href: "/about",
+          icon: Laptop,
+          badge: "Experience",
+          tags: ["about", "experience", "journey", "capstone", "careers", "beyond classroom"],
+        }
+      );
+
+      // 6. Admissions & Account Pages
+      items.push(
         {
           id: "pub-page-enroll",
           title: "Course Enrollment & Admissions",
-          subtitle: "Register your interest and enroll in upcoming cohort batches",
+          subtitle: "Apply and reserve your seat for upcoming cohort batches",
           category: "Pages",
           href: "/register-course",
           icon: ArrowRight,
           badge: "Apply",
+          tags: ["admissions", "enroll", "apply", "register course", "batch"],
+        },
+        {
+          id: "pub-page-register",
+          title: "Create Student Account",
+          subtitle: "Sign up for free webinars, coding playgrounds, and learning resources",
+          category: "Pages",
+          href: "/register",
+          icon: User,
+          tags: ["register", "sign up", "create account", "new user"],
         },
         {
           id: "pub-page-login",
@@ -1026,21 +1179,9 @@ export function GlobalSearchModal({
           category: "Pages",
           href: "/login",
           icon: User,
-        },
-        {
-          id: "pub-page-register",
-          title: "Create Student Account",
-          subtitle: "Sign up for free resources, webinars, and admission counseling",
-          category: "Pages",
-          href: "/register",
-          icon: User,
+          tags: ["login", "sign in", "portal", "student login"],
         }
       );
-    }
-
-    // Always ensure student search items are included so student name queries resolve from any workspace
-    if (effectiveMode === "public" || effectiveMode === "student") {
-      items.push(...buildStudentSearchItems());
     }
 
     return items;
@@ -1131,7 +1272,15 @@ export function GlobalSearchModal({
     if (effectiveMode === "student") {
       return ["Java Full Stack", "AI Mock Interview", "Assessments", "Resume Builder", "Leaderboard", "Code Playground"];
     }
-    return ["Java Full Stack", "AI Mock Interview", "SAP S/4HANA", "Modern Frontend", "Live Masterclass", "Lead Tutors"];
+    return [
+      "Java Full Stack",
+      "AI Mock Interview",
+      "Success Stories",
+      "Python Machine Learning",
+      "SAP S/4HANA",
+      "Live Masterclass",
+      "About JKS Learning",
+    ];
   }, [effectiveMode]);
 
   // Helper for category tab icons
@@ -1141,20 +1290,24 @@ export function GlobalSearchModal({
         return Sparkles;
       case "courses":
         return BookOpen;
-      case "tutors":
-        return GraduationCap;
+      case "stories":
+        return Trophy;
+      case "ai tools":
+        return BrainCircuit;
       case "events":
         return Calendar;
+      case "about":
+        return Users;
       case "pages":
         return FileText;
+      case "tutors":
+        return GraduationCap;
       case "assessments":
         return ClipboardCheck;
       case "students":
         return Users;
       case "batches":
         return FolderTree;
-      case "ai tools":
-        return BrainCircuit;
       case "operations":
         return Activity;
       case "account":
@@ -1209,7 +1362,7 @@ export function GlobalSearchModal({
                     ? "Search students, tutors, courses, batches, logs…"
                     : effectiveMode === "student"
                     ? "Search courses, modules, quizzes, interviews, notes…"
-                    : "Search courses, tracks, tutors, events, topics…"
+                    : "Search courses, success stories, AI mock interview, events, about…"
                 }
                 className="w-full bg-transparent text-sm sm:text-base md:text-lg font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none"
               />
@@ -1300,7 +1453,9 @@ export function GlobalSearchModal({
                     Search JKS Learning
                   </h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1 leading-relaxed">
-                    Start typing to search courses, curriculum modules, assessments, mock interviews, tutors, and learning tools.
+                    {effectiveMode === "public"
+                      ? "Search courses, success stories, AI mock interview, events, and about page."
+                      : "Start typing to search courses, modules, assessments, mock interviews, tutors, and learning tools."}
                   </p>
 
                   {/* Quick Search Suggestions */}
