@@ -100,7 +100,6 @@ export async function fetchStudentEnrollments(userEmailOrId?: string): Promise<E
     const meRes = await apiFetch("/enrollments/me", {
       headers: {
         "Content-Type": "application/json",
-        ...(emailToQuery ? { "x-user-email": emailToQuery } : {}),
       },
       credentials: "include",
     });
@@ -118,7 +117,6 @@ export async function fetchStudentEnrollments(userEmailOrId?: string): Promise<E
         {
           headers: {
             "Content-Type": "application/json",
-            "x-user-email": emailToQuery,
           },
           cache: "no-store",
         }

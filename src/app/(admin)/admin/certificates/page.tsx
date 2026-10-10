@@ -128,6 +128,21 @@ function AdminCertificatesContent() {
   const [isIssuing, setIsIssuing] = useState<boolean>(false);
   const [issueError, setIssueError] = useState<string | null>(null);
 
+  // A certificate can only be issued for a course the student has completed.
+  // Nothing is pre-selected, and the course list is limited to that student's
+  // finished enrollments (the server re-checks this before issuing).
+  const eligibleEnrollments = useMemo(() => {
+    const student = students.find((st) => st.id === selectedStudentId);
+    if (!student) return [];
+    const issuedCourseIds = new Set(certificates.filter((c) => c.userId === student.id).map((c) => c.courseId));
+    return (student.enrollments || []).filter(
+      (e) =>
+        e.progress >= 100 &&
+        !["PENDING", "REJECTED", "REMOVED", "ON_HOLD", "PAUSED"].includes(String(e.status || "ACTIVE").toUpperCase()) &&
+        !issuedCourseIds.has(e.courseId),
+    );
+  }, [students, selectedStudentId, certificates]);
+
   const loadAllData = useCallback(async () => {
     try {
       const [certsData, pendingData, studentsData, coursesData] = await Promise.all([
@@ -141,20 +156,13 @@ function AdminCertificatesContent() {
       setPendingCompletions(pendingData);
       setStudents(studentsData);
       setCourses(coursesData);
-
-      if (studentsData.length > 0 && !selectedStudentId) {
-        setSelectedStudentId(studentsData[0].id);
-      }
-      if (coursesData.length > 0 && !selectedCourseId) {
-        setSelectedCourseId((coursesData[0] as any).id || coursesData[0].slug);
-      }
     } catch (err) {
       console.warn("Failed to load certificate workspace data:", err);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [selectedStudentId, selectedCourseId]);
+  }, []);
 
   useEffect(() => {
     loadAllData();
@@ -201,6 +209,7 @@ function AdminCertificatesContent() {
       await loadAllData();
       const student = students.find((s) => s.id === selectedStudentId);
       const course = courses.find((c) => (c as any).id === selectedCourseId || c.slug === selectedCourseId);
+      setSelectedCourseId("");
       if (student && course && res.certificate) {
         setSelectedCert({
           id: res.certificate.verificationId || "CERT-" + Date.now(),
@@ -752,16 +761,20 @@ function AdminCertificatesContent() {
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5 text-primary-blue" />
-                  Select Real Student
+                  Student
                 </label>
                 <select
                   value={selectedStudentId}
-                  onChange={(e) => setSelectedStudentId(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedStudentId(e.target.value);
+                    setSelectedCourseId("");
+                    setIssueError(null);
+                  }}
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary-blue focus:outline-none"
                   required
                 >
                   <option value="" disabled>
-                    -- Select enrolled student --
+                    -- Select student --
                   </option>
                   {students.map((st) => (
                     <option key={st.id} value={st.id}>
@@ -779,21 +792,28 @@ function AdminCertificatesContent() {
                 <select
                   value={selectedCourseId}
                   onChange={(e) => setSelectedCourseId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary-blue focus:outline-none"
+                  disabled={!selectedStudentId}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary-blue focus:outline-none disabled:opacity-60"
                   required
                 >
                   <option value="" disabled>
-                    -- Select course --
+                    {!selectedStudentId
+                      ? "-- Select a student first --"
+                      : eligibleEnrollments.length === 0
+                        ? "-- No completed courses --"
+                        : "-- Select completed course --"}
                   </option>
-                  {courses.map((c) => {
-                    const cId = (c as any).id || c.slug;
-                    return (
-                      <option key={c.slug} value={cId}>
-                        {c.title} ({c.track})
-                      </option>
-                    );
-                  })}
+                  {eligibleEnrollments.map((e) => (
+                    <option key={e.courseId} value={e.courseId}>
+                      {e.courseTitle} (100% complete)
+                    </option>
+                  ))}
                 </select>
+                {selectedStudentId && eligibleEnrollments.length === 0 && (
+                  <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                    This student has no completed course awaiting a certificate. Certificates can only be issued after the course is completed.
+                  </p>
+                )}
               </div>
 
               <div className="pt-2 flex justify-end gap-2">

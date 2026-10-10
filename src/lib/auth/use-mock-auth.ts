@@ -81,6 +81,8 @@ interface ApiInstructor {
   phone?: string | null;
   createdAt: string;
   assignedCourseIds?: string[];
+  assignedCoursesCount?: number;
+  studentsCount?: number;
 }
 
 function toStoredInstructor(row: ApiInstructor): StoredInstructor {
@@ -91,8 +93,9 @@ function toStoredInstructor(row: ApiInstructor): StoredInstructor {
     initials: initialsFor(row.name, "LE"),
     role: "Lead Technical Faculty",
     phone: row.phone || undefined,
-    assignedCourses: row.assignedCourseIds?.length || 1,
-    students: 120,
+    // Real counts from the API (same source as the Batches page).
+    assignedCourses: row.assignedCoursesCount ?? row.assignedCourseIds?.length ?? 0,
+    students: row.studentsCount ?? 0,
     status: "Active",
   };
 }
@@ -290,11 +293,7 @@ export async function loginWithApi(email: string, password: string): Promise<Log
 
     if (res.ok) {
       const data = await res.json();
-      if (data.accessToken && typeof window !== "undefined") {
-        try {
-          localStorage.setItem("jks_access_token", data.accessToken);
-        } catch {}
-      }
+      // The API sets an httpOnly accessToken cookie; the token is never kept in JS-readable storage.
       const u = data.user;
       const session: MockSession = {
         email: u.email,
@@ -343,11 +342,7 @@ export async function registerWithApi(
 
     if (res.ok) {
       const data = await res.json();
-      if (data.accessToken && typeof window !== "undefined") {
-        try {
-          localStorage.setItem("jks_access_token", data.accessToken);
-        } catch {}
-      }
+      // The API sets an httpOnly accessToken cookie; the token is never kept in JS-readable storage.
       const u = data.user;
       const session: MockSession = {
         email: u.email,
@@ -416,11 +411,7 @@ export async function verifyRegistrationOtpWithApi(payload: {
 
     if (res.ok) {
       const data = await res.json();
-      if (data.accessToken && typeof window !== "undefined") {
-        try {
-          localStorage.setItem("jks_access_token", data.accessToken);
-        } catch {}
-      }
+      // The API sets an httpOnly accessToken cookie; the token is never kept in JS-readable storage.
       const u = data.user;
       const session: MockSession = {
         email: u.email,

@@ -39,6 +39,26 @@ export interface Invoice {
 
 export const INITIAL_INVOICES: Invoice[] = [];
 
+/** A ₹0 invoice is a scholarship / free enrollment, not a real payment. */
+export function isFreeInvoice(invoice: Pick<Invoice, "totalAmount">): boolean {
+  return invoice.totalAmount <= 0;
+}
+
+export function getInvoiceStatusLabel(invoice: Invoice): string {
+  if (invoice.paymentStatus === "Paid" && isFreeInvoice(invoice)) return "Scholarship / Free";
+  return invoice.paymentStatus;
+}
+
+/** Revenue actually collected: paid invoices with a non-zero amount. */
+export function isSettledRevenue(invoice: Invoice): boolean {
+  return invoice.paymentStatus === "Paid" && !isFreeInvoice(invoice);
+}
+
+export function isInMonth(isoDate: string, ref: Date = new Date()): boolean {
+  const d = new Date(isoDate);
+  return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
+}
+
 const INVOICES_STORAGE_KEY = "jks_invoices_store_v2";
 
 export function getStoredInvoices(): Invoice[] {

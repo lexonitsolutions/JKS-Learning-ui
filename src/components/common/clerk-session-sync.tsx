@@ -129,11 +129,7 @@ export function ClerkSessionSync() {
 
           if (res.ok) {
             const data = await res.json().catch(() => ({}));
-            if (data?.accessToken && typeof window !== "undefined") {
-              try {
-                localStorage.setItem("jks_access_token", data.accessToken);
-              } catch {}
-            }
+      // The API sets an httpOnly accessToken cookie; the token is never kept in JS-readable storage.
             const backendUser = data?.user;
             if (backendUser) {
               if (backendUser.status === "BLOCKED") {

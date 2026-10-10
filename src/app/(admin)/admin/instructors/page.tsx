@@ -203,7 +203,7 @@ export default function AdminInstructorsPage() {
                       <span className="flex items-center gap-1.5 text-slate-400 dark:text-slate-400">
                         <BookOpen className="h-3.5 w-3.5" /> Courses
                       </span>
-                      <span className="font-bold text-slate-800 dark:text-slate-200">{inst.assignedCourses ?? 1}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">{inst.assignedCourses ?? 0}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5 text-slate-400 dark:text-slate-400">

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import {
-  getStoredQuestions,
+  fetchQuestions,
   addQuestion,
   deleteQuestion,
   type Question,
@@ -33,6 +33,9 @@ export default function AssessmentQuestionsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("All");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Add Question Form State
   const [form, setForm] = useState({
@@ -47,35 +50,57 @@ export default function AssessmentQuestionsPage() {
     explanation: "",
   });
 
+  const refreshQuestions = async () => {
+    try {
+      setQuestions(await fetchQuestions());
+      setErrorMessage(null);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Could not load the question bank.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    setQuestions(getStoredQuestions());
+    void refreshQuestions();
   }, []);
 
-  const refreshQuestions = () => {
-    setQuestions(getStoredQuestions());
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteQuestion(id);
+      setErrorMessage(null);
+      await refreshQuestions();
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Could not delete the question.");
+    }
   };
 
-  const handleDelete = (id: string) => {
-    deleteQuestion(id);
-    refreshQuestions();
-  };
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.questionText || form.options.some((o) => !o.trim())) return;
+    if (!form.questionText || form.options.some((o) => !o.trim()) || isSaving) return;
 
-    addQuestion({
-      category: form.category,
-      difficulty: form.difficulty,
-      type: form.type,
-      questionText: form.questionText,
-      codeSnippet: form.codeSnippet.trim() ? form.codeSnippet : undefined,
-      options: form.options,
-      correctOptionIndex: form.correctOptionIndex,
-      marks: Number(form.marks),
-      explanation: form.explanation || "No explanation provided.",
-    });
+    setIsSaving(true);
+    try {
+      await addQuestion({
+        category: form.category,
+        difficulty: form.difficulty,
+        type: form.type,
+        questionText: form.questionText,
+        codeSnippet: form.codeSnippet.trim() ? form.codeSnippet : undefined,
+        options: form.options,
+        correctOptionIndex: form.correctOptionIndex,
+        marks: Number(form.marks),
+        explanation: form.explanation || "No explanation provided.",
+      });
+    } catch (err) {
+      // Keep the modal open with the typed question so nothing is lost.
+      setErrorMessage(err instanceof Error ? err.message : "Could not save the question.");
+      setIsSaving(false);
+      return;
+    }
 
+    setIsSaving(false);
+    setErrorMessage(null);
     setShowAddModal(false);
     setForm({
       category: "Java Full Stack",
@@ -88,7 +113,7 @@ export default function AssessmentQuestionsPage() {
       marks: 5,
       explanation: "",
     });
-    refreshQuestions();
+    await refreshQuestions();
   };
 
   const filtered = questions.filter((q) => {
@@ -169,6 +194,12 @@ export default function AssessmentQuestionsPage() {
             </select>
           </div>
         </div>
+
+        {errorMessage && (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-700 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-400">
+            {errorMessage}
+          </div>
+        )}
 
         {/* Question Cards List */}
         <div className="space-y-4">
@@ -262,9 +293,17 @@ export default function AssessmentQuestionsPage() {
             </div>
           ))}
 
-          {filtered.length === 0 && (
+          {isLoading && (
             <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center text-xs text-slate-400 dark:border-slate-800 dark:text-slate-400">
-              No questions found matching your filter criteria.
+              Loading the question bank...
+            </div>
+          )}
+
+          {!isLoading && filtered.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center text-xs text-slate-400 dark:border-slate-800 dark:text-slate-400">
+              {questions.length === 0
+                ? "The question bank is empty. Use \"Add Question to Bank\" to create the first question."
+                : "No questions found matching your filter criteria."}
             </div>
           )}
         </div>
@@ -286,6 +325,11 @@ export default function AssessmentQuestionsPage() {
             </div>
 
             <form onSubmit={handleCreate} className="space-y-4 text-xs">
+              {errorMessage && (
+                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 font-semibold text-rose-700 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-400">
+                  {errorMessage}
+                </div>
+              )}
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300">Category *</label>
@@ -404,9 +448,10 @@ export default function AssessmentQuestionsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-[#2563EB] px-5 py-2 font-bold text-white hover:bg-blue-700 shadow-md cursor-pointer"
+                  disabled={isSaving}
+                  className="rounded-xl bg-[#2563EB] px-5 py-2 font-bold text-white hover:bg-blue-700 shadow-md cursor-pointer disabled:opacity-60"
                 >
-                  Save Question
+                  {isSaving ? "Saving..." : "Save Question"}
                 </button>
               </div>
             </form>

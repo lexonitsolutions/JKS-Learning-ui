@@ -1599,7 +1599,7 @@ function AdminStudentDetailsContent() {
               {[
                 { id: "courses", label: `Enrolled Courses (${totalCourses})`, icon: BookOpen },
                 { id: "invoices", label: `Invoices & Billing (${student.invoices.length})`, icon: Receipt },
-                { id: "assessments", label: "Academic Dossier & AI Scan", icon: BrainCircuit },
+                { id: "assessments", label: "Academic Dossier", icon: BrainCircuit },
                 { id: "timeline", label: "Audit Timeline", icon: Clock },
                 { id: "course-tasks", label: `Courses Tasks (${courseTasks.length})`, icon: ClipboardList },
               ].map((tab) => {
@@ -1971,109 +1971,99 @@ function AdminStudentDetailsContent() {
               </div>
             )}
 
-            {/* TAB 3: ACADEMIC DOSSIER & AI SCAN */}
+            {/* TAB 3: ACADEMIC DOSSIER */}
             {activeTab === "assessments" && (() => {
               const assessmentsList = student.assessments || student.submissions || [];
               const hasAssessments = assessmentsList.length > 0;
-              const avgScore = hasAssessments
-                ? Math.round(assessmentsList.reduce((acc, a) => acc + (a.score || 0), 0) / assessmentsList.length)
-                : null;
-              const avgAuthenticity = hasAssessments
-                ? (assessmentsList.reduce((acc, a) => acc + (a.aiAuthenticityScore || 100), 0) / assessmentsList.length).toFixed(1)
+              // Only submissions that have actually been graded carry a score.
+              const gradedAssessments = assessmentsList.filter((a) => typeof a.score === "number");
+              const passedAssessments = gradedAssessments.filter((a) => a.score >= 70);
+              const avgScore = gradedAssessments.length
+                ? Math.round(gradedAssessments.reduce((acc, a) => acc + a.score, 0) / gradedAssessments.length)
                 : null;
 
               return (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {/* Left Card: AI Code Authenticity Verification */}
+                    {/* Left Card: real submission statistics */}
                     <div className="rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary/90 p-6 shadow-sm space-y-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
                           <BrainCircuit className="h-5 w-5" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">AI Code Authenticity Verification</h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Neural scan of submitted assignments &amp; coding solutions</p>
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">Assessment Performance</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Computed from this student&apos;s recorded submissions</p>
                         </div>
                       </div>
 
-                      <div className="rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 p-4 space-y-2">
-                        <div className="flex justify-between items-center text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                          <span>Human Authenticity Score</span>
-                          <span className="text-emerald-700 dark:text-emerald-300 text-sm font-black">
-                            {avgAuthenticity !== null ? `${avgAuthenticity}% Authentic` : "N/A (No submissions)"}
-                          </span>
+                      {hasAssessments ? (
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                            <span className="text-slate-500 dark:text-slate-400">Submissions recorded</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200">{assessmentsList.length}</span>
+                          </div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                            <span className="text-slate-500 dark:text-slate-400">Graded</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200">{gradedAssessments.length}</span>
+                          </div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                            <span className="text-slate-500 dark:text-slate-400">Average graded score</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200">
+                              {avgScore !== null ? `${avgScore}% (Pass mark: 70%)` : "Awaiting grading"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between py-1.5">
+                            <span className="text-slate-500 dark:text-slate-400">Passed</span>
+                            <span className="font-bold text-[#2563EB] dark:text-blue-400">
+                              {passedAssessments.length} of {gradedAssessments.length} graded
+                            </span>
+                          </div>
                         </div>
-                        <div className="h-2 w-full rounded-full bg-emerald-200 dark:bg-emerald-900/60 overflow-hidden">
-                          <div
-                            className="h-full bg-emerald-600 dark:bg-emerald-500 rounded-full transition-all duration-500"
-                            style={{ width: `${avgAuthenticity !== null ? Math.min(100, Math.max(10, parseFloat(avgAuthenticity))) : 0}%` }}
-                          />
-                        </div>
-                        <p className="text-[11px] text-emerald-800 dark:text-emerald-300">
-                          Verified human keystroke latency, natural refactoring iterations, and zero synthetic boilerplate patterns detected.
+                      ) : (
+                        <p className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-4 text-center text-xs text-slate-500 dark:text-slate-400">
+                          No submissions yet, so there are no scores to show.
                         </p>
-                      </div>
-
-                      <div className="space-y-2 text-xs">
-                        <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
-                          <span className="text-slate-500 dark:text-slate-400">Code Style Conformance</span>
-                          <span className="font-bold text-slate-800 dark:text-slate-200">Clean Architecture / SOLID (98%)</span>
-                        </div>
-                        <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
-                          <span className="text-slate-500 dark:text-slate-400">Average Submission Score</span>
-                          <span className="font-bold text-slate-800 dark:text-slate-200">
-                            {avgScore !== null ? `${avgScore}% (Pass mark: 70%)` : "N/A"}
-                          </span>
-                        </div>
-                        <div className="flex justify-between py-1.5">
-                          <span className="text-slate-500 dark:text-slate-400">Proctored Assessment Rank</span>
-                          <span className="font-bold text-[#2563EB] dark:text-blue-400">Top Tier Cohort</span>
-                        </div>
-                      </div>
+                      )}
                     </div>
 
-                    {/* Right Card: Verified Milestone Credentials */}
+                    {/* Right Card: passed milestones (real submissions only) */}
                     <div className="rounded-[22px] border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-surface-secondary/90 p-6 shadow-sm space-y-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400">
                           <Award className="h-5 w-5" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">Certification &amp; Milestone Badges</h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Enterprise verified credentials</p>
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">Passed Milestones</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Graded at or above the 70% pass mark</p>
                         </div>
                       </div>
 
-                      <div className="space-y-3 text-xs">
-                        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-surface-elevated p-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2.5">
-                            <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                            <div>
-                              <div className="font-bold text-slate-900 dark:text-white">Full-Stack Core Architecture</div>
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400">Passed proctored benchmark</div>
-                            </div>
-                          </div>
-                          <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-bold">
-                            {hasAssessments ? "Verified" : "Unlocked"}
-                          </span>
-                        </div>
-
-                        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-surface-elevated p-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2.5">
-                            <Sparkles className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
-                            <div>
-                              <div className="font-bold text-slate-900 dark:text-white">Microservices &amp; Cloud Deployment</div>
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                                {hasAssessments ? "Milestone submitted & graded" : "In Progress (82% complete)"}
+                      {passedAssessments.length > 0 ? (
+                        <div className="space-y-3 text-xs">
+                          {passedAssessments.slice(0, 5).map((asg) => (
+                            <div
+                              key={asg.id}
+                              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-surface-elevated p-3 flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                <div className="min-w-0">
+                                  <div className="font-bold text-slate-900 dark:text-white truncate">{asg.title}</div>
+                                  <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{asg.courseTitle}</div>
+                                </div>
                               </div>
+                              <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-bold shrink-0">
+                                {asg.score}%
+                              </span>
                             </div>
-                          </div>
-                          <span className="rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 text-[10px] font-bold">
-                            {hasAssessments ? "Submitted" : "Pending"}
-                          </span>
+                          ))}
                         </div>
-                      </div>
+                      ) : (
+                        <p className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-4 text-center text-xs text-slate-500 dark:text-slate-400">
+                          No passed milestones yet.
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -2126,11 +2116,13 @@ function AdminStudentDetailsContent() {
                                         : "bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800/50"
                                     }`}
                                   >
-                                    Score: {asg.score}% ({isPassed ? "PASSED" : "FAILED"})
+                                    {typeof asg.score === "number" ? `Score: ${asg.score}% (${isPassed ? "PASSED" : "FAILED"})` : "Awaiting grading"}
                                   </span>
-                                  <span className="rounded-full bg-blue-100 dark:bg-blue-950/70 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800/50 px-2.5 py-1 text-xs font-bold">
-                                    AI Auth: {asg.aiAuthenticityScore || 96.5}%
-                                  </span>
+                                  {typeof asg.aiAuthenticityScore === "number" && asg.aiAuthenticityScore > 0 && (
+                                    <span className="rounded-full bg-blue-100 dark:bg-blue-950/70 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800/50 px-2.5 py-1 text-xs font-bold">
+                                      AI Auth: {asg.aiAuthenticityScore}%
+                                    </span>
+                                  )}
                                 </div>
                               </div>
 
@@ -2151,7 +2143,7 @@ function AdminStudentDetailsContent() {
                           No assessment submissions logged in the database yet.
                         </p>
                         <p className="text-[11px] text-slate-400 dark:text-slate-400">
-                          When this student submits section assignments, their scores and AI authenticity scans will appear here.
+                          When this student submits section assignments, their scores will appear here.
                         </p>
                       </div>
                     )}
@@ -2252,8 +2244,6 @@ function AdminStudentDetailsContent() {
               const avgAiScore =
                 aiScores.length > 0
                   ? `${Math.round(aiScores.reduce((a, b) => a + b, 0) / aiScores.length)}%`
-                  : submittedTasks.length > 0
-                  ? "100%"
                   : null;
 
               return (

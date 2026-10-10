@@ -3,7 +3,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Printer, Download, CheckCircle2, ShieldCheck, QrCode, Building, Award, FileText, Loader2 } from "lucide-react";
-import { type Invoice } from "@/lib/data/invoices-store";
+import { type Invoice, getInvoiceStatusLabel } from "@/lib/data/invoices-store";
+import { COMPANY, getMissingCompanyFields } from "@/lib/config/company";
 import { JKS_LOGO_BASE64 } from "@/lib/utils/logo-base64";
 import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
 
@@ -16,6 +17,7 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const missingCompanyFields = getMissingCompanyFields();
 
   useEffect(() => {
     setMounted(true);
@@ -103,7 +105,7 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
             <FileText className="h-4 w-4 text-cyan-400 shrink-0" />
             <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">GST Tax Invoice</span>
             <span className="rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-bold text-emerald-400 shrink-0">
-              ● {invoice.paymentStatus.toUpperCase()}
+              ● {getInvoiceStatusLabel(invoice).toUpperCase()}
             </span>
           </div>
 
@@ -132,6 +134,12 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
           </div>
         </div>
 
+        {missingCompanyFields.length > 0 && (
+          <div className="border-b border-amber-200 bg-amber-50 px-4 sm:px-6 py-2.5 text-xs font-semibold text-amber-800 print:hidden">
+            Company details missing: {missingCompanyFields.join(", ")}. Set the NEXT_PUBLIC_COMPANY_* environment variables before issuing this invoice to a student.
+          </div>
+        )}
+
         {/* Printable Official Invoice Sheet */}
         <div
           ref={printRef}
@@ -153,11 +161,15 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
                 className="h-8 sm:h-9 w-auto object-contain select-none"
               />
               <div className="text-xs text-slate-600 space-y-0.5 leading-relaxed">
-                <p className="font-extrabold text-slate-950 text-sm">JKS Learning Technologies Private Limited</p>
-                <p className="text-slate-600">Tech Park Phase II, Outer Ring Road, Bengaluru, Karnataka - 560103</p>
-                <p className="font-mono text-slate-700 break-words">
-                  <span className="font-bold">GSTIN:</span> 29AAACJ1234F1Z8 • <span className="font-bold">CIN:</span> U72200KA2026PTC099881
-                </p>
+                <p className="font-extrabold text-slate-950 text-sm">{COMPANY.legalName}</p>
+                {COMPANY.address && <p className="text-slate-600">{COMPANY.address}</p>}
+                {(COMPANY.gstin || COMPANY.cin) && (
+                  <p className="font-mono text-slate-700 break-words">
+                    {COMPANY.gstin && (<><span className="font-bold">GSTIN:</span> {COMPANY.gstin}</>)}
+                    {COMPANY.gstin && COMPANY.cin && " • "}
+                    {COMPANY.cin && (<><span className="font-bold">CIN:</span> {COMPANY.cin}</>)}
+                  </p>
+                )}
                 <p className="text-slate-500 text-[11px]">SAC Code: 999293 (Commercial Training &amp; Education Services)</p>
               </div>
             </div>
@@ -296,9 +308,11 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
             </div>
 
             <div className="text-center sm:text-right self-center sm:self-auto">
-              <div className="font-serif italic font-bold text-slate-900 text-sm">P. Sharma</div>
-              <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Authorized Finance Officer</div>
-              <div className="text-[9px] text-slate-400">JKS Learning Technologies Pvt. Ltd.</div>
+              {COMPANY.signatoryName && (
+                <div className="font-serif italic font-bold text-slate-900 text-sm">{COMPANY.signatoryName}</div>
+              )}
+              <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">{COMPANY.signatoryTitle}</div>
+              <div className="text-[9px] text-slate-400">{COMPANY.legalName}</div>
             </div>
           </div>
         </div>
