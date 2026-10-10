@@ -1,4 +1,4 @@
-import { apiUrl } from "./base-url";
+import { apiFetch } from "./base-url";
 
 export interface UploadResult {
   url: string;
@@ -30,9 +30,10 @@ export async function uploadImage(
   formData.append("file", file);
   formData.append("context", context);
 
-  const res = await fetch(apiUrl("/upload/image"), {
+  // Through apiFetch so the Clerk token is attached even when the browser
+  // blocks the API's cross-site session cookie.
+  const res = await apiFetch("/upload/image", {
     method: "POST",
-    credentials: "include",
     body: formData,
   });
 
@@ -57,10 +58,9 @@ export async function uploadImage(
  * Delete an image from Cloudinary by its publicId via the backend.
  */
 export async function deleteImage(publicId: string): Promise<void> {
-  await fetch(apiUrl("/upload/image"), {
+  await apiFetch("/upload/image", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify({ publicId }),
   });
 }

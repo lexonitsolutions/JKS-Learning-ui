@@ -106,7 +106,7 @@ export default function StudentDashboardPage() {
 
   const session = useMockSession();
   const isStudentOnHold = session?.status === "ON_HOLD";
-  const { user: clerkUser } = useUser();
+  const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
 
   const email = (
     clerkUser?.primaryEmailAddress?.emailAddress ||
@@ -259,7 +259,10 @@ export default function StudentDashboardPage() {
   return (
     <>
       <DashboardTopbar
-        title={`Welcome back, ${studentName} 👋`}
+        title={
+          // Until Clerk has loaded the name is unknown; don't flash "Learner".
+          isClerkLoaded || session?.name ? `Welcome back, ${studentName} 👋` : "Welcome back 👋"
+        }
         subtitle="Let's keep the momentum going."
         userInitials={studentInitials}
       />
