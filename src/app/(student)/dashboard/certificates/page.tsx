@@ -42,7 +42,6 @@ export default function StudentCertificatesPage() {
       let certList: any[] = [];
       try {
         const meRes = await apiFetch("/certificates/me", {
-          headers: effectiveEmail ? { "x-user-email": effectiveEmail } : {},
           credentials: "include",
         });
         if (meRes.ok) {
@@ -54,7 +53,6 @@ export default function StudentCertificatesPage() {
       if (certList.length === 0 && effectiveEmail) {
         try {
           const emailRes = await apiFetch(`/certificates/student/${encodeURIComponent(effectiveEmail)}`, {
-            headers: { "x-user-email": effectiveEmail },
             cache: "no-store",
           });
           if (emailRes.ok) {

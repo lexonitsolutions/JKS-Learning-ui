@@ -51,6 +51,21 @@ export function apiUrl(path: string): string {
  */
 const API_TIMEOUT_MS = 45_000;
 
+let legacyTokenPurged = false;
+
+/**
+ * Earlier builds kept the API access token in localStorage (`jks_access_token`),
+ * readable by any script on the page. Remove any copy still sitting in a
+ * browser; the httpOnly cookie is the session now.
+ */
+export function purgeLegacyAccessToken(): void {
+  if (legacyTokenPurged || typeof window === "undefined") return;
+  legacyTokenPurged = true;
+  try {
+    localStorage.removeItem("jks_access_token");
+  } catch {}
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -65,6 +80,11 @@ export class ApiError extends Error {
 /**
  * Single entry point for backend calls.
  *
+ * Identity is only ever proven by the httpOnly session cookie or a Clerk
+ * session token. This function deliberately does NOT send the user's email or
+ * session blob as headers: the server no longer accepts those, because anything
+ * the browser can set, an attacker can set too.
+ *
  * Always sends cookies: the API authenticates with an httpOnly `accessToken`,
  * so a request without `credentials: "include"` is anonymous. Most call sites
  * here were missing it.
@@ -75,66 +95,18 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
   // Attach Bearer token or session headers if present
   if (typeof window !== "undefined") {
     try {
-      let token = localStorage.getItem("jks_access_token");
-      if (!token && (window as any).Clerk?.session) {
+      purgeLegacyAccessToken();
+      // Our own session is the httpOnly accessToken cookie (sent via
+      // credentials: "include" below). Only a live Clerk session token is
+      // attached as a Bearer header.
+      let token: string | null = null;
+      if ((window as any).Clerk?.session) {
         try {
           token = await (window as any).Clerk.session.getToken();
         } catch {}
       }
       if (token && !headers.has("Authorization")) {
         headers.set("Authorization", `Bearer ${token}`);
-      }
-
-      // Multi-strategy email and session resolution
-      let resolvedEmail = headers.get("x-user-email") || "";
-
-      // 1. Check document.cookie for session
-      const match = document.cookie.match(/(?:^|; )jks_mock_session=([^;]*)/);
-      const cookieSession = match?.[1] || document.cookie.match(/(?:^|; )jks_session=([^;]*)/)?.[1];
-      if (cookieSession) {
-        if (!headers.has("x-mock-session")) {
-          headers.set("x-mock-session", cookieSession);
-        }
-        if (!resolvedEmail) {
-          try {
-            const parsed = JSON.parse(decodeURIComponent(cookieSession));
-            if (parsed?.email) resolvedEmail = String(parsed.email).trim().toLowerCase();
-          } catch {}
-        }
-      }
-
-      // 2. Check localStorage jks_auth_user
-      if (!resolvedEmail) {
-        try {
-          const rawAuth = localStorage.getItem("jks_auth_user");
-          if (rawAuth) {
-            const parsed = JSON.parse(rawAuth);
-            if (parsed?.email) resolvedEmail = String(parsed.email).trim().toLowerCase();
-          }
-        } catch {}
-      }
-
-      // 3. Check localStorage direct email keys
-      if (!resolvedEmail) {
-        resolvedEmail = (
-          localStorage.getItem("jks_student_email") ||
-          localStorage.getItem("jks_user_email") ||
-          ""
-        ).trim().toLowerCase();
-      }
-
-      // 4. Check active Clerk user in window
-      if (!resolvedEmail && (window as any).Clerk?.user) {
-        const clerkUser = (window as any).Clerk.user;
-        const cEmail =
-          clerkUser.primaryEmailAddress?.emailAddress ||
-          clerkUser.emailAddresses?.[0]?.emailAddress ||
-          "";
-        if (cEmail) resolvedEmail = String(cEmail).trim().toLowerCase();
-      }
-
-      if (resolvedEmail && !headers.has("x-user-email")) {
-        headers.set("x-user-email", resolvedEmail);
       }
     } catch {}
   }

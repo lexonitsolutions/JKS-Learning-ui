@@ -141,7 +141,7 @@ export default function AdminDashboardPage() {
       return summary.revenueRupees;
     }
     return invoices
-      .filter((inv) => inv.paymentStatus === "Paid")
+      .filter((inv) => inv.paymentStatus === "Paid" && inv.totalAmount > 0)
       .reduce((sum, inv) => sum + inv.totalAmount, 0);
   }, [summary, invoices]);
 
@@ -152,7 +152,7 @@ export default function AdminDashboardPage() {
     const curMonth = now.getMonth();
 
     return invoices.filter((inv) => {
-      if (inv.paymentStatus !== "Paid") return false;
+      if (inv.paymentStatus !== "Paid" || inv.totalAmount <= 0) return false; // ₹0 = scholarship/free, not revenue
       const rawDate = (inv as any).paidAt || inv.issueDate || (inv as any).createdAt || (inv as any).date;
       const d = rawDate ? new Date(rawDate) : now;
 
@@ -206,6 +206,8 @@ export default function AdminDashboardPage() {
 
     students.forEach((s) => {
       (s.enrollments || []).forEach((e) => {
+        // Same rule as the backend: pending/rejected/removed are not enrollments.
+        if (["PENDING", "REJECTED", "REMOVED"].includes(String(e.status || "ACTIVE").toUpperCase())) return;
         list.push({
           id: `${s.id}-${e.courseId}-${e.courseSlug}`,
           studentName: s.name,
@@ -245,7 +247,7 @@ export default function AdminDashboardPage() {
       icon: IndianRupee,
       value: `₹${totalRevenue.toLocaleString("en-IN")}`,
       label: "Revenue (Settled)",
-      growth: `${invoices.filter((i) => i.paymentStatus === "Paid").length} paid invoices`,
+      growth: `${invoices.filter((i) => i.paymentStatus === "Paid" && i.totalAmount > 0).length} paid invoices`,
       color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50",
     },
     {
@@ -534,7 +536,7 @@ export default function AdminDashboardPage() {
                   <Sparkles className="h-3.5 w-3.5" />
                 </div>
                 <span className="font-medium">
-                  {students.length} real students registered in database • {recentEnrollments.length} active course enrollments
+                  {totalStudents} real students registered in database • {totalEnrollmentsCount} active course enrollments
                 </span>
               </div>
               <Link

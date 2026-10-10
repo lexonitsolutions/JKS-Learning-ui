@@ -1,3 +1,5 @@
+import { apiFetch } from "@/lib/api/base-url";
+
 export interface Question {
   id: string;
   category: string;
@@ -12,130 +14,86 @@ export interface Question {
   createdAt: string;
 }
 
-export const INITIAL_QUESTIONS: Question[] = [
-  {
-    id: "Q-101",
-    category: "Java Full Stack",
-    difficulty: "Medium",
-    type: "Code Snippet",
-    questionText: "What is the result of executing the following Spring Boot concurrent transaction under Optimistic Locking?",
-    codeSnippet: `@Transactional\npublic void processOrder(Long orderId) {\n  Order order = orderRepo.findByIdWithLock(orderId);\n  order.setStatus(OrderStatus.CONFIRMED);\n  orderRepo.save(order);\n}`,
-    options: [
-      "Throws OptimisticLockException if version timestamp mismatches on commit",
-      "Locks the database table with an exclusive table lock",
-      "Silently overwrites the conflicting record with last write wins",
-      "Automatically retries indefinitely until success",
-    ],
-    correctOptionIndex: 0,
-    marks: 5,
-    explanation: "Optimistic locking checks the @Version entity field during transaction commit and throws OptimisticLockException when concurrent modification occurs.",
-    createdAt: "2026-08-20T10:00:00Z",
-  },
-  {
-    id: "Q-102",
-    category: "React 19 & Next.js",
-    difficulty: "Hard",
-    type: "MCQ",
-    questionText: "In React 19 and Next.js 15 App Router, what is the primary purpose of the useActionState hook?",
-    options: [
-      "Manage form state transitions and async action results seamlessly without manual loading booleans",
-      "Cache global server components in client memory",
-      "Trigger client-side router navigation",
-      "Replace React Context for all deep prop drilling",
-    ],
-    correctOptionIndex: 0,
-    marks: 5,
-    explanation: "useActionState manages pending state, returned action results, and optimistic states for Server Actions without boilerplate useEffect or useState.",
-    createdAt: "2026-08-22T14:00:00Z",
-  },
-  {
-    id: "Q-103",
-    category: "System Design",
-    difficulty: "Hard",
-    type: "MCQ",
-    questionText: "Which architecture pattern guarantees eventual consistency across independent microservice databases without distributed 2PC locks?",
-    options: [
-      "Saga Pattern with Orchestration / Choreography",
-      "Single Monolithic Shared Database",
-      "Synchronous REST Cascades",
-      "Database Triggers across remote network hosts",
-    ],
-    correctOptionIndex: 0,
-    marks: 10,
-    explanation: "The Saga Pattern coordinates a sequence of local transactions with compensating rollback actions to maintain consistency without blocking locks.",
-    createdAt: "2026-08-25T11:00:00Z",
-  },
-  {
-    id: "Q-104",
-    category: "Data Structures & Algorithms",
-    difficulty: "Easy",
-    type: "MCQ",
-    questionText: "What is the average time complexity of searching and inserting an element in a balanced Red-Black Tree?",
-    options: ["O(log N)", "O(1)", "O(N)", "O(N log N)"],
-    correctOptionIndex: 0,
-    marks: 2,
-    explanation: "Red-Black Trees maintain logarithmic tree height guarantees, ensuring O(log N) worst and average search/insert times.",
-    createdAt: "2026-08-26T09:00:00Z",
-  },
-  {
-    id: "Q-105",
-    category: "SAP S/4HANA",
-    difficulty: "Medium",
-    type: "MCQ",
-    questionText: "In SAP ABAP RESTful Application Programming Model (RAP), what layer defines the core business logic and behavioral validations?",
-    options: [
-      "Behavior Definition (BDEF) and Implementation Classes",
-      "CDS View Entities (Data Layer only)",
-      "SAP Fiori Elements Floorplan",
-      "SAP Gateway OData Service Binding",
-    ],
-    correctOptionIndex: 0,
-    marks: 5,
-    explanation: "RAP Behavior Definitions (BDEF) declare CRUD operations, validations, actions, and determinations executed by the ABAP runtime.",
-    createdAt: "2026-08-28T16:00:00Z",
-  },
-];
+export type NewQuestion = Omit<Question, "id" | "createdAt">;
 
-const QUESTIONS_STORAGE_KEY = "jks_questions_store_v1";
+/**
+ * The Question Bank lives in the database (/admin/question-bank), so every admin
+ * sees the same questions and clearing a browser deletes nothing. It used to be
+ * kept only in this browser's localStorage under `jks_questions_store_v1`.
+ */
 
-export function getStoredQuestions(): Question[] {
-  if (typeof window === "undefined") return INITIAL_QUESTIONS;
-  try {
-    const raw = localStorage.getItem(QUESTIONS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(QUESTIONS_STORAGE_KEY, JSON.stringify(INITIAL_QUESTIONS));
-      return INITIAL_QUESTIONS;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return INITIAL_QUESTIONS;
-  }
+// Legacy browser-only storage. Read once to migrate, then removed.
+const LEGACY_STORAGE_KEY = "jks_questions_store_v1";
+// Sample questions the old store seeded into every browser; not real content.
+const LEGACY_SEED_IDS = new Set(["Q-101", "Q-102", "Q-103", "Q-104", "Q-105"]);
+
+async function readError(res: Response, fallback: string): Promise<string> {
+  const data = await res.json().catch(() => ({}));
+  const message = data?.message;
+  if (Array.isArray(message)) return message.join(", ");
+  return typeof message === "string" && message ? message : fallback;
 }
 
-export function saveStoredQuestions(questions: Question[]): void {
+async function postQuestion(q: NewQuestion): Promise<Question> {
+  const res = await apiFetch("/admin/question-bank", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(q),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Could not save the question to the question bank."));
+  }
+  return res.json();
+}
+
+/** One-time move of questions an admin had saved only in this browser. */
+async function migrateLegacyQuestions(): Promise<void> {
   if (typeof window === "undefined") return;
+  let legacy: Question[] = [];
   try {
-    localStorage.setItem(QUESTIONS_STORAGE_KEY, JSON.stringify(questions));
+    const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    legacy = Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return;
+  }
+
+  const own = legacy.filter((q) => q && !LEGACY_SEED_IDS.has(q.id));
+  try {
+    // Only drop the local copy once every question is safely in the database.
+    for (const q of own) {
+      const { id: _id, createdAt: _createdAt, ...payload } = q;
+      await postQuestion(payload);
+    }
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
   } catch (err) {
-    console.error("Failed to save questions:", err);
+    console.warn("Could not migrate local question bank to the server yet:", err);
   }
 }
 
-export function addQuestion(q: Omit<Question, "id" | "createdAt">): Question {
-  const current = getStoredQuestions();
-  const newQ: Question = {
-    ...q,
-    id: `Q-${Math.floor(200 + Math.random() * 800)}`,
-    createdAt: new Date().toISOString(),
-  };
-
-  const updated = [newQ, ...current];
-  saveStoredQuestions(updated);
-  return newQ;
+export async function fetchQuestions(): Promise<Question[]> {
+  await migrateLegacyQuestions();
+  const res = await apiFetch("/admin/question-bank", {
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Could not load the question bank."));
+  }
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
 }
 
-export function deleteQuestion(id: string): void {
-  const current = getStoredQuestions();
-  const updated = current.filter((q) => q.id !== id);
-  saveStoredQuestions(updated);
+export async function addQuestion(q: NewQuestion): Promise<Question> {
+  return postQuestion(q);
+}
+
+export async function deleteQuestion(id: string): Promise<void> {
+  const res = await apiFetch(`/admin/question-bank/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Could not delete the question."));
+  }
 }

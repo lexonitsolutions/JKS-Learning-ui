@@ -255,7 +255,7 @@ export default function AdminCoursesPage() {
               <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">
                 {totalEnrolled.toLocaleString()}
               </div>
-              <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">+14% month-on-month</div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">Across all courses</div>
             </div>
           </TiltCard>
 

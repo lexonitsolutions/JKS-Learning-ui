@@ -5,7 +5,7 @@ import { CreditCard, IndianRupee, CheckCircle2, Download, Plus, Printer, Search,
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
-import { getStoredInvoices, fetchInvoicesFromApi, registerCourseOnline, createInvoice, type Invoice } from "@/lib/data/invoices-store";
+import { fetchInvoicesFromApi, createInvoice, isFreeInvoice, isSettledRevenue, isInMonth, getInvoiceStatusLabel, type Invoice } from "@/lib/data/invoices-store";
 import { InvoiceModal } from "@/components/common/invoice-modal";
 import { CustomDropdown, type DropdownOption } from "@/components/ui/custom-dropdown";
 
@@ -70,8 +70,17 @@ export default function AdminPaymentsPage() {
   };
 
   const totalSuccess = invoices
-    .filter((p) => p.paymentStatus === "Paid")
+    .filter(isSettledRevenue)
     .reduce((sum, p) => sum + p.totalAmount, 0);
+
+  const mtdInvoices = invoices.filter((p) => isSettledRevenue(p) && isInMonth(p.issueDate));
+  const mtdTotal = mtdInvoices.reduce((sum, p) => sum + p.totalAmount, 0);
+
+  const paidCount = invoices.filter(isSettledRevenue).length;
+  const pendingCount = invoices.filter((p) => p.paymentStatus === "Pending").length;
+  const freeCount = invoices.filter((p) => p.paymentStatus === "Paid" && isFreeInvoice(p)).length;
+  const attemptedCount = paidCount + pendingCount;
+  const successRate = attemptedCount > 0 ? (paidCount / attemptedCount) * 100 : null;
 
   // Dynamically extract unique course tracks
   const courseOptions: DropdownOption[] = useMemo(() => {
@@ -90,17 +99,23 @@ export default function AdminPaymentsPage() {
   }, [invoices]);
 
   const statusOptions: DropdownOption[] = useMemo(() => {
-    const paidCount = invoices.filter((i) => i.paymentStatus === "Paid").length;
-    const pendingCount = invoices.filter((i) => i.paymentStatus === "Pending").length;
+    const paid = invoices.filter(isSettledRevenue).length;
+    const pending = invoices.filter((i) => i.paymentStatus === "Pending").length;
+    const free = invoices.filter((i) => i.paymentStatus === "Paid" && isFreeInvoice(i)).length;
     return [
       { value: "All", label: `All Invoices (${invoices.length})` },
-      { value: "Paid", label: "Paid", count: paidCount },
-      { value: "Pending", label: "Pending", count: pendingCount },
+      { value: "Paid", label: "Paid", count: paid },
+      { value: "Free", label: "Scholarship / Free", count: free },
+      { value: "Pending", label: "Pending", count: pending },
     ];
   }, [invoices]);
 
   const filtered = invoices.filter((p) => {
-    const matchStatus = filterStatus === "All" || p.paymentStatus === filterStatus;
+    const matchStatus =
+      filterStatus === "All" ||
+      (filterStatus === "Paid" && isSettledRevenue(p)) ||
+      (filterStatus === "Free" && p.paymentStatus === "Paid" && isFreeInvoice(p)) ||
+      (filterStatus === "Pending" && p.paymentStatus === "Pending");
     const courseDesc = p.items[0]?.description || (p as any).courseTitle || "Enrolled Course";
     const matchCourse = selectedCourse === "ALL" || courseDesc === selectedCourse;
     const matchSearch =
@@ -131,9 +146,11 @@ export default function AdminPaymentsPage() {
                 </div>
               </div>
               <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">
-                ₹{(totalSuccess / 100000).toFixed(2)}L
+                ₹{mtdTotal.toLocaleString("en-IN")}
               </div>
-              <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">+14.5% vs last month</div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                {mtdInvoices.length} paid {mtdInvoices.length === 1 ? "invoice" : "invoices"} this month
+              </div>
             </div>
           </TiltCard>
 
@@ -145,8 +162,12 @@ export default function AdminPaymentsPage() {
                   <CheckCircle2 className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">99.2%</div>
-              <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">18% GST Compliant &amp; Reconciled</div>
+              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">
+                {successRate === null ? "—" : `${successRate.toFixed(1)}%`}
+              </div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                {paidCount} paid · {pendingCount} pending · {freeCount} free/scholarship
+              </div>
             </div>
           </TiltCard>
 
@@ -307,9 +328,17 @@ export default function AdminPaymentsPage() {
                       ₹{inv.totalAmount.toLocaleString("en-IN")}
                     </td>
                     <td className="px-4 py-3.5 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 px-2.5 py-0.5 text-[11px] font-semibold">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                          inv.paymentStatus === "Pending"
+                            ? "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400"
+                            : isFreeInvoice(inv)
+                              ? "bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-400"
+                              : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                        }`}
+                      >
                         <CheckCircle2 className="h-3 w-3" />
-                        {inv.paymentStatus}
+                        {getInvoiceStatusLabel(inv)}
                       </span>
                     </td>
                     <td className="pr-4 py-3.5 pl-4 text-right whitespace-nowrap last:rounded-r-2xl">
