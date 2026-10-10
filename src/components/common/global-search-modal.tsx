@@ -35,10 +35,17 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getStoredCourses, type FullCourse } from "@/lib/data/courses-store";
-import { fetchInstructors, type StoredInstructor } from "@/lib/auth/use-mock-auth";
+import { fetchInstructors, useMockSession, type StoredInstructor } from "@/lib/auth/use-mock-auth";
 import { ADMIN_STUDENTS } from "@/lib/data/admin";
+import { getStoredLeads } from "@/lib/data/leads-store";
+import {
+  fetchAdminStudents,
+  fetchLeaderboardData,
+  type AdminStudentRecord,
+  type LeaderboardItem,
+} from "@/lib/data/students-api";
 
-export type SearchContextMode = "auto" | "public" | "student" | "admin";
+export type SearchContextMode = "auto" | "public" | "student" | "admin" | "instructor";
 
 export interface SearchResultItem {
   id: string;
@@ -81,6 +88,8 @@ export function GlobalSearchModal({
 
   const [courses, setCourses] = useState<FullCourse[]>([]);
   const [tutors, setTutors] = useState<StoredInstructor[]>([]);
+  const [students, setStudents] = useState<AdminStudentRecord[]>([]);
+  const [leaderboardUsers, setLeaderboardUsers] = useState<LeaderboardItem[]>([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -99,16 +108,62 @@ export function GlobalSearchModal({
     setSelectedIndex(0);
   }, [isControlled, controlledOnClose]);
 
+  // Pre-hydrate from localStorage cache and pre-fetch on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const cachedStudents = localStorage.getItem("jks_students_roster_cache_v2");
+      if (cachedStudents) {
+        const parsed = JSON.parse(cachedStudents);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setStudents(parsed);
+        }
+      }
+    } catch {}
+
+    try {
+      const cachedLb = localStorage.getItem("jks_leaderboard_cache_v2");
+      if (cachedLb) {
+        const parsed = JSON.parse(cachedLb);
+        if (parsed && Array.isArray(parsed.leaderboard) && parsed.leaderboard.length > 0) {
+          setLeaderboardUsers(parsed.leaderboard);
+        }
+      }
+    } catch {}
+
+    // Background pre-fetch so students are immediately searchable before modal even opens
+    void fetchAdminStudents()
+      .then((res) => {
+        if (res && Array.isArray(res) && res.length > 0) setStudents(res);
+      })
+      .catch(() => {});
+
+    void fetchLeaderboardData()
+      .then((res) => {
+        if (res && Array.isArray(res.leaderboard) && res.leaderboard.length > 0) {
+          setLeaderboardUsers(res.leaderboard);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const session = useMockSession();
+
   // Determine current effective mode
-  const effectiveMode: "public" | "student" | "admin" = useMemo(() => {
+  const effectiveMode: "public" | "student" | "admin" | "instructor" = useMemo(() => {
     if (mode !== "auto") return mode;
     if (pathname.startsWith("/admin")) return "admin";
+    if (pathname.startsWith("/instructor")) return "instructor";
     if (pathname.startsWith("/dashboard")) return "student";
+    if (session?.role === "admin") return "admin";
+    if (session?.role === "instructor") return "instructor";
     return "public";
-  }, [mode, pathname]);
+  }, [mode, pathname, session?.role]);
 
-  // Load courses and tutors
+  // Load courses, tutors, and fresh students whenever search opens
   useEffect(() => {
+    if (!isOpen) return;
+
     try {
       const stored = getStoredCourses();
       if (stored && stored.length > 0) {
@@ -119,6 +174,24 @@ export function GlobalSearchModal({
     void fetchInstructors()
       .then((res) => {
         if (res && res.length > 0) setTutors(res);
+      })
+      .catch(() => {});
+
+    // Fetch live enrolled students from backend
+    void fetchAdminStudents()
+      .then((res) => {
+        if (res && Array.isArray(res) && res.length > 0) {
+          setStudents(res);
+        }
+      })
+      .catch(() => {});
+
+    // Fetch leaderboard learners from backend
+    void fetchLeaderboardData()
+      .then((res) => {
+        if (res && Array.isArray(res.leaderboard) && res.leaderboard.length > 0) {
+          setLeaderboardUsers(res.leaderboard);
+        }
       })
       .catch(() => {});
   }, [isOpen]);
@@ -192,22 +265,206 @@ export function GlobalSearchModal({
   const allItems = useMemo<SearchResultItem[]>(() => {
     const items: SearchResultItem[] = [];
 
+    // Helper to build deduplicated students from database, leaderboard & fallback roster
+    const buildStudentSearchItems = (): SearchResultItem[] => {
+      const studentMap = new Map<
+        string,
+        {
+          id: string;
+          name: string;
+          email: string;
+          status: string;
+          enrolledCount: number;
+          phone?: string;
+          track?: string;
+        }
+      >();
+
+      // 1. Fallback mock students from ADMIN_STUDENTS
+      ADMIN_STUDENTS.forEach((st, idx) => {
+        if (!st.name) return;
+        const key = (st.email || st.name).toLowerCase().trim();
+        studentMap.set(key, {
+          id: `mock-${idx}`,
+          name: st.name,
+          email: st.email || "",
+          status: st.status || "Active",
+          enrolledCount: st.enrolledCourses || 1,
+        });
+      });
+
+      // 2. Real learners from Leaderboard
+      leaderboardUsers.forEach((lb) => {
+        if (!lb.name) return;
+        const key = (lb.email || lb.name).toLowerCase().trim();
+        const existing = studentMap.get(key);
+        studentMap.set(key, {
+          id: lb.id || existing?.id || `lb-${key}`,
+          name: lb.name,
+          email: lb.email || existing?.email || "",
+          status: existing?.status || "Active",
+          enrolledCount: existing?.enrolledCount || 1,
+          track: lb.track || existing?.track,
+        });
+      });
+
+      // 3. Stored admissions & registered student leads
+      try {
+        const storedLeads = getStoredLeads();
+        storedLeads.forEach((ld) => {
+          if (!ld.name) return;
+          const key = (ld.email || ld.name).toLowerCase().trim();
+          if (!studentMap.has(key)) {
+            studentMap.set(key, {
+              id: ld.id,
+              name: ld.name,
+              email: ld.email || "",
+              phone: ld.phone,
+              status: ld.status === "converted" ? "Active" : "Applicant",
+              enrolledCount: ld.status === "converted" ? 1 : 0,
+              track: ld.interestedCourse,
+            });
+          }
+        });
+      } catch {}
+
+      // 4. Current logged-in student user (from localStorage, Clerk, or session)
+      if (typeof window !== "undefined") {
+        try {
+          const authUserRaw = localStorage.getItem("jks_auth_user");
+          if (authUserRaw) {
+            const u = JSON.parse(authUserRaw);
+            if (u?.name) {
+              const key = (u.email || u.name).toLowerCase().trim();
+              const existing = studentMap.get(key);
+              studentMap.set(key, {
+                id: u.id || existing?.id || "current-user",
+                name: u.name,
+                email: u.email || existing?.email || "",
+                phone: u.phone || existing?.phone,
+                status: existing?.status || "Active",
+                enrolledCount: existing?.enrolledCount || 1,
+                track: existing?.track,
+              });
+            }
+          }
+        } catch {}
+
+        try {
+          const clerkUser = (window as any).Clerk?.user;
+          if (clerkUser) {
+            const fullName =
+              clerkUser.fullName ||
+              `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim();
+            const primaryEmail =
+              clerkUser.primaryEmailAddress?.emailAddress ||
+              clerkUser.emailAddresses?.[0]?.emailAddress ||
+              "";
+            if (fullName) {
+              const key = (primaryEmail || fullName).toLowerCase().trim();
+              const existing = studentMap.get(key);
+              studentMap.set(key, {
+                id: clerkUser.id || existing?.id || "clerk-user",
+                name: fullName,
+                email: primaryEmail || existing?.email || "",
+                status: existing?.status || "Active",
+                enrolledCount: existing?.enrolledCount || 1,
+                track: existing?.track,
+              });
+            }
+          }
+        } catch {}
+
+        try {
+          if (session?.name && session.role !== "admin" && session.role !== "instructor") {
+            const key = (session.email || session.name).toLowerCase().trim();
+            const existing = studentMap.get(key);
+            studentMap.set(key, {
+              id: (session as any)?.id || existing?.id || "mock-session-user",
+              name: session.name,
+              email: session.email || existing?.email || "",
+              status: existing?.status || "Active",
+              enrolledCount: existing?.enrolledCount || 1,
+              track: existing?.track,
+            });
+          }
+        } catch {}
+      }
+
+      // 5. Official Admin Students from API (highest fidelity)
+      students.forEach((st) => {
+        if (!st.name) return;
+        const key = (st.email || st.name || st.id).toLowerCase().trim();
+        const firstEnrollment = st.enrollments?.[0];
+        studentMap.set(key, {
+          id: st.id,
+          name: st.name,
+          email: st.email || "",
+          phone: st.phone,
+          status: st.status || "Active",
+          enrolledCount: st.totalEnrolled || st.enrollments?.length || 0,
+          track: firstEnrollment?.track,
+        });
+      });
+
+      const studentResults: SearchResultItem[] = [];
+      const isInstructorWorkspace = pathname.startsWith("/instructor");
+      const isAdminWorkspace = pathname.startsWith("/admin");
+      const isStudentWorkspace = pathname.startsWith("/dashboard");
+
+      studentMap.forEach((st) => {
+        const targetHref = isInstructorWorkspace
+          ? `/instructor/students?search=${encodeURIComponent(st.name)}`
+          : isAdminWorkspace
+          ? `/admin/students?search=${encodeURIComponent(st.name)}`
+          : isStudentWorkspace
+          ? `/dashboard/leaderboard`
+          : `/admin/students?search=${encodeURIComponent(st.name)}`;
+
+        const subtitleParts: string[] = [];
+        if (st.email) subtitleParts.push(st.email);
+        if (st.phone) subtitleParts.push(st.phone);
+        if (st.track) subtitleParts.push(`${st.track} Track`);
+        subtitleParts.push(`${st.enrolledCount} Enrolled Course(s)`);
+
+        const nameTokens = st.name.toLowerCase().split(/\s+/).filter(Boolean);
+
+        studentResults.push({
+          id: `student-${st.id}`,
+          title: st.name,
+          subtitle: subtitleParts.join(" • "),
+          category: "Students",
+          href: targetHref,
+          icon: Users,
+          badge: st.status === "BLOCKED" ? "Blocked" : st.status === "ON_HOLD" ? "On Hold" : "Student",
+          badgeColor:
+            st.status === "Active" || st.status === "ACTIVE"
+              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+              : st.status === "BLOCKED"
+              ? "bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400"
+              : "bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-300",
+          tags: [
+            "student",
+            "students",
+            "learner",
+            "enrolled",
+            "candidate",
+            st.name.toLowerCase(),
+            ...nameTokens,
+            ...(st.email ? [st.email.toLowerCase(), st.email.split("@")[0].toLowerCase()] : []),
+            ...(st.phone ? [st.phone.replace(/[^0-9]/g, "")] : []),
+            ...(st.track ? [st.track.toLowerCase()] : []),
+          ],
+        });
+      });
+
+      return studentResults;
+    };
+
     // --- 1. ADMIN MODE ITEMS ---
     if (effectiveMode === "admin") {
       // Students
-      ADMIN_STUDENTS.forEach((st, idx) => {
-        items.push({
-          id: `admin-student-${idx}`,
-          title: st.name,
-          subtitle: `${st.email} • ${st.enrolledCourses} Enrolled Course(s) • Status: ${st.status}`,
-          category: "Students",
-          href: "/admin/students",
-          icon: Users,
-          badge: st.status,
-          badgeColor: st.status === "Active" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400" : "bg-slate-100 text-slate-600",
-          tags: ["student", "learner", st.email, st.name.toLowerCase()],
-        });
-      });
+      items.push(...buildStudentSearchItems());
 
       // Tutors
       const tutorList = tutors.length > 0
@@ -368,7 +625,107 @@ export function GlobalSearchModal({
       );
     }
 
-    // --- 2. STUDENT WORKSPACE ITEMS ---
+    // --- 2. INSTRUCTOR WORKSPACE ITEMS ---
+    if (effectiveMode === "instructor") {
+      // Students Roster
+      items.push(...buildStudentSearchItems());
+
+      // Courses
+      courses.forEach((c) => {
+        items.push({
+          id: `instructor-course-${c.slug || c.id}`,
+          title: c.title,
+          subtitle: `${c.track} Track • ${c.durationWeeks || 12} Weeks • Lead Tutor: ${c.instructorName || "Davood Khan"}`,
+          category: "Courses",
+          href: `/instructor/courses`,
+          icon: BookOpen,
+          badge: c.status || "Assigned",
+          badgeColor: "bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-300",
+          tags: ["course", "curriculum", c.track.toLowerCase(), c.slug],
+        });
+      });
+
+      // Instructor Hub Tools
+      items.push(
+        {
+          id: "inst-dashboard",
+          title: "Instructor Dashboard",
+          subtitle: "Lecturer overview, student progress tracking, and batch updates",
+          category: "Operations",
+          href: "/instructor",
+          icon: Activity,
+          badge: "Overview",
+        },
+        {
+          id: "inst-courses",
+          title: "Assigned Courses & Curricula",
+          subtitle: "Manage video modules, assignments, and curriculum structure",
+          category: "Courses",
+          href: "/instructor/courses",
+          icon: BookOpen,
+        },
+        {
+          id: "inst-courses-new",
+          title: "Create New Course Curriculum",
+          subtitle: "Upload lectures, define topics, and configure coding tests",
+          category: "Courses",
+          href: "/instructor/courses/new",
+          icon: BookOpen,
+          badge: "Builder",
+        },
+        {
+          id: "inst-students",
+          title: "Student Roster & Cohort Progress",
+          subtitle: "View enrolled students, video completion percentage, and milestones",
+          category: "Students",
+          href: "/instructor/students",
+          icon: Users,
+          badge: "Roster",
+        },
+        {
+          id: "inst-assessments",
+          title: "Student Assessments & Submissions",
+          subtitle: "Grade coding submissions, project files, and review AI anti-skip metrics",
+          category: "Assessments",
+          href: "/instructor/assessments",
+          icon: ClipboardCheck,
+        },
+        {
+          id: "inst-batches",
+          title: "Batches & Class Schedules",
+          subtitle: "Assigned cohort schedules, meeting links, and timing slots",
+          category: "Batches",
+          href: "/instructor/batches",
+          icon: FolderTree,
+        },
+        {
+          id: "inst-syllabus",
+          title: "Syllabus Curriculum Planner",
+          subtitle: "Design enterprise syllabus structures and weekly topic outlines",
+          category: "Batches",
+          href: "/instructor/syllabus",
+          icon: FileText,
+        },
+        {
+          id: "inst-analytics",
+          title: "Instructor Class Analytics",
+          subtitle: "Student watch times, quiz pass rates, and assignment completion velocity",
+          category: "Operations",
+          href: "/instructor/analytics",
+          icon: TrendingUp,
+        },
+        {
+          id: "inst-profile",
+          title: "Instructor Faculty Profile",
+          subtitle: "Bio, teaching credentials, and assigned department tracks",
+          category: "Operations",
+          href: "/instructor/profile",
+          icon: User,
+        }
+      );
+    }
+
+    // --- 3. STUDENT WORKSPACE ITEMS ---
     if (effectiveMode === "student") {
       // Courses
       courses.forEach((c) => {
@@ -681,8 +1038,13 @@ export function GlobalSearchModal({
       );
     }
 
+    // Always ensure student search items are included so student name queries resolve from any workspace
+    if (effectiveMode === "public" || effectiveMode === "student") {
+      items.push(...buildStudentSearchItems());
+    }
+
     return items;
-  }, [effectiveMode, courses, tutors]);
+  }, [effectiveMode, courses, tutors, students, leaderboardUsers, pathname]);
 
   // Available categories for filter tabs
   const categories = useMemo(() => {
@@ -1148,8 +1510,23 @@ export function GlobalSearchTrigger({
 }: {
   className?: string;
   placeholder?: string;
-  variant?: "bar" | "icon" | "compact";
+  variant?: "bar" | "icon" | "compact" | "ghost";
 }) {
+  if (variant === "ghost") {
+    return (
+      <button
+        type="button"
+        onClick={openGlobalSearch}
+        aria-label="Search courses, tutors, and platform (⌘K)"
+        title="Search (⌘K)"
+        className={`group relative flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl border border-transparent bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/[0.06] dark:hover:bg-white/10 transition-all duration-200 cursor-pointer active:scale-95 ${className}`}
+      >
+        <Search className="h-4 w-4 sm:h-[18px] sm:w-[18px] stroke-[2.2] transition-transform duration-200 group-hover:scale-110" />
+        <span className="sr-only">Search</span>
+      </button>
+    );
+  }
+
   if (variant === "icon") {
     return (
       <button

@@ -134,6 +134,17 @@ export default function AdminStudentsPage() {
   const [rejectionReasonInput, setRejectionReasonInput] = useState("");
   const [isActionInProgress, setIsActionInProgress] = useState<string | null>(null);
 
+  // Sync searchQuery from URL parameter if navigating from global search
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const q = sp.get("search");
+      if (q) {
+        setSearchQuery(q);
+      }
+    }
+  }, []);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);

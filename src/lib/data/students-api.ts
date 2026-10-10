@@ -98,11 +98,15 @@ export interface AdminStudentDetail {
   submissions?: StudentAssessmentItem[];
 }
 
+const STUDENTS_STORAGE_KEY = "jks_students_roster_cache_v2";
+const LEADERBOARD_STORAGE_KEY = "jks_leaderboard_cache_v2";
+
 export async function fetchAdminStudents(query?: {
   courseSlug?: string;
   courseId?: string;
   instructorId?: string;
 }): Promise<AdminStudentRecord[]> {
+  const isUnfiltered = !query?.courseSlug && !query?.courseId && !query?.instructorId;
   try {
     const params = new URLSearchParams();
     if (query?.courseSlug && query.courseSlug !== "all") params.set("courseSlug", query.courseSlug);
@@ -116,11 +120,30 @@ export async function fetchAdminStudents(query?: {
     });
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data)) return data;
+      if (Array.isArray(data)) {
+        if (isUnfiltered && typeof window !== "undefined") {
+          try {
+            localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(data));
+          } catch {}
+        }
+        return data;
+      }
     }
   } catch (err) {
     console.warn("Backend /admin/students unavailable, returning fallback:", (err as Error)?.message || err);
   }
+
+  // Fallback to cached students if available
+  if (isUnfiltered && typeof window !== "undefined") {
+    try {
+      const cached = localStorage.getItem(STUDENTS_STORAGE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+  }
+
   return [];
 }
 
@@ -176,11 +199,28 @@ export async function fetchLeaderboardData(): Promise<LeaderboardResponse> {
     if (res.ok) {
       const data = await res.json();
       if (data && Array.isArray(data.leaderboard)) {
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem(LEADERBOARD_STORAGE_KEY, JSON.stringify(data));
+          } catch {}
+        }
         return data;
       }
     }
   } catch (err) {
     console.warn("Leaderboard API not reachable, computing fallback:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      const cached = localStorage.getItem(LEADERBOARD_STORAGE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && Array.isArray(parsed.leaderboard) && parsed.leaderboard.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
   }
 
   // Fallback if backend offline
