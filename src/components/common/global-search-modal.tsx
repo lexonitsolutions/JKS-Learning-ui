@@ -1148,8 +1148,23 @@ export function GlobalSearchTrigger({
 }: {
   className?: string;
   placeholder?: string;
-  variant?: "bar" | "icon" | "compact";
+  variant?: "bar" | "icon" | "compact" | "ghost";
 }) {
+  if (variant === "ghost") {
+    return (
+      <button
+        type="button"
+        onClick={openGlobalSearch}
+        aria-label="Search courses, tutors, and platform (⌘K)"
+        title="Search (⌘K)"
+        className={`group relative flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl border border-transparent bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/[0.06] dark:hover:bg-white/10 transition-all duration-200 cursor-pointer active:scale-95 ${className}`}
+      >
+        <Search className="h-4 w-4 sm:h-[18px] sm:w-[18px] stroke-[2.2] transition-transform duration-200 group-hover:scale-110" />
+        <span className="sr-only">Search</span>
+      </button>
+    );
+  }
+
   if (variant === "icon") {
     return (
       <button
