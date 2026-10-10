@@ -122,12 +122,12 @@ export default function StudentProfilePage() {
   const [completedAssignmentsCount, setCompletedAssignmentsCount] = useState(0);
 
   // Profile Form States
-  const [name, setName] = useState(clerkName || session?.name || "Student Learner");
+  const [name, setName] = useState(clerkName || session?.name || "Student");
   const [phone, setPhone] = useState(session?.phone || "");
-  const [role, setRole] = useState("Student Learner");
+  const [role, setRole] = useState("Student");
   const [bio, setBio] = useState("Enrolled learner on JKS Learning.");
   const [location, setLocation] = useState("India");
-  const [avatar, setAvatar] = useState(clerkUser?.imageUrl || "/images/hero-developer.png");
+  const [avatar, setAvatar] = useState(clerkUser?.imageUrl || PRESET_AVATARS[0]);
   const [enrolledTrack, setEnrolledTrack] = useState("No Active Track");
 
   // Save States
