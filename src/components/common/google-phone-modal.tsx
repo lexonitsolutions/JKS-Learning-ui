@@ -108,9 +108,6 @@ export function GooglePhoneModal({
           token = await getToken?.();
         } catch {}
       }
-      if (!token && typeof window !== "undefined") {
-        token = localStorage.getItem("jks_access_token");
-      }
 
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -118,17 +115,6 @@ export function GooglePhoneModal({
 
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
-      }
-
-      const normalizedEmail = (userEmail || "").trim().toLowerCase();
-      if (normalizedEmail) {
-        headers["x-user-email"] = normalizedEmail;
-      }
-
-      const rawUser =
-        typeof window !== "undefined" ? localStorage.getItem("jks_auth_user") : null;
-      if (rawUser) {
-        headers["x-mock-session"] = encodeURIComponent(rawUser);
       }
 
       // Try updating via /users/profile using apiFetch

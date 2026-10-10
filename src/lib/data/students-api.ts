@@ -99,7 +99,7 @@ export interface AdminStudentDetail {
 }
 
 const STUDENTS_STORAGE_KEY = "jks_students_roster_cache_v2";
-const LEADERBOARD_STORAGE_KEY = "jks_leaderboard_cache_v2";
+const LEADERBOARD_STORAGE_KEY = "jks_leaderboard_cache_v3";
 
 export async function fetchAdminStudents(query?: {
   courseSlug?: string;
@@ -223,96 +223,16 @@ export async function fetchLeaderboardData(): Promise<LeaderboardResponse> {
     } catch {}
   }
 
-  // Fallback if backend offline
+  // Backend unreachable and nothing cached: show an empty board rather than
+  // invented learners with made-up streaks and scores.
   return {
-    leaderboard: [
-      {
-        id: "student-davood",
-        name: "Davood Khan",
-        email: "pattandavood123@gmail.com",
-        initials: "DK",
-        track: "Full Stack",
-        streakDays: 37,
-        completedVideos: 9,
-        solvedAssignments: 10,
-        points: 2975,
-        accuracy: 94,
-        badge: "Grandmaster Architect",
-        isRealUser: true,
-        createdAt: new Date().toISOString(),
-        rank: 1,
-      },
-      {
-        id: "student-khan",
-        name: "Khan Patan",
-        email: "patankhan3318@gmail.com",
-        initials: "KP",
-        track: "Full Stack",
-        streakDays: 34,
-        completedVideos: 15,
-        solvedAssignments: 7,
-        points: 2850,
-        accuracy: 98,
-        badge: "Grandmaster Architect",
-        isRealUser: true,
-        createdAt: new Date().toISOString(),
-        rank: 2,
-      },
-      {
-        id: "peer-1",
-        name: "Satish Jhamwer",
-        email: "satish.j@jkslearning.internal",
-        initials: "SJ",
-        track: "Java Full Stack",
-        streakDays: 24,
-        completedVideos: 18,
-        solvedAssignments: 6,
-        points: 2650,
-        accuracy: 96,
-        badge: "Grandmaster Architect",
-        isRealUser: false,
-        createdAt: new Date().toISOString(),
-        rank: 3,
-      },
-      {
-        id: "peer-2",
-        name: "Peeyush Raj",
-        email: "peeyush.r@jkslearning.internal",
-        initials: "PR",
-        track: "Frontend React",
-        streakDays: 19,
-        completedVideos: 15,
-        solvedAssignments: 5,
-        points: 2150,
-        accuracy: 94,
-        badge: "Master Solver",
-        isRealUser: false,
-        createdAt: new Date().toISOString(),
-        rank: 4,
-      },
-      {
-        id: "peer-3",
-        name: "Akkal Dhami",
-        email: "akkal.d@jkslearning.internal",
-        initials: "AD",
-        track: ".NET Core Cloud",
-        streakDays: 16,
-        completedVideos: 12,
-        solvedAssignments: 4,
-        points: 1850,
-        accuracy: 91,
-        badge: "Pro Developer",
-        isRealUser: false,
-        createdAt: new Date().toISOString(),
-        rank: 5,
-      },
-    ],
+    leaderboard: [],
     topStreaks: [],
     topSolvers: [],
     metrics: {
-      totalActiveLearners: 5,
-      totalCompletedLessons: 69,
-      totalChallengesSolved: 32,
+      totalActiveLearners: 0,
+      totalCompletedLessons: 0,
+      totalChallengesSolved: 0,
     },
   };
 }
@@ -449,9 +369,6 @@ export interface UserProfileUpdate {
 export async function fetchMyProfile(email?: string): Promise<UserProfileDto | null> {
   try {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (email) {
-      headers["x-user-email"] = email.toLowerCase().trim();
-    }
     const res = await apiFetch("/users/profile", {
       headers,
       cache: "no-store",
@@ -471,9 +388,6 @@ export async function updateMyProfile(
 ): Promise<{ success: boolean; data?: UserProfileDto; error?: string }> {
   try {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (email) {
-      headers["x-user-email"] = email.toLowerCase().trim();
-    }
     const res = await apiFetch("/users/profile", {
       method: "PATCH",
       headers,

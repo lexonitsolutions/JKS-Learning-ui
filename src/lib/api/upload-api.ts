@@ -30,19 +30,8 @@ export async function uploadImage(
   formData.append("file", file);
   formData.append("context", context);
 
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("jks_access_token")
-      : null;
-
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
   const res = await fetch(apiUrl("/upload/image"), {
     method: "POST",
-    headers,
     credentials: "include",
     body: formData,
   });
@@ -68,21 +57,9 @@ export async function uploadImage(
  * Delete an image from Cloudinary by its publicId via the backend.
  */
 export async function deleteImage(publicId: string): Promise<void> {
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("jks_access_token")
-      : null;
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
   await fetch(apiUrl("/upload/image"), {
     method: "DELETE",
-    headers,
+    headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify({ publicId }),
   });

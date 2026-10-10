@@ -93,19 +93,18 @@ export function AddAssignmentModal({ isOpen, onClose, onCreate }: AddAssignmentM
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
 
-    setIsSaved(true);
-
-    // Persist all valid questions to the question bank
+    // Persist all valid questions to the (shared, database-backed) question bank
     const validQuestions = questions.filter(
       (q) => q.questionText.trim().length > 0 && q.options.some((o) => o.trim().length > 0)
     );
 
+    try {
     for (const q of validQuestions) {
-      addQuestion({
+      await addQuestion({
         category: course,
         difficulty: "Medium",
         type: type === "Coding Test" ? "Code Snippet" : "MCQ",
@@ -117,6 +116,12 @@ export function AddAssignmentModal({ isOpen, onClose, onCreate }: AddAssignmentM
         explanation: q.explanation?.trim() || `Assessment question for ${title}`,
       });
     }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Could not save the questions to the question bank.");
+      return;
+    }
+
+    setIsSaved(true);
 
     setTimeout(() => {
       onCreate({

@@ -160,7 +160,6 @@ export default function AuthRedirectPage() {
               headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
-                "x-user-email": email,
               },
               body: JSON.stringify({
                 email,
@@ -180,11 +179,7 @@ export default function AuthRedirectPage() {
 
             if (res.ok) {
               const data = await res.json().catch(() => ({}));
-              if (data?.accessToken && typeof window !== "undefined") {
-                try {
-                  localStorage.setItem("jks_access_token", data.accessToken);
-                } catch {}
-              }
+      // The API sets an httpOnly accessToken cookie; the token is never kept in JS-readable storage.
             }
           }
         } catch (err) {

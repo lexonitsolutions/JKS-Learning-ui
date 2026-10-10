@@ -335,9 +335,10 @@ function AdminNewCourseContent() {
     },
   ]);
 
-  // Section & Subsection Collapse/Minimize State (Stage 2)
+  // Section, Subsections & Direct Videos Collapse State (Stage 2)
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
-  const [collapsedSubsections, setCollapsedSubsections] = useState<Record<string, boolean>>({});
+  const [collapsedSubsectionsBySection, setCollapsedSubsectionsBySection] = useState<Record<string, boolean>>({});
+  const [collapsedDirectVideos, setCollapsedDirectVideos] = useState<Record<string, boolean>>({});
 
   const toggleSectionCollapse = (sectionId: string) => {
     setCollapsedSections((prev) => ({
@@ -346,10 +347,17 @@ function AdminNewCourseContent() {
     }));
   };
 
-  const toggleSubsectionCollapse = (subId: string) => {
-    setCollapsedSubsections((prev) => ({
+  const toggleAllSubsectionsForSection = (sectionId: string) => {
+    setCollapsedSubsectionsBySection((prev) => ({
       ...prev,
-      [subId]: !prev[subId],
+      [sectionId]: !prev[sectionId],
+    }));
+  };
+
+  const toggleDirectVideosCollapse = (sectionId: string) => {
+    setCollapsedDirectVideos((prev) => ({
+      ...prev,
+      [sectionId]: !prev[sectionId],
     }));
   };
 
@@ -1967,18 +1975,18 @@ function AdminNewCourseContent() {
                   )}
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
+                    <div className="min-w-0">
                       <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Step 2: Sections, Subsections & Video Lessons</h2>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Upload video files or paste private URLs for every section & subsection.
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0 sm:justify-end">
                       <button
                         type="button"
                         onClick={toggleAllSectionsCollapse}
-                        className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer w-full sm:w-auto"
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer shrink-0"
                         title={sections.every((s) => !!collapsedSections[s.id]) ? "Expand all sections" : "Collapse all sections"}
                       >
                         <ChevronsUpDown className="h-4 w-4 text-slate-500 dark:text-slate-400" />
@@ -1987,16 +1995,19 @@ function AdminNewCourseContent() {
                       <button
                         type="button"
                         onClick={() => setIsImportModalOpen(true)}
-                        className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/70 dark:bg-indigo-950/40 px-3.5 py-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer w-full sm:w-auto"
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/70 dark:bg-indigo-950/40 px-3 py-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer shrink-0"
+                        title="Import from Existing Course"
                       >
-                        <ArrowDownToLine className="h-4 w-4 text-indigo-600 dark:text-indigo-400" /> Import from Existing Course
+                        <ArrowDownToLine className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        <span>Import Course</span>
                       </button>
                       <button
                         type="button"
                         onClick={addSection}
-                        className="flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer w-full sm:w-auto"
+                        className="flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors cursor-pointer shrink-0"
                       >
-                        <Plus className="h-4 w-4" /> Add Section
+                        <Plus className="h-4 w-4" />
+                        <span>Add Section</span>
                       </button>
                     </div>
                   </div>
@@ -2007,6 +2018,8 @@ function AdminNewCourseContent() {
                     const subVideoCount = section.subsections?.reduce((acc, sub) => acc + (sub.videos?.length || 0), 0) || 0;
                     const totalSectionLessons = directVideoCount + subVideoCount;
                     const isSectionCollapsed = !!collapsedSections[section.id];
+                    const areSubsectionsCollapsed = !!collapsedSubsectionsBySection[section.id];
+                    const isDirectVideosCollapsed = !!collapsedDirectVideos[section.id];
 
                     return (
                     <div
@@ -2059,39 +2072,21 @@ function AdminNewCourseContent() {
                             )}
                           </span>
 
-                          {/* Section Collapse / Expand Toggle Button with Indicator Icon */}
+                          {/* Section Collapse / Expand: ONLY ONE ICON, NO TEXT */}
                           <button
                             type="button"
                             onClick={() => toggleSectionCollapse(section.id)}
-                            className={`flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                            className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-all cursor-pointer ${
                               isSectionCollapsed
-                                ? "border-blue-300 dark:border-blue-800 bg-blue-50/80 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50"
-                                : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-surface-hover"
+                                ? "border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 shadow-2xs"
+                                : "border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-surface-hover"
                             }`}
                             title={isSectionCollapsed ? "Expand Section" : "Collapse Section"}
+                            aria-label={isSectionCollapsed ? "Expand Section" : "Collapse Section"}
                           >
                             <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isSectionCollapsed ? "" : "rotate-180"}`} />
-                            <span className="text-[11px] font-semibold">{isSectionCollapsed ? "Expand" : "Collapse"}</span>
                           </button>
 
-                          <button
-                            type="button"
-                            onClick={() => moveSection(secIdx, "up")}
-                            disabled={secIdx === 0}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30 cursor-pointer"
-                            title="Move Up"
-                          >
-                            <ChevronUp className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moveSection(secIdx, "down")}
-                            disabled={secIdx === sections.length - 1}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30 cursor-pointer"
-                            title="Move Down"
-                          >
-                            <ChevronDown className="h-4 w-4" />
-                          </button>
                           {sections.length > 1 && (
                             <button
                               type="button"
@@ -2134,20 +2129,37 @@ function AdminNewCourseContent() {
                             <span>Subsections ({section.subsections?.length || 0})</span>
                             <span className="hidden sm:inline text-[11px] font-normal text-slate-400 dark:text-slate-400">Optional nested lesson groupings</span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => addSubsectionToSection(secIdx)}
-                            className="flex items-center gap-1 rounded-lg border border-blue-200 dark:border-blue-800/80 bg-white dark:bg-input-bg px-2.5 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 shadow-xs hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
-                          >
-                            <Plus className="h-3 w-3" /> Add Subsection
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => addSubsectionToSection(secIdx)}
+                              className="flex items-center gap-1 rounded-lg border border-blue-200 dark:border-blue-800/80 bg-white dark:bg-input-bg px-2.5 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 shadow-xs hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+                            >
+                              <Plus className="h-3 w-3" /> Add Subsection
+                            </button>
+
+                            {/* Single Collapse/Expand button for ALL subsections */}
+                            {(section.subsections?.length || 0) > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => toggleAllSubsectionsForSection(section.id)}
+                                className={`flex h-7 w-7 items-center justify-center rounded-lg border transition-all cursor-pointer ${
+                                  areSubsectionsCollapsed
+                                    ? "border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 shadow-2xs"
+                                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-hover"
+                                }`}
+                                title={areSubsectionsCollapsed ? "Expand all subsections" : "Collapse all subsections"}
+                                aria-label={areSubsectionsCollapsed ? "Expand all subsections" : "Collapse all subsections"}
+                              >
+                                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${areSubsectionsCollapsed ? "" : "rotate-180"}`} />
+                              </button>
+                            )}
+                          </div>
                         </div>
 
                         {section.subsections && section.subsections.length > 0 ? (
                           <div className="space-y-3 pl-1 sm:pl-3 border-l-2 border-blue-200 dark:border-blue-900/60">
                             {section.subsections.map((sub, subIdx) => {
-                              const isSubCollapsed = !!collapsedSubsections[sub.id];
-
                               return (
                               <div
                                 key={sub.id}
@@ -2155,14 +2167,9 @@ function AdminNewCourseContent() {
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <button
-                                      type="button"
-                                      onClick={() => toggleSubsectionCollapse(sub.id)}
-                                      className="rounded bg-blue-100 dark:bg-blue-950/50 px-1.5 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-400 shrink-0 hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors cursor-pointer"
-                                      title={isSubCollapsed ? "Click to expand subsection" : "Click to collapse subsection"}
-                                    >
+                                    <span className="rounded bg-blue-100 dark:bg-blue-950/50 px-1.5 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-400 shrink-0">
                                       {secIdx + 1}.{subIdx + 1}
-                                    </button>
+                                    </span>
                                     <input
                                       type="text"
                                       value={sub.title}
@@ -2182,24 +2189,10 @@ function AdminNewCourseContent() {
                                       <Video className="h-3 w-3 text-[#2563EB] dark:text-blue-400" />
                                       <span>{sub.videos?.length || 0}</span>
                                     </span>
-                                    {/* Subsection Collapse/Expand Toggle with Indicator Icon */}
-                                    <button
-                                      type="button"
-                                      onClick={() => toggleSubsectionCollapse(sub.id)}
-                                      className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-bold transition-all cursor-pointer ${
-                                        isSubCollapsed
-                                          ? "border-blue-300 dark:border-blue-800 bg-blue-50/80 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 hover:bg-blue-100"
-                                          : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-surface-elevated text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-hover"
-                                      }`}
-                                      title={isSubCollapsed ? "Expand Subsection" : "Collapse Subsection"}
-                                    >
-                                      <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${isSubCollapsed ? "" : "rotate-180"}`} />
-                                      <span className="hidden sm:inline">{isSubCollapsed ? "Expand" : "Collapse"}</span>
-                                    </button>
                                     <button
                                       type="button"
                                       onClick={() => removeSubsection(secIdx, sub.id)}
-                                      className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-1"
+                                      className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-1 cursor-pointer"
                                       title="Remove Subsection"
                                     >
                                       <Trash2 className="h-3.5 w-3.5" />
@@ -2207,8 +2200,8 @@ function AdminNewCourseContent() {
                                   </div>
                                 </div>
 
-                                {/* Subsection Videos - Hidden when Collapsed */}
-                                {!isSubCollapsed && (
+                                {/* Subsection Videos - Hidden when all subsections are collapsed */}
+                                {!areSubsectionsCollapsed && (
                                 <div className="space-y-2.5 pl-1 sm:pl-3">
                                   {sub.videos.map((vid, vidIdx) => (
                                     <div
@@ -2436,16 +2429,35 @@ function AdminNewCourseContent() {
                             <Video className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                             <span>Direct Section Videos ({section.directVideos?.length || 0})</span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              addDirectVideo(secIdx);
-                              clearFieldError(`section-videos-${secIdx}`);
-                            }}
-                            className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
-                          >
-                            <Plus className="h-3 w-3" /> Add Video
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                addDirectVideo(secIdx);
+                                clearFieldError(`section-videos-${secIdx}`);
+                              }}
+                              className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 shadow-xs hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
+                            >
+                              <Plus className="h-3 w-3" /> Add Video
+                            </button>
+
+                            {/* Collapse icon for Direct Section Videos right beside Add Video button */}
+                            {(section.directVideos?.length || 0) > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => toggleDirectVideosCollapse(section.id)}
+                                className={`flex h-7 w-7 items-center justify-center rounded-lg border transition-all cursor-pointer ${
+                                  isDirectVideosCollapsed
+                                    ? "border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 shadow-2xs"
+                                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-hover"
+                                }`}
+                                title={isDirectVideosCollapsed ? "Expand Direct Section Videos" : "Collapse Direct Section Videos"}
+                                aria-label={isDirectVideosCollapsed ? "Expand Direct Section Videos" : "Collapse Direct Section Videos"}
+                              >
+                                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${isDirectVideosCollapsed ? "" : "rotate-180"}`} />
+                              </button>
+                            )}
+                          </div>
                         </div>
 
                         {fieldErrors[`section-videos-${secIdx}`] && (
@@ -2455,7 +2467,7 @@ function AdminNewCourseContent() {
                           </div>
                         )}
 
-                        {section.directVideos?.map((vid, vidIdx) => (
+                        {!isDirectVideosCollapsed && section.directVideos?.map((vid, vidIdx) => (
                           <div
                             key={vid.id}
                             id={`video-card-${vid.id}`}

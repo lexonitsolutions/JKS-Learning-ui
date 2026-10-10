@@ -40,11 +40,12 @@ export function AddQuestionToAssessmentModal({
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!questionText.trim()) return;
 
-    addQuestion({
+    try {
+    await addQuestion({
       category: courseTitle || assessmentTitle || "General",
       difficulty,
       type,
@@ -55,6 +56,10 @@ export function AddQuestionToAssessmentModal({
       marks: Number(marks) || 5,
       explanation: explanation.trim() || `Associated with assessment: ${assessmentTitle || "General"}`,
     });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Could not save the question to the question bank.");
+      return;
+    }
 
     setIsSaved(true);
     setTimeout(() => {
