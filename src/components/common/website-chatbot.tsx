@@ -409,11 +409,11 @@ export function WebsiteChatbot() {
     if (!textToSend) setInputValue("");
     setIsTyping(true);
 
-    // If user clicked or typed explicit registration request
-    const isExplicitReg = /(want to register|how to register|register me|sign me up|register now)/i.test(text);
+    // If user clicked or typed explicit registration request (covers register, registration, resigster, signup, etc.)
+    const isExplicitReg = /(regist|resigst|sign\s*up|signup|create account|join now|how to enroll|enroll now|get registered|open registration)/i.test(text);
 
     // If user clicked or typed explicit support request
-    const isExplicitSupport = /(contact support|talk to support|customer support|human help|support form)/i.test(text);
+    const isExplicitSupport = /(contact support|talk to support|customer support|human help|support form|login issue|can't log in)/i.test(text);
 
     try {
       const res = await fetch(apiUrl("/ai/chatbot/chat"), {
@@ -475,14 +475,55 @@ export function WebsiteChatbot() {
 
       setMessages((prev) => [...prev, botMsg]);
     } catch {
-      // Graceful error fallback
+      // Intelligent client-side fallback
+      const lower = text.toLowerCase();
+      let fallbackText = "I'm having trouble connecting to the network right now. Please check your connection and try again.";
+      let showReg = false;
+      let showSup = false;
+      let suggested: SuggestedCourse[] | undefined = undefined;
+
+      if (/(regist|resigst|sign\s*up|signup|join|enroll)/i.test(lower)) {
+        fallbackText = "You can register directly with JKS Learning right here! Please complete the registration form below to get started:";
+        showReg = true;
+      } else if (/(what is (jks|this website|this platform)|about jks|use of this platform|tell me about)/i.test(lower)) {
+        fallbackText = "**JKS Learning** is a modern tech education platform designed to help students and professionals build industry-ready skills.\n\nWe offer certified career courses in **Python & Machine Learning**, **Full Stack Development**, **Core Java**, **Data Structures**, and **SAP ERP** with interactive video lessons and career acceleration tools.";
+      } else if (/(support|contact|help|login error|cannot log|not approved)/i.test(lower)) {
+        fallbackText = "For customer support assistance, please fill out our support request form below so our team can help you directly:";
+        showSup = true;
+      } else if (/python/i.test(lower)) {
+        const pyCourse = publishedCourses.find((c) => c.title.toLowerCase().includes("python"));
+        if (pyCourse) {
+          fallbackText = "Here is our Python course currently available on JKS Learning:\n\n• **" + pyCourse.title + "**\nCovers Machine Learning fundamentals, feature engineering, and predictive modeling using Python.";
+          suggested = [
+            {
+              id: pyCourse.id,
+              title: pyCourse.title,
+              slug: pyCourse.slug,
+              price: 19999,
+              duration: "12 Weeks",
+              level: "Beginner",
+              instructor: "Jouli Srikanth",
+              url: `/courses/${pyCourse.slug}`,
+            },
+          ];
+        }
+      }
+
+      const botMsgId = `bot-${Date.now()}`;
       const fallbackMsg: ChatMessage = {
-        id: `bot-${Date.now()}`,
+        id: botMsgId,
         sender: "bot",
-        text: "I'm having trouble processing your request right now. Please try again in a moment. If the problem continues, our customer support team is available at support@jkslearning.com.",
+        text: fallbackText,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        options: ["Try Again 🔄", "Contact Support 💬"],
+        options: ["What is JKS Learning? 🎓", "Explore Available Courses 🚀", "Register Now 📝"],
+        showRegistrationForm: showReg,
+        showSupportForm: showSup,
+        suggestedCourses: suggested,
       };
+
+      if (showReg) setActiveRegistrationMsgId(botMsgId);
+      if (showSup) setActiveSupportMsgId(botMsgId);
+
       setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
       setIsTyping(false);
@@ -801,12 +842,17 @@ export function WebsiteChatbot() {
             <div
               ref={scrollContainerRef}
               onScroll={handleScroll}
-              className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-3.5 space-y-3 bg-gradient-to-b from-slate-50/90 via-slate-50/50 to-white dark:from-surface dark:via-surface-secondary dark:to-surface-secondary"
+              className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-3.5 space-y-3 bg-gradient-to-b from-slate-50/90 via-slate-50/50 to-white dark:from-surface dark:via-surface-secondary dark:to-surface-secondary touch-pan-y"
+              style={{
+                WebkitOverflowScrolling: "touch",
+                overscrollBehavior: "contain",
+                scrollbarWidth: "thin",
+              }}
             >
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex items-end gap-2 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex items-end gap-2 w-full ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                 >
                   {/* Bot Avatar */}
                   {msg.sender === "bot" && (
@@ -821,13 +867,13 @@ export function WebsiteChatbot() {
                     </div>
                   )}
 
-                  <div className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"} max-w-[90%]`}>
+                  <div className={`flex flex-col ${msg.sender === "user" ? "items-end max-w-[85%]" : "items-start flex-1 min-w-0 max-w-full"}`}>
                     {/* Message Bubble */}
                     <div
                       className={`rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed shadow-2xs break-words overflow-wrap-anywhere ${
                         msg.sender === "user"
                           ? "bg-gradient-to-r from-[#2563EB] to-blue-600 text-white rounded-br-xs shadow-blue-500/20"
-                          : "bg-white dark:bg-surface-elevated text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-800 rounded-bl-xs shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                          : "max-w-[94%] bg-white dark:bg-surface-elevated text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-800 rounded-bl-xs shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
                       }`}
                     >
                       {msg.sender === "user" ? (
