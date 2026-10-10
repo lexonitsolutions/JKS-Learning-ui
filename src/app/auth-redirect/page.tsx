@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useUser, useClerk, useAuth } from "@clerk/nextjs";
-import { useMockSession, performLogout, logoutMockSession } from "@/lib/auth/use-mock-auth";
+import { performLogout, logoutMockSession } from "@/lib/auth/use-mock-auth";
 import { SESSION_COOKIE_NAME, encodeSession, type MockSession } from "@/lib/auth/session";
 import { JksLogo } from "@/components/common/jks-logo";
 import { GooglePhoneModal } from "@/components/common/google-phone-modal";
@@ -26,7 +26,6 @@ export default function AuthRedirectPage() {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
   const { signOut } = useClerk();
-  const session = useMockSession();
 
   const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -42,43 +41,33 @@ export default function AuthRedirectPage() {
     return () => clearTimeout(fallbackTimer);
   }, []);
 
-  // Helper to establish real session in cookie and localStorage immediately
-  const establishRealSession = useCallback((customUser?: any, backendUser?: any) => {
-    const candidateUser =
-      customUser ||
-      user ||
-      (typeof window !== "undefined" ? (window as any).Clerk?.user : null);
-
-    let email = (
-      candidateUser?.primaryEmailAddress?.emailAddress ||
-      candidateUser?.emailAddresses?.[0]?.emailAddress ||
+  /**
+   * Store the signed-in identity for the rest of the app.
+   *
+   * The identity comes ONLY from the live Clerk user (and the API's answer for
+   * it). It must never fall back to whatever an earlier visitor left in
+   * localStorage or the session cookie: that is how a brand-new Google account
+   * ended up inside someone else's (or a placeholder) student workspace.
+   */
+  const establishRealSession = useCallback((clerkUser: any, backendUser?: any) => {
+    const email = (
+      clerkUser?.primaryEmailAddress?.emailAddress ||
+      clerkUser?.emailAddresses?.[0]?.emailAddress ||
       ""
     ).toLowerCase().trim();
-
-    if (!email && typeof window !== "undefined") {
-      try {
-        const stored = JSON.parse(localStorage.getItem("jks_auth_user") || "{}");
-        if (stored?.email) email = stored.email.toLowerCase().trim();
-      } catch {}
-    }
-
-    if (!email && session?.email) {
-      email = session.email.toLowerCase().trim();
-    }
-
     if (!email) return null;
 
     const fullName =
       backendUser?.name ||
-      candidateUser?.fullName ||
-      [candidateUser?.firstName, candidateUser?.lastName].filter(Boolean).join(" ") ||
-      candidateUser?.username ||
+      clerkUser?.fullName ||
+      [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") ||
+      clerkUser?.username ||
       email.split("@")[0] ||
       "Student";
 
     const initials =
-      candidateUser?.firstName && candidateUser?.lastName
-        ? `${candidateUser.firstName[0]}${candidateUser.lastName[0]}`.toUpperCase()
+      clerkUser?.firstName && clerkUser?.lastName
+        ? `${clerkUser.firstName[0]}${clerkUser.lastName[0]}`.toUpperCase()
         : fullName.slice(0, 2).toUpperCase();
 
     const isSuperAdmin = email === "lexonitservices@gmail.com";
@@ -102,10 +91,11 @@ export default function AuthRedirectPage() {
       status: backendUser?.status || "ACTIVE",
     };
 
-    // Write real session cookie so dashboard never loads a fake mock student profile
     document.cookie = `${SESSION_COOKIE_NAME}=${encodeSession(userSession)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}; SameSite=Lax`;
 
     try {
+      // Drop per-account leftovers from any previous user of this browser.
+      localStorage.removeItem("jks_mock_session");
       localStorage.setItem(
         "jks_auth_user",
         JSON.stringify({
@@ -113,126 +103,124 @@ export default function AuthRedirectPage() {
           name: userSession.name,
           role,
           status: userSession.status,
-          avatar: backendUser?.avatarUrl || candidateUser?.imageUrl,
+          avatar: backendUser?.avatarUrl || clerkUser?.imageUrl,
           phone: backendUser?.phone || null,
         })
       );
-      if (candidateUser?.imageUrl) {
-        localStorage.setItem("jks_student_avatar_v2", candidateUser.imageUrl);
+      if (backendUser?.avatarUrl || clerkUser?.imageUrl) {
+        localStorage.setItem("jks_student_avatar_v2", backendUser?.avatarUrl || clerkUser.imageUrl);
+      } else {
+        localStorage.removeItem("jks_student_avatar_v2");
       }
     } catch {}
 
     window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
-    return { email, fullName, role, target: isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard" };
-  }, [user, session]);
+    return { email, role, target: isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard" };
+  }, []);
 
-  const executeSync = useCallback((customUser?: any) => {
+  /**
+   * Sign-in finalisation. Runs once the Clerk user is known:
+   *   1. exchange the Clerk session for the API's own session (awaited - the
+   *      old code fired this and navigated away, which cancelled the request,
+   *      so the API never recognised the new account),
+   *   2. store that account's identity,
+   *   3. go to the right workspace.
+   */
+  const executeSync = useCallback(async (clerkUser: any) => {
     if (hasInitiatedSync.current) return;
     hasInitiatedSync.current = true;
+    setSyncStatus("syncing");
+    setErrorMessage(null);
 
-    const candidateUser =
-      customUser ||
-      user ||
-      (typeof window !== "undefined" ? (window as any).Clerk?.user : null);
-
-    // 1. Immediately establish real session from Google user synchronously
-    const sessionInfo = establishRealSession(candidateUser);
-    const target = sessionInfo?.target || "/dashboard";
-    setResolvedTargetUrl(target);
-    setSyncStatus("success");
-
-    // Track analytics
-    try {
-      jksAnalytics.login("clerk_oauth");
-    } catch {}
-
-    const email = (sessionInfo?.email || "").toLowerCase().trim();
-    const fullName = sessionInfo?.fullName || "Student";
-
-    // 2. Fire backend clerk-sync in the background without blocking page redirect
-    if (candidateUser && email) {
-      void (async () => {
-        try {
-          const token = await (getToken().catch(() => null) || (window as any).Clerk?.session?.getToken());
-          if (token && email) {
-            const res = await fetch(apiUrl("/auth/clerk-sync"), {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                email,
-                name: fullName,
-                avatarUrl: candidateUser.imageUrl,
-                clerkUserId: candidateUser.id,
-              }),
-              credentials: "include",
-              signal: AbortSignal.timeout(3000),
-            });
-
-            if (res.status === 403) {
-              await performLogout(signOut);
-              window.location.replace("/login?blocked=1");
-              return;
-            }
-
-            if (res.ok) {
-              const data = await res.json().catch(() => ({}));
-      // The API sets an httpOnly accessToken cookie; the token is never kept in JS-readable storage.
-            }
-          }
-        } catch (err) {
-          console.warn("[AuthRedirect] background clerk-sync:", err);
-        }
-      })();
+    // Show the right identity immediately; refined below with the API's answer.
+    if (!establishRealSession(clerkUser)) {
+      setErrorMessage("Your Google account did not return an email address.");
+      setSyncStatus("error");
+      return;
     }
+    const email = (
+      clerkUser?.primaryEmailAddress?.emailAddress ||
+      clerkUser?.emailAddresses?.[0]?.emailAddress ||
+      ""
+    ).toLowerCase().trim();
 
-    // 3. Immediately redirect to student dashboard (or admin if staff) with zero delay!
-    window.location.replace(target);
-  }, [user, getToken, signOut, establishRealSession]);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("No session token from Clerk.");
+
+      const res = await fetch(apiUrl("/auth/clerk-sync"), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          name: clerkUser.fullName || clerkUser.firstName || undefined,
+          avatarUrl: clerkUser.imageUrl,
+          clerkUserId: clerkUser.id,
+        }),
+        credentials: "include",
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (res.status === 403) {
+        await performLogout(signOut);
+        window.location.replace("/login?blocked=1");
+        return;
+      }
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(
+          body?.message || `The server could not set up your account (${res.status}).`
+        );
+      }
+
+      const data = await res.json().catch(() => ({}));
+      const info = establishRealSession(clerkUser, data?.user) || { target: "/dashboard" };
+      setResolvedTargetUrl(info.target);
+      setSyncStatus("success");
+
+      try {
+        jksAnalytics.login("clerk_oauth");
+      } catch {}
+
+      if (data?.needsPhone) {
+        setShowPhoneModal(true);
+        return;
+      }
+      window.location.replace(info.target);
+    } catch (err: any) {
+      console.warn("[AuthRedirect] clerk-sync failed:", err);
+      setErrorMessage(
+        err?.message || "Unable to finish signing you in. Please try again."
+      );
+      setSyncStatus("error");
+    }
+  }, [getToken, signOut, establishRealSession]);
 
   useEffect(() => {
-    // 1. If user already available in React hook, execute immediately
-    if (user) {
-      executeSync(user);
+    // Wait for Clerk. Never guess an identity while it is still loading.
+    if (!isLoaded) {
+      const timer = setTimeout(() => {
+        if (!hasInitiatedSync.current) {
+          setErrorMessage("Sign-in is taking longer than expected. Please try again.");
+          setSyncStatus("error");
+        }
+      }, 20000);
+      return () => clearTimeout(timer);
+    }
+
+    if (!user) {
+      // Not signed in with Clerk: clear any stale identity and start over.
+      logoutMockSession();
+      window.location.replace("/login");
       return;
     }
 
-    // 2. If Clerk global user is already attached on window, execute immediately
-    if (typeof window !== "undefined" && (window as any).Clerk?.user) {
-      executeSync((window as any).Clerk.user);
-      return;
-    }
-
-    // 3. If Clerk is available on window, register listener to execute the microsecond user is ready
-    let unsubscribe: any = null;
-    if (typeof window !== "undefined" && (window as any).Clerk?.addListener) {
-      try {
-        unsubscribe = (window as any).Clerk.addListener((payload: any) => {
-          if (payload?.user) {
-            executeSync(payload.user);
-          }
-        });
-      } catch {}
-    }
-
-    // 4. Ultra-fast safety timeout (800ms):
-    // Never make the user wait on auth-redirect!
-    // After 800ms, redirect immediately to target/dashboard regardless
-    const safetyTimer = setTimeout(() => {
-      executeSync();
-    }, 800);
-
-    return () => {
-      clearTimeout(safetyTimer);
-      if (typeof unsubscribe === "function") {
-        try {
-          unsubscribe();
-        } catch {}
-      }
-    };
-  }, [user, isLoaded, executeSync]);
+    void executeSync(user);
+  }, [isLoaded, user, executeSync]);
 
   const handlePhoneSuccess = (_savedPhone: string) => {
     setShowPhoneModal(false);
@@ -241,21 +229,24 @@ export default function AuthRedirectPage() {
 
   const handleRetry = () => {
     hasInitiatedSync.current = false;
-    void executeSync();
+    if (user) void executeSync(user);
+    else window.location.reload();
   };
 
   const handleContinueDirectly = () => {
-    // Ensure real user session is stored before navigating
-    establishRealSession();
-    window.location.replace(resolvedTargetUrl);
+    // Only ever continue as the account that is actually signed in.
+    if (user && establishRealSession(user)) {
+      window.location.replace(resolvedTargetUrl);
+    } else {
+      window.location.replace("/login");
+    }
   };
 
   const userEmail =
     user?.primaryEmailAddress?.emailAddress ||
     user?.emailAddresses?.[0]?.emailAddress ||
-    session?.email ||
     "";
-  const userName = user?.fullName || user?.firstName || session?.name || "Student";
+  const userName = user?.fullName || user?.firstName || "Student";
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-slate-50 dark:bg-[#0B0F19] p-4 text-slate-900 dark:text-slate-100 selection:bg-blue-600 selection:text-white">
