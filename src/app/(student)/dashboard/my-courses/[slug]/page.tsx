@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use, useRef } from "react";
 import Link from "next/link";
+import { AiCourseCopilot } from "@/components/courses/ai-course-copilot";
 import Image from "next/image";
 import {
   Lock,
@@ -100,7 +101,7 @@ function YoutubeIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-type TabType = "overview" | "interview" | "video-task" | "curriculum" | "qa" | "reviews" | "tools";
+type TabType = "overview" | "ai-tutor" | "interview" | "video-task" | "curriculum" | "qa" | "reviews" | "tools";
 
 function formatCooldown(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -1371,6 +1372,7 @@ export default function CourseLearningHubPage({
                   icon: ClipboardCheck,
                   badge: activeVideo?.task?.title ? "Task" : undefined,
                 },
+                { id: "ai-tutor", label: "AI Tutor", icon: Sparkles, badge: "New" },
                 { id: "qa", label: "Q&A", icon: MessageSquare },
                 { id: "reviews", label: "Reviews", icon: Star },
                 { id: "tools", label: "Learning Tools", icon: Code2 },
@@ -2275,6 +2277,16 @@ export default function CourseLearningHubPage({
                     </form>
                   )}
                 </div>
+              )}
+
+              {/* TAB: AI TUTOR (course copilot) */}
+              {activeTab === "ai-tutor" && course && (
+                <AiCourseCopilot
+                  courseId={course.id}
+                  courseTitle={course.title}
+                  lessonId={activeVideo?.id}
+                  lessonTitle={activeVideo?.title}
+                />
               )}
 
               {/* TAB 2: Q&A */}

@@ -293,6 +293,12 @@ export default function PrivacyPolicyPage() {
                 <div className="flex items-start gap-2.5">
                   <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    <strong>AI Service Providers:</strong> To generate interview questions, score answers, review resumes and answer course doubts, the text you submit (interview answers, resume content without your contact details, and questions you ask the AI tutor) is sent to third-party AI model providers such as NVIDIA, OpenRouter and Groq. It is used only to produce your response and is not used for advertising.
+                  </p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                     <strong>Retention of Practice Records:</strong> Your mock interview reports and score history remain accessible in your Student Dashboard until you delete them or close your account.
                   </p>
                 </div>

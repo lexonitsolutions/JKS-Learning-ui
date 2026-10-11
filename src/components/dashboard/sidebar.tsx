@@ -47,7 +47,7 @@ const STUDENT_MAIN_NAV: NavItem[] = [
   { href: "/dashboard/my-courses", label: "My Courses", icon: BookOpen },
   { href: "/dashboard/resume-builder", label: "Resume Maker", icon: FileText, badge: "New" },
   { href: "/dashboard/assessments", label: "Assessments", icon: ClipboardCheck },
-  { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit, badge: "Soon" },
+  { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
 ];
 
@@ -66,9 +66,10 @@ const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin/syllabus", label: "Syllabus", icon: FileText },
   { href: "/admin/events", label: "Events", icon: Calendar, badge: "New" },
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
+  { href: "/admin/ai-studio", label: "AI Studio", icon: Sparkles, badge: "New" },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
   { href: "/admin/activity-logs", label: "Activity log", icon: Activity },
-  { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone, badge: "Soon" },
+  { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone },
 ];
 
 
@@ -85,7 +86,8 @@ const INSTRUCTOR_MAIN_NAV: NavItem[] = [
   { href: "/instructor/students", label: "Students", icon: Users },
   { href: "/instructor/courses", label: "Courses", icon: BookOpen },
   { href: "/instructor/syllabus", label: "Syllabus", icon: FileText },
-  { href: "/instructor/assessments", label: "Assessments", icon: ClipboardCheck, badge: "New" },
+  { href: "/instructor/assessments", label: "Assessments", icon: ClipboardCheck },
+  { href: "/instructor/ai-studio", label: "AI Studio", icon: Sparkles, badge: "New" },
   { href: "/instructor/analytics", label: "Analytics", icon: BarChart3 },
 ];
 

@@ -38,6 +38,7 @@ import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { fetchStudentEnrollments } from "@/lib/data/enrollments-api";
 import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
 import { apiFetch } from "@/lib/api/base-url";
+import { AiResumeAssistant } from "@/components/resume/ai-resume-assistant";
 
 export function extractLinkedInHandle(rawUrl: string): string {
   if (!rawUrl) return "";
@@ -717,6 +718,41 @@ export default function ResumeBuilderPage() {
     });
   };
 
+  // AI resume review
+  const [aiOpen, setAiOpen] = useState(false);
+  // Contact details are never needed for scoring, so they are not sent.
+  const aiResumePayload = {
+    headline: resumeData.personal.headline,
+    summary: resumeData.personal.summary,
+    skills: resumeData.skills,
+    experiences: resumeData.experiences.map((e) => ({ role: e.role, company: e.company, points: e.points })),
+    projects: resumeData.projects.map((p) => ({ title: p.title, techStack: p.techStack, points: p.points })),
+    educations: resumeData.educations.map((e) => ({ degree: e.degree, institution: e.institution })),
+    certifications: resumeData.certifications.map((c) => ({ title: c.title, issuer: c.issuer })),
+  };
+  const applyAiBullet = (original: string, enhanced: string): boolean => {
+    const needle = original.trim();
+    let found = false;
+    const swap = (points: string[]) =>
+      points.map((pt) => {
+        if (!found && pt.trim() === needle) {
+          found = true;
+          return enhanced;
+        }
+        return pt;
+      });
+    setResumeData((prev) => {
+      const updated = {
+        ...prev,
+        experiences: prev.experiences.map((e) => ({ ...e, points: swap(e.points) })),
+        projects: prev.projects.map((p) => ({ ...p, points: swap(p.points) })),
+      };
+      if (found) saveToStorage(updated);
+      return found ? updated : prev;
+    });
+    return found;
+  };
+
   // Load Sample Data
   const handleLoadSample = () => {
     setResumeData(SAMPLE_RESUME_DATA);
@@ -1390,6 +1426,12 @@ export default function ResumeBuilderPage() {
 
   return (
     <>
+      <AiResumeAssistant
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        resumeData={aiResumePayload}
+        onApplyBullet={applyAiBullet}
+      />
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -1556,6 +1598,15 @@ export default function ResumeBuilderPage() {
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Load</span> Example
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAiOpen(true)}
+                  title="Get an AI review of your resume: ATS score, missing keywords and stronger bullet points"
+                  className="flex items-center gap-1 rounded-xl border border-violet-200 dark:border-violet-900/60 bg-violet-50 dark:bg-violet-950/40 px-2.5 py-1.5 text-[11px] font-bold text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors cursor-pointer"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>AI Review</span>
                 </button>
                 <button
                   type="button"

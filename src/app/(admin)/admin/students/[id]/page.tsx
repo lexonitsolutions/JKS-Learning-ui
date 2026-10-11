@@ -1,5 +1,6 @@
 "use client";
 
+import { StudentAiInterviews } from "@/components/admin/student-ai-interviews";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -308,7 +309,7 @@ function AdminStudentDetailsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "courses" | "invoices" | "assessments" | "timeline" | "course-tasks"
+    "courses" | "invoices" | "assessments" | "timeline" | "course-tasks" | "ai-interviews"
   >("courses");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -1600,6 +1601,7 @@ function AdminStudentDetailsContent() {
                 { id: "courses", label: `Enrolled Courses (${totalCourses})`, icon: BookOpen },
                 { id: "invoices", label: `Invoices & Billing (${student.invoices.length})`, icon: Receipt },
                 { id: "assessments", label: "Academic Dossier", icon: BrainCircuit },
+                { id: "ai-interviews", label: "AI Interviews", icon: BrainCircuit },
                 { id: "timeline", label: "Audit Timeline", icon: Clock },
                 { id: "course-tasks", label: `Courses Tasks (${courseTasks.length})`, icon: ClipboardList },
               ].map((tab) => {
@@ -1622,6 +1624,8 @@ function AdminStudentDetailsContent() {
                 );
               })}
             </div>
+
+            {activeTab === "ai-interviews" && <StudentAiInterviews studentUserId={student.id} />}
 
             {/* TAB 1: ENROLLED COURSES */}
             {activeTab === "courses" && (
