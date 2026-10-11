@@ -471,7 +471,7 @@ export default function StudentCertificatesPage() {
                 courseTitle: selectedCert.course,
                 issuedDate: selectedCert.issuedOn,
                 grade: selectedCert.grade,
-                verificationUrl: `${typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || "https://jks-learning-ui.vercel.app")}/certificate/verify/${encodeURIComponent(selectedCert.verificationId || selectedCert.id)}`,
+                verificationUrl: `${typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || "https://udemycourse.com")}/certificate/verify/${encodeURIComponent(selectedCert.verificationId || selectedCert.id)}`,
               }
             : null
         }

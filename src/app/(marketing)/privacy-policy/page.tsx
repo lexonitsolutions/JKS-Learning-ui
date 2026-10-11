@@ -22,6 +22,7 @@ import {
 
 export const metadata: Metadata = {
   title: "Privacy Policy | JKS Learning",
+  alternates: { canonical: "/privacy-policy" },
   description:
     "Learn how JKS Learning collects, protects, and manages your personal data, course progression, AI mock interview audio, and certification records.",
 };
@@ -159,7 +160,7 @@ export default function PrivacyPolicyPage() {
               </div>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 JKS Learning (&quot;JKS&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the website located at{" "}
-                <strong className="text-slate-800 font-semibold dark:text-slate-200">https://jks-learning-ui.vercel.app</strong> and associated learning portals, web applications, and APIs. This Privacy Policy governs all information collected from registered students, corporate learners, instructors, and public visitors across our Java Full Stack, Frontend Engineering, SAP, Generative AI, and Mock Interview programs.
+                <strong className="text-slate-800 font-semibold dark:text-slate-200">https://udemycourse.com</strong> and associated learning portals, web applications, and APIs. This Privacy Policy governs all information collected from registered students, corporate learners, instructors, and public visitors across our Java Full Stack, Frontend Engineering, SAP, Generative AI, and Mock Interview programs.
               </p>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 By creating an account, enrolling in a course track, participating in live cohort sessions, or using our interactive tools, you consent to the collection, processing, and storage of your information as described in this policy.
@@ -215,7 +216,7 @@ export default function PrivacyPolicyPage() {
                     D. Technical & Log Data
                   </h3>
                   <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                    IP address, browser type, operating system version, device identifiers, session cookies, and security event telemetry (e.g. Cloudflare Turnstile bot checks).
+                    IP address, browser type, operating system version, device identifiers, session cookies, and security event telemetry.
                   </p>
                 </div>
               </div>
@@ -254,7 +255,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-disc pl-5 leading-relaxed">
                 <li><strong>How we use it:</strong> to create and identify your JKS Learning account, show your name and avatar in your dashboard, send course and certificate emails, and keep your account secure.</li>
-                <li><strong>How we store it:</strong> in our encrypted database, protected by access controls. Sign-in itself is handled by our authentication provider, Clerk.</li>
+                <li><strong>How we store it:</strong> in our database (MongoDB), with access restricted to authorised staff and API requests protected by authentication. Sign-in itself is handled by our authentication provider, Clerk.</li>
                 <li><strong>Sharing:</strong> we do not sell Google user data, use it for advertising, or transfer it to third parties, except to service providers that operate the platform on our behalf or when the law requires it.</li>
                 <li><strong>Limited Use:</strong> our use and transfer of information received from Google APIs adheres to the{" "}
                   <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline dark:text-blue-400">Google API Services User Data Policy</a>, including its Limited Use requirements.
@@ -320,24 +321,39 @@ export default function PrivacyPolicyPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-600 dark:divide-slate-800 dark:text-slate-400">
                     <tr>
-                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">Clerk Auth</td>
-                      <td className="p-3">User Authentication & Social SSO (Google/GitHub)</td>
-                      <td className="p-3">Email, Name, User ID, Session Tokens</td>
+                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">Clerk</td>
+                      <td className="p-3">Authentication and Google sign-in</td>
+                      <td className="p-3">Email, name, profile picture, user ID, session tokens</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">MongoDB Atlas / PostgreSQL</td>
-                      <td className="p-3">Secure Database Hosting</td>
-                      <td className="p-3">Course enrollments, milestone progress, scores</td>
+                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">MongoDB (database host)</td>
+                      <td className="p-3">Storing account and learning records</td>
+                      <td className="p-3">Account profile, course enrollments, progress, scores</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">Cloudflare</td>
-                      <td className="p-3">DDoS Protection, WAF & Bot Verification</td>
-                      <td className="p-3">IP Address, Request Telemetry</td>
+                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">Railway</td>
+                      <td className="p-3">Application and API hosting</td>
+                      <td className="p-3">Request logs, IP address</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">Razorpay / Stripe</td>
-                      <td className="p-3">PCI-DSS Compliant Payment Gateway</td>
-                      <td className="p-3">Transaction status, billing receipts</td>
+                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">Cloudinary</td>
+                      <td className="p-3">Image and file storage</td>
+                      <td className="p-3">Profile images and files you upload</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">Razorpay</td>
+                      <td className="p-3">Payment processing</td>
+                      <td className="p-3">Transaction status and billing receipts (card details are handled by Razorpay, not stored by us)</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">Email (SMTP) provider</td>
+                      <td className="p-3">Sending account, course and certificate emails</td>
+                      <td className="p-3">Email address, name</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">Google Analytics</td>
+                      <td className="p-3">Aggregate site usage statistics</td>
+                      <td className="p-3">Pages viewed, device and approximate location</td>
                     </tr>
                   </tbody>
                 </table>
