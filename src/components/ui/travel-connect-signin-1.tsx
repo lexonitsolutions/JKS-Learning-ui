@@ -528,7 +528,7 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
               <div>
                 <p className="font-bold text-rose-800 dark:text-rose-300 text-sm">Access Denied: Account Blocked</p>
                 <p className="mt-1 text-rose-700 dark:text-rose-300/90 leading-relaxed font-normal">
-                  Your account has been blocked by the administrator. Login and learning portal access is disabled. Please contact <span className="font-semibold text-rose-900 dark:text-rose-200 underline">support@jkslearning.com</span> for assistance.
+                  Your account has been blocked by the administrator. Login and learning portal access is disabled. Please contact <span className="font-semibold text-rose-900 dark:text-rose-200 underline">jkslearning11@gmail.com</span> for assistance.
                 </p>
               </div>
             </div>
