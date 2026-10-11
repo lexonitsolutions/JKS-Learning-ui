@@ -115,8 +115,8 @@ export default function PrivacyPolicyPage() {
                     <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200">Have a privacy inquiry?</h3>
                     <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                       Reach our dedicated Data Protection Officer at{" "}
-                      <a href="mailto:privacy@jkslearning.com" className="text-blue-600 font-semibold hover:underline dark:text-blue-400">
-                        privacy@jkslearning.com
+                      <a href="mailto:jkslearning11@gmail.com" className="text-blue-600 font-semibold hover:underline dark:text-blue-400">
+                        jkslearning11@gmail.com
                       </a>
                     </p>
                   </div>
@@ -144,7 +144,7 @@ export default function PrivacyPolicyPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
-                  <span><strong>Full Control:</strong> You have full rights to export your certificate history, request data copies, or delete your account at any time.</span>
+                  <span><strong>Full Control:</strong> You have full rights to export your certificate history, request data copies, or request deletion of your account at any time.</span>
                 </li>
               </ul>
             </div>
@@ -259,7 +259,9 @@ export default function PrivacyPolicyPage() {
                 <li><strong>Limited Use:</strong> our use and transfer of information received from Google APIs adheres to the{" "}
                   <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline dark:text-blue-400">Google API Services User Data Policy</a>, including its Limited Use requirements.
                 </li>
-                <li><strong>Deletion &amp; revoking access:</strong> you can request deletion of your account and data at any time by contacting us, and you can revoke JKS Learning&rsquo;s access from your Google Account&rsquo;s security settings.</li>
+                <li><strong>Where it is processed:</strong> Google sign-in is processed by Clerk (authentication), and your account record is stored in our database hosted with our cloud infrastructure providers (see the sub-processor table below).</li>
+                <li><strong>Retention:</strong> we keep your Google-provided profile data for as long as your account is active. When your account is deleted, we remove your profile data; some records may be kept only where we are legally required to (for example payment and invoice records).</li>
+                <li><strong>Deletion &amp; revoking access:</strong> you can request deletion of your account and data at any time by emailing <a href="mailto:jkslearning11@gmail.com" className="text-blue-600 underline dark:text-blue-400">jkslearning11@gmail.com</a> (we process requests manually), and you can revoke JKS Learning&rsquo;s access from your Google Account&rsquo;s security settings.</li>
               </ul>
             </article>
 
@@ -437,14 +439,14 @@ export default function PrivacyPolicyPage() {
                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-300">
                   <div>
                     <span className="text-slate-400 block text-[11px]">Official Email:</span>
-                    <a href="mailto:privacy@jkslearning.com" className="font-semibold text-blue-400 hover:underline">
-                      privacy@jkslearning.com
+                    <a href="mailto:jkslearning11@gmail.com" className="font-semibold text-blue-400 hover:underline">
+                      jkslearning11@gmail.com
                     </a>
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[11px]">Support Desk:</span>
-                    <a href="mailto:support@jkslearning.com" className="font-semibold text-blue-400 hover:underline">
-                      support@jkslearning.com
+                    <a href="mailto:jkslearning11@gmail.com" className="font-semibold text-blue-400 hover:underline">
+                      jkslearning11@gmail.com
                     </a>
                   </div>
                   <div className="sm:col-span-2">

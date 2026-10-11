@@ -363,8 +363,8 @@ export default function TermsPage() {
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[11px]">Support Desk:</span>
-                    <a href="mailto:support@jkslearning.com" className="font-semibold text-blue-400 hover:underline">
-                      support@jkslearning.com
+                    <a href="mailto:jkslearning11@gmail.com" className="font-semibold text-blue-400 hover:underline">
+                      jkslearning11@gmail.com
                     </a>
                   </div>
                   <div className="sm:col-span-2">
