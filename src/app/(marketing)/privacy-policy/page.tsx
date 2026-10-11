@@ -241,6 +241,28 @@ export default function PrivacyPolicyPage() {
               </ul>
             </article>
 
+            {/* Google user data (required for Google OAuth verification) */}
+            <article id="google-user-data" className="scroll-mt-28 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400">
+                  <KeyRound className="h-4 w-4" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Google Sign-In &amp; Google User Data</h2>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                JKS Learning lets you sign in with your Google Account. When you choose &ldquo;Continue with Google&rdquo;, Google shares only the basic profile scopes you approve on the consent screen: <strong>your email address, your name, and your profile picture</strong>. We do not request access to your Gmail, Drive, Calendar, contacts, or any other Google service.
+              </p>
+              <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-disc pl-5 leading-relaxed">
+                <li><strong>How we use it:</strong> to create and identify your JKS Learning account, show your name and avatar in your dashboard, send course and certificate emails, and keep your account secure.</li>
+                <li><strong>How we store it:</strong> in our encrypted database, protected by access controls. Sign-in itself is handled by our authentication provider, Clerk.</li>
+                <li><strong>Sharing:</strong> we do not sell Google user data, use it for advertising, or transfer it to third parties, except to service providers that operate the platform on our behalf or when the law requires it.</li>
+                <li><strong>Limited Use:</strong> our use and transfer of information received from Google APIs adheres to the{" "}
+                  <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline dark:text-blue-400">Google API Services User Data Policy</a>, including its Limited Use requirements.
+                </li>
+                <li><strong>Deletion &amp; revoking access:</strong> you can request deletion of your account and data at any time by contacting us, and you can revoke JKS Learning&rsquo;s access from your Google Account&rsquo;s security settings.</li>
+              </ul>
+            </article>
+
             {/* Section 4: AI Mock Interview & Code Data */}
             <article id="ai-data-processing" className="scroll-mt-28 space-y-4">
               <div className="flex items-center gap-3">
