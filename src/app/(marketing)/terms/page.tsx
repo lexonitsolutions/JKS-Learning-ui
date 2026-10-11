@@ -162,7 +162,7 @@ export default function TermsPage() {
               </div>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 These Terms of Service (&quot;Terms&quot;) constitute a legally binding agreement between you (&quot;Student&quot;, &quot;User&quot;, or &quot;You&quot;) and JKS Learning Technologies Pvt Ltd (&quot;JKS Learning&quot;, &quot;we&quot;, or &quot;us&quot;). By creating an account, browsing courses, or transacting on{" "}
-                <strong className="text-slate-800 font-semibold dark:text-slate-200">https://jks-learning-ui.vercel.app</strong>, you confirm that you are at least 18 years of age (or have explicit parental/guardian consent) and possess legal capacity to enter into this contract.
+                <strong className="text-slate-800 font-semibold dark:text-slate-200">https://udemycourse.com</strong>, you confirm that you are at least 18 years of age (or have explicit parental/guardian consent) and possess legal capacity to enter into this contract.
               </p>
             </article>
 

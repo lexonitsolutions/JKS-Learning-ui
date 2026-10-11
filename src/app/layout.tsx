@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter, Homemade_Apple } from "next/font/google";
@@ -24,6 +25,8 @@ const homemadeApple = Homemade_Apple({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: "/" },
   title: "JKS Learning — Career-Ready IT Upskilling",
   description:
     "AI-powered learning platform for Java Full Stack, Frontend, and SAP professionals — structured courses, AI mock interviews, and verified certification.",
