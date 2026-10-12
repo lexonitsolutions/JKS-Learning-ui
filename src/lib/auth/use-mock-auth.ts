@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import type { MockRole } from "./mock-users";
 import { SESSION_COOKIE_NAME, encodeSession, decodeSession, type MockSession } from "./session";
-import { apiFetch } from "@/lib/api/base-url";
+import { apiFetch, setStoredAccessToken } from "@/lib/api/base-url";
 
 
 const SESSION_CHANGE_EVENT = "jks-mock-session-change";
@@ -293,7 +293,9 @@ export async function loginWithApi(email: string, password: string): Promise<Log
 
     if (res.ok) {
       const data = await res.json();
-      // The API sets an httpOnly accessToken cookie; the token is never kept in JS-readable storage.
+      if (data?.accessToken) {
+        setStoredAccessToken(data.accessToken);
+      }
       const u = data.user;
       const session: MockSession = {
         email: u.email,
@@ -342,7 +344,9 @@ export async function registerWithApi(
 
     if (res.ok) {
       const data = await res.json();
-      // The API sets an httpOnly accessToken cookie; the token is never kept in JS-readable storage.
+      if (data?.accessToken) {
+        setStoredAccessToken(data.accessToken);
+      }
       const u = data.user;
       const session: MockSession = {
         email: u.email,

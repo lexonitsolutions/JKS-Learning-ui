@@ -51,18 +51,23 @@ export function apiUrl(path: string): string {
  */
 const API_TIMEOUT_MS = 45_000;
 
-let legacyTokenPurged = false;
-
-/**
- * Earlier builds kept the API access token in localStorage (`jks_access_token`),
- * readable by any script on the page. Remove any copy still sitting in a
- * browser; the httpOnly cookie is the session now.
- */
-export function purgeLegacyAccessToken(): void {
-  if (legacyTokenPurged || typeof window === "undefined") return;
-  legacyTokenPurged = true;
+export function getStoredAccessToken(): string | null {
+  if (typeof window === "undefined") return null;
   try {
-    localStorage.removeItem("jks_access_token");
+    return localStorage.getItem("jks_access_token") || null;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredAccessToken(token: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (token) {
+      localStorage.setItem("jks_access_token", token);
+    } else {
+      localStorage.removeItem("jks_access_token");
+    }
   } catch {}
 }
 
@@ -80,27 +85,18 @@ export class ApiError extends Error {
 /**
  * Single entry point for backend calls.
  *
- * Identity is only ever proven by the httpOnly session cookie or a Clerk
- * session token. This function deliberately does NOT send the user's email or
- * session blob as headers: the server no longer accepts those, because anything
- * the browser can set, an attacker can set too.
+ * Identity is proven by:
+ * 1. Clerk session token (Bearer header)
+ * 2. Local signed accessToken (Bearer header fallback or httpOnly cookie)
  *
- * Always sends cookies: the API authenticates with an httpOnly `accessToken`,
- * so a request without `credentials: "include"` is anonymous. Most call sites
- * here were missing it.
+ * Always sends credentials: "include" for cookie support.
  */
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * The Clerk session token for the signed-in user, or null.
- *
- * Right after a page load Clerk's script is still starting, so `Clerk.session`
- * is briefly undefined even though the user IS signed in. Requests made in that
- * window used to go out with no credentials at all and come back 401 (the
- * notification list and live stream were the first calls on every page). When
- * Clerk's own cookies say a session exists, wait for it instead of giving up.
  */
-async function getClerkToken(): Promise<string | null> {
+async function getClerkToken(forceRefresh = false): Promise<string | null> {
   const w = window as any;
   const looksSignedIn =
     /(?:^|; )__client_uat=(?!0(?:;|$))[^;]+/.test(document.cookie) ||
@@ -114,31 +110,76 @@ async function getClerkToken(): Promise<string | null> {
 
   if (!w.Clerk?.session) return null;
   try {
-    return (await w.Clerk.session.getToken()) || null;
+    return (await w.Clerk.session.getToken(forceRefresh ? { skipCache: true } : undefined)) || null;
   } catch {
     return null;
   }
 }
 
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshAuthSession(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      // 1. Try refreshing Clerk session token if Clerk is active
+      const w = typeof window !== "undefined" ? (window as any) : null;
+      if (w?.Clerk?.session) {
+        try {
+          const freshToken = await getClerkToken(true);
+          if (freshToken) return true;
+        } catch {}
+      }
+
+      // 2. Try backend /auth/refresh endpoint using refresh cookie
+      const res = await fetch(apiUrl("/auth/refresh"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data?.accessToken) {
+          setStoredAccessToken(data.accessToken);
+        }
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers || {});
 
-  // Attach Bearer token or session headers if present
-  if (typeof window !== "undefined") {
+  // Attach Bearer token if not explicitly provided
+  if (typeof window !== "undefined" && !headers.has("Authorization")) {
     try {
-      purgeLegacyAccessToken();
-      // Our own session is the httpOnly accessToken cookie (sent via
-      // credentials: "include" below). Only a live Clerk session token is
-      // attached as a Bearer header.
-      const token = await getClerkToken();
-      if (token && !headers.has("Authorization")) {
-        headers.set("Authorization", `Bearer ${token}`);
+      // Priority 1: Clerk session token
+      const clerkToken = await getClerkToken();
+      if (clerkToken) {
+        headers.set("Authorization", `Bearer ${clerkToken}`);
+      } else {
+        // Priority 2: Stored local access token (prevents cross-origin third-party cookie drops)
+        const localToken = getStoredAccessToken();
+        if (localToken) {
+          headers.set("Authorization", `Bearer ${localToken}`);
+        }
       }
     } catch {}
   }
 
+  let res: Response;
   try {
-    return await fetch(apiUrl(path), {
+    res = await fetch(apiUrl(path), {
       ...init,
       headers,
       credentials: "include",
@@ -161,4 +202,39 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
       err,
     );
   }
+
+  // If request failed with 401 and is not an authentication endpoint, attempt transparent auto-refresh once
+  const isAuthPath =
+    path.startsWith("/auth/") ||
+    path.startsWith("auth/") ||
+    path.includes("/auth/login") ||
+    path.includes("/auth/register") ||
+    path.includes("/auth/refresh");
+
+  if (res.status === 401 && !isAuthPath && typeof window !== "undefined") {
+    const refreshed = await refreshAuthSession();
+    if (refreshed) {
+      const retryHeaders = new Headers(init.headers || {});
+      const freshClerkToken = await getClerkToken();
+      if (freshClerkToken) {
+        retryHeaders.set("Authorization", `Bearer ${freshClerkToken}`);
+      } else {
+        const freshLocalToken = getStoredAccessToken();
+        if (freshLocalToken) {
+          retryHeaders.set("Authorization", `Bearer ${freshLocalToken}`);
+        }
+      }
+
+      try {
+        return await fetch(apiUrl(path), {
+          ...init,
+          headers: retryHeaders,
+          credentials: "include",
+          signal: init.signal ?? AbortSignal.timeout(API_TIMEOUT_MS),
+        });
+      } catch {}
+    }
+  }
+
+  return res;
 }
