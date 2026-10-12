@@ -103,7 +103,7 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
         <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-900 px-4 sm:px-6 py-3.5 text-white shadow-md print:hidden">
           <div className="flex items-center gap-2 sm:gap-2.5">
             <FileText className="h-4 w-4 text-cyan-400 shrink-0" />
-            <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">GST Tax Invoice</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">Official Invoice</span>
             <span className="rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-bold text-emerald-400 shrink-0">
               ● {getInvoiceStatusLabel(invoice).toUpperCase()}
             </span>

@@ -39,79 +39,72 @@ import { validateCoupon } from "@/lib/data/enrollments-api";
 
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
-import { fetchDbCourses } from "@/lib/data/courses";
+import { fetchDbCourses, type Course } from "@/lib/data/courses";
 
-const AVAILABLE_COURSES = [
-  {
-    id: "java-full-stack",
-    slug: "java-full-stack-mastery",
-    title: "Java Full Stack Developer Mastery",
-    subtitle: "Spring Boot 3, Distributed Microservices, React 19, Kafka & AWS Cloud",
-    duration: "16 Weeks (Live Cohort)",
-    nextBatch: "Starts Sept 5, 2026",
-    seatsLeft: 4,
-    price: 29999,
-    discount: 3000,
-    popular: true,
-    curriculum: ["Core Java 21 & Concurrency", "Spring Boot 3 Microservices", "React 19 & Next.js", "Docker, Kafka, AWS"],
+export interface RegistrationCourse {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  duration: string;
+  nextBatch: string;
+  seatsLeft: number;
+  price: number;
+  discount: number;
+  popular: boolean;
+  curriculum: string[];
+  batches: { id: string; label: string; time: string; days: string }[];
+}
+
+function mapToRegistrationCourse(course: Course, index: number): RegistrationCourse {
+  const curriculum: string[] = [];
+  if (Array.isArray(course.modules)) {
+    for (const m of course.modules) {
+      if (m.title && !curriculum.includes(m.title)) {
+        curriculum.push(m.title);
+      }
+      if (Array.isArray(m.topics)) {
+        for (const t of m.topics) {
+          if (t && !curriculum.includes(t)) {
+            curriculum.push(t);
+          }
+        }
+      }
+      if (curriculum.length >= 4) break;
+    }
+  }
+
+  if (curriculum.length === 0) {
+    if (course.track === "Frontend") {
+      curriculum.push("React 19 & Hooks", "Next.js App Router", "Tailwind CSS & UI", "Production Capstone");
+    } else if (course.track === "SAP") {
+      curriculum.push("SAP S/4HANA Architecture", "Core Configuration & Customizing", "BTP Clean Core & Integration", "Hands-on Sandbox Practice");
+    } else {
+      curriculum.push("Core Concurrency & Microservices", "REST & Distributed APIs", "Database & Cloud Architecture", "Enterprise Capstone");
+    }
+  }
+
+  const durationWeeks = course.durationWeeks || (course.track === "Frontend" ? 10 : course.track === "SAP" ? 12 : 14);
+
+  return {
+    id: (course as any).id || course.slug,
+    slug: course.slug,
+    title: course.title,
+    subtitle: course.summary || `${course.track} Professional Track with live mentoring and real-world project builds.`,
+    duration: `${durationWeeks} Weeks (Live Cohort)`,
+    nextBatch: "Upcoming Cohort",
+    seatsLeft: Math.max(3, 8 - ((course.studentsEnrolled || 0) % 6)),
+    price: course.price,
+    discount: 0,
+    popular: index === 0 || (course.studentsEnrolled || 0) > 10,
+    curriculum: curriculum.slice(0, 4),
     batches: [
       { id: "b1", label: "Weekday Morning", time: "7:30 AM - 9:30 AM IST", days: "Mon - Fri" },
       { id: "b2", label: "Weekend Intensive", time: "10:00 AM - 2:00 PM IST", days: "Sat - Sun" },
       { id: "b3", label: "Weekday Evening", time: "7:00 PM - 9:00 PM IST", days: "Mon - Fri" },
     ],
-  },
-  {
-    id: "modern-frontend",
-    slug: "modern-frontend-engineering",
-    title: "Modern Frontend Engineering (React 19 & Next.js)",
-    subtitle: "React 19, Next.js App Router, Tailwind CSS, TypeScript & Three.js 3D WebGL",
-    duration: "10 Weeks (Live Cohort)",
-    nextBatch: "Starts Sept 8, 2026",
-    seatsLeft: 6,
-    price: 24999,
-    discount: 2500,
-    popular: false,
-    curriculum: ["React 19 & Hooks", "Next.js App Router", "Tailwind & Three.js", "Performance Profiling"],
-    batches: [
-      { id: "b1", label: "Weekday Morning", time: "8:00 AM - 10:00 AM IST", days: "Mon - Fri" },
-      { id: "b2", label: "Weekend Intensive", time: "10:00 AM - 2:00 PM IST", days: "Sat - Sun" },
-    ],
-  },
-  {
-    id: "sap-s4hana",
-    slug: "sap-s4hana-enterprise-systems",
-    title: "SAP S/4HANA Enterprise Systems",
-    subtitle: "SAP S/4HANA FI/CO, MM, SD configuration, ABAP Cloud on BTP & Clean Core",
-    duration: "12 Weeks (Live Sandboxes)",
-    nextBatch: "Starts Sept 12, 2026",
-    seatsLeft: 3,
-    price: 34999,
-    discount: 3500,
-    popular: false,
-    curriculum: ["S/4HANA Core Architecture", "Procure-to-Pay (MM) & FI/CO", "ABAP Cloud (RAP)", "BTP Clean Core Extensibility"],
-    batches: [
-      { id: "b1", label: "Weekend Intensive", time: "9:00 AM - 1:00 PM IST", days: "Sat - Sun" },
-      { id: "b2", label: "Weekday Evening", time: "7:30 PM - 9:30 PM IST", days: "Mon - Fri" },
-    ],
-  },
-  {
-    id: "dotnet-microservices",
-    slug: "dotnet-full-stack-developer",
-    title: ".NET 9 Enterprise Microservices & Cloud",
-    subtitle: "C# 13, ASP.NET Core Web API, Entity Framework Core 9, Azure & Blazor WebAssembly",
-    duration: "14 Weeks (Live Cohort)",
-    nextBatch: "Starts Sept 10, 2026",
-    seatsLeft: 5,
-    price: 27999,
-    discount: 3000,
-    popular: false,
-    curriculum: ["C# 13 & .NET 9 Core", "ASP.NET Core Web APIs", "Entity Framework Core 9", "Azure Container Apps & CI/CD"],
-    batches: [
-      { id: "b1", label: "Weekday Morning", time: "7:30 AM - 9:30 AM IST", days: "Mon - Fri" },
-      { id: "b2", label: "Weekend Intensive", time: "10:00 AM - 2:00 PM IST", days: "Sat - Sun" },
-    ],
-  },
-];
+  };
+}
 
 function CourseRegistrationContent() {
   const searchParams = useSearchParams();
@@ -133,28 +126,57 @@ function CourseRegistrationContent() {
     session?.name ||
     "";
 
-  // Form State
-  const initialCourse =
-    AVAILABLE_COURSES.find((c) => c.slug === preSelectedSlug) || AVAILABLE_COURSES[0];
-  const [coursesList, setCoursesList] = useState(AVAILABLE_COURSES);
-  const [selectedCourse, setSelectedCourse] = useState(initialCourse);
-  const [selectedBatch, setSelectedBatch] = useState(initialCourse.batches[0]);
+  // Form State: Loaded strictly from real-time database courses
+  const [coursesList, setCoursesList] = useState<RegistrationCourse[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<RegistrationCourse | null>(null);
+  const [selectedBatch, setSelectedBatch] = useState<{ id: string; label: string; time: string; days: string } | null>(null);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
 
   React.useEffect(() => {
-    fetchDbCourses().then((dbCourses) => {
-      if (Array.isArray(dbCourses)) {
-        const liveSlugs = new Set(dbCourses.map((c) => c.slug));
-        const filtered = AVAILABLE_COURSES.filter((c) => liveSlugs.has(c.slug));
-        if (filtered.length > 0) {
-          setCoursesList(filtered);
-          if (!liveSlugs.has(selectedCourse.slug)) {
-            setSelectedCourse(filtered[0]);
-            setSelectedBatch(filtered[0].batches[0]);
-          }
+    let isMounted = true;
+    setIsLoadingCourses(true);
+
+    fetchDbCourses()
+      .then((dbCourses) => {
+        if (!isMounted) return;
+        if (Array.isArray(dbCourses) && dbCourses.length > 0) {
+          const mapped = dbCourses.map((c, i) => mapToRegistrationCourse(c, i));
+          setCoursesList(mapped);
+
+          const found = preSelectedSlug
+            ? mapped.find(
+                (c) =>
+                  c.slug.toLowerCase() === preSelectedSlug.toLowerCase() ||
+                  c.id === preSelectedSlug
+              )
+            : null;
+          const initial = found || mapped[0];
+          setSelectedCourse(initial);
+          setSelectedBatch(initial.batches[0] || null);
+        } else {
+          setCoursesList([]);
+          setSelectedCourse(null);
+          setSelectedBatch(null);
         }
-      }
-    });
-  }, []);
+      })
+      .catch((err) => {
+        console.error("Failed to load real-time courses:", err);
+        if (isMounted) {
+          setCoursesList([]);
+          setSelectedCourse(null);
+          setSelectedBatch(null);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoadingCourses(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [preSelectedSlug]);
 
   const [studentInfo, setStudentInfo] = useState({
     name: "",
@@ -196,12 +218,13 @@ function CourseRegistrationContent() {
   const [enrollError, setEnrollError] = useState<string | null>(null);
 
   // Recalculate discount
+  const coursePrice = selectedCourse?.price ?? 0;
   const finalDiscount = couponApplied
     ? isFullDiscount
-      ? selectedCourse.price
-      : Math.round(selectedCourse.price * ((couponDiscountPercent || 10) / 100))
+      ? coursePrice
+      : Math.round(coursePrice * ((couponDiscountPercent || 10) / 100))
     : 0;
-  const netPayable = Math.max(0, selectedCourse.price - finalDiscount);
+  const netPayable = Math.max(0, coursePrice - finalDiscount);
   const taxableAmount = +(netPayable / 1.18).toFixed(2);
   const totalTax = +(netPayable - taxableAmount).toFixed(2);
   const cgst = +(totalTax / 2).toFixed(2);
@@ -218,6 +241,7 @@ function CourseRegistrationContent() {
       setCouponDiscountPercent(0);
       return;
     }
+    if (!selectedCourse) return;
     setIsValidatingCoupon(true);
     try {
       const res = await validateCoupon(cleaned, selectedCourse.slug);
@@ -249,6 +273,7 @@ function CourseRegistrationContent() {
   };
 
   const handleStep1Continue = () => {
+    if (!selectedCourse || !selectedBatch) return;
     if (!isUserAuthenticated) {
       setShowAuthGateModal(true);
       return;
@@ -258,6 +283,7 @@ function CourseRegistrationContent() {
 
   const handleSubmitEnrollment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedCourse || !selectedBatch) return;
     if (!isUserAuthenticated) {
       setShowAuthGateModal(true);
       return;
@@ -309,132 +335,190 @@ function CourseRegistrationContent() {
         {/* Page Hero Header */}
         <div className="text-center space-y-2 max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-blue dark:text-blue-400">
-            <Sparkles className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" /> Fast-Track Online Admissions &amp; GST Invoicing
+            <Sparkles className="h-3.5 w-3.5 text-primary-blue dark:text-blue-400" /> Fast-Track Online Admissions &amp; Invoicing
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-text-heading dark:text-white tracking-tight">
             Enroll in Career Accelerator
           </h1>
           <p className="text-sm text-text-body dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
-            Select your specialized track, choose live cohort timings, apply instant scholarship discount &amp; generate official 18% GST tax invoice.
+            Select your specialized track, choose live cohort timings, apply instant scholarship discount &amp; generate official invoice.
           </p>
         </div>
 
-        {/* Stepper Progress Bar */}
-        <div className="grid grid-cols-3 gap-3 text-center text-xs">
-          {[
-            { num: 1, title: "Career Track & Cohort", subtitle: "Select specialization" },
-            { num: 2, title: "Student Dossier", subtitle: "Credentials & Contact" },
-            { num: 3, title: "GST Billing & Tax Invoice", subtitle: "Payment & Tax Receipt" },
-          ].map((s) => (
-            <div
-              key={s.num}
-              className={`relative rounded-2xl border p-4 transition-all ${
-                step === s.num
-                  ? "border-primary-blue bg-white dark:bg-surface-secondary text-primary-blue dark:text-blue-400 shadow-lg shadow-primary-blue/10 ring-2 ring-primary-blue/20 font-bold"
-                  : step > s.num
-                  ? "border-emerald-500/40 dark:border-emerald-800/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300"
-                  : "border-border dark:border-slate-800 bg-white/70 dark:bg-surface-secondary/70 text-text-body/60 dark:text-slate-400"
-              }`}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold font-mono ${
-                    step > s.num
-                      ? "bg-emerald-600 text-white"
-                      : step === s.num
-                      ? "bg-primary-fill text-white"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+        {/* Real-time Courses State Handler */}
+        {isLoadingCourses ? (
+          /* Loading Skeleton */
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-3">
+              {[1, 2, 3].map((n) => (
+                <div
+                  key={n}
+                  className="h-16 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-100/70 dark:bg-slate-900/60 animate-pulse"
+                />
+              ))}
+            </div>
+            <div className="rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-6 sm:p-10 space-y-6 animate-pulse">
+              <div className="h-6 w-1/3 rounded bg-slate-200 dark:bg-slate-800" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map((n) => (
+                  <div
+                    key={n}
+                    className="h-44 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : coursesList.length === 0 ? (
+          /* Empty State: No real courses currently published in the database */
+          <div className="rounded-[28px] border border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-surface-secondary p-8 sm:p-14 text-center space-y-5 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 text-primary-blue dark:text-blue-400">
+              <BookOpen className="h-8 w-8" />
+            </div>
+            <div className="space-y-2 max-w-md mx-auto">
+              <h2 className="text-2xl font-bold text-text-heading dark:text-white">
+                No Courses Currently Open for Enrollment
+              </h2>
+              <p className="text-xs sm:text-sm text-text-body dark:text-slate-300 leading-relaxed">
+                There are currently no active course tracks published in our database. Live cohort admissions, pricing, and schedules will appear here in real-time as soon as courses are published.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <Link
+                href="/courses"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary-fill px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-primary-blue/25 hover:bg-blue-600 transition-colors"
+              >
+                <BookOpen className="h-4 w-4" />
+                <span>Browse Course Marketplace</span>
+              </Link>
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-surface-hover transition-colors"
+              >
+                <span>Return to Homepage</span>
+              </Link>
+            </div>
+          </div>
+        ) : selectedCourse && selectedBatch ? (
+          <>
+            {/* Stepper Progress Bar */}
+            <div className="grid grid-cols-3 gap-3 text-center text-xs">
+              {[
+                { num: 1, title: "Career Track & Cohort", subtitle: "Select specialization" },
+                { num: 2, title: "Student Dossier", subtitle: "Credentials & Contact" },
+                { num: 3, title: "Billing & Invoice", subtitle: "Payment Receipt" },
+              ].map((s) => (
+                <div
+                  key={s.num}
+                  className={`relative rounded-2xl border p-4 transition-all ${
+                    step === s.num
+                      ? "border-primary-blue bg-white dark:bg-surface-secondary text-primary-blue dark:text-blue-400 shadow-lg shadow-primary-blue/10 ring-2 ring-primary-blue/20 font-bold"
+                      : step > s.num
+                      ? "border-emerald-500/40 dark:border-emerald-800/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300"
+                      : "border-border dark:border-slate-800 bg-white/70 dark:bg-surface-secondary/70 text-text-body/60 dark:text-slate-400"
                   }`}
                 >
-                  {step > s.num ? <Check className="h-3.5 w-3.5" /> : `0${s.num}`}
-                </span>
-                <span className="font-bold hidden sm:inline">{s.title}</span>
-              </div>
-              <div className="text-[11px] text-text-body/70 dark:text-slate-400 mt-1 hidden sm:block">{s.subtitle}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* ======================================================== */}
-        {/* STEP 1: SELECT CAREER TRACK & LIVE BATCH                  */}
-        {/* ======================================================== */}
-        {step === 1 && (
-          <div className="space-y-6 rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border dark:border-slate-800/80 pb-4">
-              <div>
-                <h2 className="text-xl font-bold text-text-heading dark:text-white">1. Select Your Engineering Track</h2>
-                <p className="text-xs text-text-body dark:text-slate-300">All programs include live faculty mentorship, enterprise capstones &amp; AI interview preparation.</p>
-              </div>
-              <span className="text-xs text-primary-blue dark:text-blue-400 font-bold">Step 1 of 3</span>
-            </div>
-
-            {/* Course Grid */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {coursesList.map((course) => {
-                const isSelected = selectedCourse.id === course.id;
-
-                return (
-                  <div
-                    key={course.id}
-                    onClick={() => {
-                      setSelectedCourse(course);
-                      setSelectedBatch(course.batches[0]);
-                    }}
-                    className={`group relative rounded-2xl border p-5 transition-all cursor-pointer space-y-3.5 ${
-                      isSelected
-                        ? "border-primary-blue dark:border-blue-500/80 bg-blue-50/50 dark:bg-blue-950/20 shadow-md ring-2 ring-primary-blue/20 dark:ring-blue-500/30"
-                        : "border-border dark:border-slate-800 bg-white dark:bg-surface-elevated hover:border-primary-blue/40 dark:hover:border-blue-500/50 hover:shadow-sm"
-                    }`}
-                  >
-                    {course.popular && (
-                      <span className="absolute top-4 right-4 rounded-full bg-primary-fill px-3 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider shadow-xs">
-                        ★ Most Enrolled
-                      </span>
-                    )}
-
-                    <div className="pr-16">
-                      <h3 className="font-bold text-base text-text-heading dark:text-white group-hover:text-primary-blue dark:group-hover:text-blue-400 transition-colors">
-                        {course.title}
-                      </h3>
-                      <p className="mt-1 text-xs text-text-body dark:text-slate-300 leading-relaxed line-clamp-2">
-                        {course.subtitle}
-                      </p>
-                    </div>
-
-                    {/* Key Modules Pills */}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {course.curriculum.map((c, i) => (
-                        <span
-                          key={i}
-                          className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] text-slate-700 dark:text-slate-300 font-medium"
-                        >
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Footer Row */}
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
-                      <div>
-                        <span className="text-text-body dark:text-slate-300 font-medium">{course.duration}</span>
-                        <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
-                          <Clock className="h-3 w-3" /> {course.nextBatch}
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <div className="font-mono font-extrabold text-lg text-primary-blue dark:text-blue-400">
-                          ₹{(course.price - course.discount).toLocaleString("en-IN")}
-                        </div>
-                        <span className="text-[10px] text-slate-400 line-through">
-                          ₹{course.price.toLocaleString("en-IN")}
-                        </span>
-                      </div>
-                    </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <span
+                      className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold font-mono ${
+                        step > s.num
+                          ? "bg-emerald-600 text-white"
+                          : step === s.num
+                          ? "bg-primary-fill text-white"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {step > s.num ? <Check className="h-3.5 w-3.5" /> : `0${s.num}`}
+                    </span>
+                    <span className="font-bold hidden sm:inline">{s.title}</span>
                   </div>
-                );
-              })}
+                  <div className="text-[11px] text-text-body/70 dark:text-slate-400 mt-1 hidden sm:block">{s.subtitle}</div>
+                </div>
+              ))}
             </div>
+
+            {/* ======================================================== */}
+            {/* STEP 1: SELECT CAREER TRACK & LIVE BATCH                  */}
+            {/* ======================================================== */}
+            {step === 1 && (
+              <div className="space-y-6 rounded-[28px] border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-6 sm:p-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-black/40">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border dark:border-slate-800/80 pb-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-text-heading dark:text-white">1. Select Your Engineering Track</h2>
+                    <p className="text-xs text-text-body dark:text-slate-300">All programs include live faculty mentorship, enterprise capstones &amp; AI interview preparation.</p>
+                  </div>
+                  <span className="text-xs text-primary-blue dark:text-blue-400 font-bold">Step 1 of 3</span>
+                </div>
+
+                {/* Course Grid */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {coursesList.map((course) => {
+                    const isSelected = selectedCourse.id === course.id;
+
+                    return (
+                      <div
+                        key={course.id}
+                        onClick={() => {
+                          setSelectedCourse(course);
+                          setSelectedBatch(course.batches[0]);
+                        }}
+                        className={`group relative rounded-2xl border p-5 transition-all cursor-pointer space-y-3.5 ${
+                          isSelected
+                            ? "border-primary-blue dark:border-blue-500/80 bg-blue-50/50 dark:bg-blue-950/20 shadow-md ring-2 ring-primary-blue/20 dark:ring-blue-500/30"
+                            : "border-border dark:border-slate-800 bg-white dark:bg-surface-elevated hover:border-primary-blue/40 dark:hover:border-blue-500/50 hover:shadow-sm"
+                        }`}
+                      >
+                        {course.popular && (
+                          <span className="absolute top-4 right-4 rounded-full bg-primary-fill px-3 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider shadow-xs">
+                            ★ Most Enrolled
+                          </span>
+                        )}
+
+                        <div className="pr-16">
+                          <h3 className="font-bold text-base text-text-heading dark:text-white group-hover:text-primary-blue dark:group-hover:text-blue-400 transition-colors">
+                            {course.title}
+                          </h3>
+                          <p className="mt-1 text-xs text-text-body dark:text-slate-300 leading-relaxed line-clamp-2">
+                            {course.subtitle}
+                          </p>
+                        </div>
+
+                        {/* Key Modules Pills */}
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {course.curriculum.map((c, i) => (
+                            <span
+                              key={i}
+                              className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] text-slate-700 dark:text-slate-300 font-medium"
+                            >
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Footer Row */}
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+                          <div>
+                            <span className="text-text-body dark:text-slate-300 font-medium">{course.duration}</span>
+                            <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
+                              <Clock className="h-3 w-3" /> {course.nextBatch}
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <div className="font-mono font-extrabold text-lg text-primary-blue dark:text-blue-400">
+                              ₹{(course.price - course.discount).toLocaleString("en-IN")}
+                            </div>
+                            {course.discount > 0 && (
+                              <span className="text-[10px] text-slate-400 line-through">
+                                ₹{course.price.toLocaleString("en-IN")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
 
             {/* Batch Schedule Selector */}
             <div className="rounded-2xl border border-blue-100 dark:border-slate-800 bg-blue-50/30 dark:bg-surface-elevated/60 p-5 space-y-3">
@@ -679,8 +763,8 @@ function CourseRegistrationContent() {
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border dark:border-slate-800/80 pb-4">
               <div>
-                <h2 className="text-xl font-bold text-text-heading dark:text-white">3. GST Tax Invoice &amp; Payment Summary</h2>
-                <p className="text-xs text-text-body dark:text-slate-300">Includes 18% GST (CGST 9% + SGST 9%) with instant downloadable digital tax invoice receipt.</p>
+                <h2 className="text-xl font-bold text-text-heading dark:text-white">3. Invoice &amp; Payment Summary</h2>
+                <p className="text-xs text-text-body dark:text-slate-300">Includes instant downloadable digital invoice receipt.</p>
               </div>
               <span className="text-xs text-primary-blue dark:text-blue-400 font-bold">Step 3 of 3</span>
             </div>
@@ -787,7 +871,7 @@ function CourseRegistrationContent() {
             {/* Full 18% GST Invoice Computation Breakdown */}
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-surface-elevated p-5 space-y-2.5 text-xs">
               <div className="font-bold text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-800 pb-2">
-                Official Tax Invoice Itemization
+                Official Invoice Itemization
               </div>
               <div className="flex justify-between text-slate-600 dark:text-slate-300">
                 <span>Course Standard Tuition Fee:</span>
@@ -812,7 +896,7 @@ function CourseRegistrationContent() {
                 <span className="font-mono">₹{sgst.toLocaleString("en-IN")}</span>
               </div>
               <div className="flex justify-between border-t-2 border-slate-900 dark:border-slate-700 pt-2.5 font-extrabold text-sm text-text-heading dark:text-white">
-                <span>Total Net Investment (Incl. 18% GST):</span>
+                <span>Total Net Investment:</span>
                 <span className={`font-mono text-base font-black ${isFullDiscount ? "text-emerald-600 dark:text-emerald-400" : "text-primary-blue dark:text-blue-400"}`}>
                   ₹{netPayable.toLocaleString("en-IN")}
                 </span>
@@ -942,9 +1026,11 @@ function CourseRegistrationContent() {
             </div>
           </div>
         )}
+          </>
+        ) : null}
 
         {/* Auth Gate Modal for Unauthenticated Users */}
-        {showAuthGateModal && (
+        {showAuthGateModal && selectedCourse && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="relative w-full max-w-md rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-surface-secondary p-6 sm:p-8 text-center shadow-2xl space-y-5">
               <button
@@ -974,7 +1060,7 @@ function CourseRegistrationContent() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span>Official GST Tax Invoice mapped to your profile</span>
+                  <span>Official Invoice mapped to your profile</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />

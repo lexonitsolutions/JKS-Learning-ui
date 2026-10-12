@@ -706,10 +706,10 @@ export function CourseCheckoutModal({
                   )}
                 </div>
 
-                {/* GST Tax Invoice Itemized Breakdown */}
+                {/* Invoice Itemized Breakdown */}
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-2 text-xs text-slate-600 dark:border-slate-800 dark:bg-surface-elevated/80 dark:text-slate-300">
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white border-b border-slate-200/60 pb-2 dark:border-slate-800">
-                    GST Billing Summary
+                    Billing Summary
                   </div>
                   <div className="flex justify-between">
                     <span>Base Tuition Fee</span>

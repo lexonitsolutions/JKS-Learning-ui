@@ -263,8 +263,14 @@ export function resolveCourseThumbnail(thumb?: string | null): string | undefine
  */
 export async function fetchDbCourses(): Promise<Course[]> {
   const urlsToTry: string[] = [apiUrl("/courses")];
-  if (typeof window === "undefined" && !urlsToTry[0].includes("localhost:4000")) {
-    urlsToTry.push("http://localhost:4000/courses");
+  if (typeof window === "undefined") {
+    if (!urlsToTry[0].includes("localhost:4000")) {
+      urlsToTry.push("http://localhost:4000/courses");
+    }
+  } else if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    if (!urlsToTry[0].includes("localhost:4000")) {
+      urlsToTry.push("http://localhost:4000/courses");
+    }
   }
 
   for (const url of urlsToTry) {
@@ -277,7 +283,7 @@ export async function fetchDbCourses(): Promise<Course[]> {
 
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           return data.map((item: BackendCourse) => transformBackendCourse(item));
         }
       }
