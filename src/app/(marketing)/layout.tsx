@@ -10,7 +10,7 @@ export default function MarketingLayout({
   return (
     <LenisProvider>
       <SiteHeader />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 w-full max-w-full overflow-x-clip">{children}</main>
       <SiteFooter />
     </LenisProvider>
   );

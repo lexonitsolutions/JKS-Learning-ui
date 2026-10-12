@@ -21,10 +21,9 @@ export default function proxy(request: NextRequest) {
     }
 
     // Also check for Clerk session cookies if present
-    const hasClerkSession = !!(
-      request.cookies.get("__session")?.value ||
-      request.cookies.get("__client_uat")?.value
-    );
+    const sessionToken = request.cookies.get("__session")?.value;
+    const clientUat = request.cookies.get("__client_uat")?.value;
+    const hasClerkSession = !!sessionToken || (!!clientUat && clientUat !== "0");
 
     const isAuthenticated = !!session || hasClerkSession;
 

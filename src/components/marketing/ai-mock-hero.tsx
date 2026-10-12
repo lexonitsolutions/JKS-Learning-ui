@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { MagneticButton } from "@/components/interactions/magnetic-button";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
+import { useAuth } from "@clerk/nextjs";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
 
 const TRUST_PILLS = [
   { icon: ShieldCheck, title: "Enterprise", sub: "Calibrated" },
@@ -25,6 +27,13 @@ const TRUST_PILLS = [
 
 export function AiMockHero() {
   const reducedMotion = useReducedMotion();
+  const { isSignedIn, isLoaded: isAuthLoaded } = useAuth();
+  const session = useMockSession();
+
+  const isAuthenticated = (isAuthLoaded && !!isSignedIn) || !!session;
+  const mockInterviewHref = isAuthenticated
+    ? "/dashboard/ai-interview"
+    : "/login?from=/dashboard/ai-interview";
 
   // Pointer-driven 3D tilt for the centerpiece. Normalized cursor offsets
   // (-0.5..0.5) feed spring-smoothed rotations; the glass cards sit at
@@ -127,7 +136,7 @@ export function AiMockHero() {
             >
               <MagneticButton>
                 <Link
-                  href="/dashboard/ai-interview"
+                  href={mockInterviewHref}
                   className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-primary-fill px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-600 hover:shadow-blue-500/35 cursor-pointer"
                 >
                   <span>Start AI Mock Interview</span>

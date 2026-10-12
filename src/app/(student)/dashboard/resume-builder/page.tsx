@@ -1579,43 +1579,45 @@ export default function ResumeBuilderPage() {
             </div>
 
             {/* Quick Actions & Print Button */}
-            <div className="flex items-center justify-between sm:justify-end gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800 w-full min-w-0">
+              <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-wrap">
                 <button
                   type="button"
                   onClick={handleAutoFillFromProfile}
                   title="Auto-fill with your real profile, enrolled courses, and verified certificates"
-                  className="flex items-center gap-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 px-2 sm:px-2.5 py-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer shrink-0"
                 >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span>Sync Profile &amp; Courses</span>
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Sync Profile &amp; Courses</span>
+                  <span className="sm:hidden">Sync</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleLoadSample}
                   title="Load a complete tech resume example"
-                  className="flex items-center gap-1 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/40 px-2.5 py-1.5 text-[11px] font-semibold text-[#1E5EFF] dark:text-blue-400 hover:bg-blue-100/70 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/40 px-2 sm:px-2.5 py-1.5 text-[11px] font-semibold text-[#1E5EFF] dark:text-blue-400 hover:bg-blue-100/70 transition-colors cursor-pointer shrink-0"
                 >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Load</span> Example
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Load </span><span>Example</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setAiOpen(true)}
                   title="Get an AI review of your resume: ATS score, missing keywords and stronger bullet points"
-                  className="flex items-center gap-1 rounded-xl border border-violet-200 dark:border-violet-900/60 bg-violet-50 dark:bg-violet-950/40 px-2.5 py-1.5 text-[11px] font-bold text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 rounded-xl border border-violet-200 dark:border-violet-900/60 bg-violet-50 dark:bg-violet-950/40 px-2 sm:px-2.5 py-1.5 text-[11px] font-bold text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors cursor-pointer shrink-0"
                 >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span>AI Review</span>
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden xs:inline">AI Review</span>
+                  <span className="xs:hidden">AI</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleClearAll}
                   title="Clear all fields"
-                  className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-2 sm:px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 transition-colors cursor-pointer shrink-0"
                 >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  <span>Clear</span>
+                  <RotateCcw className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden xs:inline">Clear</span>
                 </button>
               </div>
 
@@ -1623,14 +1625,16 @@ export default function ResumeBuilderPage() {
                 type="button"
                 onClick={handleDownloadPdf}
                 disabled={isExportingPdf}
-                className="flex items-center gap-1.5 rounded-xl bg-[#1E5EFF] dark:bg-blue-600 px-3.5 sm:px-4 py-1.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 dark:hover:bg-blue-500 transition-all active:scale-98 cursor-pointer disabled:opacity-70"
+                title="Download PDF"
+                aria-label="Download PDF"
+                className="shrink-0 flex items-center justify-center gap-1.5 rounded-xl bg-[#1E5EFF] dark:bg-blue-600 p-2 sm:px-4 sm:py-1.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 dark:hover:bg-blue-500 transition-all active:scale-98 cursor-pointer disabled:opacity-70"
               >
                 {isExportingPdf ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin shrink-0" />
                 ) : (
-                  <Download className="h-4 w-4" />
+                  <Download className="h-4 w-4 shrink-0" />
                 )}
-                <span>{isExportingPdf ? "Generating PDF..." : "Download PDF"}</span>
+                <span className="hidden sm:inline">{isExportingPdf ? "Generating PDF..." : "Download PDF"}</span>
               </button>
             </div>
           </div>
