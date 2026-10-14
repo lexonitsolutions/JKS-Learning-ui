@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Copy, Loader2, Save, Sparkles, Wand2 } from "lucide-react";
 import {
   fetchAiHealth,
@@ -13,7 +14,9 @@ import {
   type GeneratedQuestion,
 } from "@/lib/data/ai-api";
 import { getStoredCourses } from "@/lib/data/courses-store";
-import { saveStoredMasterAssessment, type TaskQuestion } from "@/lib/data/tasks-api";
+import type { TaskQuestion } from "@/lib/data/tasks-api";
+import { createTemplate } from "@/lib/data/assessment-templates-api";
+import { CODING_LANGUAGE_OPTIONS } from "@/lib/utils/coding-question";
 
 const CARD =
   "rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800/80 dark:bg-surface-secondary sm:p-6";
@@ -39,31 +42,48 @@ function ErrorBox({ message }: { message: string }) {
 }
 
 function toTaskQuestion(q: GeneratedQuestion, idx: number): TaskQuestion {
-  const base = { id: `ai-q-${Date.now()}-${idx}`, maxPoints: q.marks || 5 };
+  const base = { id: `ai-q-${Date.now()}-${idx}`, maxPoints: q.marks || 5, explanation: q.explanation };
   if (q.type === "MCQ" && q.options?.length) {
     const correct = q.options.findIndex((o) => o === q.correctAnswer);
     return { ...base, type: "MCQ", prompt: q.question, choices: q.options, correctAnswer: correct >= 0 ? correct : 0 };
   }
   if (q.type === "CODING") {
+    // Everything coding-specific is kept: language, partly-complete starter code,
+    // instructions, tests (including which are hidden) and the reference solution.
     return {
       ...base,
-      type: "LONG_ANSWER",
-      prompt: q.starterCode ? `${q.question}\n\nStarter code:\n${q.starterCode}` : q.question,
-      modelAnswer: q.explanation,
+      type: "CODING",
+      prompt: q.question,
+      language: q.language,
+      starterCode: q.starterCode ?? "",
+      instructions: q.instructions,
+      testCases: q.testCases ?? [],
+      referenceSolution: q.referenceSolution,
     };
   }
   return { ...base, type: "SHORT_ANSWER", prompt: q.question, modelAnswer: q.correctAnswer || q.explanation };
 }
 
+/** The "Medium" question type is stored as SHORT_ANSWER so existing records keep their meaning. */
+const TYPE_LABEL: Record<GeneratedQuestion["type"], string> = {
+  MCQ: "MCQ",
+  SHORT_ANSWER: "Medium",
+  CODING: "Coding",
+};
+
 /* ── Question generator ─────────────────────────────────────────────── */
-function QuestionGenerator() {
+function QuestionGenerator({ basePath }: { basePath: "admin" | "instructor" }) {
   const [courses, setCourses] = useState<{ id: string; title: string }[]>([]);
   const [courseTitle, setCourseTitle] = useState("");
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("MEDIUM");
   const [mcq, setMcq] = useState(3);
-  const [short, setShort] = useState(2);
+  const [medium, setMedium] = useState(2);
   const [coding, setCoding] = useState(1);
+  const [codingLanguage, setCodingLanguage] = useState("");
+  const [warnings, setWarnings] = useState<string[]>([]);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [questions, setQuestions] = useState<GeneratedQuestion[] | null>(null);
@@ -79,7 +99,7 @@ function QuestionGenerator() {
     });
   }, []);
 
-  const total = mcq + short + coding;
+  const total = mcq + medium + coding;
 
   async function run() {
     if (!courseTitle.trim() || !topic.trim()) {
@@ -93,16 +113,20 @@ function QuestionGenerator() {
     setBusy(true);
     setError(null);
     setSaved(false);
+    setSavedId(null);
+    setWarnings([]);
     try {
       const res = await generateQuizQuestions({
         courseTitle: courseTitle.trim(),
         topic: topic.trim(),
         difficulty,
         mcqCount: mcq,
-        shortAnswerCount: short,
+        mediumCount: medium,
         codingCount: coding,
+        codingLanguage: codingLanguage || undefined,
       });
       setQuestions(res.questions);
+      setWarnings(res.warnings ?? []);
       setTitle(`${topic.trim()} - AI draft`);
     } catch (e) {
       setError(errMsg(e));
@@ -111,17 +135,29 @@ function QuestionGenerator() {
     }
   }
 
-  function save() {
-    if (!questions?.length || !title.trim()) return;
-    const course = courses.find((c) => c.title === courseTitle);
-    saveStoredMasterAssessment({
-      title: title.trim(),
-      description: `AI-generated ${difficulty.toLowerCase()} questions on ${topic.trim()}. Review before assigning.`,
-      courseId: course?.id,
-      courseTitle: courseTitle.trim(),
-      questions: questions.map(toTaskQuestion),
-    });
-    setSaved(true);
+  async function save() {
+    if (!questions?.length || !title.trim() || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const course = courses.find((c) => c.title === courseTitle);
+      const saved = await createTemplate({
+        title: title.trim(),
+        description: `AI-generated ${difficulty.toLowerCase()} questions on ${topic.trim()}. Review before assigning.`,
+        // Only a real database id can be linked; otherwise the title is kept as text.
+        courseId: course && /^[a-f0-9]{24}$/i.test(course.id) ? course.id : undefined,
+        courseTitle: courseTitle.trim(),
+        topic: topic.trim(),
+        difficulty,
+        questions: questions.map(toTaskQuestion),
+      });
+      setSaved(true);
+      setSavedId(saved.id);
+    } catch (e) {
+      setError(errMsg(e));
+    } finally {
+      setSaving(false);
+    }
   }
 
   const num = (v: string) => Math.max(0, Math.min(10, Number(v) || 0));
@@ -171,7 +207,7 @@ function QuestionGenerator() {
             {(
               [
                 ["MCQ", mcq, setMcq],
-                ["Short", short, setShort],
+                ["Medium", medium, setMedium],
                 ["Coding", coding, setCoding],
               ] as const
             ).map(([label, value, set]) => (
@@ -189,6 +225,23 @@ function QuestionGenerator() {
             ))}
           </div>
         </div>
+        {coding > 0 && (
+          <label className="mt-4 block max-w-xs text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Coding language
+            <select className={`${INPUT} mt-1.5`} value={codingLanguage} onChange={(e) => setCodingLanguage(e.target.value)}>
+              <option value="">Detect from course and topic</option>
+              {CODING_LANGUAGE_OPTIONS.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
+          <strong>Medium</strong> questions ask for a written answer of a few sentences. Coding questions come with
+          partly-complete starter code, tests and a reference solution that students never see.
+        </p>
         {error && <ErrorBox message={error} />}
         <button type="button" className={`${BTN} mt-5`} onClick={run} disabled={busy}>
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
@@ -203,17 +256,39 @@ function QuestionGenerator() {
               Template name
               <input className={`${INPUT} mt-1.5`} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
             </label>
-            <button type="button" className={BTN} onClick={save} disabled={saved || !title.trim()}>
-              {saved ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-              {saved ? "Saved to Assessments" : "Save as assessment template"}
+            <button type="button" className={BTN} onClick={save} disabled={saved || saving || !title.trim()}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+              {saving ? "Saving…" : saved ? "Saved" : "Save as template"}
             </button>
           </div>
+          {saved && savedId && (
+            <p role="status" className="mt-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+              Saved. Find it under{" "}
+              <Link
+                href={basePath === "admin" ? "/admin/assessments?view=ai" : "/instructor/assessments?view=ai"}
+                className="underline underline-offset-2"
+              >
+                Assessments → AI Assessments
+              </Link>{" "}
+              to review it, create an assessment and assign students.
+            </p>
+          )}
+          {warnings.length > 0 && (
+            <ul className="mt-3 space-y-1" role="status">
+              {warnings.map((w) => (
+                <li key={w} className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-300">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {w}
+                </li>
+              ))}
+            </ul>
+          )}
           <ol className="mt-5 space-y-4">
             {questions.map((q, i) => (
               <li key={q.id} className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
                 <div className="flex items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-wide text-slate-400">
                   <span>
-                    Q{i + 1} · {q.type.replace("_", " ")}
+                    Q{i + 1} · {TYPE_LABEL[q.type]}
+                    {q.type === "CODING" && q.language ? ` · ${q.language}` : ""}
                   </span>
                   <span>{q.marks} marks</span>
                 </div>
@@ -234,8 +309,30 @@ function QuestionGenerator() {
                     {q.correctAnswer}
                   </p>
                 )}
+                {q.instructions && (
+                  <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
+                    <span className="font-semibold">Student must: </span>
+                    {q.instructions}
+                  </p>
+                )}
                 {q.starterCode && (
-                  <pre className="mt-2 overflow-x-auto rounded-lg bg-slate-900 p-3 text-[11px] text-slate-100">{q.starterCode}</pre>
+                  <>
+                    <p className="mt-2 text-[10.5px] font-bold uppercase tracking-wide text-slate-400">Starter code (shown to student)</p>
+                    <pre className="mt-1 overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 p-3 font-mono text-[11px] text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">{q.starterCode}</pre>
+                  </>
+                )}
+                {q.testCases && q.testCases.length > 0 && (
+                  <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                    {q.testCases.length} test cases ({q.testCases.filter((t) => t.hidden).length} hidden from students)
+                  </p>
+                )}
+                {q.referenceSolution && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      Reference solution (staff only)
+                    </summary>
+                    <pre className="mt-1 overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 p-3 font-mono text-[11px] text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">{q.referenceSolution}</pre>
+                  </details>
                 )}
                 {q.explanation && <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">{q.explanation}</p>}
               </li>
@@ -488,7 +585,7 @@ export function AiStudio({ isAdmin }: { isAdmin: boolean }) {
           </button>
         ))}
       </div>
-      {tab === "questions" && <QuestionGenerator />}
+      {tab === "questions" && <QuestionGenerator basePath={isAdmin ? "admin" : "instructor"} />}
       {tab === "curriculum" && <CurriculumDesigner />}
       {tab === "status" && isAdmin && <StatusPanel />}
     </div>

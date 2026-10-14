@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle, Check, Loader2, Sparkles, Wand2, X } from "lucide-react";
 import { analyzeResume, type ResumeAnalysis } from "@/lib/data/ai-api";
+import { FeatureAccessGate, useFeatureAccess } from "@/components/common/feature-access-gate";
 
 interface Props {
   open: boolean;
@@ -34,6 +35,7 @@ export function AiResumeAssistant({ open, onClose, resumeData, onApplyBullet }: 
   const [error, setError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
   const [applied, setApplied] = useState<Record<string, "done" | "missing">>({});
+  const access = useFeatureAccess("AI_RESUME_REVIEW");
 
   useEffect(() => {
     if (!open) return;
@@ -79,6 +81,27 @@ export function AiResumeAssistant({ open, onClose, resumeData, onApplyBullet }: 
           </button>
         </header>
 
+        {access.state && !access.state.canUse && (
+          <div className="p-5">
+            <FeatureAccessGate
+              feature="AI_RESUME_REVIEW"
+              title="AI Resume Review"
+              state={access.state}
+              onChanged={access.reload}
+              compact
+            />
+            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+              You can keep creating and editing your resume as usual while you wait.
+            </p>
+          </div>
+        )}
+        {access.error && !access.state && (
+          <p role="alert" className="p-5 text-xs text-rose-600 dark:text-rose-400">
+            {access.error}
+          </p>
+        )}
+
+        {access.state?.canUse && (
         <div className="space-y-5 p-5">
           <div>
             <label className="text-xs font-semibold text-slate-600 dark:text-slate-300" htmlFor="ai-jd">
@@ -185,6 +208,7 @@ export function AiResumeAssistant({ open, onClose, resumeData, onApplyBullet }: 
             </>
           )}
         </div>
+        )}
       </aside>
     </div>,
     document.body,

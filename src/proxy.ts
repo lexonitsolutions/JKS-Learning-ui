@@ -5,6 +5,7 @@ import { SESSION_COOKIE_NAME, decodeSession } from "@/lib/auth/session";
 const PROTECTED_STUDENT_PREFIX = "/dashboard";
 const PROTECTED_INSTRUCTOR_PREFIX = "/instructor";
 const PROTECTED_ADMIN_PREFIX = "/admin";
+const PROTECTED_HEAD_PREFIX = "/head";
 
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -30,9 +31,10 @@ export default function proxy(request: NextRequest) {
     const isStudentRoute = pathname.startsWith(PROTECTED_STUDENT_PREFIX);
     const isInstructorRoute = pathname.startsWith(PROTECTED_INSTRUCTOR_PREFIX);
     const isAdminRoute = pathname.startsWith(PROTECTED_ADMIN_PREFIX);
+    const isHeadRoute = pathname.startsWith(PROTECTED_HEAD_PREFIX);
     const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/sign-up";
 
-    const isProtected = isStudentRoute || isInstructorRoute || isAdminRoute;
+    const isProtected = isStudentRoute || isInstructorRoute || isAdminRoute || isHeadRoute;
 
     // 1. Unauthenticated users trying to access protected routes -> redirect to /login
     if (isProtected && !isAuthenticated) {
@@ -46,9 +48,11 @@ export default function proxy(request: NextRequest) {
       const isSuperAdminEmail = session.email?.toLowerCase() === "lexonitservices@gmail.com";
       const isAdmin = session.role === "admin" || isSuperAdminEmail;
 
+      const home =
+        session.role === "instructor" ? "/instructor" : session.role === "head" ? "/head" : "/dashboard";
+
       if (isAdminRoute && !isAdmin) {
-        const dest = session.role === "instructor" ? "/instructor" : "/dashboard";
-        return NextResponse.redirect(new URL(dest, request.url));
+        return NextResponse.redirect(new URL(home, request.url));
       }
 
       if (
@@ -56,7 +60,13 @@ export default function proxy(request: NextRequest) {
         session.role !== "instructor" &&
         !isAdmin
       ) {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return NextResponse.redirect(new URL(home, request.url));
+      }
+
+      // The head workspace is for heads (admins may look in). This is only a
+      // routing convenience: every head API is authorised on the server.
+      if (isHeadRoute && session.role !== "head" && !isAdmin) {
+        return NextResponse.redirect(new URL(home, request.url));
       }
 
       // Allow admins and instructors to preview course learning UI
@@ -68,6 +78,10 @@ export default function proxy(request: NextRequest) {
 
       if (isStudentRoute && !isLearningPlayer && session.role === "instructor") {
         return NextResponse.redirect(new URL("/instructor", request.url));
+      }
+
+      if (isStudentRoute && session.role === "head") {
+        return NextResponse.redirect(new URL("/head", request.url));
       }
     }
 

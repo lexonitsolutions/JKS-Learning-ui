@@ -312,6 +312,10 @@ export function ViewSubmissionModal({
                           );
                         })}
                       </div>
+                    ) : ev.type === "CODING" ? (
+                      <pre className="max-h-64 overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-3 font-mono text-[11px] text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                        {ev.studentAnswerText}
+                      </pre>
                     ) : ev.type === "FILE_UPLOAD" ? (
                       <div className="flex items-center gap-2 pt-1 text-xs font-semibold text-[#2563EB] dark:text-blue-400">
                         <FileText className="h-4 w-4" />

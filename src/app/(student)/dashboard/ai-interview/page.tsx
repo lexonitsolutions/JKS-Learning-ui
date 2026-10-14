@@ -3,9 +3,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BrainCircuit, Loader2, Send, History, ArrowRight, AlertTriangle, Clock } from "lucide-react";
+import { BrainCircuit, Loader2, Send, History, ArrowRight, AlertTriangle, Clock, X } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { Reveal } from "@/lib/motion/reveal";
+import { FeatureAccessGate, useFeatureAccess } from "@/components/common/feature-access-gate";
+import { VoiceAnswerButton } from "@/components/ai-interview/voice-answer-button";
 import {
   completeInterview,
   fetchMyInterviews,
@@ -20,19 +22,26 @@ const CARD =
 const INPUT =
   "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-surface-elevated dark:text-white";
 
-const TECHNOLOGIES = [
-  "Java Full Stack",
+// Suggestions only - students may type any technology they know.
+const TECH_SUGGESTIONS = [
   "Java",
-  "Spring Boot",
-  "React",
-  "JavaScript",
-  "Node.js",
   "Python",
-  "SQL & Databases",
+  "React",
+  "React Native",
+  "Node.js",
+  "JavaScript",
+  "TypeScript",
+  "Spring Boot",
+  "SQL",
+  "SAP ABAP",
   "System Design",
-  "SAP",
 ];
-const EXPERIENCE = ["Fresher", "1-3 years", "3-5 years", "5+ years"];
+const MAX_TECHNOLOGIES = 10;
+const EXPERIENCE_LEVELS: { value: string; hint: string }[] = [
+  { value: "Beginner", hint: "Learning the fundamentals" },
+  { value: "Intermediate", hint: "Comfortable building real features" },
+  { value: "Advanced", hint: "Deep, production-level experience" },
+];
 const TYPES: { value: InterviewType; label: string; hint: string }[] = [
   { value: "TECHNICAL", label: "Technical", hint: "Concepts & problem solving" },
   { value: "SCENARIO", label: "Scenario", hint: "Real-world design cases" },
@@ -50,8 +59,11 @@ function errMsg(err: unknown): string {
 export default function AiInterviewPage() {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("setup");
-  const [technology, setTechnology] = useState(TECHNOLOGIES[0]);
-  const [experience, setExperience] = useState(EXPERIENCE[0]);
+  const access = useFeatureAccess("AI_MOCK_INTERVIEW");
+  const [technologies, setTechnologies] = useState<string[]>([]);
+  const [techInput, setTechInput] = useState("");
+  const [experience, setExperience] = useState(EXPERIENCE_LEVELS[0].value);
+  const technology = technologies.join(", ");
   const [type, setType] = useState<InterviewType>("TECHNICAL");
 
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -78,11 +90,44 @@ export default function AiInterviewPage() {
     if (phase === "interview" && !busy) answerRef.current?.focus();
   }, [phase, busy, question]);
 
+  function addTechnologies(raw: string) {
+    const parts = raw
+      .split(",")
+      .map((t) => t.trim().slice(0, 40))
+      .filter(Boolean);
+    if (parts.length === 0) return;
+    setTechnologies((prev) => {
+      const next = [...prev];
+      for (const p of parts) {
+        if (next.length >= MAX_TECHNOLOGIES) break;
+        if (!next.some((t) => t.toLowerCase() === p.toLowerCase())) next.push(p);
+      }
+      return next;
+    });
+    setTechInput("");
+  }
+
   async function handleStart() {
+    // Include text typed but not yet confirmed with Enter.
+    const pending = techInput
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const all = [...technologies];
+    for (const p of pending) {
+      if (!all.some((t) => t.toLowerCase() === p.toLowerCase())) all.push(p);
+    }
+    const finalTech = all.slice(0, MAX_TECHNOLOGIES).join(", ");
+    if (!finalTech) {
+      setError("Add at least one technology you know.");
+      return;
+    }
+    setTechnologies(all.slice(0, MAX_TECHNOLOGIES));
+    setTechInput("");
     setBusy(true);
     setError(null);
     try {
-      const res = await startInterview({ technology, experience, type });
+      const res = await startInterview({ technology: finalTech, experience, type });
       setSessionId(res.sessionId);
       setQuestion(res.question);
       setIndex(0);
@@ -138,6 +183,18 @@ export default function AiInterviewPage() {
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
         {phase === "setup" && (
           <>
+            {access.state && !access.state.canUse && (
+              <Reveal>
+                <FeatureAccessGate
+                  feature="AI_MOCK_INTERVIEW"
+                  title="AI Mock Interview"
+                  state={access.state}
+                  onChanged={access.reload}
+                />
+              </Reveal>
+            )}
+            {access.error && <ErrorBox message={access.error} />}
+
             <Reveal>
               <div className={`${CARD} p-5 sm:p-7`}>
                 <div className="flex items-start gap-4">
@@ -153,23 +210,81 @@ export default function AiInterviewPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
-                    Technology
-                    <select className={`${INPUT} mt-1.5`} value={technology} onChange={(e) => setTechnology(e.target.value)}>
-                      {TECHNOLOGIES.map((t) => (
-                        <option key={t}>{t}</option>
-                      ))}
-                    </select>
+                <div className="mt-6">
+                  <label htmlFor="tech-input" className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    Technologies you know
                   </label>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
-                    Your experience
-                    <select className={`${INPUT} mt-1.5`} value={experience} onChange={(e) => setExperience(e.target.value)}>
-                      {EXPERIENCE.map((t) => (
-                        <option key={t}>{t}</option>
-                      ))}
-                    </select>
-                  </label>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-blue-500/20 dark:border-slate-700 dark:bg-surface-elevated">
+                    {technologies.map((t) => (
+                      <span
+                        key={t}
+                        className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-300"
+                      >
+                        {t}
+                        <button
+                          type="button"
+                          aria-label={`Remove ${t}`}
+                          onClick={() => setTechnologies((prev) => prev.filter((x) => x !== t))}
+                          className="rounded p-0.5 hover:bg-blue-100 dark:hover:bg-blue-900/60"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                    <input
+                      id="tech-input"
+                      value={techInput}
+                      onChange={(e) => setTechInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === ",") {
+                          e.preventDefault();
+                          addTechnologies(techInput);
+                        } else if (e.key === "Backspace" && !techInput && technologies.length) {
+                          setTechnologies((prev) => prev.slice(0, -1));
+                        }
+                      }}
+                      onBlur={() => addTechnologies(techInput)}
+                      disabled={technologies.length >= MAX_TECHNOLOGIES}
+                      placeholder={technologies.length ? "Add another…" : "e.g. Java, React Native, SAP ABAP"}
+                      className="min-w-[10rem] flex-1 bg-transparent px-1.5 py-1 text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
+                    />
+                  </div>
+                  <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                    Type any technology and press Enter or comma. Up to {MAX_TECHNOLOGIES}.
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {TECH_SUGGESTIONS.filter((t) => !technologies.some((x) => x.toLowerCase() === t.toLowerCase())).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => addTechnologies(t)}
+                        className="rounded-full border border-slate-200 px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:border-[#2563EB] hover:text-[#2563EB] dark:border-slate-700 dark:text-slate-300"
+                      >
+                        + {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="mt-5 text-xs font-semibold text-slate-600 dark:text-slate-300">Experience level</p>
+                <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3" role="radiogroup" aria-label="Experience level">
+                  {EXPERIENCE_LEVELS.map((lvl) => (
+                    <button
+                      key={lvl.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={experience === lvl.value}
+                      onClick={() => setExperience(lvl.value)}
+                      className={`rounded-xl border p-3 text-left transition-colors ${
+                        experience === lvl.value
+                          ? "border-[#2563EB] bg-blue-50 dark:border-blue-500 dark:bg-blue-950/40"
+                          : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-surface-elevated"
+                      }`}
+                    >
+                      <span className="block text-sm font-bold text-slate-900 dark:text-white">{lvl.value}</span>
+                      <span className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400">{lvl.hint}</span>
+                    </button>
+                  ))}
                 </div>
 
                 <p className="mt-5 text-xs font-semibold text-slate-600 dark:text-slate-300">Interview type</p>
@@ -196,7 +311,7 @@ export default function AiInterviewPage() {
                 <button
                   type="button"
                   onClick={handleStart}
-                  disabled={busy}
+                  disabled={busy || !access.state?.canUse}
                   className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-60"
                 >
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
@@ -298,6 +413,15 @@ export default function AiInterviewPage() {
                     placeholder="Type your answer here… (Ctrl+Enter to submit)"
                     className={`${INPUT} mt-4 resize-y`}
                   />
+
+                  <div className="mt-3">
+                    <VoiceAnswerButton
+                      disabled={busy}
+                      onTranscript={(text) =>
+                        setAnswer((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text).slice(0, 6000))
+                      }
+                    />
+                  </div>
 
                   {error && <ErrorBox message={error} />}
 

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, use, useRef } from "react";
 import Link from "next/link";
 import { AiCourseCopilot } from "@/components/courses/ai-course-copilot";
+import { fetchCodeContext, playgroundHref, type CodeContext } from "@/lib/data/code-api";
 import Image from "next/image";
 import {
   Lock,
@@ -136,6 +137,9 @@ export default function CourseLearningHubPage({
   // Answers are keyed by question index. Single Choice stores number,
   // Multi-Choice stores number[], written questions store string.
   const [activeQuizAnswers, setActiveQuizAnswers] = useState<Record<number, any>>({});
+  // Coding questions are solved in the Code Playground. This holds the student's
+  // latest server-recorded submission per coding question id.
+  const [codeSubs, setCodeSubs] = useState<Record<string, NonNullable<CodeContext["latestSubmission"]>>>({});
   const [isSubmittingAssessment, setIsSubmittingAssessment] = useState(false);
   const [now, setNow] = useState<number>(Date.now());
 
@@ -702,6 +706,46 @@ export default function CourseLearningHubPage({
     setIsRetakeMode(retake);
   };
 
+  // Load (and keep fresh) the student's Playground submissions for the coding
+  // questions of the assignment that is open.
+  const codingKey = (activeAssignmentSection?.assignment.questions ?? [])
+    .filter((q: any) => resolveAssessmentKind(q?.type, activeAssignmentSection?.assignment.type, q) === "CODING" && q?.id)
+    .map((q: any) => q.id)
+    .join("|");
+  const activeAsgId = activeAssignmentSection?.assignment.id;
+  useEffect(() => {
+    if (!activeAsgId || !codingKey) return;
+    let cancelled = false;
+    const load = async () => {
+      const entries = await Promise.all(
+        codingKey.split("|").map(async (qid) => {
+          try {
+            const ctx = await fetchCodeContext({ type: "COURSE_TASK", courseSlug: slug, assignmentId: activeAsgId, questionId: qid });
+            return [qid, ctx.latestSubmission] as const;
+          } catch {
+            return [qid, null] as const;
+          }
+        }),
+      );
+      if (cancelled) return;
+      setCodeSubs((prev) => {
+        const next = { ...prev };
+        for (const [qid, sub] of entries) if (sub) next[qid] = sub;
+        return next;
+      });
+    };
+    void load();
+    const onVisible = () => document.visibilityState === "visible" && void load();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeAsgId, codingKey, slug]);
+
   const countWords = (text: string) =>
     text.trim() ? text.trim().split(/\s+/).length : 0;
 
@@ -719,6 +763,7 @@ export default function CourseLearningHubPage({
     const kind = resolveAssessmentKind(q?.type, assignmentType, q);
     if (kind === "MCQ") return typeof answer === "number";
     if (kind === "MULTI_CHOICE") return Array.isArray(answer) && answer.length > 0;
+    if (kind === "CODING" && q?.id) return Boolean(codeSubs[q.id]);
     const text = typeof answer === "string" ? answer.trim() : "";
     if (!text) return false;
     if (kind === "LONG_ANSWER" && typeof q?.minWords === "number" && q.minWords > 0) {
@@ -789,6 +834,13 @@ export default function CourseLearningHubPage({
     assignmentType: string
   ): number => {
     const kind = resolveAssessmentKind(q?.type, assignmentType, q);
+    if (kind === "CODING" && q?.id) {
+      // Graded by the server from the Playground submission: the share of tests
+      // passed, or provisional credit when the question has no tests to grade it.
+      const sub = codeSubs[q.id];
+      if (!sub) return 0;
+      return sub.status === "GRADED" && sub.total ? (sub.passed ?? 0) / sub.total : 1;
+    }
     if (kind === "MCQ") {
       const rawCorrect = q?.correctIndex ?? q?.correctChoiceIndex ?? q?.correctAnswer;
       const correctIdx = typeof rawCorrect === "number" ? rawCorrect : parseInt(String(rawCorrect ?? "0"), 10);
@@ -3780,23 +3832,48 @@ export default function CourseLearningHubPage({
                               <Code2 className="h-3.5 w-3.5" />
                               <span>{q.language || "Code"}</span>
                             </div>
-                            {isReviewMode ? (
-                              <div className="space-y-1.5">
-                                <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Your Submitted Code Solution:</div>
-                                <pre className="w-full rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-[11px] leading-relaxed text-emerald-400 overflow-x-auto">
-                                  {textAnswer || q.starterCode || "// No code solution submitted"}
-                                </pre>
-                              </div>
-                            ) : (
-                              <textarea
-                                rows={8}
-                                spellCheck={false}
-                                value={textAnswer || q.starterCode || ""}
-                                disabled={isCooldownActive}
-                                onChange={(e) => handleWriteQuizAnswer(qIdx, e.target.value)}
-                                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-[11px] leading-relaxed text-slate-800 outline-none focus:border-[#2563EB] disabled:opacity-85 dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
-                              />
-                            )}
+                            {(() => {
+                              const sub = q.id ? codeSubs[q.id] : undefined;
+                              return (
+                                <div className="space-y-2">
+                                  {q.instructions && (
+                                    <p className="rounded-lg bg-blue-50/70 p-2.5 text-[11px] text-blue-900 dark:bg-blue-950/30 dark:text-blue-200">
+                                      <strong>To complete:</strong> {q.instructions}
+                                    </p>
+                                  )}
+                                  {(isReviewMode && sub?.code ? sub.code : q.starterCode) && (
+                                    <div className="space-y-1">
+                                      <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                                        {isReviewMode && sub?.code ? "Your submitted code:" : "Starter code:"}
+                                      </div>
+                                      <pre className="max-h-48 w-full overflow-auto rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-[11px] leading-relaxed text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                                        {isReviewMode && sub?.code ? sub.code : q.starterCode}
+                                      </pre>
+                                    </div>
+                                  )}
+                                  <div className="flex flex-wrap items-center gap-3">
+                                    {q.id && (
+                                      <Link
+                                        href={playgroundHref({ type: "COURSE_TASK", courseSlug: slug, assignmentId: activeAssignmentSection.assignment.id, questionId: q.id })}
+                                        className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-700"
+                                      >
+                                        <Code2 className="h-4 w-4" /> {sub ? "Open in Playground" : "Solve in Playground"}
+                                      </Link>
+                                    )}
+                                    {sub ? (
+                                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                                        <CheckCircle2 className="h-3.5 w-3.5" />
+                                        {sub.status === "GRADED" && sub.total
+                                          ? `Submitted · ${sub.passed}/${sub.total} tests passed`
+                                          : "Submitted · awaiting tutor review"}
+                                      </span>
+                                    ) : (
+                                      <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">Not submitted yet</span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()}
                             {q.testCases && (
                               <div className="rounded-lg bg-slate-50 p-2.5 font-mono text-[10px] text-slate-500 dark:bg-surface-elevated dark:text-slate-400">
                                 Test cases: {q.testCases}

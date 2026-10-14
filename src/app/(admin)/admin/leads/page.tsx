@@ -186,7 +186,7 @@ export default function AdminLeadsPage() {
             <div className="mt-2 text-2xl font-black text-emerald-700 dark:text-emerald-400">
               {loading ? "..." : metrics.enrolledCount}
             </div>
-            <span className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80">Converted to paid cohorts</span>
+            <span className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80">Converted to paid batches</span>
           </div>
         </div>
 

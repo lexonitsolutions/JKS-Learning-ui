@@ -41,6 +41,8 @@ import {
 import { fetchAdminStudents, type AdminStudentRecord } from "@/lib/data/students-api";
 import { getStoredCourses } from "@/lib/data/courses-store";
 import { fetchDbCourses } from "@/lib/data/courses-api";
+import { CodingQuestionEditor } from "@/components/admin/coding-question-editor";
+import { toLanguageId } from "@/lib/utils/coding-question";
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -79,7 +81,7 @@ export function CreateTaskModal({
   const [selectedCourseId, setSelectedCourseId] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("");
   const [customTopic, setCustomTopic] = useState("");
-  const [primaryType, setPrimaryType] = useState<"SHORT_ANSWER" | "LONG_ANSWER" | "MCQ" | "FILE_UPLOAD">("SHORT_ANSWER");
+  const [primaryType, setPrimaryType] = useState<TaskQuestion["type"]>("SHORT_ANSWER");
   const [isPrimaryTypeMenuOpen, setIsPrimaryTypeMenuOpen] = useState(false);
   const [taskMarks, setTaskMarks] = useState<number>(100);
 
@@ -362,7 +364,7 @@ export function CreateTaskModal({
   };
 
   // Primary type change
-  const handlePrimaryTypeChange = (newType: "SHORT_ANSWER" | "LONG_ANSWER" | "MCQ" | "FILE_UPLOAD") => {
+  const handlePrimaryTypeChange = (newType: TaskQuestion["type"]) => {
     setPrimaryType(newType);
     setQuestions((prev) => {
       if (prev.length === 0) {
@@ -397,10 +399,13 @@ export function CreateTaskModal({
       id: newId,
       type,
       prompt: "",
-      maxPoints: type === "LONG_ANSWER" ? 20 : type === "SHORT_ANSWER" ? 10 : 5,
+      maxPoints: type === "CODING" ? 25 : type === "LONG_ANSWER" ? 20 : type === "SHORT_ANSWER" ? 10 : 5,
       modelAnswer: type === "SHORT_ANSWER" || type === "LONG_ANSWER" ? "" : undefined,
       choices: type === "MCQ" ? ["Option A", "Option B", "Option C", "Option D"] : undefined,
       correctAnswer: type === "MCQ" ? 0 : undefined,
+      ...(type === "CODING"
+        ? { language: "javascript", starterCode: "// TODO: write your solution here\n", testCases: [] }
+        : {}),
     };
     setQuestions((prev) => [...prev, newQ]);
 
@@ -1038,6 +1043,14 @@ export function CreateTaskModal({
                 </button>
                 <button
                   type="button"
+                  onClick={() => handleAddQuestion("CODING")}
+                  className="rounded-lg bg-emerald-50 dark:bg-emerald-950/60 px-2 py-1 text-[10.5px] font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors cursor-pointer"
+                  title="Add Coding Question (opens in the Code Playground for students)"
+                >
+                  + Coding Q
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleAddQuestion("FILE_UPLOAD")}
                   className="rounded-lg bg-amber-50 dark:bg-amber-950/60 px-2 py-1 text-[10.5px] font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-100 transition-colors cursor-pointer"
                   title="Add File Upload Task"
@@ -1069,6 +1082,14 @@ export function CreateTaskModal({
                           const newType = e.target.value as TaskQuestion["type"];
                           handleUpdateQuestion(idx, {
                             type: newType,
+                            ...(newType === "CODING"
+                              ? {
+                                  language: q.language || "javascript",
+                                  starterCode: q.starterCode || "// TODO: write your solution here\n",
+                                  testCases: q.testCases || [],
+                                  maxPoints: q.maxPoints && q.maxPoints >= 10 ? q.maxPoints : 25,
+                                }
+                              : {}),
                             choices: newType === "MCQ" ? q.choices || ["Option A", "Option B", "Option C", "Option D"] : undefined,
                             correctAnswer: newType === "MCQ" ? (typeof q.correctAnswer === "number" ? q.correctAnswer : 0) : undefined,
                             modelAnswer: newType === "SHORT_ANSWER" || newType === "LONG_ANSWER" ? q.modelAnswer || "" : undefined,
@@ -1079,6 +1100,7 @@ export function CreateTaskModal({
                         <option value="SHORT_ANSWER">Short Answer</option>
                         <option value="LONG_ANSWER">Long Answer</option>
                         <option value="MCQ">Multiple Choice (MCQ)</option>
+                        <option value="CODING">Coding (Playground)</option>
                         <option value="FILE_UPLOAD">File Upload</option>
                       </select>
                     </div>
@@ -1149,6 +1171,28 @@ export function CreateTaskModal({
                         className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                       />
                     </div>
+                  )}
+
+                  {/* Coding question: shared editor */}
+                  {q.type === "CODING" && (
+                    <CodingQuestionEditor
+                      value={{
+                        language: toLanguageId(q.language),
+                        starterCode: q.starterCode || "",
+                        instructions: q.instructions || "",
+                        tests: q.testCases || [],
+                        reference: q.referenceSolution || "",
+                      }}
+                      onChange={(patch) =>
+                        handleUpdateQuestion(idx, {
+                          ...(patch.language !== undefined ? { language: patch.language } : {}),
+                          ...(patch.starterCode !== undefined ? { starterCode: patch.starterCode } : {}),
+                          ...(patch.instructions !== undefined ? { instructions: patch.instructions } : {}),
+                          ...(patch.tests !== undefined ? { testCases: patch.tests } : {}),
+                          ...(patch.reference !== undefined ? { referenceSolution: patch.reference } : {}),
+                        })
+                      }
+                    />
                   )}
 
                   {/* File Upload Note */}

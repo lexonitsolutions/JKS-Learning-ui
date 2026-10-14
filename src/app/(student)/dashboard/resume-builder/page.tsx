@@ -568,6 +568,53 @@ export default function ResumeBuilderPage() {
     });
   };
 
+  // Technologies + level the student entered in AI Mock Interview (saved on their account).
+  const [profileTech, setProfileTech] = useState<{ technologies: string[]; level: string | null }>({
+    technologies: [],
+    level: null,
+  });
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch("/auth/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const u = d?.user;
+        if (!cancelled && u) {
+          setProfileTech({
+            technologies: Array.isArray(u.technologies) ? u.technologies : [],
+            level: typeof u.experienceLevel === "string" ? u.experienceLevel : null,
+          });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const importProfileTech = () => {
+    setResumeData((prev) => {
+      const existing = prev.skills.languages
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      const merged = [...existing];
+      for (const t of profileTech.technologies) {
+        if (!merged.some((m) => m.toLowerCase() === t.toLowerCase())) merged.push(t);
+      }
+      const headline =
+        prev.personal.headline?.trim() ||
+        `${profileTech.level ? `${profileTech.level} ` : ""}${profileTech.technologies.slice(0, 3).join(" / ")} Developer`.trim();
+      const updated = {
+        ...prev,
+        personal: { ...prev.personal, headline },
+        skills: { ...prev.skills, languages: merged.join(", ") },
+      };
+      saveToStorage(updated);
+      return updated;
+    });
+  };
+
   const updateSkills = (field: keyof ResumeData["skills"], value: string) => {
     setResumeData((prev) => {
       const updated = { ...prev, skills: { ...prev.skills, [field]: value } };
@@ -1906,6 +1953,22 @@ export default function ResumeBuilderPage() {
 
               {openSections.skills && (
                 <div className="p-4 pt-0 space-y-3 text-xs border-t border-slate-100 dark:border-slate-800">
+                  {profileTech.technologies.length > 0 && (
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-blue-100 bg-blue-50/60 p-3 dark:border-blue-900/50 dark:bg-blue-950/20">
+                      <div className="min-w-0 text-[11px] text-slate-600 dark:text-slate-300">
+                        <span className="font-bold text-slate-800 dark:text-white">Your profile: </span>
+                        {profileTech.technologies.join(", ")}
+                        {profileTech.level ? ` · ${profileTech.level}` : ""}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={importProfileTech}
+                        className="rounded-lg bg-[#2563EB] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-blue-700"
+                      >
+                        Add to my resume
+                      </button>
+                    </div>
+                  )}
                   <div className="pt-3">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">Languages</label>
                     <input

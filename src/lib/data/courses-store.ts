@@ -71,7 +71,10 @@ export interface SectionAssignment {
     language?: string;
     starterCode?: string;
     testCases?: string;
+    /** Automated tests: `input` goes to stdin, `output` is the expected stdout. Hidden ones are grading-only. */
     structuredTestCases?: { input: string; output: string; isHidden?: boolean }[];
+    /** What the student must complete (coding questions). */
+    instructions?: string;
     solutionCode?: string;
     fileTypes?: string;
     maxFileSizeMb?: number;

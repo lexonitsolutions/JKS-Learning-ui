@@ -40,12 +40,20 @@ import {
 } from "@/lib/data/tasks-api";
 import { CreateTaskModal } from "@/components/admin/create-task-modal";
 import { ReviewTaskModal } from "@/components/admin/review-task-modal";
+import { AddStudentsModal } from "@/components/admin/add-students-modal";
+import { AiAssessmentTemplates } from "@/components/admin/ai-assessment-templates";
 
 export default function AdminAssessmentsPage() {
   const [tasks, setTasks] = useState<IndividualTask[]>([]);
   const [reusableList, setReusableList] = useState<ReusableAssessment[]>([]);
-  const [activeView, setActiveView] = useState<"ASSIGNMENTS" | "TEMPLATES">("ASSIGNMENTS");
+  const [activeView, setActiveView] = useState<"ASSIGNMENTS" | "TEMPLATES" | "AI">("ASSIGNMENTS");
   
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("view") === "ai") {
+      setActiveView("AI");
+    }
+  }, []);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -55,6 +63,7 @@ export default function AdminAssessmentsPage() {
   const [isReuseMode, setIsReuseMode] = useState(false);
   const [reassignAssessment, setReassignAssessment] = useState<ReusableAssessment | null>(null);
   const [reviewingTask, setReviewingTask] = useState<IndividualTask | null>(null);
+  const [addStudentsTask, setAddStudentsTask] = useState<IndividualTask | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -252,6 +261,17 @@ export default function AdminAssessmentsPage() {
             >
               Reusable Assessments ({reusableList.length})
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveView("AI")}
+              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                activeView === "AI"
+                  ? "bg-[#2563EB] text-white shadow-xs"
+                  : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
+              }`}
+            >
+              AI Assessments
+            </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
@@ -354,7 +374,12 @@ export default function AdminAssessmentsPage() {
           </TiltCard>
         </Reveal>
 
-        {activeView === "TEMPLATES" ? (
+        {activeView === "AI" ? (
+          <AiAssessmentTemplates
+            aiStudioHref="/admin/ai-studio"
+            onToast={showToast}
+          />
+        ) : activeView === "TEMPLATES" ? (
           /* REUSABLE ASSESSMENTS LIBRARY VIEW */
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -657,6 +682,16 @@ export default function AdminAssessmentsPage() {
 
                                 <button
                                   type="button"
+                                  onClick={() => setAddStudentsTask(task)}
+                                  title="Add students to this assessment"
+                                  aria-label="Add students to this assessment"
+                                  className="inline-flex items-center justify-center h-6 w-6 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
+                                >
+                                  <Plus className="h-3.5 w-3.5" />
+                                </button>
+
+                                <button
+                                  type="button"
                                   onClick={() => handleReassignFromTask(task)}
                                   title="Reassign this assessment to more students"
                                   className="inline-flex items-center justify-center h-6 w-6 rounded-lg text-slate-400 hover:text-[#2563EB] hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
@@ -775,6 +810,14 @@ export default function AdminAssessmentsPage() {
                             </button>
                             <button
                               type="button"
+                              onClick={() => setAddStudentsTask(task)}
+                              className="rounded-lg bg-emerald-50 text-emerald-700 px-2.5 py-1 text-xs font-bold flex items-center gap-1"
+                            >
+                              <Plus className="h-3 w-3" />
+                              <span>Add Students</span>
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => handleReassignFromTask(task)}
                               className="rounded-lg bg-blue-50 text-[#2563EB] px-2.5 py-1 text-xs font-bold flex items-center gap-1"
                             >
@@ -811,6 +854,21 @@ export default function AdminAssessmentsPage() {
           setTasks((prev) => [...newTasks, ...prev]);
           fetchAllReusableAssessments().then((reusable) => setReusableList(reusable));
           showToast(`Assessment assigned successfully to ${newTasks.length} student(s)!`);
+        }}
+      />
+
+      {/* ADD STUDENTS TO AN EXISTING ASSESSMENT (additive; Reassign stays separate) */}
+      <AddStudentsModal
+        task={addStudentsTask}
+        onClose={() => setAddStudentsTask(null)}
+        onAdded={({ added, skipped, tasks: created }) => {
+          setTasks((prev) => [...created, ...prev]);
+          showToast(
+            skipped > 0
+              ? `Added ${added} student(s). ${skipped} skipped (already assigned or not eligible).`
+              : `Added ${added} student(s) to the assessment.`,
+          );
+          void fetchAdminTasks().then((fresh) => setTasks(fresh));
         }}
       />
 

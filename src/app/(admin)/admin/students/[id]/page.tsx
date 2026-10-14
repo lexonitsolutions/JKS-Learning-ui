@@ -1547,7 +1547,7 @@ function AdminStudentDetailsContent() {
                     </div>
                   </div>
                   <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{totalCourses}</div>
-                  <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">Active Cohorts</div>
+                  <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">Active Batches</div>
                 </div>
               </TiltCard>
 
@@ -1674,7 +1674,7 @@ function AdminStudentDetailsContent() {
 
                             <div className="absolute bottom-2 left-2.5 z-10 text-[11px] text-slate-200 font-semibold flex items-center gap-1.5 drop-shadow-md">
                               <Clock className="h-3 w-3 text-blue-400" />
-                              <span>24 Weeks · Cohort Enrolled</span>
+                              <span>24 Weeks · Batch Enrolled</span>
                             </div>
 
                             <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
@@ -2190,7 +2190,7 @@ function AdminStudentDetailsContent() {
                         Batch Allocated — {course.courseTitle}
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                        Assigned to cohort: {course.batchTiming} · Enrolled on {new Date(course.enrolledAt).toLocaleDateString("en-IN")}
+                        Assigned to batch: {course.batchTiming} · Enrolled on {new Date(course.enrolledAt).toLocaleDateString("en-IN")}
                       </div>
                     </div>
                   ))}
@@ -2367,7 +2367,7 @@ function AdminStudentDetailsContent() {
                       </div>
                       <div className="rounded-xl bg-purple-50/70 dark:bg-purple-950/40 p-3 border border-purple-200/50 dark:border-purple-800/30">
                         <span className="text-[11px] font-semibold text-purple-800 dark:text-purple-300">
-                          Cohort Track
+                          Batch Track
                         </span>
                         <div className="mt-1 text-sm font-black text-purple-700 dark:text-purple-300 truncate">
                           {student.enrollments[0]?.track?.replace(/_/g, " ") || "Enterprise"}

@@ -26,6 +26,9 @@ import {
   X,
   Activity,
   FolderTree,
+  Code2,
+  ShieldCheck,
+  UserCog,
   type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -45,9 +48,10 @@ interface NavItem {
 const STUDENT_MAIN_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/my-courses", label: "My Courses", icon: BookOpen },
+  { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit },
+  { href: "/dashboard/playground", label: "Code Playground", icon: Code2 },
   { href: "/dashboard/resume-builder", label: "Resume Maker", icon: FileText, badge: "New" },
   { href: "/dashboard/assessments", label: "Assessments", icon: ClipboardCheck },
-  { href: "/dashboard/ai-interview", label: "AI Mock Interview", icon: BrainCircuit },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
 ];
 
@@ -60,13 +64,15 @@ const STUDENT_SEC_NAV: NavItem[] = [
 const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/tutors", label: "Tutors", icon: GraduationCap },
-  { href: "/admin/batches", label: "Cohorts", icon: FolderTree },
+  { href: "/admin/heads", label: "Heads", icon: UserCog },
+  { href: "/admin/batches", label: "Batches", icon: FolderTree },
   { href: "/admin/students", label: "Learners", icon: Users },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/syllabus", label: "Syllabus", icon: FileText },
   { href: "/admin/events", label: "Events", icon: Calendar, badge: "New" },
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
   { href: "/admin/ai-studio", label: "AI Studio", icon: Sparkles, badge: "New" },
+  { href: "/admin/ai-access", label: "AI Access", icon: ShieldCheck },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
   { href: "/admin/activity-logs", label: "Activity log", icon: Activity },
   { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone },
@@ -79,6 +85,13 @@ const ADMIN_SEC_NAV: NavItem[] = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
+
+const HEAD_MAIN_NAV: NavItem[] = [
+  { href: "/head", label: "Overview", icon: LayoutDashboard },
+  { href: "/head/batches", label: "Batches", icon: FolderTree },
+];
+
+const HEAD_SEC_NAV: NavItem[] = [];
 
 const INSTRUCTOR_MAIN_NAV: NavItem[] = [
   { href: "/instructor", label: "Dashboard", icon: LayoutDashboard },
@@ -99,14 +112,30 @@ const INSTRUCTOR_SEC_NAV: NavItem[] = [
 
 const SIDEBAR_STORAGE_KEY = "jks_sidebar_collapsed";
 
-export function DashboardSidebar({ role = "student" }: { role?: "student" | "admin" | "instructor" }) {
+export function DashboardSidebar({ role = "student" }: { role?: "student" | "admin" | "instructor" | "head" }) {
   const pathname = usePathname();
   const isAdmin = role === "admin";
   const isInstructor = role === "instructor";
-  
-  const mainItems = isAdmin ? ADMIN_MAIN_NAV : isInstructor ? INSTRUCTOR_MAIN_NAV : STUDENT_MAIN_NAV;
-  const secItems = isAdmin ? ADMIN_SEC_NAV : isInstructor ? INSTRUCTOR_SEC_NAV : STUDENT_SEC_NAV;
-  const rootHref = isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard";
+  const isHead = role === "head";
+  // Instructors and heads sign in with an API account (no Clerk profile), so they
+  // share how their name, email and initials are resolved.
+  const isStaffAccount = isInstructor || isHead;
+
+  const mainItems = isAdmin
+    ? ADMIN_MAIN_NAV
+    : isHead
+    ? HEAD_MAIN_NAV
+    : isInstructor
+    ? INSTRUCTOR_MAIN_NAV
+    : STUDENT_MAIN_NAV;
+  const secItems = isAdmin
+    ? ADMIN_SEC_NAV
+    : isHead
+    ? HEAD_SEC_NAV
+    : isInstructor
+    ? INSTRUCTOR_SEC_NAV
+    : STUDENT_SEC_NAV;
+  const rootHref = isAdmin ? "/admin" : isHead ? "/head" : isInstructor ? "/instructor" : "/dashboard";
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [customAvatar, setCustomAvatar] = useState<string | null>(null);
@@ -192,14 +221,14 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
   const userEmail = isAdmin
     ? (session?.email && session.email !== "admin@jkslearning.dev" ? session.email : "lexonitservices@gmail.com")
-    : isInstructor
+    : isStaffAccount
     ? (session?.email ?? "")
     : (clerkEmail || session?.email || "");
 
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" && session.name !== "Ava Desai" ? session.name : "Lexon Administrator")
-    : isInstructor
-    ? (session?.name ?? "Tutor")
+    : isStaffAccount
+    ? (session?.name ?? (isHead ? "Head" : "Tutor"))
     : (clerkName || session?.name || "Student");
 
   const userAvatarUrl =
@@ -211,11 +240,11 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
   const userInitials = isAdmin
     ? "AD"
-    : isInstructor
-    ? (session?.initials ?? "TU")
+    : isStaffAccount
+    ? (session?.initials ?? (isHead ? "HD" : "TU"))
     : (session?.initials ?? (clerkName ? clerkName.slice(0, 2).toUpperCase() : "ST"));
 
-  const userRole = isAdmin ? "Administrator" : isInstructor ? "Tutor" : "Student";
+  const userRole = isAdmin ? "Administrator" : isHead ? "Head" : isInstructor ? "Tutor" : "Student";
 
 
   const renderNavGroup = (items: NavItem[]) => {
@@ -483,7 +512,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
               {/* Compact Role Badge on the right */}
               <span className="text-[9.5px] font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0">
-                {isAdmin ? "Admin" : isInstructor ? "Tutor" : "Student"}
+                {isAdmin ? "Admin" : isHead ? "Head" : isInstructor ? "Tutor" : "Student"}
               </span>
             </div>
           ) : (
@@ -670,7 +699,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
                 <div className="flex items-center gap-2">
                   <JksLogo size="sm" href="/" />
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-300">
-                    {isAdmin ? "Admin" : isInstructor ? "Tutor" : "Student"}
+                    {isAdmin ? "Admin" : isHead ? "Head" : isInstructor ? "Tutor" : "Student"}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">

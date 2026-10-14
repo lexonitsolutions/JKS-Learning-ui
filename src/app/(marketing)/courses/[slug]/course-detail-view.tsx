@@ -179,6 +179,11 @@ export function CourseDetailView({ course }: CourseDetailViewProps) {
                     </span>
                     <ChevronDown className="h-5 w-5 text-text-body transition-transform group-open:rotate-180" />
                   </summary>
+                  {course.syllabus?.modules[i]?.description && (
+                    <p className="px-5 pb-2 pl-15 text-sm leading-relaxed text-text-body">
+                      {course.syllabus.modules[i].description}
+                    </p>
+                  )}
                   <ul className="space-y-2 px-5 pb-5 pl-15">
                     {module.topics.map((topic, topicIdx) => {
                       const isFirstDemoTopic = i === 0 && topicIdx === 0;

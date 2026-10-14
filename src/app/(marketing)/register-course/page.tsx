@@ -39,7 +39,8 @@ import { validateCoupon } from "@/lib/data/enrollments-api";
 
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
-import { fetchDbCourses, type Course } from "@/lib/data/courses";
+import { fetchDbCourses, type Course, type CourseSyllabus } from "@/lib/data/courses";
+import { SyllabusPanel } from "@/components/courses/syllabus-panel";
 
 export interface RegistrationCourse {
   id: string;
@@ -52,37 +53,17 @@ export interface RegistrationCourse {
   price: number;
   discount: number;
   popular: boolean;
+  /** Module titles of the syllabus assigned to this course (empty when none). */
   curriculum: string[];
+  syllabus: CourseSyllabus | null;
   batches: { id: string; label: string; time: string; days: string }[];
 }
 
 function mapToRegistrationCourse(course: Course, index: number): RegistrationCourse {
-  const curriculum: string[] = [];
-  if (Array.isArray(course.modules)) {
-    for (const m of course.modules) {
-      if (m.title && !curriculum.includes(m.title)) {
-        curriculum.push(m.title);
-      }
-      if (Array.isArray(m.topics)) {
-        for (const t of m.topics) {
-          if (t && !curriculum.includes(t)) {
-            curriculum.push(t);
-          }
-        }
-      }
-      if (curriculum.length >= 4) break;
-    }
-  }
-
-  if (curriculum.length === 0) {
-    if (course.track === "Frontend") {
-      curriculum.push("React 19 & Hooks", "Next.js App Router", "Tailwind CSS & UI", "Production Capstone");
-    } else if (course.track === "SAP") {
-      curriculum.push("SAP S/4HANA Architecture", "Core Configuration & Customizing", "BTP Clean Core & Integration", "Hands-on Sandbox Practice");
-    } else {
-      curriculum.push("Core Concurrency & Microservices", "REST & Distributed APIs", "Database & Cloud Architecture", "Enterprise Capstone");
-    }
-  }
+  // Shown exactly as configured by the administrator - nothing is invented when empty.
+  const curriculum: string[] = (course.syllabus?.modules ?? course.modules ?? [])
+    .map((m) => m.title)
+    .filter((t): t is string => !!t);
 
   const durationWeeks = course.durationWeeks || (course.track === "Frontend" ? 10 : course.track === "SAP" ? 12 : 14);
 
@@ -97,7 +78,8 @@ function mapToRegistrationCourse(course: Course, index: number): RegistrationCou
     price: course.price,
     discount: 0,
     popular: index === 0 || (course.studentsEnrolled || 0) > 10,
-    curriculum: curriculum.slice(0, 4),
+    curriculum,
+    syllabus: course.syllabus ?? null,
     batches: [
       { id: "b1", label: "Weekday Morning", time: "7:30 AM - 9:30 AM IST", days: "Mon - Fri" },
       { id: "b2", label: "Weekend Intensive", time: "10:00 AM - 2:00 PM IST", days: "Sat - Sun" },
@@ -485,14 +467,27 @@ function CourseRegistrationContent() {
 
                         {/* Key Modules Pills */}
                         <div className="flex flex-wrap gap-1.5 pt-1">
-                          {course.curriculum.map((c, i) => (
-                            <span
-                              key={i}
-                              className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] text-slate-700 dark:text-slate-300 font-medium"
-                            >
-                              {c}
+                          {course.curriculum.length === 0 ? (
+                            <span className="text-[10px] italic text-slate-500 dark:text-slate-400">
+                              Syllabus not published yet
                             </span>
-                          ))}
+                          ) : (
+                            <>
+                              {course.curriculum.slice(0, 4).map((c, i) => (
+                                <span
+                                  key={i}
+                                  className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] text-slate-700 dark:text-slate-300 font-medium"
+                                >
+                                  {c}
+                                </span>
+                              ))}
+                              {course.curriculum.length > 4 && (
+                                <span className="rounded-md px-2 py-0.5 text-[10px] font-semibold text-primary-blue dark:text-blue-400">
+                                  +{course.curriculum.length - 4} more
+                                </span>
+                              )}
+                            </>
+                          )}
                         </div>
 
                         {/* Footer Row */}
@@ -519,6 +514,9 @@ function CourseRegistrationContent() {
                     );
                   })}
                 </div>
+
+            {/* Full syllabus of the selected course, visible before enrolling */}
+            <SyllabusPanel courseTitle={selectedCourse.title} syllabus={selectedCourse.syllabus} />
 
             {/* Batch Schedule Selector */}
             <div className="rounded-2xl border border-blue-100 dark:border-slate-800 bg-blue-50/30 dark:bg-surface-elevated/60 p-5 space-y-3">
@@ -868,7 +866,7 @@ function CourseRegistrationContent() {
               </div>
             </div>
 
-            {/* Full 18% GST Invoice Computation Breakdown */}
+            {/* Fee summary (tax breakdown is kept on the invoice, not shown to students at enrollment) */}
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-surface-elevated p-5 space-y-2.5 text-xs">
               <div className="font-bold text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-800 pb-2">
                 Official Invoice Itemization
@@ -883,18 +881,6 @@ function CourseRegistrationContent() {
                   <span className="font-mono">- ₹{finalDiscount.toLocaleString("en-IN")}</span>
                 </div>
               )}
-              <div className="flex justify-between text-slate-600 dark:text-slate-300">
-                <span>Taxable Value (Excluding Tax):</span>
-                <span className="font-mono">₹{taxableAmount.toLocaleString("en-IN")}</span>
-              </div>
-              <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px]">
-                <span>Central GST (CGST 9%):</span>
-                <span className="font-mono">₹{cgst.toLocaleString("en-IN")}</span>
-              </div>
-              <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px]">
-                <span>State GST (SGST 9%):</span>
-                <span className="font-mono">₹{sgst.toLocaleString("en-IN")}</span>
-              </div>
               <div className="flex justify-between border-t-2 border-slate-900 dark:border-slate-700 pt-2.5 font-extrabold text-sm text-text-heading dark:text-white">
                 <span>Total Net Investment:</span>
                 <span className={`font-mono text-base font-black ${isFullDiscount ? "text-emerald-600 dark:text-emerald-400" : "text-primary-blue dark:text-blue-400"}`}>

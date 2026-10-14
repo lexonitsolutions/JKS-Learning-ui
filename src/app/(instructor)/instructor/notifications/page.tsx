@@ -60,7 +60,7 @@ export default function InstructorNotificationsPage() {
     <>
       <DashboardTopbar
         title="Tutor Notification Center"
-        subtitle="Manage student submissions, curriculum video milestones, and cohort enrollments for your assigned courses."
+        subtitle="Manage student submissions, curriculum video milestones, and batch enrollments for your assigned courses."
       />
 
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4 max-w-5xl mx-auto w-full">

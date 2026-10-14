@@ -187,7 +187,7 @@ export default function InstructorSettingsPage() {
                   Office Hours & Live Mentorship Scheduling
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Configure student 1-on-1 and cohort doubt booking windows
+                  Configure student 1-on-1 and batch doubt booking windows
                 </p>
               </div>
             </div>
@@ -231,7 +231,7 @@ export default function InstructorSettingsPage() {
                 >
                   <option value="1">1-on-1 Private Consultation</option>
                   <option value="5">Small Pod (Up to 5)</option>
-                  <option value="10">Cohort Group (Up to 10)</option>
+                  <option value="10">Batch Group (Up to 10)</option>
                   <option value="50">Open Masterclass (Up to 50)</option>
                 </select>
               </div>

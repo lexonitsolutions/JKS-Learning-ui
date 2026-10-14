@@ -723,14 +723,6 @@ export function CourseCheckoutModal({
                       <span>-₹{discountAmount.toLocaleString("en-IN")}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-[11px] text-slate-400">
-                    <span>Taxable Value</span>
-                    <span>₹{taxableAmount.toLocaleString("en-IN")}</span>
-                  </div>
-                  <div className="flex justify-between text-[11px] text-slate-400">
-                    <span>GST (18% inclusive: CGST ₹{cgst} + SGST ₹{sgst})</span>
-                    <span>₹{totalTax.toLocaleString("en-IN")}</span>
-                  </div>
                   <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2.5 border-t border-slate-200 dark:border-slate-800">
                     <span>Total Net Payable</span>
                     <span className={`font-black ${isFreeCourse || isFullDiscount ? "text-emerald-600 dark:text-emerald-400" : "text-[#2563EB] dark:text-blue-400"}`}>
@@ -881,7 +873,7 @@ export function CourseCheckoutModal({
                 {isFreeCourse ? "₹0" : `₹${finalPrice.toLocaleString("en-IN")}`}
               </span>
               <span className="text-[11px] text-slate-400 dark:text-slate-400 font-normal">
-                {isFreeCourse ? "(Free Course)" : isFullDiscount ? "(100% Scholarship Applied)" : "(Incl. 18% GST)"}
+                {isFreeCourse ? "(Free Course)" : isFullDiscount ? "(100% Scholarship Applied)" : ""}
               </span>
             </div>
 

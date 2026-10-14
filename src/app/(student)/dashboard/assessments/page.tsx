@@ -516,6 +516,13 @@ export default function AssessmentsPage() {
             );
             setTakingTask(null);
             setActiveTab("submitted");
+            // Questions arrive without their answer key until a task is handed in; fetch
+            // the post-submission version so the review screen can show the answers.
+            if (effectiveEmail) {
+              void fetchStudentAssignedTasks(effectiveEmail)
+                .then(setAssignedTasks)
+                .catch(() => {});
+            }
           }}
         />
       )}

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   X,
@@ -11,8 +12,10 @@ import {
   CheckCircle2,
   FileText,
   Loader2,
+  Code2,
 } from "lucide-react";
 import { type TaskQuestion, type IndividualTask, submitStudentTask } from "@/lib/data/tasks-api";
+import { fetchCodeContext, playgroundHref, type CodeContext } from "@/lib/data/code-api";
 import {
   hasTaskExplicitFiles,
   evaluateAssessmentSubmission,
@@ -81,14 +84,49 @@ export function TakeAssessmentModal({
   const [uploadedFileName, setUploadedFileName] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  // Latest server-recorded submission per coding question (coding answers are
+  // made in the Code Playground and live on the server, not in this form).
+  const [codeStatus, setCodeStatus] = useState<Record<string, CodeContext["latestSubmission"] | "none">>({});
 
   useEffect(() => {
     if (isOpen) {
       setAnswers({});
       setUploadedFileName("");
       setValidationError(null);
+      setCodeStatus({});
     }
   }, [isOpen, task?.id]);
+
+  const codingQuestionIds = (task?.questions ?? []).filter((q) => q.type === "CODING").map((q) => q.id);
+  const codingKey = codingQuestionIds.join("|");
+
+  const refreshCodeStatus = useCallback(async () => {
+    if (!task || !codingKey) return;
+    const entries = await Promise.all(
+      codingKey.split("|").map(async (qid) => {
+        try {
+          const ctx = await fetchCodeContext({ type: "ASSESSMENT_TASK", taskId: task.id, questionId: qid });
+          return [qid, ctx.latestSubmission ?? "none"] as const;
+        } catch {
+          return [qid, "none"] as const;
+        }
+      }),
+    );
+    setCodeStatus(Object.fromEntries(entries));
+  }, [task, codingKey]);
+
+  useEffect(() => {
+    if (!isOpen || !codingKey) return;
+    void refreshCodeStatus();
+    // Pick up a submission made in the Playground when the student comes back.
+    const onVisible = () => document.visibilityState === "visible" && void refreshCodeStatus();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [isOpen, codingKey, refreshCodeStatus]);
 
   if (!isOpen) return null;
 
@@ -114,6 +152,10 @@ export function TakeAssessmentModal({
     }
     if (q.type === "FILE_UPLOAD") {
       return Boolean(uploadedFileName || value || answers.uploadedFile);
+    }
+    if (q.type === "CODING") {
+      const st = codeStatus[q.id];
+      return Boolean(st && st !== "none");
     }
     return typeof value === "string" && value.trim().length > 0;
   };
@@ -164,26 +206,28 @@ export function TakeAssessmentModal({
 
     try {
       if (customQuestions.length > 0) {
-        // Calculate true score across all questions using actual right and wrong answers
-        const evalResult = evaluateAssessmentSubmission(
-          customQuestions,
-          answers,
-          uploadedFileName
-        );
-        const autoScore = evalResult.score;
-
         if (isIndividualTask && task) {
-          // Persist calculated score to backend
-          await submitStudentTask(task.id, {
+          // The server grades assigned assessments (the answer key is not sent to
+          // the browser), including coding answers from the Playground.
+          const result = await submitStudentTask(task.id, {
             studentEmail: studentEmail || task.assignedStudentEmail,
             answers,
             uploadedFileName: uploadedFileName || undefined,
-            score: autoScore,
-            instructorScore: autoScore,
           });
+          if (!result.success) {
+            throw new Error(result.error || "Failed to submit assignment.");
+          }
+          const serverScore = Number(result.data?.submission?.score);
+          onSubmit(Number.isFinite(serverScore) ? serverScore : 0, {
+            answers,
+            uploadedFileName,
+            needsManualCodeReview: Boolean(result.data?.submission?.needsManualCodeReview),
+          });
+        } else {
+          // Course milestone assignment: scored locally as before.
+          const evalResult = evaluateAssessmentSubmission(customQuestions, answers, uploadedFileName);
+          onSubmit(evalResult.score, { answers, uploadedFileName });
         }
-
-        onSubmit(autoScore, { answers, uploadedFileName });
       } else {
         // Fallback for default questions
         const correctCount = DEFAULT_QUESTIONS.reduce(
@@ -322,6 +366,47 @@ export function TakeAssessmentModal({
                       placeholder="Provide a comprehensive breakdown with architectural points and code rationale..."
                       className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-3 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
                     />
+                  </div>
+                )}
+
+                {/* Coding question: solved in the Code Playground */}
+                {q.type === "CODING" && task && (
+                  <div className="space-y-3">
+                    {q.instructions && (
+                      <p className="rounded-lg bg-blue-50/70 p-2.5 text-[11px] text-blue-900 dark:bg-blue-950/30 dark:text-blue-200">
+                        <strong>To complete:</strong> {q.instructions}
+                      </p>
+                    )}
+                    {q.starterCode && (
+                      <pre className="max-h-40 overflow-auto rounded-lg border border-slate-200 bg-white p-3 font-mono text-[11px] text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                        {q.starterCode}
+                      </pre>
+                    )}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Link
+                        href={playgroundHref({ type: "ASSESSMENT_TASK", taskId: task.id, questionId: q.id })}
+                        className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-700"
+                      >
+                        <Code2 className="h-4 w-4" /> Solve in Playground
+                      </Link>
+                      {(() => {
+                        const st = codeStatus[q.id];
+                        if (st === undefined) {
+                          return <span className="text-[11px] text-slate-400">Checking status…</span>;
+                        }
+                        if (st === null || st === "none") {
+                          return <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">Not submitted yet</span>;
+                        }
+                        return (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            {st.status === "GRADED" && st.total
+                              ? `Submitted · ${st.passed}/${st.total} tests passed`
+                              : "Submitted · awaiting review"}
+                          </span>
+                        );
+                      })()}
+                    </div>
                   </div>
                 )}
 

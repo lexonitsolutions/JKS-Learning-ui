@@ -7,6 +7,7 @@ import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import { fetchInvoicesFromApi, createInvoice, isFreeInvoice, isSettledRevenue, isInMonth, getInvoiceStatusLabel, type Invoice } from "@/lib/data/invoices-store";
 import { InvoiceModal } from "@/components/common/invoice-modal";
+import { CouponManager } from "@/components/admin/coupon-manager";
 import { CustomDropdown, type DropdownOption } from "@/components/ui/custom-dropdown";
 
 export default function AdminPaymentsPage() {
@@ -356,6 +357,8 @@ export default function AdminPaymentsPage() {
             </table>
           </div>
         </div>
+
+        <CouponManager />
       </div>
 
       {/* Invoice Modal for Viewing and Printing */}
