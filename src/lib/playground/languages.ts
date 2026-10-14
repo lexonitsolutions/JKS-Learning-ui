@@ -170,3 +170,45 @@ export function describeRuntime(
     note: "Running this language needs the code execution service, which is not configured on this server.",
   };
 }
+
+const EXT_TO_LANGUAGE: Record<string, PlaygroundLanguageId> = {
+  js: "javascript",
+  mjs: "javascript",
+  cjs: "javascript",
+  ts: "typescript",
+  py: "python",
+  java: "java",
+  cpp: "cpp",
+  cc: "cpp",
+  cxx: "cpp",
+  cs: "csharp",
+  sql: "sql",
+  abap: "abap",
+  html: "web",
+  htm: "web",
+  css: "web",
+};
+
+/**
+ * VS Code-style language detection: the file extension decides the language.
+ * A .js file that an HTML file loads with <script src> belongs to the web
+ * project (it needs the DOM), otherwise it runs as plain JavaScript.
+ * Returns null for files that cannot be run (md, txt, json, unknown).
+ */
+export function detectLanguage(fileName: string, files: PlaygroundFile[] = []): PlaygroundLanguageId | null {
+  const ext = fileName.includes(".") ? fileName.split(".").pop()!.toLowerCase() : "";
+  const lang = EXT_TO_LANGUAGE[ext] ?? null;
+  if (lang === "javascript") {
+    const target = fileName.toLowerCase();
+    const srcRe = /<script\b[^>]*\bsrc=["']([^"']+)["']/gi;
+    const usedByHtml = files.some((f) => {
+      if (!/\.html?$/i.test(f.name)) return false;
+      for (const m of f.content.matchAll(srcRe)) {
+        if (m[1].replace(/^\.\//, "").toLowerCase() === target) return true;
+      }
+      return false;
+    });
+    if (usedByHtml) return "web";
+  }
+  return lang;
+}

@@ -16,6 +16,9 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 const STORAGE_KEY = "jks-theme";
 
+/** Light is the default until a visitor picks something else in the theme toggle. */
+const DEFAULT_THEME: Theme = "light";
+
 function getSystemTheme(): ResolvedTheme {
   if (typeof window === "undefined") return "light";
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
@@ -38,7 +41,7 @@ function applyThemeClass(resolved: ResolvedTheme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
+  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
   const [mounted, setMounted] = useState(false);
 
@@ -46,14 +49,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-      const initialTheme: Theme = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+      const initialTheme: Theme = stored === "light" || stored === "dark" || stored === "system" ? stored : DEFAULT_THEME;
       setThemeState(initialTheme);
 
       const resolved = initialTheme === "system" ? getSystemTheme() : initialTheme;
       setResolvedTheme(resolved);
       applyThemeClass(resolved);
     } catch {
-      const resolved = getSystemTheme();
+      const resolved: ResolvedTheme = "light";
       setResolvedTheme(resolved);
       applyThemeClass(resolved);
     }
@@ -105,7 +108,7 @@ export function useTheme() {
   if (!context) {
     // Fallback for components rendered outside provider
     return {
-      theme: "system" as Theme,
+      theme: DEFAULT_THEME,
       resolvedTheme: "light" as ResolvedTheme,
       setTheme: () => {},
       toggleTheme: () => {},

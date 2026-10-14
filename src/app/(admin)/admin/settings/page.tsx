@@ -14,11 +14,14 @@ import {
   FileCheck,
   ArrowLeft,
   ChevronRight,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
+import { SuperAdminsPanel } from "@/components/admin/super-admins-panel";
+import { fetchMyApiRole } from "@/lib/data/super-admins-api";
 
 const SETTINGS_STORAGE_KEY = "jks_admin_platform_settings_v1";
 
@@ -66,7 +69,7 @@ interface PlatformSettings {
 
 const DEFAULT_SETTINGS: PlatformSettings = {
   platformName: "JKS Learning Enterprise Academy",
-  adminEmail: "lexonitservices@gmail.com",
+  adminEmail: "info@jkslearning.com",
   supportPhone: "+91 98765 43210",
   currency: "INR (₹)",
   institutionName: "JKS Learning Institute of Technology",
@@ -106,7 +109,8 @@ type SettingCategoryKey =
   | "ai"
   | "payments"
   | "certificates"
-  | "notifications";
+  | "notifications"
+  | "superAdmins";
 
 interface SettingCategoryMeta {
   id: SettingCategoryKey;
@@ -167,6 +171,14 @@ const SETTING_CATEGORIES: SettingCategoryMeta[] = [
     iconColor: "text-rose-600 dark:text-rose-300",
   },
   {
+    id: "superAdmins",
+    title: "Super Admins",
+    description: "Add or deactivate other super admin accounts. Visible to super admins only.",
+    icon: ShieldCheck,
+    iconBg: "bg-red-50 dark:bg-red-500/15",
+    iconColor: "text-red-600 dark:text-red-300",
+  },
+  {
     id: "notifications",
     title: "Email & Notifications",
     description: "Automated student purchase alerts, project submissions, and streak reminders.",
@@ -180,6 +192,18 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<PlatformSettings>(DEFAULT_SETTINGS);
   const [selectedCategory, setSelectedCategory] = useState<SettingCategoryKey | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  // The UI treats ADMIN and SUPER_ADMIN alike, so ask the API which one is signed in.
+  useEffect(() => {
+    let cancelled = false;
+    void fetchMyApiRole().then((role) => {
+      if (!cancelled) setIsSuperAdmin(role === "SUPER_ADMIN");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -227,7 +251,11 @@ export default function AdminSettingsPage() {
 
       <div className="flex-1 space-y-5 p-3 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">
         {/* VIEW 1: MAIN SETTINGS CATEGORIES OVERVIEW GRID */}
-        {!selectedCategory ? (
+        {selectedCategory === "superAdmins" ? (
+          isSuperAdmin ? (
+            <SuperAdminsPanel onBack={() => setSelectedCategory(null)} />
+          ) : null
+        ) : !selectedCategory ? (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 dark:border-slate-800 pb-3">
               <div>
@@ -246,7 +274,7 @@ export default function AdminSettingsPage() {
 
             {/* Responsive Categories Grid */}
             <Reveal variant="stagger" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
-              {SETTING_CATEGORIES.map((cat) => {
+              {SETTING_CATEGORIES.filter((cat) => cat.id !== "superAdmins" || isSuperAdmin).map((cat) => {
                 const CatIcon = cat.icon;
                 return (
                   <TiltCard key={cat.id} className="h-full">

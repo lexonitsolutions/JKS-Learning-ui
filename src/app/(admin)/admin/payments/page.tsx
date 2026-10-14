@@ -1,5 +1,7 @@
 "use client";
 
+import { formatINR, formatINRCompact } from "@/lib/utils/format-money";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { CreditCard, IndianRupee, CheckCircle2, Download, Plus, Printer, Search, X, Layers, Filter, RefreshCw } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
@@ -131,11 +133,14 @@ export default function AdminPaymentsPage() {
     <>
       <DashboardTopbar
         title="Billing & Invoices"
-        subtitle={`₹${totalSuccess.toLocaleString("en-IN")} total volume settled across ${invoices.length} tax invoices.`}
+        subtitle={`${formatINRCompact(totalSuccess)} total volume settled across ${invoices.length} tax invoices.`}
         userInitials="AD"
       />
 
       <div className="flex-1 space-y-5 p-3 sm:p-6 lg:p-8 lg:pt-4">
+        {/* Coupons first so they stay reachable however many invoices are listed below */}
+        <CouponManager />
+
         {/* Metric Cards */}
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <TiltCard>
@@ -147,7 +152,7 @@ export default function AdminPaymentsPage() {
                 </div>
               </div>
               <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">
-                ₹{mtdTotal.toLocaleString("en-IN")}
+                {formatINRCompact(mtdTotal)}
               </div>
               <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
                 {mtdInvoices.length} paid {mtdInvoices.length === 1 ? "invoice" : "invoices"} this month
@@ -326,7 +331,7 @@ export default function AdminPaymentsPage() {
                       {inv.items[0]?.description || "Enrolled Course"}
                     </td>
                     <td className="px-4 py-3.5 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                      ₹{inv.totalAmount.toLocaleString("en-IN")}
+                      {formatINR(inv.totalAmount)}
                     </td>
                     <td className="px-4 py-3.5 text-center whitespace-nowrap">
                       <span
@@ -357,8 +362,6 @@ export default function AdminPaymentsPage() {
             </table>
           </div>
         </div>
-
-        <CouponManager />
       </div>
 
       {/* Invoice Modal for Viewing and Printing */}
@@ -476,7 +479,7 @@ export default function AdminPaymentsPage() {
               <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-3 text-[11px] text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300 space-y-0.5">
                 <div className="flex justify-between font-bold">
                   <span>Net Payable (Includes 18% GST):</span>
-                  <span>₹{Math.max(0, form.price - form.discount).toLocaleString("en-IN")}</span>
+                  <span>{formatINR(Math.max(0, form.price - form.discount))}</span>
                 </div>
                 <div className="text-[10px] text-blue-700 dark:text-blue-400">
                   Auto-calculates CGST (9%) + SGST (9%) and allocates sequential tax invoice number.

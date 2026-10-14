@@ -1,5 +1,7 @@
 "use client";
 
+import { formatINR } from "@/lib/utils/format-money";
+
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -846,13 +848,13 @@ export default function AdminStudentsPage() {
                               <div className="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded-md border border-purple-200 dark:border-purple-800/60">
                                 <Tag className="h-2.5 w-2.5" />
                                 {item.couponCode}
-                                {item.discountAmount ? ` (-₹${item.discountAmount.toLocaleString("en-IN")})` : ""}
+                                {item.discountAmount ? ` (-${formatINR(item.discountAmount)})` : ""}
                               </div>
                             ) : (
                               <span className="text-[11px] text-slate-400 block">No coupon applied</span>
                             )}
                             <div className="font-bold text-slate-900 dark:text-white text-xs">
-                              Payable: ₹{(item.finalAmount ?? 0).toLocaleString("en-IN")}
+                              Payable: {formatINR((item.finalAmount ?? 0))}
                             </div>
                           </div>
                         </td>

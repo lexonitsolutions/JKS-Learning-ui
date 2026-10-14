@@ -36,8 +36,8 @@ import {
   type CodeContext,
 } from "@/lib/data/code-api";
 import {
-  PLAYGROUND_LANGUAGES,
   describeRuntime,
+  detectLanguage,
   getLanguage,
   type PlaygroundFile,
   type PlaygroundLanguageId,
@@ -80,6 +80,24 @@ const errMsg = (e: unknown) => (e instanceof Error ? e.message : "Something went
 const toUiLanguage = (l: string): PlaygroundLanguageId => (l === "html" ? "web" : (l as PlaygroundLanguageId));
 const toStoredLanguage = (l: PlaygroundLanguageId) => (l === "web" ? "html" : l);
 
+/** localStorage is not defined while rendering on the server, so guard every access. */
+const safeLayoutStorage = {
+  getItem: (key: string) => {
+    try {
+      return typeof window === "undefined" ? null : window.localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      if (typeof window !== "undefined") window.localStorage.setItem(key, value);
+    } catch {
+      /* storage blocked - layout just is not remembered */
+    }
+  },
+};
+
 type MobileView = "files" | "editor" | "output" | "problem";
 
 export function PlaygroundShell() {
@@ -97,13 +115,16 @@ export function PlaygroundShell() {
   const [ctx, setCtx] = useState<CodeContext | null>(null);
 
   /* ── Workspace ───────────────────────────────────────────────────── */
-  const [lang, setLang] = useState<PlaygroundLanguageId>("javascript");
+  // The language of the project when the open file has no runnable extension (e.g. a README).
+  const [baseLang, setLang] = useState<PlaygroundLanguageId>("javascript");
   const [files, setFiles] = useState<PlaygroundFile[]>(getLanguage("javascript").template);
   const [activeName, setActiveName] = useState<string>(getLanguage("javascript").template[0].name);
   const [openTabs, setOpenTabs] = useState<string[]>([getLanguage("javascript").template[0].name]);
   const [primaryName, setPrimaryName] = useState<string>(getLanguage("javascript").template[0].name);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const ready = useRef(false);
+  // VS Code-style: the open file's extension picks the language. Task mode stays fixed to the question.
+  const lang: PlaygroundLanguageId = taskMode ? baseLang : (detectLanguage(activeName, files) ?? baseLang);
 
   /* ── Output ──────────────────────────────────────────────────────── */
   const [run, setRun] = useState<RunView | null>(null);
@@ -121,8 +142,8 @@ export function PlaygroundShell() {
   const outputRef = usePanelRef();
   const problemRef = usePanelRef();
   const panelIds = taskMode ? ["explorer", "center", "problem"] : ["explorer", "center"];
-  const mainLayout = useDefaultLayout({ id: taskMode ? "jks-pg-main-task" : "jks-pg-main", panelIds });
-  const centerLayout = useDefaultLayout({ id: "jks-pg-center", panelIds: ["editor", "output"] });
+  const mainLayout = useDefaultLayout({ id: taskMode ? "jks-pg-main-task" : "jks-pg-main", panelIds, storage: safeLayoutStorage });
+  const centerLayout = useDefaultLayout({ id: "jks-pg-center", panelIds: ["editor", "output"], storage: safeLayoutStorage });
 
   const serverLanguages = useMemo(
     () => new Set((config?.languages ?? []).filter((l) => l.runtime === "server").map((l) => l.id as string)),
@@ -308,25 +329,6 @@ export function PlaygroundShell() {
     setFiles((f) => f.map((x) => (x.name === activeName ? { ...x, content: value } : x)));
   };
 
-  const changeLanguage = (next: PlaygroundLanguageId) => {
-    if (next === lang || taskMode) return;
-    const dirty = JSON.stringify(files) !== JSON.stringify(getLanguage(lang).template);
-    if (dirty && !window.confirm("Switching language replaces the files in this workspace. Continue?")) return;
-    const tpl = getLanguage(next).template;
-    setLang(next);
-    setFiles(tpl);
-    setActiveName(tpl[0].name);
-    setOpenTabs([tpl[0].name]);
-    setPrimaryName(tpl[0].name);
-    setRun(null);
-    setTests(null);
-    setOutTab(next === "web" ? "preview" : "output");
-    if (next === "web") {
-      setPreviewDoc(buildPreviewDoc(tpl));
-      setPreviewKey((k) => k + 1);
-    }
-  };
-
   const resetStarter = () => {
     if (!ctx) return;
     if (!window.confirm("Reset your code to the original starter code? Your current changes will be lost.")) return;
@@ -353,7 +355,8 @@ export function PlaygroundShell() {
       setOutTab("preview");
       return;
     }
-    const entry = pickEntryFile(lang, allFiles, activeName);
+    const activeIsLang = detectLanguage(activeName, files) === lang;
+    const entry = activeIsLang || taskMode ? pickEntryFile(lang, allFiles, activeName) : (files.find((f) => detectLanguage(f.name, files) === lang) ?? pickEntryFile(lang, allFiles, activeName));
     if (!entry) return;
     setBusy("run");
     setOutTab("output");
@@ -559,23 +562,13 @@ export function PlaygroundShell() {
           </div>
         )}
 
-        <label className="sr-only" htmlFor="pg-lang">
-          Language
-        </label>
-        <select
-          id="pg-lang"
-          value={lang}
-          disabled={taskMode}
-          onChange={(e) => changeLanguage(e.target.value as PlaygroundLanguageId)}
-          title={taskMode ? "The language is set by the question" : "Language"}
-          className="rounded border border-[#c8c8c8] bg-white px-2 py-1.5 text-xs font-semibold text-[#1f1f1f] outline-none disabled:opacity-70"
+        <span
+          className="rounded border border-[#c8c8c8] bg-white px-2 py-1.5 text-xs font-semibold text-[#1f1f1f]"
+          title={[taskMode ? "The language is set by the question" : "Language is detected from the file extension", runtime.where, runtime.note].filter(Boolean).join(" - ")}
+          aria-label={`Language: ${langInfo.label}`}
         >
-          {PLAYGROUND_LANGUAGES.filter((l) => !taskMode || l.id === lang).map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.label}
-            </option>
-          ))}
-        </select>
+          {langInfo.label}
+        </span>
 
         <button type="button" onClick={handleRun} disabled={busy !== null || (!runtime.available && !isWeb)} className={primaryBtn} title="Run (Ctrl+Enter)">
           {busy === "run" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
@@ -627,7 +620,7 @@ export function PlaygroundShell() {
       </div>
 
       {/* Honest runtime status */}
-      {(!runtime.available || runtime.note) && (
+      {!runtime.available && (
         <div className="flex shrink-0 items-start gap-2 border-b border-[#f0d9a8] bg-[#fff8e6] px-3 py-1.5 text-[12px] text-[#6a4a00]">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>

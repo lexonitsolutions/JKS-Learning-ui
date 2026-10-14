@@ -1,5 +1,7 @@
 "use client";
 
+import { formatINRCompact } from "@/lib/utils/format-money";
+
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
@@ -255,7 +257,7 @@ export default function AdminDashboardPage() {
     },
     {
       icon: IndianRupee,
-      value: `₹${totalRevenue.toLocaleString("en-IN")}`,
+      value: formatINRCompact(totalRevenue),
       label: "Revenue (Settled)",
       growth: `${invoices.filter((i) => i.paymentStatus === "Paid" && i.totalAmount > 0).length} paid invoices`,
       color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50",
@@ -518,7 +520,7 @@ export default function AdminDashboardPage() {
               {/* Metric & Trend */}
               <div className="mt-3 flex items-baseline gap-2.5">
                 <span className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                  ₹{rangeRevenue.toLocaleString("en-IN")}
+                  {formatINRCompact(rangeRevenue)}
                 </span>
                 <span className="text-xs font-bold text-[#16A34A] dark:text-emerald-400">
                   Settled Volume <span className="font-normal text-slate-500 dark:text-slate-400">across {rangeTransactions} transactions</span>

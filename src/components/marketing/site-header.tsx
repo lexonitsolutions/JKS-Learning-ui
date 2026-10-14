@@ -21,6 +21,9 @@ import {
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useMockSession, logoutMockSession, performLogout } from "@/lib/auth/use-mock-auth";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
+import { useMediaQuery } from "@/lib/motion/use-media-query";
+import { NavFlyout, type FlyoutKey } from "./nav-flyout";
+import { NavSleeper } from "./nav-sleeper";
 import { JksLogo } from "@/components/common/jks-logo";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { GlobalSearchTrigger, openGlobalSearch } from "@/components/common/global-search-modal";
@@ -95,13 +98,44 @@ export function SiteHeader() {
     userRole === "admin" ? "/admin" : userRole === "instructor" ? "/instructor" : userRole === "head" ? "/head" : "/dashboard";
 
   // Dynamic Navigation items
-  const navLinks = [
-    { href: "/courses", label: "Courses" },
-    { href: "/events", label: "Events" },
-    { href: "/ai-mock-interview", label: "AI Mock Interview" },
-    { href: "/success-stories", label: "Success Stories" },
-    { href: "/about", label: "About" },
+  const navLinks: { href: string; label: string; key: FlyoutKey }[] = [
+    { href: "/courses", label: "Courses", key: "courses" },
+    { href: "/events", label: "Events", key: "events" },
+    { href: "/ai-mock-interview", label: "AI Mock Interview", key: "ai" },
+    { href: "/success-stories", label: "Success Stories", key: "stories" },
+    { href: "/about", label: "About", key: "about" },
   ];
+
+  // Hover menus are a desktop pointer feature only: no hover on touch, and the
+  // mobile menu already lists every page.
+  const canHover = useMediaQuery("(hover: hover) and (min-width: 1024px)");
+  const [flyout, setFlyout] = useState<FlyoutKey | null>(null);
+  const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearTimers = () => {
+    if (openTimer.current) clearTimeout(openTimer.current);
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  };
+  // A short delay on open avoids menus flashing as the pointer passes over;
+  // switching between items while one is open is instant.
+  const openFlyout = (key: FlyoutKey) => {
+    if (!canHover) return;
+    clearTimers();
+    if (flyout) setFlyout(key);
+    else openTimer.current = setTimeout(() => setFlyout(key), 90);
+  };
+  const closeFlyout = (delay = 160) => {
+    clearTimers();
+    closeTimer.current = setTimeout(() => setFlyout(null), delay);
+  };
+  useEffect(() => clearTimers, []);
+  // Close the menu on navigation (deferred, like the mobile menu below).
+  useEffect(() => {
+    clearTimers();
+    const t = setTimeout(() => setFlyout(null), 0);
+    return () => clearTimeout(t);
+  }, [pathname, canHover]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -124,6 +158,11 @@ export function SiteHeader() {
 
   return (
     <header
+      onMouseLeave={() => closeFlyout()}
+      onKeyDown={(e) => e.key === "Escape" && flyout && (clearTimers(), setFlyout(null))}
+      onBlur={(e) => {
+        if (flyout && !e.currentTarget.contains(e.relatedTarget as Node | null)) closeFlyout(0);
+      }}
       className={`sticky top-0 z-50 border-b bg-white/85 dark:bg-background/90 text-text-heading dark:text-slate-100 backdrop-blur-xl transition-all duration-300 ${
         scrolled
           ? "border-border dark:border-slate-800/80 shadow-[0_4px_20px_rgba(11,31,58,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
@@ -143,12 +182,28 @@ export function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`group relative text-xs xl:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-1 ${
+                onMouseEnter={() => openFlyout(link.key)}
+                onFocus={() => openFlyout(link.key)}
+                aria-haspopup={canHover ? "true" : undefined}
+                aria-expanded={canHover ? flyout === link.key : undefined}
+                className={`group ${link.key === "ai" ? "group/mock" : ""} relative text-xs xl:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-1 ${
                   active
                     ? "text-primary-blue dark:text-blue-400"
                     : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                 }`}
               >
+                {canHover && flyout === link.key && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    aria-hidden
+                    transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 34 }}
+                    className="absolute -inset-x-2.5 -inset-y-1.5 -z-10 rounded-lg bg-blue-50 dark:bg-blue-950/40"
+                  />
+                )}
+                {link.key === "ai" && (
+                  // A tiny candidate napping along the top of this label; wakes while it is hovered or focused.
+                  <NavSleeper className="absolute bottom-[calc(100%-3px)] left-0 hidden w-[46px] md:block xl:bottom-[calc(100%-4px)] xl:w-[50px]" />
+                )}
                 {link.label}
                 <span
                   className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-primary-fill transition-all duration-300 ease-out ${
@@ -447,6 +502,7 @@ export function SiteHeader() {
           </motion.nav>
         )}
       </AnimatePresence>
+          <AnimatePresence>{canHover && flyout && <NavFlyout key="flyout" openKey={flyout} reducedMotion={reducedMotion} />}</AnimatePresence>
     </header>
   );
 }
