@@ -9,6 +9,7 @@ import { CountUpStat } from "@/components/marketing/count-up-stat";
 import { TestimonialWall } from "@/components/marketing/testimonial-wall";
 import { NetworkBackground } from "@/components/three/network-background";
 import { MagneticButton } from "@/components/interactions/magnetic-button";
+import { MockHeadingCharacter } from "@/components/marketing/mock-heading-character";
 import { Reveal } from "@/lib/motion/reveal";
 import { fetchDbCourses } from "@/lib/data/courses";
 import { HOMEPAGE_TESTIMONIALS } from "@/lib/data/testimonials";
@@ -60,8 +61,8 @@ export default async function HomePage() {
     <>
       <InteractiveHero />
 
-      {/* Trust stats */}
-      <section className="border-b border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary">
+      {/* Trust stats. relative z-40 + solid background: the hero image drifts down while scrolling and must slide UNDER this row, never over the numbers. */}
+      <section className="relative z-40 border-b border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary">
         <Reveal
           variant="stagger"
           className="mx-auto grid max-w-[1280px] grid-cols-2 gap-8 px-6 py-12 lg:grid-cols-4 lg:px-16"
@@ -153,7 +154,11 @@ export default async function HomePage() {
         <div className="relative mx-auto grid max-w-[1280px] grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:px-16">
           <Reveal variant="fade-up">
             <span className="text-label text-blue-400 font-bold tracking-wider">The JKS Differentiator</span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mt-2 text-white tracking-tight">AI Mock Interview & Readiness Report</h2>
+            {/* The character lies on top of the heading and perks up when it is hovered. */}
+            <div className="group/mock mt-1 cursor-default">
+              <MockHeadingCharacter className="z-10 -mb-2 mt-6 w-[150px] sm:w-[180px] lg:w-[200px]" />
+              <h2 className="relative text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">AI Mock Interview & Readiness Report</h2>
+            </div>
             <p className="mt-4 text-slate-300 leading-relaxed font-normal">
               Select your technology, experience level, and interview type. Our AI
               generates adaptive questions, evaluates your answers across five

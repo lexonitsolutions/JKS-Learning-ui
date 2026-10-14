@@ -1,5 +1,7 @@
 "use client";
 
+import { formatINR, formatINRCompact } from "@/lib/utils/format-money";
+
 import { StudentAiInterviews } from "@/components/admin/student-ai-interviews";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
@@ -1573,7 +1575,7 @@ function AdminStudentDetailsContent() {
                     </div>
                   </div>
                   <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">
-                    ₹{totalPaidCents.toLocaleString("en-IN")}
+                    {formatINRCompact(totalPaidCents)}
                   </div>
                   <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
                     {student.invoices.length} {student.invoices.length === 1 ? "Tax Invoice" : "Tax Invoices"}
@@ -1920,10 +1922,10 @@ function AdminStudentDetailsContent() {
 
                               <td className="px-4 py-4 whitespace-nowrap">
                                 <div className="font-bold text-slate-900 dark:text-white text-sm">
-                                  ₹{inv.totalAmount.toLocaleString("en-IN")}
+                                  {formatINR(inv.totalAmount)}
                                 </div>
                                 <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                                  Base: ₹{inv.baseAmount.toLocaleString("en-IN")} (incl. 18% GST)
+                                  Base: {formatINR(inv.baseAmount)} (incl. 18% GST)
                                 </div>
                               </td>
 
@@ -2177,7 +2179,7 @@ function AdminStudentDetailsContent() {
                         Tax Invoice Generated ({inv.invoiceNumber})
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                        Paid ₹{inv.totalAmount.toLocaleString("en-IN")} via {inv.paymentMethod} for {inv.courseTitle} ·{" "}
+                        Paid {formatINR(inv.totalAmount)} via {inv.paymentMethod} for {inv.courseTitle} ·{" "}
                         {new Date(inv.createdAt).toLocaleString("en-IN")}
                       </div>
                     </div>
