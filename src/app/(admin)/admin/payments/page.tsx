@@ -136,6 +136,9 @@ export default function AdminPaymentsPage() {
       />
 
       <div className="flex-1 space-y-5 p-3 sm:p-6 lg:p-8 lg:pt-4">
+        {/* Coupons first so they stay reachable however many invoices are listed below */}
+        <CouponManager />
+
         {/* Metric Cards */}
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <TiltCard>
@@ -357,8 +360,6 @@ export default function AdminPaymentsPage() {
             </table>
           </div>
         </div>
-
-        <CouponManager />
       </div>
 
       {/* Invoice Modal for Viewing and Printing */}
