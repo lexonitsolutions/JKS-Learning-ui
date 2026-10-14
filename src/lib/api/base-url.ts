@@ -117,6 +117,12 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * The Clerk session token for the signed-in user, or null.
+ *
+ * Right after a page load Clerk's script is still starting, so `Clerk.session`
+ * is briefly undefined even though the user IS signed in. Requests made in that
+ * window used to go out with no credentials at all and come back 401 (the
+ * notification list and live stream were the first calls on every page). When
+ * Clerk's own cookies say a session exists, wait for it instead of giving up.
  */
 async function getClerkToken(forceRefresh = false): Promise<string | null> {
   const w = window as any;
