@@ -23,6 +23,7 @@ import {
   type AdminSubmissionItem,
 } from "@/lib/data/students-api";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { AiAssessmentTemplates } from "@/components/admin/ai-assessment-templates";
 
 interface SubmissionItem {
   id: string;
@@ -45,6 +46,14 @@ export default function InstructorAssessmentsPage() {
   const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"Pending" | "Graded">("Pending");
+  const [section, setSection] = useState<"SUBMISSIONS" | "AI">("SUBMISSIONS");
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("view") === "ai") {
+      setSection("AI");
+    }
+  }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionItem | null>(null);
 
@@ -162,6 +171,36 @@ export default function InstructorAssessmentsPage() {
       />
 
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 lg:pt-4 max-w-7xl mx-auto w-full">
+        <div className="flex items-center gap-1 self-start rounded-xl border border-slate-200 bg-white p-1 shadow-xs dark:border-slate-800 dark:bg-surface-elevated">
+          {(
+            [
+              ["SUBMISSIONS", "Student Submissions"],
+              ["AI", "AI Assessments"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setSection(id)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                section === id ? "bg-[#2563EB] text-white shadow-xs" : "text-slate-600 hover:text-slate-900 dark:text-slate-300"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {toast && (
+          <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300">
+            {toast}
+          </div>
+        )}
+
+        {section === "AI" ? (
+          <AiAssessmentTemplates aiStudioHref="/instructor/ai-studio" onToast={(m) => setToast(m)} />
+        ) : (
+        <>
         {/* Action & Filter Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-1 shadow-xs">
@@ -272,6 +311,8 @@ export default function InstructorAssessmentsPage() {
             </table>
           </div>
         </div>
+        </>
+        )}
       </div>
 
       {/* Interactive Grading Modal */}

@@ -713,6 +713,10 @@ function redirectAfterLogin(role: MockRole, from: string | null) {
     window.location.assign("/instructor");
     return;
   }
+  if (role === "head") {
+    window.location.assign("/head");
+    return;
+  }
   window.location.assign(from || "/dashboard");
 }
 

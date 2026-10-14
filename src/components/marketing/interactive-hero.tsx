@@ -125,22 +125,22 @@ export function InteractiveHero() {
   return (
     <section
       ref={containerRef}
-      className="relative w-full overflow-hidden bg-gradient-to-b from-[#FAFBFD] via-[#F4F7FC] to-[#EDF2FA] dark:from-background dark:via-surface dark:to-surface-secondary text-slate-900 dark:text-slate-100 flex flex-col items-center pt-8 sm:pt-12 md:pt-14 pb-0"
+      className="relative w-full max-w-full overflow-x-clip overflow-y-visible bg-gradient-to-b from-[#FAFBFD] via-[#F4F7FC] to-[#EDF2FA] dark:from-background dark:via-surface dark:to-surface-secondary text-slate-900 dark:text-slate-100 flex flex-col items-center pt-8 sm:pt-12 md:pt-14 pb-0"
     >
       {/* Ambient Brand Blue & Cyan Glow Orbs */}
       <div
-        className="pointer-events-none absolute -top-24 left-1/2 h-[450px] w-[750px] -translate-x-1/2 rounded-full opacity-60 blur-3xl"
+        className="pointer-events-none absolute -top-24 left-1/2 h-[450px] w-[750px] -translate-x-1/2 rounded-full opacity-60 blur-3xl overflow-hidden"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(30, 94, 255, 0.22) 0%, rgba(56, 189, 248, 0.18) 40%, rgba(37, 99, 235, 0.08) 70%, transparent 100%)",
         }}
       />
       <div
-        className="pointer-events-none absolute top-40 -left-20 h-72 w-72 rounded-full opacity-40 blur-2xl"
+        className="pointer-events-none absolute top-40 -left-10 sm:-left-20 h-72 w-72 rounded-full opacity-40 blur-2xl"
         style={{ background: "radial-gradient(circle, rgba(30, 94, 255, 0.25), transparent 70%)" }}
       />
       <div
-        className="pointer-events-none absolute top-32 -right-20 h-80 w-80 rounded-full opacity-40 blur-2xl"
+        className="pointer-events-none absolute top-32 -right-10 sm:-right-20 h-80 w-80 rounded-full opacity-40 blur-2xl"
         style={{ background: "radial-gradient(circle, rgba(6, 182, 212, 0.25), transparent 70%)" }}
       />
 
@@ -207,10 +207,10 @@ export function InteractiveHero() {
       </div>
 
       {/* 3D Perspective Ground Grid Floor & Character Stage */}
-      <div className="relative z-10 mx-auto mt-6 sm:mt-10 w-full max-w-5xl flex flex-col items-center justify-end px-3 sm:px-4 overflow-visible">
+      <div className="relative z-10 mx-auto mt-6 sm:mt-10 w-full max-w-5xl flex flex-col items-center justify-end px-3 sm:px-4 overflow-hidden sm:overflow-visible">
         {/* 3D Perspective Grid Plane */}
         <div
-          className="pointer-events-none absolute bottom-0 left-1/2 h-[300px] sm:h-[420px] w-full sm:w-[130%] -translate-x-1/2 opacity-70 contain-paint"
+          className="pointer-events-none absolute bottom-0 left-1/2 h-[300px] sm:h-[420px] w-full sm:w-[125%] -translate-x-1/2 opacity-70 contain-paint"
           style={{
             transform: "perspective(600px) rotateX(60deg)",
             transformOrigin: "bottom center",
@@ -257,7 +257,7 @@ export function InteractiveHero() {
           {/* Floating Badge 1: Top-Left (Calibrated for mobile & desktop) */}
           <div
             ref={badgeLeftRef}
-            className="absolute top-2 xs:top-6 sm:top-20 -left-1 xs:left-1 sm:left-4 z-30 max-w-[135px] xs:max-w-[155px] sm:max-w-[220px] rounded-xl sm:rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-2 xs:p-2.5 sm:p-3.5 shadow-[0_6px_20px_rgba(30,50,90,0.12)] sm:shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
+            className="absolute top-2 xs:top-6 sm:top-20 left-1 xs:left-2 sm:left-4 z-30 max-w-[135px] xs:max-w-[155px] sm:max-w-[220px] rounded-xl sm:rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-2 xs:p-2.5 sm:p-3.5 shadow-[0_6px_20px_rgba(30,50,90,0.12)] sm:shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
             <div className="flex items-center justify-between text-[9.5px] xs:text-[10px] sm:text-[11px] font-bold text-slate-800 dark:text-slate-100">
               <span className="flex items-center gap-1 sm:gap-1.5 truncate">
@@ -278,7 +278,7 @@ export function InteractiveHero() {
           {/* Floating Badge 2: Right (Calibrated for mobile & desktop) */}
           <div
             ref={badgeRightRef}
-            className="absolute top-14 xs:top-18 sm:top-36 -right-1 xs:right-1 sm:right-2 z-30 max-w-[145px] xs:max-w-[165px] sm:max-w-[250px] rounded-xl sm:rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-2 xs:p-2.5 sm:p-3.5 shadow-[0_6px_20px_rgba(30,50,90,0.12)] sm:shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
+            className="absolute top-14 xs:top-18 sm:top-36 right-1 xs:right-2 sm:right-2 z-30 max-w-[145px] xs:max-w-[165px] sm:max-w-[250px] rounded-xl sm:rounded-2xl border border-white/90 dark:border-slate-800/80 bg-white/95 dark:bg-surface-secondary/95 p-2 xs:p-2.5 sm:p-3.5 shadow-[0_6px_20px_rgba(30,50,90,0.12)] sm:shadow-[0_12px_32px_rgba(30,50,90,0.12)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-transform hover:scale-105"
           >
             <div className="flex items-center gap-1.5 sm:gap-2">
               <div className="flex h-5 w-5 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/60 font-bold text-[8.5px] sm:text-[10px] text-[#1E5EFF] dark:text-blue-400">

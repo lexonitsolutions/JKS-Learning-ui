@@ -76,10 +76,13 @@ export default function AuthRedirectPage() {
       backendUser?.role === "SUPER_ADMIN" ||
       backendUser?.role === "ADMIN";
     const isInstructor = backendUser?.role === "INSTRUCTOR";
-    const role: "student" | "instructor" | "admin" = isAdmin
+    const isHead = backendUser?.role === "HEAD";
+    const role: "student" | "instructor" | "admin" | "head" = isAdmin
       ? "admin"
       : isInstructor
       ? "instructor"
+      : isHead
+      ? "head"
       : "student";
 
     const userSession: MockSession = {
@@ -115,7 +118,7 @@ export default function AuthRedirectPage() {
     } catch {}
 
     window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
-    return { email, role, target: isAdmin ? "/admin" : isInstructor ? "/instructor" : "/dashboard" };
+    return { email, role, target: isAdmin ? "/admin" : isInstructor ? "/instructor" : isHead ? "/head" : "/dashboard" };
   }, []);
 
   /**

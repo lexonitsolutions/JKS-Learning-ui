@@ -255,8 +255,30 @@ export default function AdminAnalyticsPage() {
 
         {/* Error notice if API call failed */}
         {errorMsg && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
-            {errorMsg}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
+              <span>{errorMsg}</span>
+            </div>
+            {/token|session|auth/i.test(errorMsg) ? (
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = "/login";
+                }}
+                className="shrink-0 self-start sm:self-auto rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-rose-700 transition-colors cursor-pointer"
+              >
+                Sign In Again
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleManualRefresh}
+                className="shrink-0 self-start sm:self-auto rounded-lg border border-rose-300 dark:border-rose-800 bg-white dark:bg-surface-elevated px-3 py-1.5 text-xs font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-surface-hover transition-colors cursor-pointer"
+              >
+                Retry
+              </button>
+            )}
           </div>
         )}
 

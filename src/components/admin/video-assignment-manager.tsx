@@ -22,6 +22,22 @@ import {
   type VideoTask,
   type SectionAssignment,
 } from "@/lib/data/courses-store";
+import { CodingQuestionEditor } from "@/components/admin/coding-question-editor";
+import { toLanguageId } from "@/lib/utils/coding-question";
+
+/** Labels the course builder stores for each language id. */
+const LANGUAGE_LABEL: Record<string, string> = {
+  javascript: "JavaScript",
+  typescript: "TypeScript",
+  python: "Python",
+  java: "Java",
+  cpp: "C++",
+  csharp: "CSharp",
+  sql: "SQL",
+  abap: "SAP ABAP",
+};
+
+
 
 interface VideoAssignmentManagerProps {
   video: VideoItem;
@@ -780,50 +796,38 @@ export function VideoAssignmentManager({
                           </div>
                         )}
 
-                        {/* Question Type: Coding Challenge */}
+                        {/* Question Type: Coding Challenge (shared editor: starter code with TODOs, tests, reference solution) */}
                         {qType === "Coding Challenge / Test" && (
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <label className="text-[10.5px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                                Language:
-                              </label>
-                              <select
-                                value={q.language || "JavaScript"}
-                                onChange={(e) => updateQuizQuestion(qIdx, { language: e.target.value })}
-                                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-input-bg px-2 py-1 text-xs font-semibold text-slate-900 dark:text-white outline-none"
-                              >
-                                <option value="JavaScript">JavaScript / TypeScript</option>
-                                <option value="Python">Python</option>
-                                <option value="Java">Java</option>
-                                <option value="CSharp">C# / .NET</option>
-                                <option value="SQL">SQL</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-[10.5px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                Starter Code
-                              </label>
-                              <textarea
-                                rows={3}
-                                value={q.starterCode || ""}
-                                onChange={(e) => updateQuizQuestion(qIdx, { starterCode: e.target.value })}
-                                placeholder="function solve(input) {&#10;  // Write your code here&#10;}"
-                                className="w-full font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-900 text-emerald-400 p-2 text-xs outline-none focus:border-[#2563EB]"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10.5px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                Test Cases (Input -&gt; Output)
-                              </label>
-                              <textarea
-                                rows={2}
-                                value={q.testCases || ""}
-                                onChange={(e) => updateQuizQuestion(qIdx, { testCases: e.target.value })}
-                                placeholder="input: [1, 2, 3] -> output: 6"
-                                className="w-full font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-input-bg p-2 text-xs text-slate-900 dark:text-white outline-none focus:border-[#2563EB]"
-                              />
-                            </div>
-                          </div>
+                          <CodingQuestionEditor
+                            value={{
+                              language: toLanguageId(q.language),
+                              starterCode: q.starterCode || "",
+                              instructions: q.instructions || "",
+                              tests: (q.structuredTestCases || []).map((t) => ({
+                                input: t.input,
+                                expectedOutput: t.output,
+                                hidden: !!t.isHidden,
+                              })),
+                              reference: q.solutionCode || "",
+                            }}
+                            onChange={(patch) =>
+                              updateQuizQuestion(qIdx, {
+                                ...(patch.language !== undefined ? { language: LANGUAGE_LABEL[patch.language] ?? patch.language } : {}),
+                                ...(patch.starterCode !== undefined ? { starterCode: patch.starterCode } : {}),
+                                ...(patch.instructions !== undefined ? { instructions: patch.instructions } : {}),
+                                ...(patch.tests !== undefined
+                                  ? {
+                                      structuredTestCases: patch.tests.map((t) => ({
+                                        input: t.input,
+                                        output: t.expectedOutput,
+                                        isHidden: !!t.hidden,
+                                      })),
+                                    }
+                                  : {}),
+                                ...(patch.reference !== undefined ? { solutionCode: patch.reference } : {}),
+                              })
+                            }
+                          />
                         )}
 
                         {/* Question Type: Project / File Upload */}

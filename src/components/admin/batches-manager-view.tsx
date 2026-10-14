@@ -31,6 +31,8 @@ import {
 
 interface BatchesManagerViewProps {
   role: "admin" | "instructor";
+  /** Optional controls (e.g. view tabs) shown at the top of the page. */
+  headerSlot?: React.ReactNode;
 }
 
 // Avatar color helper based on string hash for visually appealing student initials
@@ -68,7 +70,7 @@ function getTrackBadgeStyle(track?: string) {
   return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
 }
 
-export function BatchesManagerView({ role }: BatchesManagerViewProps) {
+export function BatchesManagerView({ role, headerSlot }: BatchesManagerViewProps) {
   const [instructors, setInstructors] = useState<InstructorBatchHierarchy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -136,7 +138,7 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
   const totalInstructors = instructors.length;
   const totalCourses = instructors.reduce((acc, i) => acc + (i.courses?.length || 0), 0);
   const totalStudents = instructors.reduce((acc, i) => acc + (i.totalStudentsCount || 0), 0);
-  const activeCohorts = instructors.reduce(
+  const activeBatches = instructors.reduce(
     (acc, i) => acc + (i.courses || []).filter((c) => c.studentsCount > 0).length,
     0
   );
@@ -144,12 +146,13 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
   return (
     <>
       <DashboardTopbar
-        title="Cohorts"
+        title="Batches"
         subtitle=""
         userInitials={role === "admin" ? "AD" : "IN"}
       />
 
       <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+        {headerSlot}
         {/* Error Alert */}
         {error && (
           <div className="rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/90 dark:bg-rose-950/40 p-4 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-2.5 shadow-sm">
@@ -183,7 +186,7 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
           <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-surface-secondary/95 p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">
-                Active Cohorts
+                Active Batches
               </span>
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <TrendingUp className="h-4 w-4" />
@@ -191,11 +194,11 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
             </div>
             <div className="mt-2.5 flex items-baseline gap-2">
               <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                {activeCohorts}
+                {activeBatches}
               </span>
               <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Batches</span>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Cohorts with enrolled learners</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Batches with enrolled learners</p>
           </div>
 
           <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-surface-secondary/95 p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl">
@@ -431,7 +434,7 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
                               {inst.totalStudentsCount}
                             </span>
                             <span className="text-[10.5px] font-medium text-slate-500 dark:text-slate-400">
-                              Cohort Learners
+                              Batch Learners
                             </span>
                           </div>
                         </div>
@@ -570,7 +573,7 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
                         </div>
 
                         <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs font-bold text-[#2563EB] dark:text-blue-400 group-hover:translate-x-0.5 transition-transform">
-                          <span>View Enrolled Student Cohort</span>
+                          <span>View Enrolled Student Batch</span>
                           <ChevronRight className="h-4 w-4" />
                         </div>
                       </div>
@@ -603,13 +606,13 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
                         {selectedCourse.title}
                       </h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Live student cohort registered for this curriculum.
+                        Live student batch registered for this curriculum.
                       </p>
                     </div>
 
                     <div className="flex items-center gap-3">
                       <span className="text-xs font-extrabold px-4 py-2 rounded-2xl bg-white dark:bg-surface-elevated text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
-                        Enrolled Cohort: {selectedCourse.studentsCount} Students
+                        Enrolled Batch: {selectedCourse.studentsCount} Students
                       </span>
                     </div>
                   </div>
@@ -635,7 +638,7 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
                           <tr>
                             <th className="px-5 py-3.5">Learner Profile</th>
                             <th className="px-5 py-3.5">Contact Details</th>
-                            <th className="px-5 py-3.5">Cohort Batch Timing</th>
+                            <th className="px-5 py-3.5">Batch Timing</th>
                             <th className="px-5 py-3.5">Enrollment Date</th>
                             <th className="px-5 py-3.5">Completed Lessons</th>
                             <th className="px-5 py-3.5">Academic Status</th>
@@ -697,7 +700,7 @@ export function BatchesManagerView({ role }: BatchesManagerViewProps) {
                               <td className="px-5 py-3.5">
                                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-300 text-[11px] font-bold border border-blue-200/80 dark:border-blue-900">
                                   <Clock className="h-3 w-3 text-[#2563EB] dark:text-blue-400" />
-                                  <span>{st.batchTiming || "Regular Cohort"}</span>
+                                  <span>{st.batchTiming || "Regular Batch"}</span>
                                 </span>
                               </td>
 

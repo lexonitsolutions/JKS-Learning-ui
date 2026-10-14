@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { BatchesManagerView } from "@/components/admin/batches-manager-view";
+import { BatchesWorkspace } from "@/components/admin/batches-workspace";
 
 export default function InstructorBatchesPage() {
-  return <BatchesManagerView role="instructor" />;
+  return <BatchesWorkspace role="instructor" />;
 }

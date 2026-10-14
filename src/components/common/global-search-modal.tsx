@@ -1358,25 +1358,36 @@ export function GlobalSearchModal({
                   }}
                   className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200/70 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer shrink-0"
                   aria-label="Clear search query"
+                  title="Clear text"
                 >
                   <X className="h-4 w-4" />
                 </button>
               )}
 
-              {/* ESC Key Badge (Desktop) */}
-              <kbd className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 px-2 py-1 text-[11px] font-mono font-bold text-slate-400 dark:text-slate-400 shadow-2xs shrink-0">
-                ESC
-              </kbd>
+              {/* Close Controls: Cross Button (X) + ESC Badge */}
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                {/* ESC Key Badge (Desktop) */}
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 px-2 py-1 text-[11px] font-mono font-bold text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 shadow-2xs cursor-pointer transition-colors"
+                  title="Close (Esc)"
+                  aria-label="Close with ESC"
+                >
+                  ESC
+                </button>
 
-              {/* Mobile Explicit Close Button */}
-              <button
-                type="button"
-                onClick={handleClose}
-                className="flex sm:hidden h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer shrink-0"
-                aria-label="Close search modal"
-              >
-                <X className="h-4.5 w-4.5" />
-              </button>
+                {/* Explicit Cross (X) Close Button */}
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="flex h-8 w-8 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
+                  aria-label="Close search modal"
+                  title="Close search modal"
+                >
+                  <X className="h-5 w-5 stroke-[2.2]" />
+                </button>
+              </div>
             </div>
 
             {/* Category Filter Tabs */}

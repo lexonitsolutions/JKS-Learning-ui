@@ -1,5 +1,7 @@
 "use client";
 
+import { formatINR, formatINRCompact } from "@/lib/utils/format-money";
+
 import { useState, useMemo, useEffect } from "react";
 import { CreditCard, CheckCircle2, XCircle, FileText, Download, Printer, Search, X, Layers, Filter } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
@@ -79,7 +81,7 @@ export default function PaymentsPage() {
                   <CreditCard className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">₹{totalPaid.toLocaleString("en-IN")}</div>
+              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">{formatINRCompact(totalPaid)}</div>
               <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">{invoices.length} verified tax invoices</div>
             </div>
           </TiltCard>
@@ -220,7 +222,7 @@ export default function PaymentsPage() {
                         {inv.items[0]?.description || (inv as any).courseTitle || "Enrolled Course"}
                       </td>
                       <td className="px-4 py-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                        ₹{inv.totalAmount.toLocaleString("en-IN")}
+                        {formatINR(inv.totalAmount)}
                       </td>
                       <td className="px-4 py-4 text-center whitespace-nowrap">
                         <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${

@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import type { MockRole } from "./mock-users";
 import { SESSION_COOKIE_NAME, encodeSession, decodeSession, type MockSession } from "./session";
-import { apiFetch } from "@/lib/api/base-url";
+import { apiFetch, setStoredAccessToken, setStoredRefreshToken } from "@/lib/api/base-url";
 
 
 const SESSION_CHANGE_EVENT = "jks-mock-session-change";
@@ -213,6 +213,7 @@ export async function deleteInstructor(
 export function roleFromApi(apiRole: string | undefined): MockRole {
   if (apiRole === "SUPER_ADMIN" || apiRole === "ADMIN") return "admin";
   if (apiRole === "INSTRUCTOR") return "instructor";
+  if (apiRole === "HEAD") return "head";
   return "student";
 }
 
@@ -293,7 +294,10 @@ export async function loginWithApi(email: string, password: string): Promise<Log
 
     if (res.ok) {
       const data = await res.json();
-      // The API sets an httpOnly accessToken cookie; the token is never kept in JS-readable storage.
+      if (data?.accessToken) {
+        setStoredAccessToken(data.accessToken);
+        setStoredRefreshToken(data.refreshToken);
+      }
       const u = data.user;
       const session: MockSession = {
         email: u.email,
@@ -342,7 +346,10 @@ export async function registerWithApi(
 
     if (res.ok) {
       const data = await res.json();
-      // The API sets an httpOnly accessToken cookie; the token is never kept in JS-readable storage.
+      if (data?.accessToken) {
+        setStoredAccessToken(data.accessToken);
+        setStoredRefreshToken(data.refreshToken);
+      }
       const u = data.user;
       const session: MockSession = {
         email: u.email,

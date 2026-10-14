@@ -1,5 +1,7 @@
 "use client";
 
+import { formatINR } from "@/lib/utils/format-money";
+
 import React, { useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Printer, Download, CheckCircle2, ShieldCheck, QrCode, Building, Award, FileText, Loader2 } from "lucide-react";
@@ -103,7 +105,7 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
         <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-900 px-4 sm:px-6 py-3.5 text-white shadow-md print:hidden">
           <div className="flex items-center gap-2 sm:gap-2.5">
             <FileText className="h-4 w-4 text-cyan-400 shrink-0" />
-            <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">GST Tax Invoice</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">Official Invoice</span>
             <span className="rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-bold text-emerald-400 shrink-0">
               ● {getInvoiceStatusLabel(invoice).toUpperCase()}
             </span>
@@ -231,8 +233,8 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
                       <div className="text-[11px] text-slate-500 mt-0.5">Live Tutor Mentorship + Production Capstones + Placement Support</div>
                     </td>
                     <td className="py-3.5 px-2 text-center font-mono align-top">{item.qty}</td>
-                    <td className="py-3.5 px-2 text-right font-mono font-medium align-top">₹{item.unitPrice.toLocaleString("en-IN")}</td>
-                    <td className="py-3.5 px-2 text-right font-mono font-black text-slate-900 align-top">₹{item.totalPrice.toLocaleString("en-IN")}</td>
+                    <td className="py-3.5 px-2 text-right font-mono font-medium align-top">{formatINR(item.unitPrice)}</td>
+                    <td className="py-3.5 px-2 text-right font-mono font-black text-slate-900 align-top">{formatINR(item.totalPrice)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -252,8 +254,8 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
                 <div className="flex justify-between items-center border-t border-slate-200 pt-2 text-xs">
                   <span className="text-slate-500 text-[11px]">SAC: 999293</span>
                   <div className="text-right">
-                    <span className="text-slate-500 text-[11px] mr-2">Tuition: ₹{item.unitPrice.toLocaleString("en-IN")}</span>
-                    <span className="font-mono font-black text-slate-900">Total: ₹{item.totalPrice.toLocaleString("en-IN")}</span>
+                    <span className="text-slate-500 text-[11px] mr-2">Tuition: {formatINR(item.unitPrice)}</span>
+                    <span className="font-mono font-black text-slate-900">Total: {formatINR(item.totalPrice)}</span>
                   </div>
                 </div>
               </div>
@@ -265,34 +267,34 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
             <div className="w-full sm:max-w-sm space-y-2 text-xs">
               <div className="flex justify-between text-slate-600">
                 <span>Gross Tuition Fee:</span>
-                <span className="font-mono font-medium">₹{invoice.subtotal.toLocaleString("en-IN")}</span>
+                <span className="font-mono font-medium">{formatINR(invoice.subtotal)}</span>
               </div>
 
               {invoice.discountAmount > 0 && (
                 <div className="flex justify-between text-emerald-700 font-semibold">
                   <span>Scholarship Deduction ({invoice.discountCode || "PROMO"}):</span>
-                  <span className="font-mono">- ₹{invoice.discountAmount.toLocaleString("en-IN")}</span>
+                  <span className="font-mono">- {formatINR(invoice.discountAmount)}</span>
                 </div>
               )}
 
               <div className="flex justify-between text-slate-600">
                 <span>Taxable Value (Net of Discount):</span>
-                <span className="font-mono">₹{invoice.taxableAmount.toLocaleString("en-IN")}</span>
+                <span className="font-mono">{formatINR(invoice.taxableAmount)}</span>
               </div>
 
               <div className="flex justify-between text-slate-500 text-[11px]">
                 <span>Central GST (CGST 9%):</span>
-                <span className="font-mono">₹{invoice.cgstAmount.toLocaleString("en-IN")}</span>
+                <span className="font-mono">{formatINR(invoice.cgstAmount)}</span>
               </div>
 
               <div className="flex justify-between text-slate-500 text-[11px]">
                 <span>State GST (SGST 9%):</span>
-                <span className="font-mono">₹{invoice.sgstAmount.toLocaleString("en-IN")}</span>
+                <span className="font-mono">{formatINR(invoice.sgstAmount)}</span>
               </div>
 
               <div className="flex justify-between border-t-2 border-slate-900 pt-2.5 text-sm font-black text-slate-950">
                 <span>Total Amount Paid:</span>
-                <span className="font-mono text-[#2563EB] text-base">₹{invoice.totalAmount.toLocaleString("en-IN")}</span>
+                <span className="font-mono text-[#2563EB] text-base">{formatINR(invoice.totalAmount)}</span>
               </div>
             </div>
           </div>

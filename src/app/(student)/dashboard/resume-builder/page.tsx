@@ -30,6 +30,7 @@ import {
   ArrowUpDown,
   Download,
   Loader2,
+  FileUp,
 } from "lucide-react";
 
 import { DashboardTopbar } from "@/components/dashboard/topbar";
@@ -38,6 +39,9 @@ import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { fetchStudentEnrollments } from "@/lib/data/enrollments-api";
 import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
 import { apiFetch } from "@/lib/api/base-url";
+import { ResumeImportModal } from "@/components/resume/resume-import-modal";
+import { syncResumeProfile, type ResumeContent } from "@/lib/data/resume-import-api";
+import { AiResumeAssistant } from "@/components/resume/ai-resume-assistant";
 
 export function extractLinkedInHandle(rawUrl: string): string {
   if (!rawUrl) return "";
@@ -288,6 +292,34 @@ const SAMPLE_RESUME_DATA: ResumeData = {
 
 const STORAGE_KEY = "jks_student_resume_v2";
 
+/** The builder's data without its client-side item ids (what the API understands). */
+function toContent(d: ResumeData): ResumeContent {
+  return {
+    personal: d.personal,
+    skills: d.skills,
+    experiences: d.experiences.map(({ id: _id, ...rest }) => rest),
+    projects: d.projects.map(({ id: _id, ...rest }) => rest),
+    educations: d.educations.map(({ id: _id, ...rest }) => rest),
+    certifications: d.certifications.map(({ id: _id, ...rest }) => rest),
+  };
+}
+
+/** Applies API content back onto the builder, keeping the ids of items that were already there. */
+function fromContent(prev: ResumeData, c: ResumeContent): ResumeData {
+  const stamp = Date.now();
+  const withIds = <T, E extends { id: string }>(items: T[], existing: E[], prefix: string) =>
+    items.map((item, i) => ({ ...item, id: existing[i]?.id ?? `${prefix}-${stamp}-${i}` }));
+  return {
+    ...prev,
+    personal: c.personal,
+    skills: c.skills,
+    experiences: withIds(c.experiences, prev.experiences, "exp-sync"),
+    projects: withIds(c.projects, prev.projects, "proj-sync"),
+    educations: withIds(c.educations, prev.educations, "edu-sync"),
+    certifications: withIds(c.certifications, prev.certifications, "cert-sync"),
+  };
+}
+
 export default function ResumeBuilderPage() {
   const { user: clerkUser } = useUser();
   const mockSession = useMockSession();
@@ -444,88 +476,43 @@ export default function ResumeBuilderPage() {
     };
   }, [resumeData, template, sectionOrder, mobileTab]);
 
-  // Auto-fill from student profile and real enrolled courses
+  // Keeps the latest resume available to callbacks without re-creating them on every keystroke.
+  const resumeRef = useRef<ResumeData>(resumeData);
+  useEffect(() => {
+    resumeRef.current = resumeData;
+  });
+
+  // Sync from the student's real account: name, email, phone, issued certificates,
+  // approved course completions and declared technologies. Nothing is guessed or
+  // made up, and anything already on the resume is kept as it is.
   const handleAutoFillFromProfile = useCallback(async () => {
     const realName = clerkUser?.fullName || mockSession?.name || "";
     const realEmail = clerkUser?.primaryEmailAddress?.emailAddress || mockSession?.email || "";
-    let realPhone = "";
-    if (clerkUser?.primaryPhoneNumber?.phoneNumber) {
-      realPhone = clerkUser.primaryPhoneNumber.phoneNumber;
-    } else if ((mockSession as any)?.phone) {
-      realPhone = (mockSession as any).phone;
-    } else {
-      try {
-        const rawAuth = localStorage.getItem("jks_auth_user");
-        if (rawAuth) {
-          const u = JSON.parse(rawAuth);
-          if (u.phone) realPhone = u.phone;
-        }
-      } catch {}
-    }
+    const realPhone = clerkUser?.primaryPhoneNumber?.phoneNumber || (mockSession as any)?.phone || "";
 
-    let enrollments: any[] = [];
+    let merged: ResumeContent | null = null;
     try {
-      if (realEmail) {
-        enrollments = await fetchStudentEnrollments(realEmail);
-      }
-    } catch {}
-
-    const courseTitles = enrollments.map((e) => e.title);
-    const tracks = Array.from(new Set(enrollments.map((e) => e.track)));
-
-    const autoHeadline = tracks.length > 0
-      ? `${tracks[0]} Software Developer | Full Stack & Distributed Systems`
-      : "Software Engineer | Full Stack & Cloud Developer";
-
-    const autoSummary = courseTitles.length > 0
-      ? `Dedicated Software Engineer specializing in ${tracks.join(", ") || "Full Stack Software Engineering"}. Successfully completed comprehensive curriculum and real-world milestones in ${courseTitles.slice(0, 2).join(" and ")} through JKS Learning.`
-      : "Results-driven Software Engineer with a solid background in designing and building scalable web applications, RESTful microservices, and modern cloud architectures. Passionate about engineering high-quality, production-ready software solutions.";
-
-    let autoLangs = "TypeScript, JavaScript (ES6+), Java 21, SQL, Python, Go";
-    let autoFrameworks = "React 19, Next.js 15, Node.js, Express, Tailwind CSS";
-    let autoDatabases = "PostgreSQL, MongoDB, Redis, Prisma";
-    let autoCloud = "Docker, AWS (S3, EC2), GitHub Actions CI/CD, Git";
-    let autoCore = "Data Structures & Algorithms, RESTful APIs, Microservices Architecture, Agile";
-
-    if (tracks.some((t) => typeof t === "string" && t.toLowerCase().includes("sap"))) {
-      autoLangs = "ABAP, SQL, JavaScript, Core Data Services (CDS)";
-      autoFrameworks = "SAP Fiori, SAP UI5, SAP BTP, OData Services";
-      autoDatabases = "SAP HANA, Oracle, PostgreSQL";
-      autoCloud = "SAP Business Technology Platform, Git, Jenkins";
-      autoCore = "ERP Architecture, BAPI, IDocs, Enhancements & BADIs";
+      merged = (await syncResumeProfile(toContent(resumeRef.current))).merged;
+    } catch {
+      // The API is unreachable: fall back to the sign-in details only.
     }
-
-    const autoCertifications = enrollments.map((e, idx) => ({
-      id: `cert-auto-${idx}-${Date.now()}`,
-      title: `${e.title} Specialization`,
-      issuer: `JKS Learning (${e.track || "Verified Track"})`,
-      year: new Date(e.enrolledAt || Date.now()).getFullYear().toString(),
-    }));
 
     setResumeData((prev) => {
-      const updated: ResumeData = {
-        ...prev,
-        personal: {
-          ...prev.personal,
-          fullName: realName || prev.personal.fullName || "Student Name",
-          email: realEmail || prev.personal.email || "student@example.com",
-          phone: realPhone || prev.personal.phone || "+91 98765 43210",
-          headline: prev.personal.headline || autoHeadline,
-          summary: prev.personal.summary || autoSummary,
-        },
-        skills: {
-          languages: prev.skills.languages || autoLangs,
-          frameworks: prev.skills.frameworks || autoFrameworks,
-          databases: prev.skills.databases || autoDatabases,
-          cloudDevOps: prev.skills.cloudDevOps || autoCloud,
-          coreCS: prev.skills.coreCS || autoCore,
-        },
-        certifications: prev.certifications.length > 0 ? prev.certifications : autoCertifications,
-      };
+      const next: ResumeData = merged
+        ? fromContent(prev, merged)
+        : {
+            ...prev,
+            personal: {
+              ...prev.personal,
+              fullName: prev.personal.fullName || realName,
+              email: prev.personal.email || realEmail,
+              phone: prev.personal.phone || realPhone,
+            },
+          };
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       } catch {}
-      return updated;
+      return next;
     });
   }, [clerkUser, mockSession]);
 
@@ -562,6 +549,53 @@ export default function ResumeBuilderPage() {
   const updatePersonal = (field: keyof ResumeData["personal"], value: string) => {
     setResumeData((prev) => {
       const updated = { ...prev, personal: { ...prev.personal, [field]: value } };
+      saveToStorage(updated);
+      return updated;
+    });
+  };
+
+  // Technologies + level the student entered in AI Mock Interview (saved on their account).
+  const [profileTech, setProfileTech] = useState<{ technologies: string[]; level: string | null }>({
+    technologies: [],
+    level: null,
+  });
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch("/auth/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const u = d?.user;
+        if (!cancelled && u) {
+          setProfileTech({
+            technologies: Array.isArray(u.technologies) ? u.technologies : [],
+            level: typeof u.experienceLevel === "string" ? u.experienceLevel : null,
+          });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const importProfileTech = () => {
+    setResumeData((prev) => {
+      const existing = prev.skills.languages
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      const merged = [...existing];
+      for (const t of profileTech.technologies) {
+        if (!merged.some((m) => m.toLowerCase() === t.toLowerCase())) merged.push(t);
+      }
+      const headline =
+        prev.personal.headline?.trim() ||
+        `${profileTech.level ? `${profileTech.level} ` : ""}${profileTech.technologies.slice(0, 3).join(" / ")} Developer`.trim();
+      const updated = {
+        ...prev,
+        personal: { ...prev.personal, headline },
+        skills: { ...prev.skills, languages: merged.join(", ") },
+      };
       saveToStorage(updated);
       return updated;
     });
@@ -715,6 +749,46 @@ export default function ResumeBuilderPage() {
       saveToStorage(updated);
       return updated;
     });
+  };
+
+  // AI resume review
+  const [aiOpen, setAiOpen] = useState(false);
+
+  // Upload an existing resume and merge it with real profile data
+  const [importOpen, setImportOpen] = useState(false);
+  const currentContent: ResumeContent = toContent(resumeData);
+  const applyImportedResume = (content: ResumeContent) => setResumeData((prev) => fromContent(prev, content));
+  // Contact details are never needed for scoring, so they are not sent.
+  const aiResumePayload = {
+    headline: resumeData.personal.headline,
+    summary: resumeData.personal.summary,
+    skills: resumeData.skills,
+    experiences: resumeData.experiences.map((e) => ({ role: e.role, company: e.company, points: e.points })),
+    projects: resumeData.projects.map((p) => ({ title: p.title, techStack: p.techStack, points: p.points })),
+    educations: resumeData.educations.map((e) => ({ degree: e.degree, institution: e.institution })),
+    certifications: resumeData.certifications.map((c) => ({ title: c.title, issuer: c.issuer })),
+  };
+  const applyAiBullet = (original: string, enhanced: string): boolean => {
+    const needle = original.trim();
+    let found = false;
+    const swap = (points: string[]) =>
+      points.map((pt) => {
+        if (!found && pt.trim() === needle) {
+          found = true;
+          return enhanced;
+        }
+        return pt;
+      });
+    setResumeData((prev) => {
+      const updated = {
+        ...prev,
+        experiences: prev.experiences.map((e) => ({ ...e, points: swap(e.points) })),
+        projects: prev.projects.map((p) => ({ ...p, points: swap(p.points) })),
+      };
+      if (found) saveToStorage(updated);
+      return found ? updated : prev;
+    });
+    return found;
   };
 
   // Load Sample Data
@@ -1390,6 +1464,18 @@ export default function ResumeBuilderPage() {
 
   return (
     <>
+      <ResumeImportModal
+        open={importOpen}
+        current={currentContent}
+        onClose={() => setImportOpen(false)}
+        onApply={applyImportedResume}
+      />
+      <AiResumeAssistant
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        resumeData={aiResumePayload}
+        onApplyBullet={applyAiBullet}
+      />
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -1537,34 +1623,55 @@ export default function ResumeBuilderPage() {
             </div>
 
             {/* Quick Actions & Print Button */}
-            <div className="flex items-center justify-between sm:justify-end gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800 w-full min-w-0">
+              <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-wrap">
                 <button
                   type="button"
                   onClick={handleAutoFillFromProfile}
                   title="Auto-fill with your real profile, enrolled courses, and verified certificates"
-                  className="flex items-center gap-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 px-2 sm:px-2.5 py-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer shrink-0"
                 >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span>Sync Profile &amp; Courses</span>
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Sync Profile &amp; Courses</span>
+                  <span className="sm:hidden">Sync</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setImportOpen(true)}
+                  title="Upload an existing resume (PDF, DOCX or TXT) and merge it with your courses and certificates"
+                  className="flex items-center gap-1 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-surface px-2 sm:px-2.5 py-1.5 text-[11px] font-bold text-[#1E5EFF] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer shrink-0"
+                >
+                  <FileUp className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Upload Resume</span>
+                  <span className="sm:hidden">Upload</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleLoadSample}
                   title="Load a complete tech resume example"
-                  className="flex items-center gap-1 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/40 px-2.5 py-1.5 text-[11px] font-semibold text-[#1E5EFF] dark:text-blue-400 hover:bg-blue-100/70 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/40 px-2 sm:px-2.5 py-1.5 text-[11px] font-semibold text-[#1E5EFF] dark:text-blue-400 hover:bg-blue-100/70 transition-colors cursor-pointer shrink-0"
                 >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Load</span> Example
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Load </span><span>Example</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAiOpen(true)}
+                  title="Get an AI review of your resume: ATS score, missing keywords and stronger bullet points"
+                  className="flex items-center gap-1 rounded-xl border border-violet-200 dark:border-violet-900/60 bg-violet-50 dark:bg-violet-950/40 px-2 sm:px-2.5 py-1.5 text-[11px] font-bold text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors cursor-pointer shrink-0"
+                >
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden xs:inline">AI Review</span>
+                  <span className="xs:hidden">AI</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleClearAll}
                   title="Clear all fields"
-                  className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-2 sm:px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 transition-colors cursor-pointer shrink-0"
                 >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  <span>Clear</span>
+                  <RotateCcw className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden xs:inline">Clear</span>
                 </button>
               </div>
 
@@ -1572,14 +1679,16 @@ export default function ResumeBuilderPage() {
                 type="button"
                 onClick={handleDownloadPdf}
                 disabled={isExportingPdf}
-                className="flex items-center gap-1.5 rounded-xl bg-[#1E5EFF] dark:bg-blue-600 px-3.5 sm:px-4 py-1.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 dark:hover:bg-blue-500 transition-all active:scale-98 cursor-pointer disabled:opacity-70"
+                title="Download PDF"
+                aria-label="Download PDF"
+                className="shrink-0 flex items-center justify-center gap-1.5 rounded-xl bg-[#1E5EFF] dark:bg-blue-600 p-2 sm:px-4 sm:py-1.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 dark:hover:bg-blue-500 transition-all active:scale-98 cursor-pointer disabled:opacity-70"
               >
                 {isExportingPdf ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin shrink-0" />
                 ) : (
-                  <Download className="h-4 w-4" />
+                  <Download className="h-4 w-4 shrink-0" />
                 )}
-                <span>{isExportingPdf ? "Generating PDF..." : "Download PDF"}</span>
+                <span className="hidden sm:inline">{isExportingPdf ? "Generating PDF..." : "Download PDF"}</span>
               </button>
             </div>
           </div>
@@ -1851,6 +1960,22 @@ export default function ResumeBuilderPage() {
 
               {openSections.skills && (
                 <div className="p-4 pt-0 space-y-3 text-xs border-t border-slate-100 dark:border-slate-800">
+                  {profileTech.technologies.length > 0 && (
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-blue-100 bg-blue-50/60 p-3 dark:border-blue-900/50 dark:bg-blue-950/20">
+                      <div className="min-w-0 text-[11px] text-slate-600 dark:text-slate-300">
+                        <span className="font-bold text-slate-800 dark:text-white">Your profile: </span>
+                        {profileTech.technologies.join(", ")}
+                        {profileTech.level ? ` · ${profileTech.level}` : ""}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={importProfileTech}
+                        className="rounded-lg bg-[#2563EB] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-blue-700"
+                      >
+                        Add to my resume
+                      </button>
+                    </div>
+                  )}
                   <div className="pt-3">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">Languages</label>
                     <input

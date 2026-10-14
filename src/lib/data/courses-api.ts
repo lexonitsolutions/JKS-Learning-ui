@@ -1,5 +1,5 @@
 import { apiUrl } from "@/lib/api/base-url";
-import type { Course, Track } from "./courses";
+import type { Course, CourseSyllabus, Track } from "./courses";
 
 export interface BackendTopic {
   id: string;
@@ -37,6 +37,12 @@ export interface BackendCourse {
   createdAt: string;
   updatedAt: string;
   modules?: BackendModule[];
+  /** Included by the API when an administrator assigned a syllabus template. */
+  syllabusTemplate?: {
+    title?: string;
+    description?: string | null;
+    modules?: unknown;
+  } | null;
 }
 
 export function mapBackendTrack(track: string): Track {
@@ -175,9 +181,54 @@ export function extractModulesAndTopics(bc: any): { title: string; topics: strin
   return [];
 }
 
+/**
+ * Reads the syllabus template assigned to a course. Returns null when the course
+ * has none (or it has no modules) so callers can show an honest empty state
+ * instead of invented content.
+ */
+export function parseSyllabusTemplate(bc: BackendCourse): CourseSyllabus | null {
+  const tpl = bc.syllabusTemplate;
+  if (!tpl) return null;
+
+  let raw: unknown = tpl.modules;
+  if (typeof raw === "string") {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      raw = [];
+    }
+  }
+  if (!Array.isArray(raw)) return null;
+
+  const clean = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
+  const modules = [...(raw as any[])]
+    .filter((m) => m && typeof m === "object")
+    .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0))
+    .map((m, idx) => {
+      const topics: string[] = Array.isArray(m.topics)
+        ? m.topics.map((t: unknown) => (typeof t === "string" ? t.trim() : clean((t as any)?.title))).filter(Boolean)
+        : [];
+      const description = clean(m.description);
+      return {
+        title: clean(m.title) || `Module ${idx + 1}`,
+        ...(description ? { description } : {}),
+        topics,
+      };
+    });
+
+  if (modules.length === 0) return null;
+  const description = clean(tpl.description);
+  return { title: clean(tpl.title) || "Syllabus", ...(description ? { description } : {}), modules };
+}
+
 export function transformBackendCourse(bc: BackendCourse): Course {
   const track = mapBackendTrack(bc.track);
-  const modules = extractModulesAndTopics(bc);
+  const syllabus = parseSyllabusTemplate(bc);
+  // The syllabus an administrator picked for the course is authoritative; only
+  // when there is none do we fall back to what can be derived from course content.
+  const modules = syllabus
+    ? syllabus.modules.map((m) => ({ title: m.title, topics: m.topics }))
+    : extractModulesAndTopics(bc);
 
   // Extract first available video from sectionsJson or modules if demo video exists
   let demoVideoUrl = "";
@@ -238,6 +289,7 @@ export function transformBackendCourse(bc: BackendCourse): Course {
     demoVideoUrl,
     demoVideoTitle,
     modules,
+    syllabus,
   };
 }
 
@@ -263,8 +315,14 @@ export function resolveCourseThumbnail(thumb?: string | null): string | undefine
  */
 export async function fetchDbCourses(): Promise<Course[]> {
   const urlsToTry: string[] = [apiUrl("/courses")];
-  if (typeof window === "undefined" && !urlsToTry[0].includes("localhost:4000")) {
-    urlsToTry.push("http://localhost:4000/courses");
+  if (typeof window === "undefined") {
+    if (!urlsToTry[0].includes("localhost:4000")) {
+      urlsToTry.push("http://localhost:4000/courses");
+    }
+  } else if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    if (!urlsToTry[0].includes("localhost:4000")) {
+      urlsToTry.push("http://localhost:4000/courses");
+    }
   }
 
   for (const url of urlsToTry) {
@@ -277,7 +335,7 @@ export async function fetchDbCourses(): Promise<Course[]> {
 
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           return data.map((item: BackendCourse) => transformBackendCourse(item));
         }
       }
