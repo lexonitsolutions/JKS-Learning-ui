@@ -67,7 +67,29 @@ export function setStoredAccessToken(token: string | null): void {
       localStorage.setItem("jks_access_token", token);
     } else {
       localStorage.removeItem("jks_access_token");
+      localStorage.removeItem("jks_refresh_token");
     }
+  } catch {}
+}
+
+/**
+ * Cross-site browsers (frontend and API on different sites) drop the httpOnly
+ * refresh cookie, which made /auth/refresh 401 and every API call fail once the
+ * access token expired. The token is kept as a fallback and sent in the body.
+ */
+export function getStoredRefreshToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem("jks_refresh_token") || null;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredRefreshToken(token: string | null | undefined): void {
+  if (typeof window === "undefined" || !token) return;
+  try {
+    localStorage.setItem("jks_refresh_token", token);
   } catch {}
 }
 
@@ -137,6 +159,7 @@ async function refreshAuthSession(): Promise<boolean> {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
+        body: JSON.stringify({ refreshToken: getStoredRefreshToken() ?? undefined }),
       });
 
       if (res.ok) {
@@ -144,8 +167,11 @@ async function refreshAuthSession(): Promise<boolean> {
         if (data?.accessToken) {
           setStoredAccessToken(data.accessToken);
         }
+        setStoredRefreshToken(data?.refreshToken);
         return true;
       }
+      // Refresh token is dead: drop stale tokens so we stop sending them.
+      if (res.status === 401) setStoredAccessToken(null);
       return false;
     } catch {
       return false;
@@ -204,12 +230,12 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
   }
 
   // If request failed with 401 and is not an authentication endpoint, attempt transparent auto-refresh once
-  const isAuthPath =
-    path.startsWith("/auth/") ||
-    path.startsWith("auth/") ||
-    path.includes("/auth/login") ||
-    path.includes("/auth/register") ||
-    path.includes("/auth/refresh");
+  // Only credential-submitting/session-ending endpoints are excluded: a 401 there
+  // is a real answer, not an expired session. `/auth/me` MUST be refreshable,
+  // otherwise an expired access token makes the user look signed out.
+  const isAuthPath = /^\/?auth\/(login|register|refresh|logout|send-registration-otp|verify-registration-otp|forgot-password|reset-password|clerk-sync)(\/|\?|$)/.test(
+    path,
+  );
 
   if (res.status === 401 && !isAuthPath && typeof window !== "undefined") {
     const refreshed = await refreshAuthSession();

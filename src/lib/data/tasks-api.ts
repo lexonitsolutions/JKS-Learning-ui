@@ -1,14 +1,30 @@
 import { apiFetch } from "@/lib/api/base-url";
 import { getStoredCourses, syncCoursesWithBackend, type FullCourse } from "@/lib/data/courses-store";
 
+export interface TaskTestCase {
+  input: string;
+  expectedOutput: string;
+  /** Hidden cases are used for grading only; students never receive them. */
+  hidden?: boolean;
+}
+
 export interface TaskQuestion {
   id: string;
-  type: "SHORT_ANSWER" | "LONG_ANSWER" | "MCQ" | "FILE_UPLOAD";
+  type: "SHORT_ANSWER" | "LONG_ANSWER" | "MCQ" | "FILE_UPLOAD" | "CODING";
   prompt: string;
   modelAnswer?: string;
   choices?: string[];
   correctAnswer?: number;
   maxPoints?: number;
+  explanation?: string;
+  /* CODING questions (see backend common/coding-question.ts) */
+  language?: string;
+  /** Partially complete code with TODO sections for the student to finish. */
+  starterCode?: string;
+  instructions?: string;
+  testCases?: TaskTestCase[];
+  /** Server-side only; stripped before a student ever receives the question. */
+  referenceSolution?: string;
 }
 
 export interface TaskSubmissionData {
@@ -284,7 +300,9 @@ function sameAssessment(
 export function normalizeTaskQuestion(q: any, fallbackIndex = 0): TaskQuestion {
   const rawType = String(q?.type || "").toUpperCase().trim();
   let taskType: TaskQuestion["type"] = "SHORT_ANSWER";
-  if (rawType.includes("LONG") || rawType.includes("COMPREHENS") || rawType.includes("ESSAY")) {
+  if (rawType === "CODING" || rawType.includes("CODING")) {
+    taskType = "CODING";
+  } else if (rawType.includes("LONG") || rawType.includes("COMPREHENS") || rawType.includes("ESSAY")) {
     taskType = "LONG_ANSWER";
   } else if (rawType.includes("FILE") || rawType.includes("UPLOAD") || rawType.includes("PROJECT")) {
     taskType = "FILE_UPLOAD";
@@ -297,6 +315,33 @@ export function normalizeTaskQuestion(q: any, fallbackIndex = 0): TaskQuestion {
   }
 
   const isMcq = taskType === "MCQ";
+
+  if (taskType === "CODING") {
+    const rawTests = Array.isArray(q?.testCases)
+      ? q.testCases
+      : Array.isArray(q?.structuredTestCases)
+      ? q.structuredTestCases
+      : [];
+    return {
+      id: q?.id || `q-${Date.now()}-${fallbackIndex + 1}`,
+      type: "CODING",
+      prompt: q?.prompt || q?.question || "",
+      language: typeof q?.language === "string" ? q.language.toLowerCase() : undefined,
+      starterCode: typeof q?.starterCode === "string" ? q.starterCode : "",
+      instructions: typeof q?.instructions === "string" ? q.instructions : undefined,
+      testCases: rawTests
+        .filter((t: any) => t && typeof t.input === "string" && typeof t.expectedOutput === "string")
+        .map((t: any) => ({ input: t.input, expectedOutput: t.expectedOutput, hidden: !!t.hidden })),
+      referenceSolution:
+        typeof q?.referenceSolution === "string"
+          ? q.referenceSolution
+          : typeof q?.solutionCode === "string"
+          ? q.solutionCode
+          : undefined,
+      explanation: typeof q?.explanation === "string" ? q.explanation : undefined,
+      maxPoints: typeof q?.maxPoints === "number" && q.maxPoints > 0 ? q.maxPoints : 25,
+    };
+  }
 
   return {
     id: q?.id || `q-${Date.now()}-${fallbackIndex + 1}`,
@@ -726,4 +771,46 @@ export async function submitStudentTask(
   } catch (err: any) {
     return { success: false, error: err?.message || "Network error submitting task" };
   }
+}
+
+/* ── Add students to an existing assessment (additive, never replaces) ─────── */
+
+export interface EligibleStudent {
+  id: string;
+  name: string;
+  email: string;
+  /** Already holds this assessment; shown disabled so it cannot be added twice. */
+  alreadyAssigned: boolean;
+}
+
+async function readError(res: Response, fallback: string): Promise<string> {
+  try {
+    const body = await res.json();
+    const m = body?.message;
+    return Array.isArray(m) ? m.join(", ") : m || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export async function fetchEligibleStudents(sourceTaskId: string, search?: string): Promise<EligibleStudent[]> {
+  const q = search?.trim() ? `?search=${encodeURIComponent(search.trim())}` : "";
+  const res = await apiFetch(`/admin/tasks/${encodeURIComponent(sourceTaskId)}/eligible-students${q}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(await readError(res, "Could not load students."));
+  return res.json();
+}
+
+export async function addStudentsToAssessment(
+  sourceTaskId: string,
+  studentIds: string[],
+): Promise<{ added: number; skipped: { id: string; reason: string }[]; tasks: IndividualTask[] }> {
+  const res = await apiFetch("/admin/tasks/add-students", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sourceTaskId, studentIds }),
+  });
+  if (!res.ok) throw new Error(await readError(res, "Could not add students."));
+  return res.json();
 }

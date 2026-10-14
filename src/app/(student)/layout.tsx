@@ -34,6 +34,9 @@ export default async function StudentLayout({ children }: { children: React.Reac
   if (session?.role === "instructor") {
     redirect("/instructor");
   }
+  if (session?.role === "head") {
+    redirect("/head");
+  }
 
   return (
     <div className="relative flex min-h-screen text-slate-800 dark:text-slate-100 font-sans font-apple antialiased selection:bg-[#2563EB]/15 selection:text-[#2563EB]">

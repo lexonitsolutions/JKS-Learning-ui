@@ -334,7 +334,7 @@ export default function InstructorDashboardPage() {
                 </div>
                 <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">Registered Students</div>
                 <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 pt-0.5">
-                  <span>{activeStudents.length} active in course cohorts</span>
+                  <span>{activeStudents.length} active in course batches</span>
                 </div>
               </div>
             </div>

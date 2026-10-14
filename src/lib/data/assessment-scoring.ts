@@ -143,6 +143,33 @@ export function evaluateQuestionAnswer(
     };
   }
 
+  if (q.type === "CODING") {
+    // The answer is the server-recorded submission: { code, language, status,
+    // passed, total }. Graded work earns marks in proportion to tests passed;
+    // work that could not be auto-graded earns nothing until a reviewer scores it.
+    const sub = studentAns && typeof studentAns === "object" ? studentAns : null;
+    const code = typeof sub?.code === "string" ? sub.code : "";
+    const graded = sub?.status === "GRADED" && typeof sub.total === "number" && sub.total > 0;
+    const passed = graded ? Number(sub.passed) || 0 : 0;
+    const earned = graded ? Math.round(maxPts * (passed / sub.total)) : 0;
+    return {
+      id: q.id,
+      type: q.type,
+      prompt: q.prompt,
+      maxPoints: maxPts,
+      earnedPoints: earned,
+      isCorrect: graded && passed === sub.total,
+      studentAnswer: studentAns,
+      studentAnswerText: code
+        ? `${code}\n\n— ${graded ? `${passed}/${sub.total} tests passed` : "awaiting manual review"}`
+        : "(No code submitted)",
+      correctAnswerText: graded ? "All tests passing" : "Needs manual review",
+      studentChoiceIdx: null,
+      correctChoiceIdx: null,
+      matchScore: graded ? Math.round((passed / sub.total) * 100) : null,
+    };
+  }
+
   // SHORT_ANSWER / LONG_ANSWER
   const text = typeof studentAns === "string" ? studentAns.trim() : "";
   const isAnswered = text.length > 0;

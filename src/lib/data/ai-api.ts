@@ -87,6 +87,65 @@ export const fetchMyInterviews = () => aiRequest<InterviewSessionSummary[]>("/ai
 export const fetchStudentInterviews = (studentUserId: string) =>
   aiRequest<InterviewSessionSummary[]>(`/ai-interviews/admin/student/${studentUserId}`);
 
+/** Speech-to-text. Returns editable text only - nothing is submitted. */
+export async function transcribeInterviewAudio(audio: Blob): Promise<string> {
+  const form = new FormData();
+  form.append("audio", audio, audio.type.includes("ogg") ? "answer.ogg" : "answer.webm");
+  const res = await apiFetch("/ai-interviews/transcribe", { method: "POST", body: form });
+  if (!res.ok) {
+    let message = "";
+    try {
+      const body = await res.json();
+      message = Array.isArray(body?.message) ? body.message.join(", ") : body?.message ?? "";
+    } catch {
+      /* non-JSON error body */
+    }
+    throw new ApiError(message || "Could not transcribe the recording.", res.status);
+  }
+  const data = (await res.json()) as { text?: string };
+  return data.text ?? "";
+}
+
+/* ── Admin-approved AI feature access ───────────────────────────────── */
+
+export type AiFeature = "AI_MOCK_INTERVIEW" | "AI_RESUME_REVIEW";
+export type AccessStatus = "NONE" | "PENDING" | "APPROVED" | "REJECTED";
+
+export interface FeatureAccessState {
+  feature: AiFeature;
+  enrolled: boolean;
+  status: AccessStatus;
+  canUse: boolean;
+  reviewNote: string | null;
+  requestedAt: string | null;
+  message: string;
+}
+
+export interface FeatureAccessRequestRow {
+  id: string;
+  feature: AiFeature;
+  status: Exclude<AccessStatus, "NONE">;
+  message: string | null;
+  reviewNote: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+  user: { id: string; name: string; email: string };
+}
+
+export const fetchMyFeatureAccess = () => aiRequest<FeatureAccessState[]>("/feature-access/me");
+
+export const requestFeatureAccess = (feature: AiFeature, message?: string) =>
+  post<FeatureAccessState>("/feature-access/request", { feature, message });
+
+export const fetchFeatureAccessRequests = (status?: string) =>
+  aiRequest<FeatureAccessRequestRow[]>(`/feature-access/admin${status ? `?status=${status}` : ""}`);
+
+export const reviewFeatureAccessRequest = (id: string, status: "APPROVED" | "REJECTED", reviewNote?: string) =>
+  aiRequest<FeatureAccessRequestRow>(`/feature-access/admin/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status, reviewNote }),
+  });
+
 /* ── Resume ─────────────────────────────────────────────────────────── */
 
 export interface ResumeAnalysis {
@@ -143,7 +202,13 @@ export interface GeneratedQuestion {
   correctAnswer?: string;
   explanation: string;
   expectedConcepts?: string[];
+  /* Coding questions */
+  language?: string;
   starterCode?: string;
+  instructions?: string;
+  testCases?: { input: string; expectedOutput: string; hidden?: boolean }[];
+  /** Kept for grading and reviewers; never sent to students. */
+  referenceSolution?: string;
 }
 
 export const generateQuizQuestions = (input: {
@@ -151,12 +216,14 @@ export const generateQuizQuestions = (input: {
   topic: string;
   difficulty: "EASY" | "MEDIUM" | "HARD";
   mcqCount: number;
-  shortAnswerCount: number;
+  /** Medium-length written answers (previously labelled "Short"). */
+  mediumCount: number;
   codingCount: number;
+  codingLanguage?: string;
 }) =>
-  post<{ questions: GeneratedQuestion[] }>("/admin/ai/quiz/generate", {
+  post<{ questions: GeneratedQuestion[]; warnings?: string[] }>("/admin/ai/quiz/generate", {
     ...input,
-    totalQuestions: input.mcqCount + input.shortAnswerCount + input.codingCount,
+    totalQuestions: input.mcqCount + input.mediumCount + input.codingCount,
   });
 
 export interface GeneratedCurriculum {

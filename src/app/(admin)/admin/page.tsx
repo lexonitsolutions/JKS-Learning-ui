@@ -225,7 +225,7 @@ export default function AdminDashboardPage() {
           courseTitle: e.courseTitle,
           courseSlug: e.courseSlug,
           track: e.track,
-          batchTiming: e.batchTiming || "Weekday Cohort",
+          batchTiming: e.batchTiming || "Weekday Batch",
           progress: e.progress || 0,
           enrolledAt: e.enrolledAt || s.registeredAt || s.createdAt,
         });
@@ -270,7 +270,7 @@ export default function AdminDashboardPage() {
     {
       icon: GraduationCap,
       value: `${totalEnrollmentsCount}`,
-      label: "Cohort Enrollments",
+      label: "Batch Enrollments",
       growth: `${recentEnrollments.filter((e) => e.progress > 0).length} actively learning`,
       color: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50",
     },
