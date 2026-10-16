@@ -71,6 +71,11 @@ const ADMIN_EXPLORE_SECTIONS = [
     icon: ClipboardCheck,
   },
   {
+    label: "Quizzes",
+    href: "/admin/quizzes",
+    icon: ClipboardCheck,
+  },
+  {
     label: "Code Playground",
     href: "/admin/playground",
     icon: Code2,

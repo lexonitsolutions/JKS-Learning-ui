@@ -26,6 +26,8 @@ import { InAppVideoPlayer } from "@/components/ui/in-app-video-player";
 import { CourseCheckoutModal, type CheckoutCourseItem } from "@/components/dashboard/course-checkout-modal";
 import { useUser } from "@clerk/nextjs";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { getClientSessionEmail } from "@/lib/data/enrollments-api";
+import { SignInRequiredModal } from "@/components/common/sign-in-required-modal";
 import { useStudentOwnedCourses } from "@/lib/data/courses-store";
 import { useCourseReviews } from "@/lib/data/reviews-store";
 import type { Course } from "@/lib/data/courses";
@@ -38,6 +40,7 @@ export function CourseDetailView({ course }: CourseDetailViewProps) {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [lockedTopicPrompt, setLockedTopicPrompt] = useState<string | null>(null);
+  const [isSignInGateOpen, setIsSignInGateOpen] = useState(false);
 
   const { reviews: reviewsList, stats: reviewStats } = useCourseReviews(course.slug);
   const liveRating = reviewStats.totalRatings > 0 ? reviewStats.averageRating : (course.rating || 5.0);
@@ -51,6 +54,16 @@ export function CourseDetailView({ course }: CourseDetailViewProps) {
     session?.email ||
     ""
   ).toLowerCase().trim();
+
+  // Enrolling needs an account: visitors are asked to sign in or sign up first.
+  const isSignedIn = Boolean(clerkUser || session?.email || getClientSessionEmail());
+  const openCheckout = () => {
+    if (!isSignedIn) {
+      setIsSignInGateOpen(true);
+      return;
+    }
+    setIsCheckoutOpen(true);
+  };
 
   const ownedCourses = useStudentOwnedCourses(email);
   const isEnrolled = useMemo(
@@ -404,7 +417,7 @@ export function CourseDetailView({ course }: CourseDetailViewProps) {
               <MagneticButton className="mt-5 block w-full">
                 <button
                   type="button"
-                  onClick={() => setIsCheckoutOpen(true)}
+                  onClick={openCheckout}
                   className={cn(buttonVariants({ size: "lg" }), "w-full bg-[#2563EB] hover:bg-blue-700 font-bold cursor-pointer")}
                 >
                   Enroll Now
@@ -487,7 +500,7 @@ export function CourseDetailView({ course }: CourseDetailViewProps) {
                   type="button"
                   onClick={() => {
                     setIsDemoModalOpen(false);
-                    setIsCheckoutOpen(true);
+                    openCheckout();
                   }}
                   className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-blue-500/25 hover:bg-blue-600 cursor-pointer"
                 >
@@ -531,7 +544,7 @@ export function CourseDetailView({ course }: CourseDetailViewProps) {
                 type="button"
                 onClick={() => {
                   setLockedTopicPrompt(null);
-                  setIsCheckoutOpen(true);
+                  openCheckout();
                 }}
                 className="w-full rounded-xl bg-[#2563EB] hover:bg-blue-700 py-3 text-xs font-bold text-white shadow-md shadow-blue-500/20 cursor-pointer"
               >
@@ -551,6 +564,13 @@ export function CourseDetailView({ course }: CourseDetailViewProps) {
           </div>
         </div>
       )}
+
+      <SignInRequiredModal
+        isOpen={isSignInGateOpen}
+        onClose={() => setIsSignInGateOpen(false)}
+        returnTo={`/courses/${course.slug}`}
+        reason="enroll in this course"
+      />
 
       {/* SECURE COURSE CHECKOUT MODAL */}
       <CourseCheckoutModal

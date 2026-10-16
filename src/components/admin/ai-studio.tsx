@@ -72,7 +72,7 @@ const TYPE_LABEL: Record<GeneratedQuestion["type"], string> = {
 };
 
 /* ── Question generator ─────────────────────────────────────────────── */
-function QuestionGenerator({ basePath }: { basePath: "admin" | "instructor" }) {
+function QuestionGenerator({ basePath }: { basePath: "admin" | "instructor" | "head" }) {
   const [courses, setCourses] = useState<{ id: string; title: string }[]>([]);
   const [courseTitle, setCourseTitle] = useState("");
   const [topic, setTopic] = useState("");
@@ -265,7 +265,7 @@ function QuestionGenerator({ basePath }: { basePath: "admin" | "instructor" }) {
             <p role="status" className="mt-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
               Saved. Find it under{" "}
               <Link
-                href={basePath === "admin" ? "/admin/assessments?view=ai" : "/instructor/assessments?view=ai"}
+                href={`/${basePath}/assessments?view=ai`}
                 className="underline underline-offset-2"
               >
                 Assessments → AI Assessments
@@ -559,7 +559,7 @@ function StatusPanel() {
   );
 }
 
-export function AiStudio({ isAdmin }: { isAdmin: boolean }) {
+export function AiStudio({ isAdmin, workspace }: { isAdmin: boolean; workspace?: "admin" | "instructor" | "head" }) {
   const [tab, setTab] = useState<Tab>("questions");
   const tabs: { id: Tab; label: string }[] = [
     { id: "questions", label: "Question generator" },
@@ -585,7 +585,7 @@ export function AiStudio({ isAdmin }: { isAdmin: boolean }) {
           </button>
         ))}
       </div>
-      {tab === "questions" && <QuestionGenerator basePath={isAdmin ? "admin" : "instructor"} />}
+      {tab === "questions" && <QuestionGenerator basePath={workspace ?? (isAdmin ? "admin" : "instructor")} />}
       {tab === "curriculum" && <CurriculumDesigner />}
       {tab === "status" && isAdmin && <StatusPanel />}
     </div>

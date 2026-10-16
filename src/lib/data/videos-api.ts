@@ -160,3 +160,109 @@ export async function fetchVideoDetails(videoId: string): Promise<VideoMetadata>
   }
   return res.json();
 }
+
+export interface BunnyReadinessStatus {
+  isReady: boolean;
+  isProcessing: boolean;
+  isError: boolean;
+  statusText: string;
+}
+
+/**
+ * Checks Bunny Stream embed URL directly or via backend API.
+ * Bunny Stream's embed endpoints respond with Access-Control-Allow-Origin: *
+ * When transcoding: returns page with "Processing video" or temporary 500 error.
+ * When finished: returns rich player HTML (>3000 bytes, no "Processing video").
+ */
+export async function checkBunnyEmbedStatus(embedUrl: string): Promise<BunnyReadinessStatus> {
+  if (!embedUrl) {
+    return { isReady: false, isProcessing: false, isError: true, statusText: "No embed URL provided" };
+  }
+
+  // 1. Try fetching the embed HTML (cross-origin CORS is enabled by Bunny)
+  try {
+    const res = await fetch(embedUrl, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (res.status === 500 || res.status === 502 || res.status === 503 || res.status === 504) {
+      return {
+        isReady: false,
+        isProcessing: true,
+        isError: true,
+        statusText: `Bunny CDN status ${res.status}: Initializing stream cluster`,
+      };
+    }
+
+    const html = await res.text();
+
+    // Check for 500 error page inside Bunny embed
+    if (/<h1>\s*500\s*<\/h1>/i.test(html) || /<title>.*500.*<\/title>/i.test(html)) {
+      return {
+        isReady: false,
+        isProcessing: true,
+        isError: true,
+        statusText: "Bunny CDN 500: Stream initializing",
+      };
+    }
+
+    // Check for Processing video placeholder
+    if (/Processing\s+video/i.test(html)) {
+      return {
+        isReady: false,
+        isProcessing: true,
+        isError: false,
+        statusText: "Processing video on Bunny CDN (Encoding multi-resolution streams)",
+      };
+    }
+
+    // Ready player HTML
+    if (html.length > 3000 && !/Processing\s+video/i.test(html)) {
+      return {
+        isReady: true,
+        isProcessing: false,
+        isError: false,
+        statusText: "Ready",
+      };
+    }
+
+    // Default processing if neither ready nor explicit error
+    return {
+      isReady: false,
+      isProcessing: true,
+      isError: false,
+      statusText: "Processing stream...",
+    };
+  } catch (err: any) {
+    // If direct fetch fails, fallback to backend details check if videoId is present
+    const guidMatch = embedUrl.match(/[0-9a-fA-F-]{36}/);
+    if (guidMatch && guidMatch[0]) {
+      try {
+        const details = await fetchVideoDetails(guidMatch[0]);
+        if (details.status === "ready") {
+          return { isReady: true, isProcessing: false, isError: false, statusText: "Ready" };
+        }
+        return {
+          isReady: false,
+          isProcessing:
+            details.status === "processing" ||
+            details.status === "inprogress" ||
+            details.status === "uploading" ||
+            details.status === "queued" ||
+            details.status === "transcoding",
+          isError: details.status === "error" || details.status === "failed",
+          statusText: "Encoding on Bunny CDN",
+        };
+      } catch {}
+    }
+
+    return {
+      isReady: false,
+      isProcessing: true,
+      isError: false,
+      statusText: "Checking stream status...",
+    };
+  }
+}
+
