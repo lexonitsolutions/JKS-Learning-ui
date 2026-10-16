@@ -56,6 +56,7 @@ import { CourseThumbnailUploader } from "@/components/admin/course-thumbnail-upl
 import {
   requestDirectUploadTicket,
   uploadVideoToBunnyStream,
+  checkBunnyEmbedStatus,
 } from "@/lib/data/videos-api";
 
 import { VideoAssignmentManager } from "@/components/admin/video-assignment-manager";
@@ -1290,7 +1291,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
     Record<
       string,
       {
-        status: "idle" | "uploading" | "ready" | "error";
+        status: "idle" | "uploading" | "processing" | "ready" | "error";
         percent: number;
         fileName?: string;
         error?: string;
@@ -1364,23 +1365,62 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
       const finalUrl = res.iframeEmbedUrl || res.playbackUrl || ticket.uploadUrl;
       onSetUrl(finalUrl, detectedSeconds, detectedFormatted);
 
+      // Upload binary payload sent to Bunny! Transition to processing state
       setUploadProgress((prev) => ({
         ...prev,
-        [videoId]: { status: "ready", percent: 100, fileName: file.name },
+        [videoId]: { status: "processing", percent: 100, fileName: file.name },
       }));
+
+      // Background readiness poll every 6s until video completes transcoding on Bunny CDN
+      let attempts = 0;
+      const pollTimer = setInterval(async () => {
+        attempts++;
+        try {
+          const status = await checkBunnyEmbedStatus(finalUrl);
+          if (status.isReady) {
+            clearInterval(pollTimer);
+            setUploadProgress((prev) => ({
+              ...prev,
+              [videoId]: { status: "ready", percent: 100, fileName: file.name },
+            }));
+          } else if (attempts >= 60) {
+            // Stop polling after 6 mins, marked ready since upload already completed
+            clearInterval(pollTimer);
+            setUploadProgress((prev) => ({
+              ...prev,
+              [videoId]: { status: "ready", percent: 100, fileName: file.name },
+            }));
+          }
+        } catch {
+          if (attempts >= 60) clearInterval(pollTimer);
+        }
+      }, 6000);
     } catch (err: any) {
-      console.warn("Bunny Stream direct upload fallback to local preview object URL:", err);
-      const fallbackUrl = URL.createObjectURL(file);
-      onSetUrl(fallbackUrl, detectedSeconds, detectedFormatted);
+      console.error("Bunny Stream direct upload error:", err);
+      // DO NOT set fake blob fallback URL! Set error state so user can retry!
       setUploadProgress((prev) => ({
         ...prev,
-        [videoId]: { status: "ready", percent: 100, fileName: file.name },
+        [videoId]: {
+          status: "error",
+          percent: 0,
+          fileName: file.name,
+          error: err?.message || "Upload failed. Please check your network and retry.",
+        },
       }));
     }
   };
 
   // Save & Publish
   const handlePublishCourse = async (status: "Published" | "Draft" = "Published") => {
+    // Check if any video is actively uploading
+    const isAnyVideoUploading = Object.values(uploadProgress).some(
+      (p) => p.status === "uploading"
+    );
+    if (isAnyVideoUploading) {
+      setValidationError("A video is currently uploading. Please wait for the upload to finish before saving the course.");
+      return;
+    }
+
     // Validate stages 1 to 3 before submitting
     for (let s = 1; s <= 2; s++) {
       const check = validateStepWithField(s as StepNumber);
@@ -2356,6 +2396,16 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
                                                     <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600 dark:text-blue-400" />
                                                     <span>Uploading {uploadProgress[vid.id]?.percent}%...</span>
                                                   </div>
+                                                ) : uploadProgress[vid.id]?.status === "processing" ? (
+                                                  <div className="flex items-center gap-1.5 rounded-md bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                                                    <Loader2 className="h-3 w-3 animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
+                                                    <span>Uploaded! Transcoding on Bunny CDN...</span>
+                                                  </div>
+                                                ) : uploadProgress[vid.id]?.status === "error" ? (
+                                                  <div className="flex items-center gap-1.5 rounded-md bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/60 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:text-rose-400">
+                                                    <AlertCircle className="h-3 w-3 text-rose-600 dark:text-rose-400 shrink-0" />
+                                                    <span>{uploadProgress[vid.id]?.error || "Upload failed. Click Replace Video to retry."}</span>
+                                                  </div>
                                                 ) : vid.videoUrl ? (
                                                   <div className="flex items-center gap-1.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
                                                     <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -2620,6 +2670,16 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
                                         <div className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
                                           <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600 dark:text-blue-400" />
                                           <span>Uploading {uploadProgress[vid.id]?.percent}%...</span>
+                                        </div>
+                                      ) : uploadProgress[vid.id]?.status === "processing" ? (
+                                        <div className="flex items-center gap-1.5 rounded-md bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                                          <Loader2 className="h-3 w-3 animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
+                                          <span>Uploaded! Transcoding on Bunny CDN...</span>
+                                        </div>
+                                      ) : uploadProgress[vid.id]?.status === "error" ? (
+                                        <div className="flex items-center gap-1.5 rounded-md bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/60 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:text-rose-400">
+                                          <AlertCircle className="h-3 w-3 text-rose-600 dark:text-rose-400 shrink-0" />
+                                          <span>{uploadProgress[vid.id]?.error || "Upload failed. Click to retry."}</span>
                                         </div>
                                       ) : vid.videoUrl ? (
                                         <div className="flex items-center gap-1.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
