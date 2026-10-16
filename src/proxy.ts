@@ -80,7 +80,7 @@ export default function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL("/instructor", request.url));
       }
 
-      if (isStudentRoute && session.role === "head") {
+      if (isStudentRoute && !isLearningPlayer && session.role === "head") {
         return NextResponse.redirect(new URL("/head", request.url));
       }
     }

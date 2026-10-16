@@ -399,6 +399,13 @@ export function VideoAssignmentManager({
                       />
                     </div>
                   ))}
+                  <button
+                    type="button"
+                    onClick={addInterviewQuestion}
+                    className="flex w-full items-center justify-center gap-1 rounded-xl border border-dashed border-blue-300 dark:border-blue-800 py-2 text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Add Question
+                  </button>
                 </div>
               )}
             </div>
@@ -877,6 +884,13 @@ export function VideoAssignmentManager({
                       </div>
                     );
                   })}
+                  <button
+                    type="button"
+                    onClick={addQuizQuestion}
+                    className="flex w-full items-center justify-center gap-1 rounded-xl border border-dashed border-blue-300 dark:border-blue-800 py-2 text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Add Question
+                  </button>
                 </div>
               )}
             </div>

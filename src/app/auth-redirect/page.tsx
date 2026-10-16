@@ -8,6 +8,7 @@ import { JksLogo } from "@/components/common/jks-logo";
 import { GooglePhoneModal } from "@/components/common/google-phone-modal";
 import { apiUrl } from "@/lib/api/base-url";
 import { jksAnalytics } from "@/lib/analytics/jks-analytics";
+import { consumePostLoginTarget } from "@/lib/auth/post-login";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -182,6 +183,10 @@ export default function AuthRedirectPage() {
 
       const data = await res.json().catch(() => ({}));
       const info = establishRealSession(clerkUser, data?.user) || { target: "/dashboard" };
+      // A student who was sent here from a page that needed an account (the
+      // course they wanted to enroll in) goes back to it.
+      const returnTo = consumePostLoginTarget();
+      if (returnTo && info.target === "/dashboard") info.target = returnTo;
       setResolvedTargetUrl(info.target);
       setSyncStatus("success");
 

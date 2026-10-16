@@ -25,6 +25,7 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useSignIn, useSignUp } from "@clerk/nextjs/legacy";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { useMockSession, logoutMockSession } from "@/lib/auth/use-mock-auth";
+import { isSafeInternalPath, setPostLoginTarget } from "@/lib/auth/post-login";
 import {
   CheckCircle2,
   ShieldCheck,
@@ -392,6 +393,8 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
     }
 
     setOauthLoading(strategy);
+    // Come back to the page that sent the visitor here (e.g. a course page).
+    setPostLoginTarget(from);
 
     try {
       await signIn.authenticateWithRedirect({
@@ -717,7 +720,7 @@ function redirectAfterLogin(role: MockRole, from: string | null) {
     window.location.assign("/head");
     return;
   }
-  window.location.assign(from || "/dashboard");
+  window.location.assign(isSafeInternalPath(from) ? from : "/dashboard");
 }
 
 function LoginFields() {

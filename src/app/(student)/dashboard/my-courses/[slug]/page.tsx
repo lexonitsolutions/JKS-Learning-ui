@@ -61,7 +61,9 @@ import {
   type VideoItem,
   type Section,
   type SubSection,
+  DEFAULT_LEARNING_RULES,
 } from "@/lib/data/courses-store";
+import { seededShuffle } from "@/lib/utils/seeded-shuffle";
 import { InAppVideoPlayer } from "@/components/ui/in-app-video-player";
 import {
   fetchCourseProgress,
@@ -403,6 +405,8 @@ export default function CourseLearningHubPage({
     );
   }
 
+  const learningRules = course.learningRules ?? DEFAULT_LEARNING_RULES;
+
   // Calculate total items for overall progress (Direct videos first, then subsections)
   const allVideos: VideoItem[] = [];
   const allSections = course.sections || [];
@@ -446,6 +450,8 @@ export default function CourseLearningHubPage({
 
   // Check if a section is locked because previous section's assessment has not been submitted
   const getUnsubmittedPrerequisiteSection = (targetSecId: string): Section | null => {
+    // The course's stage-3 setting: with sequential unlock off, nothing is locked.
+    if (!learningRules.sequentialUnlock) return null;
     const targetIndex = allSections.findIndex((s) => s.id === targetSecId);
     if (targetIndex <= 0) return null;
     for (let i = 0; i < targetIndex; i++) {
@@ -700,8 +706,25 @@ export default function CourseLearningHubPage({
 
   const handleOpenAssignment = (sec: Section, retake: boolean = false) => {
     if (isAccessBlocked) return;
-    setActiveAssignmentSection(sec);
-    const answers = resolveAssignmentAnswers(sec, retake);
+    // Each student gets their own (stable) question order when the course asks
+    // for it. Skipped once an attempt exists so saved answers keep their place.
+    const asgId = sec.assignment.id;
+    const hasAttempt =
+      typeof assignmentScores[asgId] === "number" ||
+      completedAssignmentIds.includes(asgId) ||
+      Boolean(assignmentBreakdowns[asgId]?.length);
+    const shown: Section =
+      learningRules.shuffleQuestions && !hasAttempt && (sec.assignment.questions?.length ?? 0) > 1
+        ? {
+            ...sec,
+            assignment: {
+              ...sec.assignment,
+              questions: seededShuffle(sec.assignment.questions ?? [], `${effectiveEmail}:${asgId}`),
+            },
+          }
+        : sec;
+    setActiveAssignmentSection(shown);
+    const answers = resolveAssignmentAnswers(shown, retake);
     setActiveQuizAnswers(answers);
     setIsRetakeMode(retake);
   };
@@ -1348,7 +1371,7 @@ export default function CourseLearningHubPage({
                   videoUrl={activeVideo.videoUrl}
                   videoType={activeVideo.videoType}
                   durationFormatted={activeVideo.durationFormatted}
-                  antiSkip={true}
+                  antiSkip={learningRules.antiSkip}
                   autoPlay={autoPlayNext}
                   isPaused={Boolean(activeAssignmentSection)}
                   onVideoCompleted={() => handleVideoCompleted(activeVideo.id, false)}
