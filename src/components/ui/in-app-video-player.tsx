@@ -15,9 +15,12 @@ import {
   ExternalLink,
   AlertTriangle,
   Cloud,
+  Film,
+  Loader2,
 } from "lucide-react";
 
 import type { VideoSourceType } from "@/lib/data/courses-store";
+import { checkBunnyEmbedStatus } from "@/lib/data/videos-api";
 
 interface InAppVideoPlayerProps {
   title: string;
@@ -150,6 +153,22 @@ export function InAppVideoPlayer({
 
   const [bunnyReloadKey, setBunnyReloadKey] = useState(0);
 
+  const [bunnyStatus, setBunnyStatus] = useState<{
+    isChecking: boolean;
+    isReady: boolean;
+    isProcessing: boolean;
+    isError: boolean;
+    statusText: string;
+    countdown: number;
+  }>({
+    isChecking: false,
+    isReady: true,
+    isProcessing: false,
+    isError: false,
+    statusText: "",
+    countdown: 7,
+  });
+
   // Check external embeds (YouTube, Vimeo, Bunny Stream, Google Drive, OneDrive)
   const isYouTube = (videoType === "url" || videoType === "upload") && (cleanedUrl.includes("youtube.com") || cleanedUrl.includes("youtu.be"));
   const isVimeo = (videoType === "url" || videoType === "upload") && cleanedUrl.includes("vimeo.com");
@@ -185,6 +204,64 @@ export function InAppVideoPlayer({
   const onedriveEmbedSrc = isOneDrive ? onedriveEmbedUrlCandidate : null;
 
   const isExternalEmbed = Boolean(youTubeEmbedSrc || vimeoEmbedSrc || bunnyEmbedSrc || gdriveEmbedSrc || onedriveEmbedSrc);
+
+  const checkBunnyReadiness = async (srcUrl: string) => {
+    if (!srcUrl) return;
+    setBunnyStatus((prev) => ({ ...prev, isChecking: true }));
+    try {
+      const res = await checkBunnyEmbedStatus(srcUrl);
+      setBunnyStatus({
+        isChecking: false,
+        isReady: res.isReady,
+        isProcessing: res.isProcessing,
+        isError: res.isError,
+        statusText: res.statusText,
+        countdown: 7,
+      });
+    } catch {
+      setBunnyStatus({
+        isChecking: false,
+        isReady: true,
+        isProcessing: false,
+        isError: false,
+        statusText: "",
+        countdown: 7,
+      });
+    }
+  };
+
+  // Check Bunny video status on mount and when source or reload key changes
+  useEffect(() => {
+    if (isBunnyIframe && bunnyEmbedSrc) {
+      checkBunnyReadiness(bunnyEmbedSrc);
+    } else {
+      setBunnyStatus({
+        isChecking: false,
+        isReady: true,
+        isProcessing: false,
+        isError: false,
+        statusText: "",
+        countdown: 7,
+      });
+    }
+  }, [bunnyEmbedSrc, bunnyReloadKey, isBunnyIframe]);
+
+  // If Bunny video is processing or errored, auto-poll every 7 seconds
+  useEffect(() => {
+    if (!isBunnyIframe || !bunnyEmbedSrc || bunnyStatus.isReady) return;
+
+    const interval = setInterval(() => {
+      setBunnyStatus((prev) => {
+        if (prev.countdown <= 1) {
+          checkBunnyReadiness(bunnyEmbedSrc);
+          return { ...prev, countdown: 7 };
+        }
+        return { ...prev, countdown: prev.countdown - 1 };
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isBunnyIframe, bunnyEmbedSrc, bunnyStatus.isReady]);
 
   // Pause playback immediately if isPaused is true (e.g., student opens quiz/assessment)
   useEffect(() => {
@@ -475,16 +552,73 @@ export function InAppVideoPlayer({
             className="h-full w-full border-0"
           />
         ) : bunnyEmbedSrc ? (
-          <div className="relative h-full w-full group/bunny">
-            <iframe
-              key={`bunny-frame-${bunnyReloadKey}`}
-              src={bunnyEmbedSrc}
-              title={title}
-              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-              allowFullScreen
-              referrerPolicy="no-referrer-when-downgrade"
-              className="h-full w-full border-0"
-            />
+          <div className="relative h-full w-full group/bunny bg-slate-950">
+            {/* If Bunny video is still processing / transcoding or initializing, display premium LMS loading state */}
+            {!bunnyStatus.isReady && (bunnyStatus.isProcessing || bunnyStatus.isError) ? (
+              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-slate-950 via-[#031525] to-[#04192c]">
+                {/* Animated Pulsing Ring & Film Icon */}
+                <div className="relative mb-4 flex items-center justify-center">
+                  <div className="absolute h-20 w-20 rounded-full bg-blue-500/15 animate-ping" />
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-500/40 bg-blue-950/80 shadow-[0_0_30px_rgba(37,99,235,0.35)] backdrop-blur-md">
+                    <Film className="h-8 w-8 text-blue-400 animate-pulse" />
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[11px] font-bold text-blue-300">
+                  <Loader2 className="h-3 w-3 animate-spin text-blue-400" />
+                  <span>
+                    {bunnyStatus.isError
+                      ? "Stream Cluster Initializing (500)"
+                      : "Bunny CDN Video Transcoding in Progress"}
+                  </span>
+                </div>
+
+                <h3 className="mt-3 text-base sm:text-lg font-black text-white">
+                  {title || "Lecture Video is Encoding"}
+                </h3>
+
+                <p className="mt-1.5 max-w-md text-xs sm:text-[13px] text-slate-300 leading-relaxed">
+                  {bunnyStatus.isError
+                    ? "Bunny CDN stream cluster is allocating this video stream. The player is automatically reconnecting."
+                    : "This video was recently uploaded and Bunny CDN is encoding multi-resolution HD streams (1080p, 720p, 480p). Playback will begin automatically as soon as encoding finishes."}
+                </p>
+
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      checkBunnyReadiness(bunnyEmbedSrc);
+                      setBunnyReloadKey((k) => k + 1);
+                    }}
+                    disabled={bunnyStatus.isChecking}
+                    className="flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-blue-600/30 transition-all cursor-pointer disabled:opacity-60"
+                  >
+                    <RotateCcw className={`h-3.5 w-3.5 ${bunnyStatus.isChecking ? "animate-spin" : ""}`} />
+                    <span>{bunnyStatus.isChecking ? "Checking Status..." : "Check Status Now"}</span>
+                  </button>
+
+                  <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-2 text-[11px] font-medium text-slate-400">
+                    <span>Auto-checking in</span>
+                    <span className="font-mono font-bold text-blue-400">{bunnyStatus.countdown}s</span>
+                  </div>
+                </div>
+
+                <p className="mt-4 text-[10px] text-slate-500">
+                  Newly uploaded full-length lectures typically take 1–3 minutes to transcode. You do not need to re-upload.
+                </p>
+              </div>
+            ) : (
+              <iframe
+                key={`bunny-frame-${bunnyReloadKey}`}
+                src={bunnyEmbedSrc}
+                title={title}
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+                className="h-full w-full border-0"
+              />
+            )}
+
             {/* Bunny Stream Control Strip with Fast Reload */}
             <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-2 rounded-xl bg-slate-950/85 backdrop-blur-md px-3 py-1 border border-slate-700/60 shadow-lg text-[11px] text-white">
               <span className="flex items-center gap-1 text-[10px] font-extrabold text-blue-400 tracking-wide uppercase">
@@ -493,7 +627,10 @@ export function InAppVideoPlayer({
               <span className="text-slate-600">|</span>
               <button
                 type="button"
-                onClick={() => setBunnyReloadKey((k) => k + 1)}
+                onClick={() => {
+                  checkBunnyReadiness(bunnyEmbedSrc);
+                  setBunnyReloadKey((k) => k + 1);
+                }}
                 className="flex items-center gap-1 text-[10.5px] font-bold text-slate-200 hover:text-white transition-colors cursor-pointer"
                 title="If video was recently uploaded or showing 'Processing video', click to refresh"
               >
