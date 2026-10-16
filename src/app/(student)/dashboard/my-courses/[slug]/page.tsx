@@ -397,6 +397,50 @@ export default function CourseLearningHubPage({
     };
   }, [slug]);
 
+  // NOTE: every hook must run before the early return below. This effect used to
+  // sit after it, so the render that first had a course called one more hook than
+  // the render before it ("Rendered more hooks than during the previous render")
+  // and the whole page fell over into the generic error screen.
+  // Load (and keep fresh) the student's Playground submissions for the coding
+  // questions of the assignment that is open.
+  const codingKey = (activeAssignmentSection?.assignment?.questions ?? [])
+    .filter((q: any) => resolveAssessmentKind(q?.type, activeAssignmentSection?.assignment?.type, q) === "CODING" && q?.id)
+    .map((q: any) => q.id)
+    .join("|");
+  const activeAsgId = activeAssignmentSection?.assignment?.id;
+  useEffect(() => {
+    if (!activeAsgId || !codingKey) return;
+    let cancelled = false;
+    const load = async () => {
+      const entries = await Promise.all(
+        codingKey.split("|").map(async (qid) => {
+          try {
+            const ctx = await fetchCodeContext({ type: "COURSE_TASK", courseSlug: slug, assignmentId: activeAsgId, questionId: qid });
+            return [qid, ctx.latestSubmission] as const;
+          } catch {
+            return [qid, null] as const;
+          }
+        }),
+      );
+      if (cancelled) return;
+      setCodeSubs((prev) => {
+        const next = { ...prev };
+        for (const [qid, sub] of entries) if (sub) next[qid] = sub;
+        return next;
+      });
+    };
+    void load();
+    const onVisible = () => document.visibilityState === "visible" && void load();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeAsgId, codingKey, slug]);
+
   if (!course) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-background">
@@ -428,9 +472,10 @@ export default function CourseLearningHubPage({
   // Strict assignment verification with passing mark check
   const totalAssignments = allSections.length;
   const passedAssignments = allSections.filter((sec) => {
-    const asgId = sec.assignment.id;
+    const asgId = sec.assignment?.id;
+    if (!asgId) return false;
     const score = assignmentScores[asgId];
-    const minPass = sec.assignment.minPassingScore || 70;
+    const minPass = sec.assignment?.minPassingScore || 70;
     return completedAssignmentIds.includes(asgId) && ((typeof score === "number" && score >= minPass) || typeof score === "undefined");
   });
   const passedAssignmentsCount = passedAssignments.length;
@@ -564,8 +609,8 @@ export default function CourseLearningHubPage({
   };
 
   const resolveAssignmentAnswers = (sec: Section, retake: boolean = false) => {
-    const asgId = sec.assignment.id;
-    if (retake) {
+    const asgId = sec.assignment?.id;
+    if (!asgId || retake) {
       return {};
     }
     let existing = savedQuizAnswers[asgId];
@@ -600,7 +645,7 @@ export default function CourseLearningHubPage({
       } catch {}
     }
 
-    const questions = sec.assignment.questions || [];
+    const questions = sec.assignment?.questions || [];
     const score = assignmentScores[asgId];
     const isCompleted = completedAssignmentIds.includes(asgId) || typeof score === "number";
 
@@ -611,7 +656,7 @@ export default function CourseLearningHubPage({
       const synthesizedBreakdown: any[] = [];
 
       questions.forEach((q, idx) => {
-        const kind = resolveAssessmentKind(q.type, sec.assignment.type, q);
+        const kind = resolveAssessmentKind(q.type, sec.assignment?.type, q);
         if (kind === "MCQ") {
           const rawCorrect = q.correctIndex ?? (q as any).correctChoiceIndex ?? (q as any).correctAnswer ?? 0;
           const correctIdx = typeof rawCorrect === "number" ? rawCorrect : parseInt(String(rawCorrect), 10) || 0;
@@ -708,18 +753,19 @@ export default function CourseLearningHubPage({
     if (isAccessBlocked) return;
     // Each student gets their own (stable) question order when the course asks
     // for it. Skipped once an attempt exists so saved answers keep their place.
-    const asgId = sec.assignment.id;
+    const asgId = sec.assignment?.id;
+    if (!asgId) return;
     const hasAttempt =
       typeof assignmentScores[asgId] === "number" ||
       completedAssignmentIds.includes(asgId) ||
       Boolean(assignmentBreakdowns[asgId]?.length);
     const shown: Section =
-      learningRules.shuffleQuestions && !hasAttempt && (sec.assignment.questions?.length ?? 0) > 1
+      learningRules.shuffleQuestions && !hasAttempt && ((sec.assignment?.questions?.length ?? 0) > 1)
         ? {
             ...sec,
             assignment: {
               ...sec.assignment,
-              questions: seededShuffle(sec.assignment.questions ?? [], `${effectiveEmail}:${asgId}`),
+              questions: seededShuffle(sec.assignment?.questions ?? [], `${effectiveEmail}:${asgId}`),
             },
           }
         : sec;
@@ -728,46 +774,6 @@ export default function CourseLearningHubPage({
     setActiveQuizAnswers(answers);
     setIsRetakeMode(retake);
   };
-
-  // Load (and keep fresh) the student's Playground submissions for the coding
-  // questions of the assignment that is open.
-  const codingKey = (activeAssignmentSection?.assignment.questions ?? [])
-    .filter((q: any) => resolveAssessmentKind(q?.type, activeAssignmentSection?.assignment.type, q) === "CODING" && q?.id)
-    .map((q: any) => q.id)
-    .join("|");
-  const activeAsgId = activeAssignmentSection?.assignment.id;
-  useEffect(() => {
-    if (!activeAsgId || !codingKey) return;
-    let cancelled = false;
-    const load = async () => {
-      const entries = await Promise.all(
-        codingKey.split("|").map(async (qid) => {
-          try {
-            const ctx = await fetchCodeContext({ type: "COURSE_TASK", courseSlug: slug, assignmentId: activeAsgId, questionId: qid });
-            return [qid, ctx.latestSubmission] as const;
-          } catch {
-            return [qid, null] as const;
-          }
-        }),
-      );
-      if (cancelled) return;
-      setCodeSubs((prev) => {
-        const next = { ...prev };
-        for (const [qid, sub] of entries) if (sub) next[qid] = sub;
-        return next;
-      });
-    };
-    void load();
-    const onVisible = () => document.visibilityState === "visible" && void load();
-    document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", onVisible);
-    return () => {
-      cancelled = true;
-      document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("focus", onVisible);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeAsgId, codingKey, slug]);
 
   const countWords = (text: string) =>
     text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -796,7 +802,7 @@ export default function CourseLearningHubPage({
   };
 
   const handleSelectQuizAnswer = (qIdx: number, choiceIdx: number) => {
-    const asgId = activeAssignmentSection?.assignment.id;
+    const asgId = activeAssignmentSection?.assignment?.id;
     setActiveQuizAnswers((prev) => {
       const updated = { ...prev, [qIdx]: choiceIdx };
       if (asgId) {
@@ -812,7 +818,7 @@ export default function CourseLearningHubPage({
   };
 
   const handleToggleMultiQuizAnswer = (qIdx: number, choiceIdx: number) => {
-    const asgId = activeAssignmentSection?.assignment.id;
+    const asgId = activeAssignmentSection?.assignment?.id;
     setActiveQuizAnswers((prev) => {
       const current = Array.isArray(prev[qIdx])
         ? [...prev[qIdx]]
@@ -836,7 +842,7 @@ export default function CourseLearningHubPage({
   };
 
   const handleWriteQuizAnswer = (qIdx: number, text: string) => {
-    const asgId = activeAssignmentSection?.assignment.id;
+    const asgId = activeAssignmentSection?.assignment?.id;
     setActiveQuizAnswers((prev) => {
       const updated = { ...prev, [qIdx]: text };
       if (asgId) {
@@ -969,16 +975,17 @@ export default function CourseLearningHubPage({
     if (isSubmittingAssessment || enrollmentStatus === "ON_HOLD") return;
 
     // Belt and braces: verify all questions answered
-    const pending = (sec.assignment.questions || []).filter(
-      (q, i) => !isQuestionAnswered(q, activeQuizAnswers[i], sec.assignment.type)
+    const pending = (sec.assignment?.questions || []).filter(
+      (q, i) => !isQuestionAnswered(q, activeQuizAnswers[i], sec.assignment?.type)
     ).length;
     if (pending > 0) return;
 
     setIsSubmittingAssessment(true);
     try {
-      const asgId = sec.assignment.id;
-      const questions = sec.assignment.questions || [];
-      const minPass = sec.assignment.minPassingScore || 70;
+      const asgId = sec.assignment?.id;
+      if (!asgId) return;
+      const questions = sec.assignment?.questions || [];
+      const minPass = sec.assignment?.minPassingScore || 70;
 
       // Authoritative evaluation:
       // MCQs are graded against answer key.
@@ -998,10 +1005,10 @@ export default function CourseLearningHubPage({
         let earned = 0;
         questions.forEach((q, idx) => {
           const answer = activeQuizAnswers[idx];
-          const qScore = gradeQuestionAnswer(q, answer, sec.assignment.type);
+          const qScore = gradeQuestionAnswer(q, answer, sec.assignment?.type);
           const isCorrect = qScore >= 0.5;
           earned += isCorrect ? 1 : 0;
-          const kind = resolveAssessmentKind(q?.type, sec.assignment.type, q);
+          const kind = resolveAssessmentKind(q?.type, sec.assignment?.type, q);
 
           let explanation: string | undefined = undefined;
 
@@ -1129,7 +1136,7 @@ export default function CourseLearningHubPage({
       setEvaluationResult({
         sectionId: sec.id,
         asgId,
-        title: sec.assignment.title,
+        title: sec.assignment?.title || "Assessment",
         score: calculatedScore,
         minPass,
         passed,
@@ -1551,9 +1558,9 @@ export default function CourseLearningHubPage({
                       </div>
                     )}
                     {allSections.map((sec, secIdx) => {
-                      const asgId = sec.assignment.id;
+                      const asgId = sec.assignment?.id || "";
                       const score = assignmentScores[asgId] ?? (completedAssignmentIds.includes(asgId) ? 85 : undefined);
-                      const minPass = sec.assignment.minPassingScore || 70;
+                      const minPass = sec.assignment?.minPassingScore || 70;
                       const isPassed = completedAssignmentIds.includes(asgId) && ((typeof score === "number" && score >= minPass) || typeof score === "undefined");
                       const cooldownExpiry = assignmentCooldowns[asgId] || 0;
                       const isCooldownActive = cooldownExpiry > now;
@@ -2784,9 +2791,9 @@ export default function CourseLearningHubPage({
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Section Assignments &amp; Milestones</h3>
             {allSections.map((sec, secIdx) => {
-              const asgId = sec.assignment.id;
+              const asgId = sec.assignment?.id || "";
               const score = assignmentScores[asgId] ?? (completedAssignmentIds.includes(asgId) ? 85 : undefined);
-              const minPass = sec.assignment.minPassingScore || 70;
+              const minPass = sec.assignment?.minPassingScore || 70;
               const isPassed = completedAssignmentIds.includes(asgId) && ((typeof score === "number" && score >= minPass) || typeof score === "undefined");
               const cooldownExpiry = assignmentCooldowns[asgId] || 0;
               const isCooldownActive = cooldownExpiry > now;
@@ -2826,11 +2833,11 @@ export default function CourseLearningHubPage({
                           <ClipboardCheck className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                         )}
                         <span className="text-xs font-bold text-slate-900 dark:text-white">
-                          {sec.assignment.title}
+                          {sec.assignment?.title}
                         </span>
                       </div>
                       <div className="mt-1 text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                        Type: {sec.assignment.type} · Minimum Pass Mark: {minPass}%
+                        Type: {sec.assignment?.type} · Minimum Pass Mark: {minPass}%
                         {typeof score === "number" && (
                           <span className={`ml-2 font-bold ${isPassed ? "text-emerald-600" : "text-rose-600"}`}>
                             (Your Score: {score}%)
@@ -2926,9 +2933,9 @@ export default function CourseLearningHubPage({
           {/* SECTIONS ACCORDION LIST */}
           <div className="space-y-4">
             {allSections.map((sec, secIdx) => {
-              const asgId = sec.assignment.id;
+              const asgId = sec.assignment?.id || "";
               const score = assignmentScores[asgId] ?? (completedAssignmentIds.includes(asgId) ? 85 : undefined);
-              const minPass = sec.assignment.minPassingScore || 70;
+              const minPass = sec.assignment?.minPassingScore || 70;
               const isPassed = completedAssignmentIds.includes(asgId) && ((typeof score === "number" && score >= minPass) || typeof score === "undefined");
               const cooldownExpiry = assignmentCooldowns[asgId] || 0;
               const isCooldownActive = cooldownExpiry > now;
@@ -3354,17 +3361,17 @@ export default function CourseLearningHubPage({
 
       {/* SECTION ASSIGNMENT MODAL (With Interactive Questions & Cooldown Guard) */}
       {activeAssignmentSection && (() => {
-        const asgId = activeAssignmentSection.assignment.id;
+        const asgId = activeAssignmentSection.assignment?.id || "";
         const cooldownExpiry = assignmentCooldowns[asgId] || 0;
         const isCooldownActive = cooldownExpiry > now;
         const secondsRemaining = Math.max(0, Math.ceil((cooldownExpiry - now) / 1000));
-        const minPass = activeAssignmentSection.assignment.minPassingScore || 70;
-        const questions = activeAssignmentSection.assignment.questions || [];
+        const minPass = activeAssignmentSection.assignment?.minPassingScore || 70;
+        const questions = activeAssignmentSection.assignment?.questions || [];
         // Submission is only offered once every question has a real answer —
         // a partially filled assignment used to be submittable and scored the
         // blanks as wrong.
         const answeredCount = questions.filter((q, i) =>
-          isQuestionAnswered(q, activeQuizAnswers[i], activeAssignmentSection.assignment.type)
+          isQuestionAnswered(q, activeQuizAnswers[i], activeAssignmentSection.assignment?.type)
         ).length;
         const allQuestionsAnswered = questions.length === 0 || answeredCount === questions.length;
 
@@ -3392,7 +3399,7 @@ export default function CourseLearningHubPage({
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-base font-bold text-slate-900 truncate dark:text-white">
-                      {activeAssignmentSection.assignment.title}
+                      {activeAssignmentSection.assignment?.title}
                     </h3>
                     <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                       Section Assessment · Passing Threshold: <strong className="text-slate-800 dark:text-slate-200">{minPass}% Score</strong>
@@ -3535,7 +3542,7 @@ export default function CourseLearningHubPage({
                 )}
 
                 <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100 font-medium text-xs leading-relaxed text-slate-700 dark:bg-surface-elevated dark:border-slate-800 dark:text-slate-300">
-                  {activeAssignmentSection.assignment.description}
+                  {activeAssignmentSection.assignment?.description}
                 </div>
 
                 {questions.length > 0 ? (
@@ -3552,7 +3559,7 @@ export default function CourseLearningHubPage({
                     </div>
 
                     {questions.map((q, qIdx) => {
-                      const kind = resolveAssessmentKind(q.type, activeAssignmentSection.assignment.type, q);
+                      const kind = resolveAssessmentKind(q.type, activeAssignmentSection.assignment?.type, q);
                       const answer = activeQuizAnswers[qIdx];
                       const textAnswer = typeof answer === "string" ? answer : "";
                       const qBreakdown = isReviewMode && currentBreakdown ? currentBreakdown[qIdx] : null;
@@ -3877,7 +3884,7 @@ export default function CourseLearningHubPage({
                                   <div className="flex flex-wrap items-center gap-3">
                                     {q.id && (
                                       <Link
-                                        href={playgroundHref({ type: "COURSE_TASK", courseSlug: slug, assignmentId: activeAssignmentSection.assignment.id, questionId: q.id })}
+                                        href={playgroundHref({ type: "COURSE_TASK", courseSlug: slug, assignmentId: activeAssignmentSection.assignment?.id || "", questionId: q.id })}
                                         className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-700"
                                       >
                                         <Code2 className="h-4 w-4" /> {sub ? "Open in Playground" : "Solve in Playground"}
