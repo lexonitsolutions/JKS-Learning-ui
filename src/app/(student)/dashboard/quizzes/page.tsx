@@ -1,687 +1,321 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ClipboardCheck,
-  CheckCircle2,
-  PlayCircle,
-  Clock,
-  Award,
-  ChevronRight,
-  Sparkles,
+  ArrowLeft,
   ArrowRight,
-  X,
-  AlertCircle,
-  HelpCircle,
-  Layers,
-  Code2,
-  Server,
-  FileCode,
-  Check,
+  CheckCircle2,
+  ClipboardCheck,
+  Clock,
+  Loader2,
+  RotateCcw,
+  Trophy,
+  XCircle,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
-import { Reveal } from "@/lib/motion/reveal";
-import { TiltCard } from "@/components/interactions/tilt-card";
-import { jksAnalytics } from "@/lib/analytics/jks-analytics";
+import {
+  listQuizzes,
+  submitQuiz,
+  takeQuiz,
+  type QuizResult,
+  type StudentQuizSummary,
+  type TakeQuiz,
+} from "@/lib/data/explore-quizzes-api";
 
-interface Quiz {
-  id: string;
-  title: string;
-  category: string;
-  bannerTitle: string;
-  bannerSubtitle: string;
-  bannerBg: string;
-  questionsCount: number;
-  passPercentage: number;
-  durationMinutes: number;
-  questions: {
-    question: string;
-    options: string[];
-    correctIndex: number;
-    explanation: string;
-  }[];
-}
+const errMsg = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong. Please try again.");
 
-const QUIZZES: Quiz[] = [
-  {
-    id: "react-inception",
-    title: "React Inception Quiz",
-    category: "React & Next.js",
-    bannerTitle: "React",
-    bannerSubtitle: "Inception",
-    bannerBg: "from-cyan-900/90 via-slate-900 to-blue-950",
-    questionsCount: 5,
-    passPercentage: 60,
-    durationMinutes: 10,
-    questions: [
-      {
-        question: "What is the primary purpose of React.createElement?",
-        options: [
-          "Directly render HTML into the DOM",
-          "Create a lightweight virtual DOM object representation",
-          "Compile JSX into JavaScript bundle",
-          "Manage browser history state",
-        ],
-        correctIndex: 1,
-        explanation: "React.createElement creates and returns a new React element object representing the DOM node.",
-      },
-      {
-        question: "Why are keys important in React lists?",
-        options: [
-          "To uniquely style list elements in CSS",
-          "To help React identify which items have changed, added, or removed for efficient reconciliation",
-          "To store list items in local storage",
-          "To trigger re-renders on hover",
-        ],
-        correctIndex: 1,
-        explanation: "Keys give elements a stable identity across renders, allowing React to optimize virtual DOM diffing.",
-      },
-      {
-        question: "Which hook is used to handle side effects in React function components?",
-        options: ["useState", "useMemo", "useEffect", "useCallback"],
-        correctIndex: 2,
-        explanation: "useEffect allows you to perform side effects like data fetching, subscriptions, or manually changing the DOM.",
-      },
-      {
-        question: "What is React Reconciliation?",
-        options: [
-          "The algorithm React uses to diff one tree with another to determine which parts need to be changed",
-          "The process of transpiling TypeScript to JavaScript",
-          "Binding event handlers to DOM nodes",
-          "Exporting components to static HTML",
-        ],
-        correctIndex: 0,
-        explanation: "Reconciliation is the process through which React updates the actual DOM based on changes in virtual DOM.",
-      },
-      {
-        question: "What does the React StrictMode component do in development?",
-        options: [
-          "Enforces strict TypeScript type checking",
-          "Highlights potential problems by running certain lifecycles and effects twice in dev mode",
-          "Disables console.log statements",
-          "Prevents any state updates",
-        ],
-        correctIndex: 1,
-        explanation: "StrictMode helps identify unintended side effects by double-invoking render functions and effects in development.",
-      },
-    ],
-  },
-  {
-    id: "node-server",
-    title: "Creating a Server Quiz",
-    category: "Node.js & Backend",
-    bannerTitle: "Node.js",
-    bannerSubtitle: "Creating a Server",
-    bannerBg: "from-emerald-950 via-slate-900 to-green-950",
-    questionsCount: 8,
-    passPercentage: 60,
-    durationMinutes: 15,
-    questions: [
-      {
-        question: "Which built-in Node.js module is used to create an HTTP server?",
-        options: ["fs", "http", "path", "url"],
-        correctIndex: 1,
-        explanation: "The 'http' module allows Node.js to transfer data over the Hyper Text Transfer Protocol (HTTP).",
-      },
-      {
-        question: "What does server.listen(port) do in Node.js?",
-        options: [
-          "Stops the server after a timeout",
-          "Binds and listens for incoming TCP connections on the specified port",
-          "Logs server requests to a file",
-          "Clears the event loop queue",
-        ],
-        correctIndex: 1,
-        explanation: "server.listen starts a UNIX socket or TCP server listening for connections on the given port.",
-      },
-      {
-        question: "What is the role of the Node.js Event Loop?",
-        options: [
-          "Compile JavaScript code to machine instructions",
-          "Execute non-blocking asynchronous callbacks on a single thread",
-          "Create multi-threaded CPU clusters",
-          "Manage database transactions",
-        ],
-        correctIndex: 1,
-        explanation: "The event loop allows Node.js to perform non-blocking I/O operations despite JavaScript being single-threaded.",
-      },
-    ],
-  },
-  {
-    id: "javascript-core",
-    title: "Core JavaScript Fundamentals",
-    category: "JavaScript Core",
-    bannerTitle: "JKS",
-    bannerSubtitle: "JavaScript",
-    bannerBg: "from-amber-950 via-slate-900 to-orange-950",
-    questionsCount: 25,
-    passPercentage: 60,
-    durationMinutes: 20,
-    questions: [
-      {
-        question: "What is a Closure in JavaScript?",
-        options: [
-          "A function bundled together with references to its lexical environment",
-          "A method to close browser tabs",
-          "A syntax for terminating loops early",
-          "An object frozen with Object.freeze",
-        ],
-        correctIndex: 0,
-        explanation: "A closure gives you access to an outer function's scope from an inner function even after the outer function has executed.",
-      },
-      {
-        question: "What is the difference between '==' and '===' in JavaScript?",
-        options: [
-          "There is no difference",
-          "'==' performs type coercion before comparison; '===' checks both value and type strictly",
-          "'===' is for numbers only",
-          "'==' compares memory references",
-        ],
-        correctIndex: 1,
-        explanation: "'===' checks strict equality without type coercion.",
-      },
-    ],
-  },
-  {
-    id: "java-spring",
-    title: "Java & Spring Boot Architecture",
-    category: "Java Full Stack",
-    bannerTitle: "Spring Boot",
-    bannerSubtitle: "REST APIs & Microservices",
-    bannerBg: "from-blue-950 via-slate-900 to-indigo-950",
-    questionsCount: 15,
-    passPercentage: 70,
-    durationMinutes: 25,
-    questions: [
-      {
-        question: "What does the @RestController annotation do in Spring Boot?",
-        options: [
-          "Enables security filters",
-          "Combines @Controller and @ResponseBody, automatically serializing return values to JSON",
-          "Configures database connections",
-          "Starts an embedded Tomcat server",
-        ],
-        correctIndex: 1,
-        explanation: "@RestController is a convenience annotation that marks the request handler and binds return values directly to web responses.",
-      },
-      {
-        question: "What is Dependency Injection in Spring?",
-        options: [
-          "Importing third-party jar files",
-          "A design pattern where IoC container injects dependent objects into a class instead of manual instantiations",
-          "Injecting SQL queries into repositories",
-          "A compiler optimization tool",
-        ],
-        correctIndex: 1,
-        explanation: "Dependency Injection in Spring inverts control by providing dependencies at runtime via constructor or field injection.",
-      },
-    ],
-  },
-];
+export default function StudentQuizzesPage() {
+  const [quizzes, setQuizzes] = useState<StudentQuizSummary[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [category, setCategory] = useState("All");
 
-import { useAllCourses } from "@/lib/data/courses-store";
+  const [active, setActive] = useState<TakeQuiz | null>(null);
+  const [starting, setStarting] = useState<string | null>(null);
+  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [current, setCurrent] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<QuizResult | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-export default function QuizzesPage() {
-  const allCourses = useAllCourses();
+  const load = useCallback(async () => {
+    try {
+      setQuizzes(await listQuizzes());
+      setLoadError(null);
+    } catch (e) {
+      setLoadError(errMsg(e));
+      setQuizzes([]);
+    }
+  }, []);
 
-  // Derive dynamic quizzes from live courses & their section assessments
-  const dynamicQuizzes = React.useMemo<Quiz[]>(() => {
-    const list: Quiz[] = [];
+  useEffect(() => {
+    void load();
+  }, [load]);
 
-    allCourses.forEach((course) => {
-      (course.sections || []).forEach((sec) => {
-        if (sec.assignment && Array.isArray(sec.assignment.questions) && sec.assignment.questions.length > 0) {
-          const mcqQuestions = sec.assignment.questions.filter(
-            (q) => Array.isArray(q.choices) && q.choices.length >= 2
-          );
-          if (mcqQuestions.length > 0) {
-            list.push({
-              id: `quiz-${course.slug}-${sec.id}`,
-              title: sec.assignment.title || `${sec.title} Quiz`,
-              category: course.track,
-              bannerTitle: course.title.split(" ")[0] || "Track",
-              bannerSubtitle: sec.title,
-              bannerBg: course.slug.includes("java")
-                ? "from-blue-950 via-slate-900 to-indigo-950"
-                : course.slug.includes("frontend")
-                ? "from-cyan-950 via-slate-900 to-blue-950"
-                : "from-slate-950 via-purple-950 to-slate-900",
-              questionsCount: mcqQuestions.length,
-              passPercentage: sec.assignment.minPassingScore || 70,
-              durationMinutes: Math.max(5, mcqQuestions.length * 2),
-              questions: mcqQuestions.map((q) => ({
-                question: q.prompt,
-                options: q.choices || ["Option A", "Option B"],
-                correctIndex:
-                  typeof q.correctIndex === "number" && q.correctIndex >= 0 && q.correctIndex < (q.choices?.length || 2)
-                    ? q.correctIndex
-                    : 0,
-                explanation:
-                  q.explanation || `Review key concepts in ${sec.title} to master this assessment requirement.`,
-              })),
-            });
-          }
-        }
-      });
-    });
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    (quizzes ?? []).forEach((q) => q.category && set.add(q.category));
+    return ["All", ...Array.from(set).sort()];
+  }, [quizzes]);
 
-    return list.length > 0 ? list : QUIZZES;
-  }, [allCourses]);
+  const visible = (quizzes ?? []).filter((q) => category === "All" || q.category === category);
 
-  const categories = React.useMemo(() => {
-    const unique = Array.from(new Set(dynamicQuizzes.map((q) => q.category)));
-    return ["All Quizzes", ...unique];
-  }, [dynamicQuizzes]);
-
-  const [selectedCategory, setSelectedCategory] = useState("All Quizzes");
-  const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
-
-  // Active Quiz Running State
-  const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const filteredQuizzes =
-    selectedCategory === "All Quizzes"
-      ? dynamicQuizzes
-      : dynamicQuizzes.filter((q) => q.category === selectedCategory);
-
-  const startQuiz = (quiz: Quiz) => {
-    setActiveQuiz(quiz);
-    setCurrentQIndex(0);
-    setSelectedAnswers({});
-    setIsSubmitted(false);
-    jksAnalytics.assignmentView({
-      assignment_id: quiz.id,
-      assignment_title: quiz.title,
-      course_slug: quiz.category,
-    });
-  };
-
-  const allQuestionsAnswered =
-    activeQuiz && activeQuiz.questions.length > 0
-      ? activeQuiz.questions.every((_, idx) => selectedAnswers[idx] !== undefined)
-      : false;
-
-  const handleSubmitQuiz = () => {
-    if (!activeQuiz || !allQuestionsAnswered) return;
-    setIsSubmitted(true);
-    if (activeQuiz) {
-      const res = calculateScore();
-      jksAnalytics.assignmentSubmission({
-        assignment_id: activeQuiz.id,
-        assignment_title: activeQuiz.title,
-        course_slug: activeQuiz.category,
-        passed: res.passed,
-        score: res.percent,
-      });
+  const start = async (id: string) => {
+    setStarting(id);
+    setActionError(null);
+    try {
+      const q = await takeQuiz(id);
+      setActive(q);
+      setAnswers({});
+      setCurrent(0);
+      setResult(null);
+      setSecondsLeft(q.timeLimitMinutes ? q.timeLimitMinutes * 60 : null);
+    } catch (e) {
+      setActionError(errMsg(e));
+    } finally {
+      setStarting(null);
     }
   };
 
-  const handleSelectOption = (optIndex: number) => {
-    if (isSubmitted) return;
-    setSelectedAnswers({
-      ...selectedAnswers,
-      [currentQIndex]: optIndex,
-    });
+  const finish = useCallback(async () => {
+    if (!active || submitting) return;
+    setSubmitting(true);
+    setActionError(null);
+    try {
+      setResult(await submitQuiz(active.id, answers));
+      setSecondsLeft(null);
+      void load();
+    } catch (e) {
+      setActionError(errMsg(e));
+    } finally {
+      setSubmitting(false);
+    }
+  }, [active, answers, load, submitting]);
+
+  // Countdown; the quiz is submitted as it is when time runs out.
+  useEffect(() => {
+    if (secondsLeft === null || result) return;
+    if (secondsLeft <= 0) {
+      void finish();
+      return;
+    }
+    const t = setTimeout(() => setSecondsLeft((s) => (s === null ? s : s - 1)), 1000);
+    return () => clearTimeout(t);
+  }, [secondsLeft, result, finish]);
+
+  const close = () => {
+    setActive(null);
+    setResult(null);
+    setSecondsLeft(null);
   };
 
-  const calculateScore = () => {
-    if (!activeQuiz) return { score: 0, total: 0, percent: 0, passed: false };
-    let correct = 0;
-    activeQuiz.questions.forEach((q, idx) => {
-      const chosen = selectedAnswers[idx];
-      if (typeof chosen === "number" && chosen === q.correctIndex) {
-        correct++;
-      }
-    });
-    const percent = Math.round((correct / activeQuiz.questions.length) * 100);
-    const passed = percent >= activeQuiz.passPercentage;
-    return { score: correct, total: activeQuiz.questions.length, percent, passed };
-  };
-
-  return (
-    <>
-      <DashboardTopbar
-        title="Quizzes & Knowledge Checks"
-        subtitle="Validate your mastery with interactive, topic-focused micro quizzes."
-      />
-
-      <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
-        {/* Category Filter Chips Bar (matching reference design) */}
-        <Reveal variant="fade-up">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {categories.map((cat) => {
-              const isSelected = selectedCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`rounded-full px-4 py-2 text-xs font-bold transition-all cursor-pointer shrink-0 ${
-                    isSelected
-                      ? "bg-emerald-50 border border-emerald-300 text-emerald-700 shadow-xs dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-300"
-                      : "bg-slate-100/80 hover:bg-slate-200/80 text-slate-600 border border-transparent dark:bg-surface-elevated dark:hover:bg-surface-hover dark:text-slate-300"
-                  }`}
-                >
-                  {cat}
-                </button>
-              );
-            })}
-          </div>
-        </Reveal>
-
-        {/* Section Header: Ready to Start */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">Ready to Start</h2>
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{filteredQuizzes.length} available quizzes</span>
-        </div>
-
-        {/* Quiz Cards Grid (matching reference image) */}
-        <Reveal variant="stagger" className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {filteredQuizzes.map((quiz) => (
-            <TiltCard key={quiz.id} className="h-full">
-              <div className="flex h-full flex-col justify-between overflow-hidden rounded-[24px] border border-white/70 bg-white/85 shadow-[0_8px_30px_rgb(20,50,100,0.06)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:border-slate-800/80 dark:bg-surface-secondary/90 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] dark:hover:border-border-strong">
-                {/* 3D Top Header Banner */}
-                <div
-                  className={`relative flex h-36 w-full flex-col justify-center px-6 text-white bg-gradient-to-br ${quiz.bannerBg}`}
-                >
-                  {/* Subtle 3D Grid Overlay */}
-                  <div
-                    className="absolute inset-0 opacity-20"
-                    style={{
-                      backgroundImage: "radial-gradient(circle at 80% 20%, white 1px, transparent 1px)",
-                      backgroundSize: "20px 20px",
-                    }}
-                  />
-                  <span className="text-xl sm:text-2xl font-black tracking-tight text-white/95">
-                    {quiz.bannerTitle}
-                  </span>
-                  <span className="text-xs font-bold uppercase tracking-widest text-slate-300">
-                    {quiz.bannerSubtitle}
-                  </span>
-                </div>
-
-                {/* Card Content & Action Button */}
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white">{quiz.title}</h3>
-                      <button
-                        type="button"
-                        onClick={() => startQuiz(quiz)}
-                        className="flex items-center gap-1 rounded-xl bg-[#EA580C] px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-orange-600 transition-colors cursor-pointer"
-                      >
-                        <span>Start</span>
-                        <ChevronRight className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">Test your understanding with a quick quiz.</p>
-                  </div>
-
-                  {/* Card Meta Footer (Matching reference image) */}
-                  <div className="mt-6 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                    {/* Questions Count */}
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-[#2563EB] dark:bg-blue-950/40 dark:text-blue-400">
-                        <ClipboardCheck className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="text-[11px] font-bold text-slate-900 dark:text-white">{quiz.questionsCount} Questions</div>
-                        <div className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">
-                          TOTAL QUESTIONS
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Pass Percentage */}
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
-                        <CheckCircle2 className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="text-[11px] font-bold text-slate-900 dark:text-white">Min {quiz.passPercentage}%</div>
-                        <div className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">
-                          PASS PERCENTAGE
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TiltCard>
-          ))}
-        </Reveal>
-      </div>
-
-      {/* Interactive Quiz Runner Modal */}
-      {activeQuiz && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-slate-950/70 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={() => setActiveQuiz(null)}
-              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
-
-            {!isSubmitted ? (
-              <>
-                {/* Header */}
-                <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#2563EB] dark:text-blue-400 uppercase tracking-wider">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span>{activeQuiz.category}</span>
-                  </div>
-                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">{activeQuiz.title}</h3>
-                  <div className="mt-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    <span>
-                      Question {currentQIndex + 1} of {activeQuiz.questions.length}
-                    </span>
-                    <span className="flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400">
-                      <Clock className="h-3.5 w-3.5" /> {activeQuiz.durationMinutes} mins
-                    </span>
-                  </div>
-                </div>
-
-                {/* Question & Options */}
-                <div className="mt-5">
-                  <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug">
-                    {activeQuiz.questions[currentQIndex].question}
-                  </p>
-
-                  <div className="mt-4 space-y-2.5">
-                    {activeQuiz.questions[currentQIndex].options.map((opt, idx) => {
-                      const isChosen = selectedAnswers[currentQIndex] === idx;
-                      return (
-                        <div
-                          key={opt}
-                          onClick={() => handleSelectOption(idx)}
-                          className={`flex items-center justify-between rounded-xl border p-3.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-                            isChosen
-                              ? "border-[#2563EB] bg-blue-50/80 text-[#2563EB] dark:border-blue-500 dark:bg-blue-950/40 dark:text-blue-300 shadow-xs"
-                              : "border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-surface-elevated dark:hover:bg-surface-hover dark:text-slate-200"
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold border ${
-                                isChosen
-                                  ? "border-[#2563EB] bg-[#2563EB] text-white"
-                                  : "border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400"
-                              }`}
-                            >
-                              {String.fromCharCode(65 + idx)}
-                            </div>
-                            <span>{opt}</span>
-                          </div>
-                          {isChosen && <Check className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Footer Controls */}
-                <div className="mt-8 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
-                  <button
-                    type="button"
-                    disabled={currentQIndex === 0}
-                    onClick={() => setCurrentQIndex((prev) => Math.max(0, prev - 1))}
-                    className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    Previous
-                  </button>
-
-                  {currentQIndex < activeQuiz.questions.length - 1 ? (
-                    <button
-                      type="button"
-                      onClick={() => setCurrentQIndex((prev) => prev + 1)}
-                      className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
-                    >
-                      <span>Next</span>
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={!allQuestionsAnswered}
-                      title={
-                        !allQuestionsAnswered
-                          ? `Answer all ${activeQuiz.questions.length} questions before submitting (${Object.keys(selectedAnswers).length}/${activeQuiz.questions.length} answered).`
-                          : undefined
-                      }
-                      onClick={handleSubmitQuiz}
-                      className={`flex items-center gap-1.5 rounded-xl px-6 py-2 text-xs font-bold text-white shadow-md transition-all ${
-                        !allQuestionsAnswered
-                          ? "bg-slate-400 opacity-60 cursor-not-allowed"
-                          : "bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
-                      }`}
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span>
-                        {!allQuestionsAnswered
-                          ? `Answer All Questions (${Object.keys(selectedAnswers).length}/${activeQuiz.questions.length})`
-                          : "Submit Quiz"}
-                      </span>
-                    </button>
-                  )}
-                </div>
-              </>
-            ) : (
-              /* Quiz Score Result View */
-              <div className="text-center py-4">
-                {(() => {
-                  const res = calculateScore();
-                  return (
-                    <div>
-                      <div
-                        className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${
-                          res.passed ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400" : "bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400"
-                        }`}
-                      >
-                        {res.passed ? <Award className="h-8 w-8" /> : <AlertCircle className="h-8 w-8" />}
-                      </div>
-
-                      <h3 className="mt-4 text-2xl font-black text-slate-900 dark:text-white">
-                        {res.passed ? "Congratulations! 🎉" : "Keep Practicing! 💪"}
-                      </h3>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        {res.passed
-                          ? `You scored ${res.percent}% and successfully passed the quiz!`
-                          : `You scored ${res.percent}%. You need ${activeQuiz.passPercentage}% to pass.`}
-                      </p>
-
-                      <div className="mx-auto mt-6 max-w-xs rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-surface-elevated p-4">
-                        <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-                          <span>Correct Answers</span>
-                          <span className="text-[#2563EB] dark:text-blue-400">
-                            {res.score} / {res.total}
-                          </span>
-                        </div>
-                        <div className="mt-2 h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${res.passed ? "bg-emerald-500" : "bg-amber-500"}`}
-                            style={{ width: `${res.percent}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Question by Question Review Breakdown */}
-                      <div className="mt-6 text-left space-y-3 max-h-60 overflow-y-auto pr-1">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                          Question Review &amp; Answer Key
-                        </h4>
-                        {activeQuiz.questions.map((q, idx) => {
-                          const userAnsIdx = selectedAnswers[idx];
-                          const isCorrect = typeof userAnsIdx === "number" && userAnsIdx === q.correctIndex;
-                          const userAnsText = typeof userAnsIdx === "number" && q.options[userAnsIdx] ? q.options[userAnsIdx] : "Not answered";
-                          const correctAnsText = q.options[q.correctIndex] || "N/A";
-
-                          return (
-                            <div
-                              key={idx}
-                              className={`rounded-xl border p-3 text-xs space-y-1.5 ${
-                                isCorrect
-                                  ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-800/60 dark:bg-emerald-950/20"
-                                  : "border-rose-200 bg-rose-50/50 dark:border-rose-800/60 dark:bg-rose-950/20"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between font-bold">
-                                <span className="text-slate-800 dark:text-slate-200">
-                                  Q{idx + 1}. {q.question}
-                                </span>
-                                <span
-                                  className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
-                                    isCorrect
-                                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300"
-                                      : "bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300"
-                                  }`}
-                                >
-                                  {isCorrect ? "Correct" : "Incorrect"}
-                                </span>
-                              </div>
-                              <div className="text-[11px] space-y-0.5 pt-1">
-                                <div className={isCorrect ? "text-emerald-800 dark:text-emerald-300" : "text-rose-800 dark:text-rose-300 font-medium"}>
-                                  <span className="font-bold">Your Answer:</span> {userAnsText}
-                                </div>
-                                {!isCorrect && (
-                                  <div className="text-emerald-700 dark:text-emerald-400 font-semibold">
-                                    <span className="font-bold">Correct Answer:</span> {correctAnsText}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      <div className="mt-8 flex justify-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => startQuiz(activeQuiz)}
-                          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-surface-hover cursor-pointer"
-                        >
-                          Retake Quiz
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setActiveQuiz(null)}
-                          className="rounded-xl bg-[#2563EB] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 cursor-pointer"
-                        >
-                          Done
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
+  // ── Taking a quiz ───────────────────────────────────────────────────
+  if (active && !result) {
+    const q = active.questions[current];
+    const answered = Object.keys(answers).length;
+    const mm = secondsLeft !== null ? String(Math.floor(secondsLeft / 60)).padStart(2, "0") : null;
+    const ss = secondsLeft !== null ? String(secondsLeft % 60).padStart(2, "0") : null;
+    return (
+      <>
+        <DashboardTopbar title={active.title} subtitle={active.category ?? "Quiz"} />
+        <div className="mx-auto w-full max-w-3xl flex-1 space-y-5 p-4 sm:p-6 lg:p-8">
+          <div className="flex items-center justify-between gap-3 text-xs font-bold text-slate-600 dark:text-slate-300">
+            <span>
+              Question {current + 1} of {active.questions.length} · {answered} answered
+            </span>
+            {mm && (
+              <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 ${secondsLeft! <= 60 ? "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300" : "bg-slate-100 dark:bg-slate-800"}`}>
+                <Clock className="h-3.5 w-3.5" /> {mm}:{ss}
+              </span>
             )}
           </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+            <div className="h-full bg-[#2563EB] transition-all" style={{ width: `${((current + 1) / active.questions.length) * 100}%` }} />
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface-secondary sm:p-7">
+            <h2 className="whitespace-pre-wrap text-base font-extrabold text-slate-900 dark:text-white">{q.prompt}</h2>
+            <div className="mt-5 space-y-2.5">
+              {q.options.map((o) => {
+                const selected = answers[q.id] === o.index;
+                return (
+                  <button
+                    key={o.index}
+                    type="button"
+                    onClick={() => setAnswers((a) => ({ ...a, [q.id]: o.index }))}
+                    className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-medium transition-colors cursor-pointer ${
+                      selected
+                        ? "border-[#2563EB] bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-100"
+                        : "border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${selected ? "border-[#2563EB] bg-[#2563EB]" : "border-slate-300"}`}>
+                      {selected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                    </span>
+                    <span>{o.text}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {actionError && <p role="alert" className="text-xs font-semibold text-rose-600">{actionError}</p>}
+
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setCurrent((c) => Math.max(0, c - 1))}
+              disabled={current === 0}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold text-slate-700 disabled:opacity-40 dark:border-slate-700 dark:text-slate-200 cursor-pointer"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Previous
+            </button>
+            {current < active.questions.length - 1 ? (
+              <button
+                type="button"
+                onClick={() => setCurrent((c) => c + 1)}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 cursor-pointer"
+              >
+                Next <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void finish()}
+                disabled={submitting || answered < active.questions.length}
+                title={answered < active.questions.length ? "Answer every question to submit" : undefined}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
+              >
+                {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />} Submit quiz
+              </button>
+            )}
+          </div>
+          <button type="button" onClick={close} className="text-xs font-semibold text-slate-500 underline cursor-pointer">
+            Leave quiz
+          </button>
         </div>
-      )}
+      </>
+    );
+  }
+
+  // ── Result ──────────────────────────────────────────────────────────
+  if (active && result) {
+    return (
+      <>
+        <DashboardTopbar title={result.title} subtitle="Quiz result" />
+        <div className="mx-auto w-full max-w-3xl flex-1 space-y-5 p-4 sm:p-6 lg:p-8">
+          <div className={`rounded-3xl border p-6 text-center ${result.passed ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900/50 dark:bg-emerald-950/20" : "border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20"}`}>
+            <Trophy className={`mx-auto h-8 w-8 ${result.passed ? "text-emerald-600" : "text-amber-600"}`} />
+            <p className="mt-2 text-3xl font-black text-slate-900 dark:text-white">{result.percent}%</p>
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+              {result.correct} of {result.total} correct · pass mark {result.passPercent}%
+            </p>
+            <p className="mt-2 text-sm font-extrabold">{result.passed ? "Passed" : "Not passed yet - try again"}</p>
+          </div>
+
+          <div className="space-y-3">
+            {result.breakdown.map((b, i) => (
+              <div key={b.id} className="rounded-2xl border border-slate-200 bg-white p-4 text-sm dark:border-slate-800 dark:bg-surface-secondary">
+                <div className="flex items-start gap-2">
+                  {b.correct ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />}
+                  <p className="font-bold text-slate-900 dark:text-white">
+                    {i + 1}. {b.prompt}
+                  </p>
+                </div>
+                <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
+                  Your answer: <strong>{b.chosenIndex === null ? "Not answered" : b.choices[b.chosenIndex]}</strong>
+                </p>
+                {!b.correct && (
+                  <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                    Correct answer: <strong>{b.choices[b.correctIndex]}</strong>
+                  </p>
+                )}
+                {b.explanation && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{b.explanation}</p>}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-3">
+            <button type="button" onClick={() => void start(active.id)} className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 cursor-pointer">
+              <RotateCcw className="h-3.5 w-3.5" /> Try again
+            </button>
+            <button type="button" onClick={close} className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold text-slate-700 dark:border-slate-700 dark:text-slate-200 cursor-pointer">
+              Back to quizzes
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ── List ────────────────────────────────────────────────────────────
+  return (
+    <>
+      <DashboardTopbar title="Quizzes" subtitle="Practice quizzes published by JKS Learning. Take them any time." />
+      <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
+        {categories.length > 1 && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {categories.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCategory(c)}
+                className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold cursor-pointer ${
+                  category === c
+                    ? "border border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300"
+                    : "border border-transparent bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 dark:bg-surface-elevated dark:text-slate-300"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {actionError && <p role="alert" className="text-xs font-semibold text-rose-600">{actionError}</p>}
+        {loadError && <p role="alert" className="text-xs font-semibold text-rose-600">{loadError}</p>}
+
+        {quizzes === null ? (
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500"><Loader2 className="h-4 w-4 animate-spin" /> Loading quizzes…</div>
+        ) : visible.length === 0 && !loadError ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center dark:border-slate-700">
+            <ClipboardCheck className="mx-auto h-8 w-8 text-slate-400" />
+            <p className="mt-2 text-sm font-bold text-slate-700 dark:text-slate-200">No quizzes yet</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">New quizzes appear here as soon as they are published.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {visible.map((q) => (
+              <div key={q.id} className="flex flex-col justify-between rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface-secondary">
+                <div>
+                  {q.category && <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-300">{q.category}</span>}
+                  <h3 className="mt-2 text-base font-extrabold text-slate-900 dark:text-white">{q.title}</h3>
+                  {q.description && <p className="mt-1 line-clamp-3 text-xs text-slate-500 dark:text-slate-400">{q.description}</p>}
+                  <p className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                    <span>{q.questionCount} questions</span>
+                    <span>Pass {q.passPercent}%</span>
+                    {q.timeLimitMinutes && <span>{q.timeLimitMinutes} min</span>}
+                  </p>
+                  {q.myAttempts > 0 && (
+                    <p className={`mt-3 text-[11px] font-bold ${q.myPassed ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                      {q.myPassed ? "Passed" : "Attempted"} · best {q.myBestPercent}% · {q.myAttempts} {q.myAttempts === 1 ? "attempt" : "attempts"}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void start(q.id)}
+                  disabled={starting === q.id}
+                  className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] py-2.5 text-xs font-bold text-white hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
+                >
+                  {starting === q.id && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  {q.myAttempts > 0 ? "Take again" : "Start quiz"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { SESSION_COOKIE_NAME, decodeSession } from "@/lib/auth/session";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
@@ -27,15 +27,21 @@ export default async function StudentLayout({ children }: { children: React.Reac
     redirect("/login?blocked=1");
   }
 
-  // 3. Role-based routing
-  if (session?.role === "admin" || session?.email?.toLowerCase() === "lexonitservices@gmail.com") {
-    redirect("/admin");
-  }
-  if (session?.role === "instructor") {
-    redirect("/instructor");
-  }
-  if (session?.role === "head") {
-    redirect("/head");
+  // 3. Role-based routing. Staff may open a course in the learning player
+  // (the proxy allows it too) - "Continue to Course" must not bounce them into
+  // their own workspace; everything else under /dashboard is student-only.
+  const pathname = (await headers()).get("x-pathname") || "";
+  const isLearningPlayer = pathname.startsWith("/dashboard/my-courses/");
+  if (!isLearningPlayer) {
+    if (session?.role === "admin" || session?.email?.toLowerCase() === "lexonitservices@gmail.com") {
+      redirect("/admin");
+    }
+    if (session?.role === "instructor") {
+      redirect("/instructor");
+    }
+    if (session?.role === "head") {
+      redirect("/head");
+    }
   }
 
   return (

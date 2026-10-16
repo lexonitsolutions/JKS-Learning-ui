@@ -89,6 +89,8 @@ const ADMIN_SEC_NAV: NavItem[] = [
 const HEAD_MAIN_NAV: NavItem[] = [
   { href: "/head", label: "Overview", icon: LayoutDashboard },
   { href: "/head/batches", label: "Batches", icon: FolderTree },
+  { href: "/head/assessments", label: "Assessments", icon: ClipboardCheck },
+  { href: "/head/ai-studio", label: "AI Studio", icon: Sparkles },
 ];
 
 const HEAD_SEC_NAV: NavItem[] = [];

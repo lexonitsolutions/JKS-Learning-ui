@@ -236,6 +236,43 @@ export interface Section {
   assignment: SectionAssignment;
 }
 
+/**
+ * Stage 3 rules of the course builder, stored on the course (`learningRules`).
+ * Mirrors backend/src/common/learning-rules.ts.
+ */
+export interface LearningRules {
+  /** Each lesson stays locked until the previous lesson is watched and every
+   *  earlier section's assignment is submitted. Off = free navigation. */
+  sequentialUnlock: boolean;
+  /** No seeking past the furthest point watched. */
+  antiSkip: boolean;
+  /** A section's assignment opens only after its lessons are watched. */
+  requireFullWatchForAssignment: boolean;
+  /** Each student sees assignment / interview questions in their own order. */
+  shuffleQuestions: boolean;
+  playbackSpeedCap: "1.0x" | "1.25x" | "1.5x" | "2.0x";
+}
+
+export const DEFAULT_LEARNING_RULES: LearningRules = {
+  sequentialUnlock: true,
+  antiSkip: true,
+  requireFullWatchForAssignment: true,
+  shuffleQuestions: true,
+  playbackSpeedCap: "1.5x",
+};
+
+export function normalizeLearningRules(raw: unknown): LearningRules {
+  const src = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const out: LearningRules = { ...DEFAULT_LEARNING_RULES };
+  for (const key of ["sequentialUnlock", "antiSkip", "requireFullWatchForAssignment", "shuffleQuestions"] as const) {
+    if (typeof src[key] === "boolean") out[key] = src[key] as boolean;
+  }
+  if (["1.0x", "1.25x", "1.5x", "2.0x"].includes(src.playbackSpeedCap as string)) {
+    out.playbackSpeedCap = src.playbackSpeedCap as LearningRules["playbackSpeedCap"];
+  }
+  return out;
+}
+
 export interface FullCourse {
   id: string;
   slug: string;
@@ -257,6 +294,7 @@ export interface FullCourse {
   instructorName?: string;
   syllabusTemplateId?: string | null;
   syllabusTemplate?: any;
+  learningRules?: LearningRules;
 }
 
 export interface StudentCourseProgress {
@@ -304,7 +342,8 @@ const DEFAULT_ENROLLED_SLUGS: string[] = [];
 
 
 export function getStoredCourses(): FullCourse[] {
-  return safeLocalStorageGet<FullCourse[]>(STORAGE_KEYS.COURSES, INITIAL_COURSES);
+  const list = safeLocalStorageGet<FullCourse[]>(STORAGE_KEYS.COURSES, INITIAL_COURSES);
+  return Array.isArray(list) ? list : INITIAL_COURSES;
 }
 
 /**
@@ -399,6 +438,7 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
     sectionsJson: course.sections,
     instructorUserIds: course.instructorUserIds || ["6aafc1a7d80072434f90eb89"],
     syllabusTemplateId: course.syllabusTemplateId || null,
+    learningRules: normalizeLearningRules(course.learningRules),
   };
 
   if (!isUpdate && course.id) {
@@ -445,6 +485,7 @@ async function saveCourseToBackend(course: FullCourse): Promise<FullCourse | nul
         instructorName: dbCourse.instructorUsers?.[0]?.name || course.instructorName || "Davood Khan",
         syllabusTemplateId: dbCourse.syllabusTemplateId || course.syllabusTemplateId || null,
         syllabusTemplate: dbCourse.syllabusTemplate || course.syllabusTemplate || null,
+        learningRules: normalizeLearningRules(dbCourse.learningRules ?? course.learningRules),
       };
     } else {
       const errText = await res.text();
@@ -665,32 +706,7 @@ export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
           // Preserve rich section materials if matching sectionsJson or build from modules
           let sections: Section[] = [];
           if (Array.isArray(dbc.sectionsJson) && dbc.sectionsJson.length > 0) {
-            sections = dbc.sectionsJson.map((sec: any) => ({
-              ...sec,
-              assignment: sec.assignment
-                ? {
-                    ...sec.assignment,
-                    type: canonicalizeAssessmentType(sec.assignment.type),
-                    questions: Array.isArray(sec.assignment.questions)
-                      ? sec.assignment.questions.map((q: any) => {
-                          const rawType =
-                            q.type ||
-                            (Array.isArray(q.choices) && q.choices.length > 1
-                              ? "Multiple Choice (MCQ)"
-                              : undefined) ||
-                            (q.starterCode || q.testCases
-                              ? "Coding Challenge / Test"
-                              : undefined) ||
-                            sec.assignment?.type;
-                          return {
-                            ...q,
-                            type: canonicalizeAssessmentType(rawType),
-                          };
-                        })
-                      : [],
-                  }
-                : sec.assignment,
-            }));
+            sections = normalizeSections(dbc.sectionsJson);
           } else if (existing?.sections && existing.sections.length > 0) {
             sections = existing.sections;
           } else if (Array.isArray(dbc.modules) && dbc.modules.length > 0) {
@@ -747,6 +763,7 @@ export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
             createdAt: dbc.createdAt || existing?.createdAt || new Date().toISOString(),
             status: (dbc.status === "PUBLISHED" || dbc.status === "Published" ? "Published" : "Draft") as "Published" | "Draft",
             sections,
+            learningRules: normalizeLearningRules(dbc.learningRules),
           };
         });
 
@@ -848,7 +865,10 @@ export function useStudentOwnedCourses(userEmail?: string): FullCourse[] {
 
 export function getFullCourseBySlug(slug: string): FullCourse | undefined {
   const courses = getStoredCourses();
-  return courses.find((c) => c.slug === slug);
+  const found = courses.find((c) => c.slug === slug);
+  // Cached copies may predate the current shape (e.g. a section saved without
+  // an assignment); the learning page reads these fields unguarded.
+  return found ? { ...found, sections: normalizeSections(found.sections) } : undefined;
 }
 
 
@@ -906,13 +926,43 @@ export function normalizeDbCourse(dbCourse: any, existing?: FullCourse): FullCou
     });
   }
 
-  const sections: Section[] = rawSections.map((sec: any, idx: number) => ({
+  const sections = normalizeSections(rawSections);
+
+  const price = dbCourse?.priceCents
+    ? Math.round(dbCourse.priceCents / 100)
+    : typeof dbCourse?.price === "number"
+    ? dbCourse.price
+    : existing?.price || 0;
+
+  return buildNormalizedCourse(dbCourse, existing, sections, price);
+}
+
+/**
+ * Give every section the shape the learning page relies on: arrays for
+ * subsections / videos / questions and an assignment object (sections saved
+ * without one used to crash the player with "Cannot read properties of
+ * undefined").
+ */
+export function normalizeSections(rawSections: unknown): Section[] {
+  const list: any[] = Array.isArray(rawSections) ? rawSections : [];
+  return list.filter((sec) => sec && typeof sec === "object").map((sec: any, idx: number) => ({
+    ...sec,
     id: sec.id || `sec-${idx + 1}`,
     title: sec.title || "",
     order: sec.order || idx + 1,
     description: sec.description || "",
-    subsections: Array.isArray(sec.subsections) ? sec.subsections : [],
-    directVideos: Array.isArray(sec.directVideos) ? sec.directVideos : [],
+    subsections: (Array.isArray(sec.subsections) ? sec.subsections : [])
+      .filter((sub: any) => sub && typeof sub === "object")
+      .map((sub: any, subIdx: number) => ({
+        ...sub,
+        id: sub.id || `sub-${idx + 1}-${subIdx + 1}`,
+        title: sub.title || "",
+        order: sub.order || subIdx + 1,
+        videos: (Array.isArray(sub.videos) ? sub.videos : []).filter((v: any) => v && typeof v === "object" && v.id),
+      })),
+    directVideos: (Array.isArray(sec.directVideos) ? sec.directVideos : []).filter(
+      (v: any) => v && typeof v === "object" && v.id
+    ),
     assignment: {
       id: sec.assignment?.id || `asg-${idx + 1}`,
       title: sec.assignment?.title || "",
@@ -955,13 +1005,9 @@ export function normalizeDbCourse(dbCourse: any, existing?: FullCourse): FullCou
         : [],
     },
   }));
+}
 
-  const price = dbCourse?.priceCents
-    ? Math.round(dbCourse.priceCents / 100)
-    : typeof dbCourse?.price === "number"
-    ? dbCourse.price
-    : existing?.price || 0;
-
+function buildNormalizedCourse(dbCourse: any, existing: FullCourse | undefined, sections: Section[], price: number): FullCourse {
   return {
     id: dbCourse?.id || existing?.id || `crs-${dbCourse?.slug}`,
     slug: dbCourse?.slug || existing?.slug || "",
@@ -985,6 +1031,7 @@ export function normalizeDbCourse(dbCourse: any, existing?: FullCourse): FullCou
       : "Draft") as "Published" | "Draft",
     instructorUserIds: dbCourse?.instructorUserIds || existing?.instructorUserIds || ["6aafc1a7d80072434f90eb89"],
     instructorName: dbCourse?.instructorUsers?.[0]?.name || existing?.instructorName || "Davood Khan",
+    learningRules: normalizeLearningRules(dbCourse?.learningRules ?? existing?.learningRules),
   };
 }
 
