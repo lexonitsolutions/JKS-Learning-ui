@@ -226,6 +226,35 @@ export const generateQuizQuestions = (input: {
     totalQuestions: input.mcqCount + input.mediumCount + input.codingCount,
   });
 
+export interface GeneratedQuizItem {
+  id: string;
+  type: "MCQ";
+  prompt: string;
+  choices: string[];
+  multipleAnswers: boolean;
+  correctIndex: number;
+  correctIndices: number[];
+  correctAnswer: string;
+  correctAnswers: string[];
+  explanation: string;
+  marks: number;
+}
+
+export const generateAssessmentQuiz = (input: {
+  courseTitle: string;
+  topic: string;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
+  singleChoiceCount: number;
+  multipleAnswersCount: number;
+}) =>
+  post<{
+    courseTitle: string;
+    topic: string;
+    difficulty: string;
+    questions: GeneratedQuizItem[];
+    warnings?: string[];
+  }>("/admin/ai/quiz/generate-quiz", input);
+
 export interface GeneratedCurriculum {
   courseTitle: string;
   targetAudience: string;

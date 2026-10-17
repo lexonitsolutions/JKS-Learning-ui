@@ -1,21 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Copy, Loader2, Save, Sparkles, Wand2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Eye,
+  Globe,
+  Layers,
+  ListChecks,
+  Loader2,
+  Plus,
+  Rocket,
+  Save,
+  Sparkles,
+  Trash2,
+  Wand2,
+  X,
+} from "lucide-react";
 import {
   fetchAiHealth,
   fetchAiUsage,
+  generateAssessmentQuiz,
   generateCurriculum,
   generateQuizQuestions,
   type AiHealth,
   type AiUsage,
   type GeneratedCurriculum,
   type GeneratedQuestion,
+  type GeneratedQuizItem,
 } from "@/lib/data/ai-api";
 import { getStoredCourses } from "@/lib/data/courses-store";
 import type { TaskQuestion } from "@/lib/data/tasks-api";
 import { createTemplate } from "@/lib/data/assessment-templates-api";
+import { adminSaveQuiz, type QuizDraftQuestion } from "@/lib/data/explore-quizzes-api";
 import { CODING_LANGUAGE_OPTIONS } from "@/lib/utils/coding-question";
 
 const CARD =
@@ -25,7 +46,7 @@ const INPUT =
 const BTN =
   "inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-60";
 
-type Tab = "questions" | "curriculum" | "status";
+type Tab = "questions" | "quiz" | "curriculum" | "status";
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong. Please try again.");
 
@@ -344,7 +365,624 @@ function QuestionGenerator({ basePath }: { basePath: "admin" | "instructor" | "h
   );
 }
 
-/* ── Curriculum designer ────────────────────────────────────────────── */
+/* ── Quiz Question generator (Single choice & Multiple answers only) ── */
+function QuizQuestionGenerator({ basePath }: { basePath: "admin" | "instructor" | "head" }) {
+  const [courses, setCourses] = useState<{ id: string; title: string }[]>([]);
+  const [courseTitle, setCourseTitle] = useState("");
+  const [topic, setTopic] = useState("");
+  const [difficulty, setDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("MEDIUM");
+  const [singleChoice, setSingleChoice] = useState(3);
+  const [multipleAnswers, setMultipleAnswers] = useState(2);
+  const [passPercent, setPassPercent] = useState(60);
+  const [timeLimitMinutes, setTimeLimitMinutes] = useState<number | null>(15);
+
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [warnings, setWarnings] = useState<string[]>([]);
+  const [questions, setQuestions] = useState<GeneratedQuizItem[] | null>(null);
+  const [title, setTitle] = useState("");
+
+  const [publishing, setPublishing] = useState(false);
+  const [published, setPublished] = useState(false);
+  const [publishedQuizId, setPublishedQuizId] = useState<string | null>(null);
+
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [savedTemplate, setSavedTemplate] = useState(false);
+  const [savedTemplateId, setSavedTemplateId] = useState<string | null>(null);
+
+  useEffect(() => {
+    void Promise.resolve().then(() => {
+      const list = getStoredCourses().map((c) => ({ id: c.id, title: c.title }));
+      setCourses(list);
+      if (list[0]) {
+        setCourseTitle((cur) => cur || list[0].title);
+      }
+    });
+  }, []);
+
+  const total = singleChoice + multipleAnswers;
+
+  async function run() {
+    if (!courseTitle.trim() || !topic.trim()) {
+      setError("Enter a course and a topic first.");
+      return;
+    }
+    if (total < 1 || total > 20) {
+      setError("Choose between 1 and 20 questions in total.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setPublished(false);
+    setPublishedQuizId(null);
+    setSavedTemplate(false);
+    setSavedTemplateId(null);
+    setWarnings([]);
+    try {
+      const res = await generateAssessmentQuiz({
+        courseTitle: courseTitle.trim(),
+        topic: topic.trim(),
+        difficulty,
+        singleChoiceCount: singleChoice,
+        multipleAnswersCount: multipleAnswers,
+      });
+      setQuestions(res.questions);
+      setWarnings(res.warnings ?? []);
+      setTitle(`${topic.trim()} - Quiz`);
+    } catch (e) {
+      setError(errMsg(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Directly Publish Quiz
+  async function publishDirectly() {
+    if (!questions?.length || !title.trim() || publishing) return;
+    setPublishing(true);
+    setError(null);
+    try {
+      const draftQuestions: QuizDraftQuestion[] = questions.map((q, idx) => ({
+        id: q.id || `q-${Date.now()}-${idx}`,
+        prompt: q.prompt,
+        choices: q.choices,
+        correctIndex: q.correctIndex >= 0 ? q.correctIndex : 0,
+        correctIndices: q.correctIndices?.length ? q.correctIndices : [q.correctIndex >= 0 ? q.correctIndex : 0],
+        multipleAnswers: q.multipleAnswers,
+        explanation: q.explanation,
+      }));
+
+      const res = await adminSaveQuiz(null, {
+        title: title.trim(),
+        description: `AI-generated ${difficulty.toLowerCase()} quiz on ${topic.trim()}.`,
+        category: courseTitle.trim() || topic.trim() || "General",
+        status: "PUBLISHED",
+        passPercent: Math.max(1, Math.min(100, passPercent)),
+        timeLimitMinutes: timeLimitMinutes && timeLimitMinutes > 0 ? timeLimitMinutes : null,
+        shuffleQuestions: true,
+        shuffleOptions: true,
+        questions: draftQuestions,
+      });
+
+      setPublished(true);
+      setPublishedQuizId(res.id);
+    } catch (e) {
+      setError(errMsg(e));
+    } finally {
+      setPublishing(false);
+    }
+  }
+
+  // Save as Template
+  async function saveAsTemplate() {
+    if (!questions?.length || !title.trim() || savingTemplate) return;
+    setSavingTemplate(true);
+    setError(null);
+    try {
+      const course = courses.find((c) => c.title === courseTitle);
+      const taskQuestions: TaskQuestion[] = questions.map((q, idx) => ({
+        id: `ai-quiz-q-${Date.now()}-${idx}`,
+        type: "MCQ",
+        prompt: q.prompt,
+        choices: q.choices,
+        correctAnswer: q.correctIndex >= 0 ? q.correctIndex : 0,
+        correctAnswers: q.correctIndices?.length ? q.correctIndices : [q.correctIndex >= 0 ? q.correctIndex : 0],
+        multipleAnswers: q.multipleAnswers,
+        maxPoints: q.marks || (q.multipleAnswers ? 2 : 1),
+        explanation: q.explanation,
+      }));
+
+      const saved = await createTemplate({
+        title: title.trim(),
+        description: `Quiz template (${difficulty.toLowerCase()}) on ${topic.trim()} with single and multiple answer questions.`,
+        courseId: course && /^[a-f0-9]{24}$/i.test(course.id) ? course.id : undefined,
+        courseTitle: courseTitle.trim(),
+        topic: topic.trim(),
+        difficulty,
+        questions: taskQuestions,
+      });
+
+      setSavedTemplate(true);
+      setSavedTemplateId(saved.id);
+    } catch (e) {
+      setError(errMsg(e));
+    } finally {
+      setSavingTemplate(false);
+    }
+  }
+
+  const patchQuestion = (i: number, patch: Partial<GeneratedQuizItem>) => {
+    if (!questions) return;
+    setQuestions(questions.map((q, idx) => (idx === i ? { ...q, ...patch } : q)));
+  };
+
+  const deleteQuestion = (i: number) => {
+    if (!questions) return;
+    setQuestions(questions.filter((_, idx) => idx !== i));
+  };
+
+  const toggleOptionCorrect = (qIndex: number, optIndex: number) => {
+    if (!questions) return;
+    const q = questions[qIndex];
+    if (!q) return;
+
+    if (q.multipleAnswers) {
+      const existing = q.correctIndices || [q.correctIndex];
+      const next = existing.includes(optIndex)
+        ? existing.filter((idx) => idx !== optIndex)
+        : [...existing, optIndex];
+      if (next.length === 0) return; // Keep at least 1 correct
+      patchQuestion(qIndex, {
+        correctIndices: next,
+        correctIndex: next[0],
+        correctAnswers: next.map((idx) => q.choices[idx]),
+        correctAnswer: q.choices[next[0]],
+      });
+    } else {
+      patchQuestion(qIndex, {
+        correctIndex: optIndex,
+        correctIndices: [optIndex],
+        correctAnswer: q.choices[optIndex],
+        correctAnswers: [q.choices[optIndex]],
+      });
+    }
+  };
+
+  const addOption = (qIndex: number) => {
+    if (!questions) return;
+    const q = questions[qIndex];
+    if (!q || q.choices.length >= 6) return;
+    patchQuestion(qIndex, { choices: [...q.choices, `Option ${q.choices.length + 1}`] });
+  };
+
+  const removeOption = (qIndex: number, optIndex: number) => {
+    if (!questions) return;
+    const q = questions[qIndex];
+    if (!q || q.choices.length <= 2) return;
+    const nextChoices = q.choices.filter((_, idx) => idx !== optIndex);
+    const nextCorrectIndices = (q.correctIndices || [q.correctIndex])
+      .filter((idx) => idx !== optIndex)
+      .map((idx) => (idx > optIndex ? idx - 1 : idx));
+    const nextPrimary = nextCorrectIndices.length > 0 ? nextCorrectIndices[0] : 0;
+    patchQuestion(qIndex, {
+      choices: nextChoices,
+      correctIndices: nextCorrectIndices.length > 0 ? nextCorrectIndices : [0],
+      correctIndex: nextPrimary,
+      correctAnswer: nextChoices[nextPrimary],
+      correctAnswers: nextCorrectIndices.map((idx) => nextChoices[idx]),
+    });
+  };
+
+  const addBlankQuestion = () => {
+    const blank: GeneratedQuizItem = {
+      id: `q-${Date.now()}`,
+      type: "MCQ",
+      prompt: "New question prompt",
+      choices: ["Option A", "Option B", "Option C", "Option D"],
+      multipleAnswers: false,
+      correctIndex: 0,
+      correctIndices: [0],
+      correctAnswer: "Option A",
+      correctAnswers: ["Option A"],
+      explanation: "",
+      marks: 1,
+    };
+    setQuestions((cur) => (cur ? [...cur, blank] : [blank]));
+  };
+
+  const num = (v: string) => Math.max(0, Math.min(10, Number(v) || 0));
+
+  return (
+    <div className="space-y-5">
+      <div className={CARD}>
+        <div className="flex items-center gap-2">
+          <ListChecks className="h-5 w-5 text-[#2563EB]" />
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">Generate assessment quiz questions</h2>
+        </div>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          Generate single-choice and multiple-answers quiz questions with AI. You can publish directly to the Quizzes portal or save as a template that displays on the Quiz page.
+        </p>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Course
+            <input
+              className={`${INPUT} mt-1.5`}
+              list="ai-quiz-courses"
+              value={courseTitle}
+              onChange={(e) => setCourseTitle(e.target.value)}
+              placeholder="e.g. Java Full Stack"
+            />
+            <datalist id="ai-quiz-courses">
+              {courses.map((c) => (
+                <option key={c.id} value={c.title} />
+              ))}
+            </datalist>
+          </label>
+
+          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Topic
+            <input
+              className={`${INPUT} mt-1.5`}
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="e.g. Collections framework & Streams"
+              maxLength={120}
+            />
+          </label>
+
+          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Difficulty
+            <select
+              className={`${INPUT} mt-1.5`}
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value as typeof difficulty)}
+            >
+              <option value="EASY">Easy</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HARD">Hard</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Single Choice Questions
+            <input
+              type="number"
+              min={0}
+              max={15}
+              className={`${INPUT} mt-1.5`}
+              value={singleChoice}
+              onChange={(e) => setSingleChoice(num(e.target.value))}
+            />
+          </label>
+
+          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Multiple Answers Questions
+            <input
+              type="number"
+              min={0}
+              max={15}
+              className={`${INPUT} mt-1.5`}
+              value={multipleAnswers}
+              onChange={(e) => setMultipleAnswers(num(e.target.value))}
+            />
+          </label>
+
+          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Pass mark (%)
+            <input
+              type="number"
+              min={1}
+              max={100}
+              className={`${INPUT} mt-1.5`}
+              value={passPercent}
+              onChange={(e) => setPassPercent(Math.max(1, Math.min(100, Number(e.target.value) || 60)))}
+            />
+          </label>
+
+          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Time limit (minutes)
+            <input
+              type="number"
+              min={1}
+              max={300}
+              className={`${INPUT} mt-1.5`}
+              placeholder="e.g. 15 (empty = no limit)"
+              value={timeLimitMinutes ?? ""}
+              onChange={(e) => setTimeLimitMinutes(e.target.value === "" ? null : Math.max(1, Number(e.target.value)))}
+            />
+          </label>
+        </div>
+
+        {error && <ErrorBox message={error} />}
+
+        <button type="button" className={`${BTN} mt-5`} onClick={run} disabled={busy}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+          {busy ? "Generating Quiz…" : `Generate ${total} quiz question${total === 1 ? "" : "s"}`}
+        </button>
+      </div>
+
+      {questions && (
+        <div className={CARD}>
+          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
+            <div className="space-y-1 min-w-[260px] flex-1">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+                Quiz Title
+                <input
+                  className={`${INPUT} mt-1`}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={120}
+                />
+              </label>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={publishDirectly}
+                disabled={publishing || !title.trim()}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60 cursor-pointer"
+                title="Publish directly so students can take this quiz immediately"
+              >
+                {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : published ? <CheckCircle2 className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
+                {publishing ? "Publishing…" : published ? "Published!" : "Publish to Quizzes"}
+              </button>
+
+              <button
+                type="button"
+                onClick={saveAsTemplate}
+                disabled={savingTemplate || !title.trim()}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
+                title="Save as a reusable template that shows on the Quiz page"
+              >
+                {savingTemplate ? <Loader2 className="h-4 w-4 animate-spin" /> : savedTemplate ? <CheckCircle2 className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
+                {savingTemplate ? "Saving…" : savedTemplate ? "Template Saved!" : "Save as Template"}
+              </button>
+            </div>
+          </div>
+
+          {/* Published Alert */}
+          {published && (
+            <div className="mt-4 flex items-start justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <div>
+                  <p className="font-bold">Quiz published successfully!</p>
+                  <p className="mt-0.5 text-[11px] font-normal text-emerald-700 dark:text-emerald-400">
+                    Students can now find and take this quiz under Explore → Quizzes.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Link
+                  href="/admin/quizzes"
+                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700"
+                >
+                  <Eye className="h-3.5 w-3.5" /> View in Quizzes
+                </Link>
+                <Link
+                  href="/dashboard/quizzes"
+                  className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-300"
+                >
+                  <Globe className="h-3.5 w-3.5" /> Student View
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Template Saved Alert */}
+          {savedTemplate && (
+            <div className="mt-4 flex items-start justify-between gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-xs font-semibold text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                <div>
+                  <p className="font-bold">Saved as quiz template!</p>
+                  <p className="mt-0.5 text-[11px] font-normal text-blue-700 dark:text-blue-400">
+                    This template now displays on the Quizzes page under <strong>Quiz Templates</strong>. You can load it into the editor or publish it anytime.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/admin/quizzes?tab=templates"
+                className="inline-flex items-center gap-1 rounded-lg bg-[#2563EB] px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shrink-0"
+              >
+                <Layers className="h-3.5 w-3.5" /> View in Quiz Page Templates →
+              </Link>
+            </div>
+          )}
+
+          {warnings.length > 0 && (
+            <ul className="mt-3 space-y-1" role="status">
+              {warnings.map((w) => (
+                <li key={w} className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-300">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {w}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Question cards list */}
+          <div className="mt-5 space-y-4">
+            {questions.map((q, i) => (
+              <div key={q.id || i} className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-700 dark:bg-surface-elevated/40">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Q{i + 1}
+                    </span>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-bold ${
+                        q.multipleAnswers
+                          ? "bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300"
+                          : "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
+                      }`}
+                    >
+                      {q.multipleAnswers ? "Multiple Answers" : "Single Choice"}
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      {q.marks || (q.multipleAnswers ? 2 : 1)} marks
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        patchQuestion(i, {
+                          multipleAnswers: !q.multipleAnswers,
+                          marks: !q.multipleAnswers ? 2 : 1,
+                        })
+                      }
+                      className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10.5px] font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 cursor-pointer"
+                    >
+                      Switch to {q.multipleAnswers ? "Single Choice" : "Multiple Answers"}
+                    </button>
+                    {questions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => deleteQuestion(i)}
+                        className="text-slate-400 hover:text-rose-500 cursor-pointer p-1"
+                        title="Delete question"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Question Prompt</label>
+                  <textarea
+                    rows={2}
+                    className={`${INPUT} mt-1`}
+                    value={q.prompt}
+                    onChange={(e) => patchQuestion(i, { prompt: e.target.value })}
+                  />
+                </div>
+
+                <div className="mt-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                      Options ({q.multipleAnswers ? "Check all correct options" : "Select the single correct option"})
+                    </label>
+                    {q.choices.length < 6 && (
+                      <button
+                        type="button"
+                        onClick={() => addOption(i)}
+                        className="text-[11px] font-bold text-[#2563EB] hover:underline cursor-pointer"
+                      >
+                        + Add option
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="mt-2 space-y-2">
+                    {q.choices.map((choice, optIdx) => {
+                      const isCorrect = q.multipleAnswers
+                        ? (q.correctIndices || [q.correctIndex]).includes(optIdx)
+                        : q.correctIndex === optIdx;
+
+                      return (
+                        <div
+                          key={optIdx}
+                          className={`flex items-center gap-2 rounded-xl border p-2 transition-colors ${
+                            isCorrect
+                              ? "border-emerald-300 bg-emerald-50/60 dark:border-emerald-800 dark:bg-emerald-950/20"
+                              : "border-slate-200 bg-white dark:border-slate-700 dark:bg-surface-secondary"
+                          }`}
+                        >
+                          <input
+                            type={q.multipleAnswers ? "checkbox" : "radio"}
+                            name={`quiz-correct-${q.id || i}`}
+                            checked={isCorrect}
+                            onChange={() => toggleOptionCorrect(i, optIdx)}
+                            className={q.multipleAnswers ? "accent-purple-600 h-4 w-4 cursor-pointer" : "accent-emerald-600 h-4 w-4 cursor-pointer"}
+                            title="Mark as correct"
+                          />
+                          <input
+                            className="flex-1 bg-transparent text-xs text-slate-800 dark:text-slate-100 outline-none"
+                            value={choice}
+                            onChange={(e) => {
+                              const nextChoices = q.choices.map((c, ci) => (ci === optIdx ? e.target.value : c));
+                              patchQuestion(i, {
+                                choices: nextChoices,
+                                correctAnswer: nextChoices[q.correctIndex >= 0 ? q.correctIndex : 0],
+                                correctAnswers: (q.correctIndices || [q.correctIndex]).map((idx) => nextChoices[idx]),
+                              });
+                            }}
+                            placeholder={`Option ${optIdx + 1}`}
+                          />
+                          {isCorrect && (
+                            <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
+                              ✓ Correct
+                            </span>
+                          )}
+                          {q.choices.length > 2 && (
+                            <button
+                              type="button"
+                              onClick={() => removeOption(i, optIdx)}
+                              className="text-slate-400 hover:text-rose-500 cursor-pointer p-1"
+                              title="Remove option"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Explanation (Shown after submission)</label>
+                  <input
+                    className={`${INPUT} mt-1`}
+                    value={q.explanation || ""}
+                    onChange={(e) => patchQuestion(i, { explanation: e.target.value })}
+                    placeholder="Explanation for students..."
+                  />
+                </div>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={addBlankQuestion}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-blue-300 py-3 text-xs font-bold text-[#2563EB] hover:bg-blue-50 dark:border-blue-800 dark:hover:bg-blue-950/30 cursor-pointer"
+            >
+              <Plus className="h-4 w-4" /> Add question manually
+            </button>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={publishDirectly}
+              disabled={publishing || !title.trim()}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60 cursor-pointer shadow-sm"
+            >
+              {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : published ? <CheckCircle2 className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
+              {publishing ? "Publishing…" : published ? "Published directly!" : "Publish to Quizzes portal"}
+            </button>
+
+            <button
+              type="button"
+              onClick={saveAsTemplate}
+              disabled={savingTemplate || !title.trim()}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-blue-700 disabled:opacity-60 cursor-pointer shadow-sm"
+            >
+              {savingTemplate ? <Loader2 className="h-4 w-4 animate-spin" /> : savedTemplate ? <CheckCircle2 className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
+              {savingTemplate ? "Saving…" : savedTemplate ? "Saved as template!" : "Save as Template"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 function CurriculumDesigner() {
   const [courseTitle, setCourseTitle] = useState("");
   const [audience, setAudience] = useState("Beginners");
@@ -559,10 +1197,20 @@ function StatusPanel() {
   );
 }
 
-export function AiStudio({ isAdmin, workspace }: { isAdmin: boolean; workspace?: "admin" | "instructor" | "head" }) {
-  const [tab, setTab] = useState<Tab>("questions");
+function AiStudioContent({ isAdmin, workspace }: { isAdmin: boolean; workspace?: "admin" | "instructor" | "head" }) {
+  const searchParams = useSearchParams();
+  const requestedTab = searchParams.get("tab") as Tab | null;
+  const [tab, setTab] = useState<Tab>(requestedTab === "quiz" ? "quiz" : "questions");
+
+  useEffect(() => {
+    if (requestedTab === "quiz" || requestedTab === "questions" || requestedTab === "curriculum" || requestedTab === "status") {
+      setTab(requestedTab);
+    }
+  }, [requestedTab]);
+
   const tabs: { id: Tab; label: string }[] = [
-    { id: "questions", label: "Question generator" },
+    { id: "questions", label: "Assessment questions" },
+    { id: "quiz", label: "Quiz questions generator" },
     { id: "curriculum", label: "Curriculum designer" },
     ...(isAdmin ? [{ id: "status" as Tab, label: "Status & usage" }] : []),
   ];
@@ -574,20 +1222,29 @@ export function AiStudio({ isAdmin, workspace }: { isAdmin: boolean; workspace?:
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-colors ${
+            className={`flex items-center gap-1.5 whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-colors cursor-pointer ${
               tab === t.id
                 ? "bg-[#2563EB] text-white"
                 : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-surface-hover"
             }`}
           >
-            {t.id !== "status" && <Sparkles className="h-3.5 w-3.5" />}
+            {t.id === "quiz" ? <ListChecks className="h-3.5 w-3.5" /> : t.id !== "status" ? <Sparkles className="h-3.5 w-3.5" /> : null}
             {t.label}
           </button>
         ))}
       </div>
       {tab === "questions" && <QuestionGenerator basePath={workspace ?? (isAdmin ? "admin" : "instructor")} />}
+      {tab === "quiz" && <QuizQuestionGenerator basePath={workspace ?? (isAdmin ? "admin" : "instructor")} />}
       {tab === "curriculum" && <CurriculumDesigner />}
       {tab === "status" && isAdmin && <StatusPanel />}
     </div>
+  );
+}
+
+export function AiStudio(props: { isAdmin: boolean; workspace?: "admin" | "instructor" | "head" }) {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading AI Studio...</div>}>
+      <AiStudioContent {...props} />
+    </Suspense>
   );
 }
