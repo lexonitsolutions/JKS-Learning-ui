@@ -31,7 +31,7 @@ export default function StudentQuizzesPage() {
 
   const [active, setActive] = useState<TakeQuiz | null>(null);
   const [starting, setStarting] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [answers, setAnswers] = useState<Record<string, number | number[]>>({});
   const [current, setCurrent] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -112,9 +112,22 @@ export default function StudentQuizzesPage() {
   // ── Taking a quiz ───────────────────────────────────────────────────
   if (active && !result) {
     const q = active.questions[current];
-    const answered = Object.keys(answers).length;
+    const isMulti = q.multipleAnswers === true;
+    const currentVal = answers[q.id];
+    const answered = Object.values(answers).filter((v) => (Array.isArray(v) ? v.length > 0 : v !== undefined)).length;
     const mm = secondsLeft !== null ? String(Math.floor(secondsLeft / 60)).padStart(2, "0") : null;
     const ss = secondsLeft !== null ? String(secondsLeft % 60).padStart(2, "0") : null;
+
+    const toggleOption = (optIndex: number) => {
+      if (isMulti) {
+        const list = Array.isArray(currentVal) ? currentVal : currentVal !== undefined ? [currentVal as number] : [];
+        const next = list.includes(optIndex) ? list.filter((i) => i !== optIndex) : [...list, optIndex];
+        setAnswers((a) => ({ ...a, [q.id]: next }));
+      } else {
+        setAnswers((a) => ({ ...a, [q.id]: optIndex }));
+      }
+    };
+
     return (
       <>
         <DashboardTopbar title={active.title} subtitle={active.category ?? "Quiz"} />
@@ -134,23 +147,44 @@ export default function StudentQuizzesPage() {
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface-secondary sm:p-7">
+            <div className="mb-3">
+              <span className={`inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                isMulti
+                  ? "bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300"
+                  : "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+              }`}>
+                {isMulti ? "Multiple Answers (Select all that apply)" : "Single Choice"}
+              </span>
+            </div>
             <h2 className="whitespace-pre-wrap text-base font-extrabold text-slate-900 dark:text-white">{q.prompt}</h2>
             <div className="mt-5 space-y-2.5">
               {q.options.map((o) => {
-                const selected = answers[q.id] === o.index;
+                const selected = isMulti
+                  ? Array.isArray(currentVal) && currentVal.includes(o.index)
+                  : currentVal === o.index;
                 return (
                   <button
                     key={o.index}
                     type="button"
-                    onClick={() => setAnswers((a) => ({ ...a, [q.id]: o.index }))}
+                    onClick={() => toggleOption(o.index)}
                     className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-medium transition-colors cursor-pointer ${
                       selected
                         ? "border-[#2563EB] bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-100"
                         : "border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                     }`}
                   >
-                    <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${selected ? "border-[#2563EB] bg-[#2563EB]" : "border-slate-300"}`}>
-                      {selected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                    <span
+                      className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center border transition-colors ${
+                        isMulti ? "rounded-md" : "rounded-full"
+                      } ${selected ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-slate-300 dark:border-slate-600"}`}
+                    >
+                      {selected && (
+                        isMulti ? (
+                          <CheckCircle2 className="h-3 w-3" />
+                        ) : (
+                          <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                        )
+                      )}
                     </span>
                     <span>{o.text}</span>
                   </button>
@@ -218,16 +252,35 @@ export default function StudentQuizzesPage() {
               <div key={b.id} className="rounded-2xl border border-slate-200 bg-white p-4 text-sm dark:border-slate-800 dark:bg-surface-secondary">
                 <div className="flex items-start gap-2">
                   {b.correct ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />}
-                  <p className="font-bold text-slate-900 dark:text-white">
-                    {i + 1}. {b.prompt}
-                  </p>
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white">
+                      {i + 1}. {b.prompt}
+                    </p>
+                    {b.multipleAnswers && (
+                      <span className="mt-0.5 inline-block text-[10px] font-semibold text-purple-600 dark:text-purple-300">
+                        (Multiple answers)
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
-                  Your answer: <strong>{b.chosenIndex === null ? "Not answered" : b.choices[b.chosenIndex]}</strong>
+                  Your answer:{" "}
+                  <strong>
+                    {b.multipleAnswers && Array.isArray(b.chosenIndices) && b.chosenIndices.length > 0
+                      ? b.chosenIndices.map((ci) => b.choices[ci]).join(", ")
+                      : b.chosenIndex === null
+                      ? "Not answered"
+                      : b.choices[b.chosenIndex]}
+                  </strong>
                 </p>
                 {!b.correct && (
                   <p className="text-xs text-emerald-700 dark:text-emerald-400">
-                    Correct answer: <strong>{b.choices[b.correctIndex]}</strong>
+                    Correct answer:{" "}
+                    <strong>
+                      {b.multipleAnswers && Array.isArray(b.correctIndices) && b.correctIndices.length > 0
+                        ? b.correctIndices.map((ci) => b.choices[ci]).join(", ")
+                        : b.choices[b.correctIndex]}
+                    </strong>
                   </p>
                 )}
                 {b.explanation && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{b.explanation}</p>}

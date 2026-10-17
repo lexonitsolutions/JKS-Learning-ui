@@ -7,6 +7,8 @@ export interface QuizDraftQuestion {
   prompt: string;
   choices: string[];
   correctIndex: number;
+  correctIndices?: number[];
+  multipleAnswers?: boolean;
   explanation?: string;
 }
 
@@ -73,7 +75,12 @@ export interface TakeQuiz {
   category: string | null;
   passPercent: number;
   timeLimitMinutes: number | null;
-  questions: { id: string; prompt: string; options: { index: number; text: string }[] }[];
+  questions: {
+    id: string;
+    prompt: string;
+    multipleAnswers?: boolean;
+    options: { index: number; text: string }[];
+  }[];
 }
 
 export interface QuizResult {
@@ -89,8 +96,11 @@ export interface QuizResult {
     id: string;
     prompt: string;
     choices: string[];
+    multipleAnswers?: boolean;
     chosenIndex: number | null;
+    chosenIndices?: number[];
     correctIndex: number;
+    correctIndices?: number[];
     correct: boolean;
     explanation: string | null;
   }[];
@@ -133,7 +143,7 @@ export const adminQuizAttempts = (id: string) =>
 // Student
 export const listQuizzes = () => request<StudentQuizSummary[]>("/explore-quizzes");
 export const takeQuiz = (id: string) => request<TakeQuiz>(`/explore-quizzes/${id}`);
-export const submitQuiz = (id: string, answers: Record<string, number>) =>
+export const submitQuiz = (id: string, answers: Record<string, number | number[]>) =>
   request<QuizResult>(`/explore-quizzes/${id}/attempts`, {
     method: "POST",
     body: JSON.stringify({ answers }),
