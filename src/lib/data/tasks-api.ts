@@ -15,6 +15,8 @@ export interface TaskQuestion {
   modelAnswer?: string;
   choices?: string[];
   correctAnswer?: number;
+  correctAnswers?: number[];
+  multipleAnswers?: boolean;
   maxPoints?: number;
   explanation?: string;
   /* CODING questions (see backend common/coding-question.ts) */
