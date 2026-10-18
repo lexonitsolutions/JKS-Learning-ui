@@ -305,8 +305,20 @@ function isClerkErrorLike(val: unknown): val is ClerkErrorLike {
   );
 }
 
+const NETWORK_MESSAGE = "We couldn't reach the server. Please check your internet connection and try again.";
+
+/** Clerk surfaces dropped connections as "Network error ... Failed to fetch". */
+export function isNetworkError(err: unknown): boolean {
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return true;
+  const code = (err as { code?: unknown } | null)?.code;
+  const text = err instanceof Error ? err.message : typeof err === "string" ? err : "";
+  return code === "network_error" || /network error|failed to fetch|networkerror|load failed/i.test(text);
+}
+
 function readClerkError(err: unknown, strategy: string): string {
   const provider = PROVIDER_LABEL[strategy] ?? "this provider";
+
+  if (isNetworkError(err)) return NETWORK_MESSAGE;
 
   const code = isClerkErrorLike(err)
     ? err.code

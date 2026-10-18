@@ -29,6 +29,9 @@ import {
   Code2,
   ShieldCheck,
   UserCog,
+  BriefcaseBusiness,
+  Newspaper,
+  Trophy,
   type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -52,6 +55,8 @@ const STUDENT_MAIN_NAV: NavItem[] = [
   { href: "/dashboard/playground", label: "Code Playground", icon: Code2 },
   { href: "/dashboard/resume-builder", label: "Resume Maker", icon: FileText, badge: "New" },
   { href: "/dashboard/assessments", label: "Assessments", icon: ClipboardCheck },
+  { href: "/dashboard/jobs", label: "Jobs", icon: BriefcaseBusiness, badge: "New" },
+  { href: "/blog", label: "Blog", icon: Newspaper },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
 ];
 
@@ -73,6 +78,10 @@ const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
   { href: "/admin/ai-studio", label: "AI Studio", icon: Sparkles, badge: "New" },
   { href: "/admin/ai-access", label: "AI Access", icon: ShieldCheck },
+  { href: "/admin/jobs", label: "Jobs", icon: BriefcaseBusiness },
+  { href: "/admin/jobs-access", label: "Jobs Access", icon: ShieldCheck },
+  { href: "/admin/blog", label: "Blog", icon: Newspaper },
+  { href: "/admin/success-stories", label: "Success Stories", icon: Trophy },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
   { href: "/admin/activity-logs", label: "Activity log", icon: Activity },
   { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone },
@@ -346,7 +355,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
 
       if (isSoon) {
         return (
-          <div key={item.href} className="relative group flex items-center justify-center">
+          <div key={item.href} className={`relative group flex items-center justify-center ${isCollapsed ? "w-10 h-10 mx-auto" : "w-full"}`}>
             <div
               className={`relative flex items-center select-none cursor-not-allowed opacity-55 transition-all duration-200 ${
                 isCollapsed
@@ -387,7 +396,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
       return (
         <div
           key={item.href}
-          className="relative group flex items-center justify-center"
+          className={`relative group flex items-center justify-center ${isCollapsed ? "w-10 h-10 mx-auto" : "w-full"}`}
           onMouseEnter={() => setHoveredHref(item.href)}
           onMouseLeave={() => setHoveredHref(null)}
         >
@@ -476,22 +485,22 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
       {/* Desktop Layout Spacer to hold horizontal space in flex container */}
       <div
         className={`hidden md:block shrink-0 transition-all duration-300 ease-in-out print:hidden ${
-          isCollapsed ? "w-[78px]" : "w-[260px]"
+          isCollapsed ? "w-[80px]" : "w-[260px]"
         }`}
         aria-hidden="true"
       />
 
       {/* Desktop Fixed Sidebar (Permanently Docked to Viewport Left - Never Moves on Scroll) */}
       <aside
-        className={`hidden shrink-0 flex-col p-3 md:p-3.5 md:flex fixed top-0 left-0 bottom-0 h-screen z-40 transition-all duration-300 ease-in-out print:hidden ${
-          isCollapsed ? "w-[78px]" : "w-[260px]"
+        className={`hidden shrink-0 flex-col md:flex fixed top-0 left-0 bottom-0 h-screen z-40 transition-all duration-300 ease-in-out print:hidden ${
+          isCollapsed ? "w-[80px] p-2 md:p-2.5" : "w-[260px] p-3 md:p-3.5"
         }`}
       >
-      <div className="relative flex h-full flex-col rounded-[24px] border border-[var(--nav-border)] bg-[var(--nav-surface)] shadow-[0_12px_36px_-6px_rgba(20,50,100,0.08),0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_12px_36px_-6px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all duration-300 overflow-hidden">
+      <div className="relative flex h-full flex-col rounded-[22px] border border-[var(--nav-border)] bg-[var(--nav-surface)] shadow-[0_12px_36px_-6px_rgba(20,50,100,0.08),0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_12px_36px_-6px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all duration-300 overflow-hidden">
         {/* Header: Logo & Toggle */}
         <div
-          className={`flex h-[72px] shrink-0 items-center border-b border-border-subtle transition-all duration-300 ${
-            isCollapsed ? "flex-col justify-center gap-1 px-2" : "items-center px-4"
+          className={`flex h-[68px] shrink-0 items-center border-b border-border-subtle transition-all duration-300 ${
+            isCollapsed ? "justify-center px-1" : "items-center px-4"
           }`}
         >
           {!isCollapsed ? (
@@ -545,29 +554,31 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
         {/* Navigation Items */}
         <nav
           className={`flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 ${
-            isCollapsed ? "space-y-2 py-3 px-2" : "space-y-1 py-3 px-3"
+            isCollapsed
+              ? "space-y-1.5 py-3 px-1.5 scrollbar-none flex flex-col items-center"
+              : "space-y-1 py-3 px-3 scrollbar-subtle"
           }`}
         >
           {/* Main Section */}
-          <div className={isCollapsed ? "space-y-2" : "space-y-1"}>
+          <div className={isCollapsed ? "space-y-1.5 w-full flex flex-col items-center" : "space-y-1"}>
             {renderNavGroup(mainItems)}
           </div>
 
           {/* Section Divider */}
-          <div className={`my-2.5 flex items-center justify-center ${isCollapsed ? "px-1" : "px-2"}`}>
-            <div className="h-px w-full bg-slate-100 dark:bg-slate-800" />
+          <div className={`my-2 flex items-center justify-center w-full ${isCollapsed ? "px-1" : "px-2"}`}>
+            <div className={`h-px bg-slate-200/80 dark:bg-slate-800/80 transition-all ${isCollapsed ? "w-8" : "w-full"}`} />
           </div>
 
           {/* Secondary Section */}
-          <div className={isCollapsed ? "space-y-2" : "space-y-1"}>
+          <div className={isCollapsed ? "space-y-1.5 w-full flex flex-col items-center" : "space-y-1"}>
             {renderNavGroup(secItems)}
           </div>
         </nav>
 
         {/* Footer: User Profile & Quick Actions */}
         <div
-          className={`shrink-0 border-t border-slate-100/70 dark:border-slate-800/80 p-2.5 transition-all duration-300 ${
-            isCollapsed ? "flex flex-col items-center gap-2" : ""
+          className={`shrink-0 border-t border-slate-100/70 dark:border-slate-800/80 transition-all duration-300 ${
+            isCollapsed ? "flex flex-col items-center gap-2 p-2" : "p-2.5"
           }`}
         >
           {!isCollapsed ? (

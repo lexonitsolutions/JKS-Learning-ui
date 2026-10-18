@@ -29,12 +29,14 @@ import {
   Lock,
   X,
   AlertCircle,
+  Gift,
 } from "lucide-react";
 import { JksLogo } from "@/components/common/jks-logo";
 import { registerCourseOnline, createInvoice, type Invoice } from "@/lib/data/invoices-store";
 import { enrollStudentCourse } from "@/lib/data/courses-store";
 import { InvoiceModal } from "@/components/common/invoice-modal";
 import { validateCoupon } from "@/lib/data/enrollments-api";
+import { validateReferralCode } from "@/lib/data/referrals-api";
 
 
 import { useAuth, useUser } from "@clerk/nextjs";
@@ -193,6 +195,15 @@ function CourseRegistrationContent() {
   const [couponError, setCouponError] = useState<string>("");
   const [isValidatingCoupon, setIsValidatingCoupon] = useState<boolean>(false);
 
+  // Referral state
+  const preSelectedRef = searchParams?.get("ref") || searchParams?.get("referral") || "";
+  const [referralCode, setReferralCode] = useState(preSelectedRef);
+  const [referralApplied, setReferralApplied] = useState(false);
+  const [referralDiscountRupees, setReferralDiscountRupees] = useState<number>(0);
+  const [referralMessage, setReferralMessage] = useState<string>("");
+  const [referralError, setReferralError] = useState<string>("");
+  const [isValidatingReferral, setIsValidatingReferral] = useState<boolean>(false);
+
   const [paymentMode, setPaymentMode] = useState<Invoice["paymentMode"]>("UPI");
   const [isProcessing, setIsProcessing] = useState(false);
   const [generatedInvoice, setGeneratedInvoice] = useState<Invoice | null>(null);
@@ -201,19 +212,22 @@ function CourseRegistrationContent() {
 
   // Recalculate discount
   const coursePrice = selectedCourse?.price ?? 0;
-  const finalDiscount = couponApplied
+  const couponDiscountAmount = couponApplied
     ? isFullDiscount
       ? coursePrice
       : Math.round(coursePrice * ((couponDiscountPercent || 10) / 100))
     : 0;
-  const netPayable = Math.max(0, coursePrice - finalDiscount);
-  const taxableAmount = +(netPayable / 1.18).toFixed(2);
-  const totalTax = +(netPayable - taxableAmount).toFixed(2);
-  const cgst = +(totalTax / 2).toFixed(2);
-  const sgst = +(totalTax / 2).toFixed(2);
+  const referralDiscountAmount = referralApplied ? referralDiscountRupees : 0;
+  const totalCombinedDiscount = Math.min(coursePrice, couponDiscountAmount + referralDiscountAmount);
+  const finalDiscount = totalCombinedDiscount;
+  const netPayable = Math.max(0, coursePrice - totalCombinedDiscount);
+  const taxableAmount = netPayable;
+  const totalTax = 0;
+  const cgst = 0;
+  const sgst = 0;
 
-  const handleApplyCoupon = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleApplyCoupon = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setCouponError("");
     setCouponMessage("");
     const cleaned = couponCode.trim().toUpperCase();
@@ -254,6 +268,50 @@ function CourseRegistrationContent() {
     }
   };
 
+  const handleApplyReferral = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setReferralError("");
+    setReferralMessage("");
+    const cleaned = referralCode.trim().toUpperCase();
+    if (!cleaned) {
+      setReferralApplied(false);
+      setReferralDiscountRupees(0);
+      return;
+    }
+    setIsValidatingReferral(true);
+    try {
+      const res = await validateReferralCode(cleaned, selectedCourse?.slug);
+      if (res.valid) {
+        setReferralApplied(true);
+        let disc = 0;
+        if (res.refereeDiscountType === "PERCENT") {
+          disc = Math.round(coursePrice * (res.refereeDiscountValue / 100));
+        } else {
+          disc = res.refereeDiscountValue; // in Rupees
+        }
+        setReferralDiscountRupees(disc);
+        setReferralMessage(res.message || `Referral discount of ₹${disc.toLocaleString("en-IN")} applied!`);
+      } else {
+        setReferralApplied(false);
+        setReferralDiscountRupees(0);
+        setReferralError(res.message || "Invalid referral code.");
+      }
+    } catch {
+      setReferralApplied(false);
+      setReferralDiscountRupees(0);
+      setReferralError("Could not validate referral code.");
+    } finally {
+      setIsValidatingReferral(false);
+    }
+  };
+
+  // Auto-validate URL referral parameter when course becomes available
+  React.useEffect(() => {
+    if (preSelectedRef && selectedCourse && !referralApplied) {
+      handleApplyReferral();
+    }
+  }, [preSelectedRef, selectedCourse]);
+
   const handleStep1Continue = () => {
     if (!selectedCourse || !selectedBatch) return;
     if (!isUserAuthenticated) {
@@ -291,6 +349,7 @@ function CourseRegistrationContent() {
         price: selectedCourse.price,
         discount: finalDiscount,
         discountCode: couponApplied ? couponCode.toUpperCase() : undefined,
+        referralCode: referralApplied ? referralCode.toUpperCase() : undefined,
         paymentMode,
         batchTiming: `${selectedBatch.label} (${selectedBatch.time})`,
       });
@@ -844,6 +903,59 @@ function CourseRegistrationContent() {
               )}
             </div>
 
+            {/* Referral Code Input */}
+            <div className={`rounded-2xl border p-4 space-y-2.5 transition-all ${
+              referralApplied
+                ? "border-purple-300 dark:border-purple-800 bg-purple-50/70 dark:bg-purple-950/30"
+                : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-surface-elevated/80"
+            }`}>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Gift className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" /> Have a Friend's Referral Code?
+                </span>
+                {referralApplied && (
+                  <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1">
+                    <Check className="h-3.5 w-3.5" /> ₹{referralDiscountRupees.toLocaleString("en-IN")} Off Applied
+                  </span>
+                )}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)}
+                  placeholder="Enter referral code (e.g. REF-SARAH-9214)"
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-2.5 text-xs text-text-heading dark:text-white uppercase font-mono outline-none focus:border-purple-500"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyReferral}
+                  disabled={isValidatingReferral}
+                  className="rounded-xl bg-purple-600 hover:bg-purple-700 px-4 py-2 text-xs font-bold text-white cursor-pointer disabled:opacity-50 flex items-center gap-1 transition-colors"
+                >
+                  {isValidatingReferral ? (
+                    <>
+                      <span className="h-3.5 w-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                      <span>Validating</span>
+                    </>
+                  ) : (
+                    "Apply Code"
+                  )}
+                </button>
+              </div>
+
+              {referralMessage && (
+                <div className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold flex items-center gap-1.5">
+                  <Check className="h-3.5 w-3.5" />
+                  <span>{referralMessage}</span>
+                </div>
+              )}
+
+              {referralError && (
+                <div className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold">{referralError}</div>
+              )}
+            </div>
+
             {/* Payment Method Selector */}
             <div className="space-y-3">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Select Payment Method:</label>
@@ -869,20 +981,32 @@ function CourseRegistrationContent() {
             {/* Fee summary (tax breakdown is kept on the invoice, not shown to students at enrollment) */}
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-surface-elevated p-5 space-y-2.5 text-xs">
               <div className="font-bold text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-800 pb-2">
-                Official Invoice Itemization
+                Official Fee &amp; Invoice Itemization
               </div>
               <div className="flex justify-between text-slate-600 dark:text-slate-300">
-                <span>Course Standard Tuition Fee:</span>
+                <span>Standard Course Tuition Fee:</span>
                 <span className="font-mono font-medium">₹{selectedCourse.price.toLocaleString("en-IN")}</span>
               </div>
-              {finalDiscount > 0 && (
+              {couponApplied && couponDiscountAmount > 0 && (
                 <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
-                  <span>Scholarship Deduction ({couponCode || "PROMO"}):</span>
-                  <span className="font-mono">- ₹{finalDiscount.toLocaleString("en-IN")}</span>
+                  <span>Coupon Scholarship ({couponCode || "PROMO"}):</span>
+                  <span className="font-mono">- ₹{couponDiscountAmount.toLocaleString("en-IN")}</span>
+                </div>
+              )}
+              {referralApplied && referralDiscountAmount > 0 && (
+                <div className="flex justify-between text-purple-600 dark:text-purple-400 font-semibold">
+                  <span>Referral Benefit ({referralCode || "REFERRAL"}):</span>
+                  <span className="font-mono">- ₹{referralDiscountAmount.toLocaleString("en-IN")}</span>
+                </div>
+              )}
+              {finalDiscount > 0 && (
+                <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px] pt-1 border-t border-slate-200/60 dark:border-slate-800/60">
+                  <span>Total Discount Applied:</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">- ₹{finalDiscount.toLocaleString("en-IN")}</span>
                 </div>
               )}
               <div className="flex justify-between border-t-2 border-slate-900 dark:border-slate-700 pt-2.5 font-extrabold text-sm text-text-heading dark:text-white">
-                <span>Total Net Investment:</span>
+                <span>Final Agreed Payable Fee:</span>
                 <span className={`font-mono text-base font-black ${isFullDiscount ? "text-emerald-600 dark:text-emerald-400" : "text-primary-blue dark:text-blue-400"}`}>
                   ₹{netPayable.toLocaleString("en-IN")}
                 </span>

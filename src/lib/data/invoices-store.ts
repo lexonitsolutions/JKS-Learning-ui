@@ -99,11 +99,10 @@ export function createInvoice(data: {
   const discountAmount = data.discount || 0;
   const totalAmount = Math.max(0, subtotal - discountAmount);
 
-  // 18% GST calculation included in total
-  const taxableAmount = +(totalAmount / 1.18).toFixed(2);
-  const taxTotal = +(totalAmount - taxableAmount).toFixed(2);
-  const cgstAmount = +(taxTotal / 2).toFixed(2);
-  const sgstAmount = +(taxTotal / 2).toFixed(2);
+  // Commercial education service — zero GST
+  const taxableAmount = totalAmount;
+  const cgstAmount = 0;
+  const sgstAmount = 0;
 
   const nextSeq = 894 + current.length;
   const invoiceNumber = `JKS-INV-2026-00${nextSeq}`;
@@ -130,10 +129,10 @@ export function createInvoice(data: {
     discountAmount,
     discountCode: data.discountCode,
     taxableAmount,
-    cgstRate: 9,
-    cgstAmount,
-    sgstRate: 9,
-    sgstAmount,
+    cgstRate: 0,
+    cgstAmount: 0,
+    sgstRate: 0,
+    sgstAmount: 0,
     totalAmount,
     paymentMode: data.paymentMode,
     paymentStatus: "Paid",
@@ -156,6 +155,8 @@ export async function registerCourseOnline(data: {
   price: number;
   discount: number;
   discountCode?: string;
+  referralCode?: string;
+  paidAmountCents?: number;
   paymentMode: Invoice["paymentMode"];
   batchTiming?: string;
 }): Promise<Invoice> {
@@ -171,6 +172,8 @@ export async function registerCourseOnline(data: {
         courseSlug: data.courseSlug,
         batchTiming: data.batchTiming || "Weekday Batch",
         couponCode: data.discountCode,
+        referralCode: data.referralCode,
+        paidAmountCents: data.paidAmountCents,
         paymentMode: data.paymentMode,
       }),
     });
@@ -251,11 +254,11 @@ export async function registerCourseOnline(data: {
         subtotal: inv.baseAmount,
         discountAmount: inv.discount,
         discountCode: data.discountCode,
-        taxableAmount: inv.taxableAmount,
-        cgstRate: 9,
-        cgstAmount: inv.cgst,
-        sgstRate: 9,
-        sgstAmount: inv.sgst,
+        taxableAmount: inv.totalAmount ?? inv.taxableAmount,
+        cgstRate: 0,
+        cgstAmount: 0,
+        sgstRate: 0,
+        sgstAmount: 0,
         totalAmount: inv.totalAmount,
         paymentMode: data.paymentMode,
         paymentStatus: json.isAutoApproved || inv.status === "PAID" ? "Paid" : "Pending",
@@ -325,11 +328,11 @@ export async function fetchInvoicesFromApi(): Promise<Invoice[]> {
           ],
           subtotal: inv.baseAmount,
           discountAmount: inv.discount,
-          taxableAmount: inv.taxableAmount,
-          cgstRate: 9,
-          cgstAmount: inv.cgst,
-          sgstRate: 9,
-          sgstAmount: inv.sgst,
+          taxableAmount: inv.totalAmount,
+          cgstRate: 0,
+          cgstAmount: 0,
+          sgstRate: 0,
+          sgstAmount: 0,
           totalAmount: inv.totalAmount,
           paymentMode: inv.paymentMethod || "UPI",
           paymentStatus: inv.status === "PAID" ? "Paid" : "Pending",

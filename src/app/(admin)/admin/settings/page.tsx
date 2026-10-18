@@ -15,12 +15,15 @@ import {
   ArrowLeft,
   ChevronRight,
   ShieldCheck,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import { SuperAdminsPanel } from "@/components/admin/super-admins-panel";
+import { AdminHeroBannersPanel } from "@/components/admin/admin-hero-banners-panel";
+import { useRouter } from "next/navigation";
 import { fetchMyApiRole } from "@/lib/data/super-admins-api";
 
 const SETTINGS_STORAGE_KEY = "jks_admin_platform_settings_v1";
@@ -90,7 +93,7 @@ const DEFAULT_SETTINGS: PlatformSettings = {
   enableVoiceInterviews: true,
 
   paymentGatewayMode: "Live",
-  gstPercentage: 18,
+  gstPercentage: 0,
   autoGenerateInvoices: true,
 
   certAuthorityName: "JKS Academic Board of Certification",
@@ -104,6 +107,8 @@ const DEFAULT_SETTINGS: PlatformSettings = {
 
 type SettingCategoryKey =
   | "general"
+  | "heroBanners"
+  | "successStories"
   | "video"
   | "assessment"
   | "ai"
@@ -129,6 +134,22 @@ const SETTING_CATEGORIES: SettingCategoryMeta[] = [
     icon: Settings,
     iconBg: "bg-blue-50 dark:bg-blue-500/15",
     iconColor: "text-[#2563EB] dark:text-blue-300",
+  },
+  {
+    id: "heroBanners",
+    title: "Dashboard Banners & Ads",
+    description: "Manage hero promotional carousel, AI Mock Interview and AI Resume feature ads on student dashboard.",
+    icon: Sparkles,
+    iconBg: "bg-indigo-50 dark:bg-indigo-500/15",
+    iconColor: "text-indigo-600 dark:text-indigo-300",
+  },
+  {
+    id: "successStories",
+    title: "Success Stories & Testimonials",
+    description: "Create, publish and feature student video and written success stories shown on the public Success Stories page.",
+    icon: Award,
+    iconBg: "bg-emerald-50 dark:bg-emerald-500/15",
+    iconColor: "text-emerald-600 dark:text-emerald-300",
   },
   {
     id: "video",
@@ -190,6 +211,7 @@ const SETTING_CATEGORIES: SettingCategoryMeta[] = [
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<PlatformSettings>(DEFAULT_SETTINGS);
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<SettingCategoryKey | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -255,6 +277,8 @@ export default function AdminSettingsPage() {
           isSuperAdmin ? (
             <SuperAdminsPanel onBack={() => setSelectedCategory(null)} />
           ) : null
+        ) : selectedCategory === "heroBanners" ? (
+          <AdminHeroBannersPanel onBack={() => setSelectedCategory(null)} />
         ) : !selectedCategory ? (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 dark:border-slate-800 pb-3">
@@ -279,7 +303,7 @@ export default function AdminSettingsPage() {
                 return (
                   <TiltCard key={cat.id} className="h-full">
                     <div
-                      onClick={() => setSelectedCategory(cat.id)}
+                      onClick={() => (cat.id === "successStories" ? router.push("/admin/success-stories") : setSelectedCategory(cat.id))}
                       className="flex h-full flex-col justify-between rounded-2xl border border-white/80 bg-white/90 p-4 sm:p-6 shadow-[0_4px_20px_rgb(20,50,100,0.05)] backdrop-blur-xl transition-all duration-300 hover:shadow-lg hover:border-[#2563EB]/40 hover:-translate-y-0.5 cursor-pointer group dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none dark:hover:border-blue-500/40"
                     >
                       <div>
@@ -613,7 +637,7 @@ export default function AdminSettingsPage() {
                     <label className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 cursor-pointer hover:border-blue-300 dark:border-slate-800 dark:bg-surface-elevated dark:hover:border-blue-500/50 transition-colors">
                       <div>
                         <div className="text-xs font-bold text-slate-900 dark:text-white">Auto Invoice Dispatch</div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">PDF tax invoice sent to student email on purchase.</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">PDF invoice receipt sent to student email on purchase.</div>
                       </div>
                       <input
                         type="checkbox"

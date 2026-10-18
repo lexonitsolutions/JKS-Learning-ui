@@ -112,12 +112,8 @@ export default function CreateEventPage() {
       setErrorMessage("Event description is required.");
       return;
     }
-    if (!venueOrLink.trim()) {
-      setErrorMessage(
-        mode === "ONLINE"
-          ? "Meeting link (Zoom/Google Meet) is required."
-          : "Venue address is required."
-      );
+    if (mode !== "ONLINE" && !venueOrLink.trim()) {
+      setErrorMessage("Physical venue address is required.");
       return;
     }
     if (!startDate) {
@@ -135,7 +131,7 @@ export default function CreateEventPage() {
       bannerPublicId: bannerPublicId.trim() || undefined,
       mode,
       status,
-      venueOrLink: venueOrLink.trim(),
+      venueOrLink: venueOrLink.trim() || undefined,
       startDate: new Date(startDate).toISOString(),
       endDate: endDate ? new Date(endDate).toISOString() : undefined,
       maxCapacity: maxCapacity ? parseInt(maxCapacity, 10) : undefined,
@@ -322,20 +318,25 @@ export default function CreateEventPage() {
 
               <div className="sm:col-span-2">
                 <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] mb-1">
-                  {mode === "ONLINE" ? "Meeting Link / Platform *" : "Physical Address / Venue *"}
+                  {mode === "ONLINE" ? "Meeting Link / Platform (Optional)" : "Physical Address / Venue *"}
                 </label>
                 <input
                   type="text"
                   placeholder={
                     mode === "ONLINE"
-                      ? "e.g. https://meet.google.com/xyz or Zoom Meeting URL"
+                      ? "e.g. https://meet.google.com/xyz or Zoom Meeting URL (Optional)"
                       : "e.g. JKS Learning Campus, Hyderabad, Telangana"
                   }
                   value={venueOrLink}
                   onChange={(e) => setVenueOrLink(e.target.value)}
-                  required
+                  required={mode !== "ONLINE"}
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-surface-elevated px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-hidden"
                 />
+                {mode === "ONLINE" && (
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Optional. If omitted, link can be added later or sent directly to attendees via email.
+                  </p>
+                )}
               </div>
             </div>
 

@@ -119,10 +119,10 @@ export function EditInstructorModal({
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative my-auto flex w-full max-w-xl flex-col rounded-[24px] border border-slate-100 bg-white shadow-2xl overflow-hidden dark:border-slate-800 dark:bg-surface-secondary"
+          className="relative my-auto flex w-full max-w-xl max-h-[calc(100dvh-2rem)] flex-col rounded-[24px] border border-slate-100 bg-white shadow-2xl overflow-hidden dark:border-slate-800 dark:bg-surface-secondary"
         >
           {/* Modal Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4.5">
+          <div className="shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4 sm:py-4.5 bg-white dark:bg-surface-secondary">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-400">
                 <UserCheck className="h-5 w-5 stroke-[2.2]" />
@@ -146,7 +146,8 @@ export function EditInstructorModal({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 scrollbar-subtle">
             {error && (
               <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs font-semibold text-rose-700 dark:bg-rose-950/40 dark:border-rose-900 dark:text-rose-300">
                 {error}
@@ -248,9 +249,10 @@ export function EditInstructorModal({
                 Only fill this in if the lecturer needs their password reset.
               </p>
             </div>
+            </div>
 
-            {/* Modal Actions */}
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+            {/* Modal Actions (Sticky Footer) */}
+            <div className="shrink-0 flex items-center justify-end gap-2.5 px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated/40">
               <button
                 type="button"
                 onClick={onClose}

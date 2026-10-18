@@ -43,61 +43,7 @@ import { CourseThumbnail } from "@/components/common/course-thumbnail";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 
-// Promotional Offers & Discounts Carousel Data (JKS Official Branding)
-const OFFERS = [
-  {
-    id: "offer-1",
-    tag: "Monsoon Flash Sale",
-    badge: "50% OFF",
-    title: "Enterprise Full Stack & Cloud Mastery",
-    subtitle: "Comprehensive Spring Boot 3, Microservices & AWS Cloud Deployment track.",
-    discountCode: "JKS50",
-    expiresIn: "Limited Time Offer",
-    ctaText: "Claim 50% Discount",
-    ctaLink: "/dashboard/courses",
-    bgGradient: "from-blue-600 via-indigo-600 to-purple-700",
-    accentColor: "#38BDF8",
-  },
-  {
-    id: "offer-2",
-    tag: "New Launch Special",
-    badge: "FLAT 40% OFF",
-    title: "JKS Generative AI & Agentic Architecture",
-    subtitle: "Build production RAG pipelines, LLM fine-tuning & autonomous AI subagents.",
-    discountCode: "GENAI40",
-    expiresIn: "Valid for Next 48 Hours",
-    ctaText: "Unlock AI Course",
-    ctaLink: "/dashboard/courses",
-    bgGradient: "from-purple-900 via-indigo-900 to-blue-900",
-    accentColor: "#C084FC",
-  },
-  {
-    id: "offer-3",
-    tag: "Bundle Deal",
-    badge: "BUY 1 GET 1",
-    title: "JKS Frontend System Design & DSA Pro Bundle",
-    subtitle: "Crack Tier-1 Tech Interviews with JKS DSA + Enterprise System Design Mastery.",
-    discountCode: "B1G1TECH",
-    expiresIn: "Ends Midnight",
-    ctaText: "Grab 1+1 Offer",
-    ctaLink: "/dashboard/courses",
-    bgGradient: "from-slate-950 via-slate-900 to-indigo-950",
-    accentColor: "#818CF8",
-  },
-  {
-    id: "offer-4",
-    tag: "Partner Program",
-    badge: "₹2,000 CASHBACK",
-    title: "Invite Friends & Learn Together",
-    subtitle: "Earn ₹2,000 instant wallet credit + 1 Free Pro Certification for every referral.",
-    discountCode: "REFER2000",
-    expiresIn: "Unlimited Invites",
-    ctaText: "Invite & Earn Now",
-    ctaLink: "/dashboard/profile",
-    bgGradient: "from-emerald-700 via-teal-700 to-cyan-800",
-    accentColor: "#6EE7B7",
-  },
-];
+import { useHeroBanners } from "@/lib/data/hero-banners-store";
 
 export default function StudentDashboardPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -205,16 +151,19 @@ export default function StudentDashboardPage() {
     return nonEnrolled.slice(0, 4);
   }, [catalogCourses, allEnrolledSlugs]);
 
-  // Auto-play slideshow every 5 seconds (pauses when user hovers)
-  useEffect(() => {
-    if (isPaused) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % OFFERS.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isPaused]);
+  const { activeBanners } = useHeroBanners();
 
-  const activeOffer = OFFERS[currentSlide];
+  // Auto-play slideshow every 5.5 seconds (pauses when user hovers)
+  useEffect(() => {
+    if (isPaused || activeBanners.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % activeBanners.length);
+    }, 5500);
+    return () => clearInterval(interval);
+  }, [isPaused, activeBanners.length]);
+
+  const safeSlideIndex = activeBanners.length > 0 ? currentSlide % activeBanners.length : 0;
+  const activeOffer = activeBanners[safeSlideIndex] || activeBanners[0];
 
   useEffect(() => {
     if (isAdmin) {
@@ -363,10 +312,10 @@ export default function StudentDashboardPage() {
                           <Gift className="h-4 w-4" /> {activeOffer.ctaText}
                         </Link>
                         <Link
-                          href="/dashboard/courses"
+                          href={activeOffer.secondaryCtaLink || "/dashboard/courses"}
                           className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700/80 dark:bg-surface-elevated dark:text-slate-200 dark:hover:bg-surface-hover"
                         >
-                          <span>Explore All</span>
+                          <span>{activeOffer.secondaryCtaText || "Explore All"}</span>
                           <ArrowRight className="h-3.5 w-3.5" />
                         </Link>
                       </div>
@@ -375,14 +324,14 @@ export default function StudentDashboardPage() {
                       <div className="flex items-center gap-2">
                         {/* Dot Indicators */}
                         <div className="flex items-center gap-1.5 mr-1">
-                          {OFFERS.map((_, idx) => (
+                          {activeBanners.map((_, idx) => (
                             <button
                               key={idx}
                               type="button"
                               onClick={() => setCurrentSlide(idx)}
                               aria-label={`Slide ${idx + 1}`}
                               className={`h-2 rounded-full transition-all duration-300 ${
-                                currentSlide === idx
+                                safeSlideIndex === idx
                                   ? "w-6 bg-[#2563EB]"
                                   : "w-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600"
                               }`}
@@ -394,7 +343,7 @@ export default function StudentDashboardPage() {
                         <button
                           type="button"
                           onClick={() =>
-                            setCurrentSlide((prev) => (prev === 0 ? OFFERS.length - 1 : prev - 1))
+                            setCurrentSlide((prev) => (prev === 0 ? activeBanners.length - 1 : prev - 1))
                           }
                           aria-label="Previous Offer"
                           className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer dark:border-slate-700/80 dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover dark:hover:text-white"
@@ -404,7 +353,7 @@ export default function StudentDashboardPage() {
                         <button
                           type="button"
                           onClick={() =>
-                            setCurrentSlide((prev) => (prev + 1) % OFFERS.length)
+                            setCurrentSlide((prev) => (prev + 1) % activeBanners.length)
                           }
                           aria-label="Next Offer"
                           className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer dark:border-slate-700/80 dark:bg-surface-elevated dark:text-slate-300 dark:hover:bg-surface-hover dark:hover:text-white"

@@ -175,7 +175,9 @@ export default function EventRegistrationsPage({ params }: { params: Promise<{ i
               )}
               <span>{event.mode}</span>
             </div>
-            <div className="text-[11px] text-slate-500 truncate pl-5">{event.venueOrLink}</div>
+            <div className="text-[11px] text-slate-500 truncate pl-5">
+              {event.venueOrLink || (event.mode === "ONLINE" ? "No meeting link specified" : "No venue specified")}
+            </div>
           </div>
 
           <div>
