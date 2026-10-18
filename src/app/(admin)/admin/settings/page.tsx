@@ -23,7 +23,7 @@ import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
 import { SuperAdminsPanel } from "@/components/admin/super-admins-panel";
 import { AdminHeroBannersPanel } from "@/components/admin/admin-hero-banners-panel";
-import { AdminSuccessStoriesPanel } from "@/components/admin/admin-success-stories-panel";
+import { useRouter } from "next/navigation";
 import { fetchMyApiRole } from "@/lib/data/super-admins-api";
 
 const SETTINGS_STORAGE_KEY = "jks_admin_platform_settings_v1";
@@ -146,7 +146,7 @@ const SETTING_CATEGORIES: SettingCategoryMeta[] = [
   {
     id: "successStories",
     title: "Success Stories & Testimonials",
-    description: "Manage student placement stories, salaries, profile photos, and video testimonials across platform.",
+    description: "Create, publish and feature student video and written success stories shown on the public Success Stories page.",
     icon: Award,
     iconBg: "bg-emerald-50 dark:bg-emerald-500/15",
     iconColor: "text-emerald-600 dark:text-emerald-300",
@@ -211,6 +211,7 @@ const SETTING_CATEGORIES: SettingCategoryMeta[] = [
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<PlatformSettings>(DEFAULT_SETTINGS);
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<SettingCategoryKey | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -278,8 +279,6 @@ export default function AdminSettingsPage() {
           ) : null
         ) : selectedCategory === "heroBanners" ? (
           <AdminHeroBannersPanel onBack={() => setSelectedCategory(null)} />
-        ) : selectedCategory === "successStories" ? (
-          <AdminSuccessStoriesPanel onBack={() => setSelectedCategory(null)} />
         ) : !selectedCategory ? (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 dark:border-slate-800 pb-3">
@@ -304,7 +303,7 @@ export default function AdminSettingsPage() {
                 return (
                   <TiltCard key={cat.id} className="h-full">
                     <div
-                      onClick={() => setSelectedCategory(cat.id)}
+                      onClick={() => (cat.id === "successStories" ? router.push("/admin/success-stories") : setSelectedCategory(cat.id))}
                       className="flex h-full flex-col justify-between rounded-2xl border border-white/80 bg-white/90 p-4 sm:p-6 shadow-[0_4px_20px_rgb(20,50,100,0.05)] backdrop-blur-xl transition-all duration-300 hover:shadow-lg hover:border-[#2563EB]/40 hover:-translate-y-0.5 cursor-pointer group dark:border-slate-800/80 dark:bg-surface-secondary dark:shadow-none dark:hover:border-blue-500/40"
                     >
                       <div>

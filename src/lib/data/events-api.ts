@@ -21,7 +21,7 @@ export interface EventItem {
   bannerPublicId?: string | null;
   mode: EventMode;
   status: EventStatus;
-  venueOrLink: string;
+  venueOrLink?: string | null;
   startDate: string;
   endDate?: string | null;
   sessionDetails?: string | null;
@@ -64,7 +64,7 @@ export interface CreateEventPayload {
   bannerPublicId?: string;
   mode?: EventMode;
   status?: EventStatus;
-  venueOrLink: string;
+  venueOrLink?: string;
   startDate: string;
   endDate?: string;
   sessionDetails?: string;

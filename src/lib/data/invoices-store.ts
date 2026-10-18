@@ -155,6 +155,8 @@ export async function registerCourseOnline(data: {
   price: number;
   discount: number;
   discountCode?: string;
+  referralCode?: string;
+  paidAmountCents?: number;
   paymentMode: Invoice["paymentMode"];
   batchTiming?: string;
 }): Promise<Invoice> {
@@ -170,6 +172,8 @@ export async function registerCourseOnline(data: {
         courseSlug: data.courseSlug,
         batchTiming: data.batchTiming || "Weekday Batch",
         couponCode: data.discountCode,
+        referralCode: data.referralCode,
+        paidAmountCents: data.paidAmountCents,
         paymentMode: data.paymentMode,
       }),
     });
