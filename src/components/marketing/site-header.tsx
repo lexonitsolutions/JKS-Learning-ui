@@ -31,6 +31,7 @@ import { GlobalSearchTrigger, openGlobalSearch } from "@/components/common/globa
 const BASE_NAV_LINKS = [
   { href: "/courses", label: "Courses" },
   { href: "/events", label: "Events" },
+  { href: "/blog", label: "Blog" },
   { href: "/ai-mock-interview", label: "AI Mock Interview" },
   { href: "/success-stories", label: "Success Stories" },
   { href: "/about", label: "About" },
@@ -98,9 +99,11 @@ export function SiteHeader() {
     userRole === "admin" ? "/admin" : userRole === "instructor" ? "/instructor" : userRole === "head" ? "/head" : "/dashboard";
 
   // Dynamic Navigation items
-  const navLinks: { href: string; label: string; key: FlyoutKey }[] = [
+  const navLinks: { href: string; label: string; key?: FlyoutKey }[] = [
     { href: "/courses", label: "Courses", key: "courses" },
     { href: "/events", label: "Events", key: "events" },
+    // No hover panel for the blog: pointing at it just closes any open one.
+    { href: "/blog", label: "Blog" },
     { href: "/ai-mock-interview", label: "AI Mock Interview", key: "ai" },
     { href: "/success-stories", label: "Success Stories", key: "stories" },
     { href: "/about", label: "About", key: "about" },
@@ -182,8 +185,8 @@ export function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                onMouseEnter={() => openFlyout(link.key)}
-                onFocus={() => openFlyout(link.key)}
+                onMouseEnter={() => (link.key ? openFlyout(link.key) : closeFlyout(0))}
+                onFocus={() => (link.key ? openFlyout(link.key) : closeFlyout(0))}
                 aria-haspopup={canHover ? "true" : undefined}
                 aria-expanded={canHover ? flyout === link.key : undefined}
                 className={`group ${link.key === "ai" ? "group/mock" : ""} relative text-xs xl:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-1 ${

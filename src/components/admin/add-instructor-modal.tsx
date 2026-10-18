@@ -107,15 +107,15 @@ export function AddInstructorModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 dark:bg-black/75 p-4 backdrop-blur-xs">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 dark:bg-black/75 p-3 sm:p-4 md:p-6 backdrop-blur-xs overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative flex w-full max-w-xl flex-col rounded-[24px] border border-slate-100 bg-white shadow-2xl overflow-hidden dark:border-slate-800 dark:bg-surface-secondary dark:shadow-none"
+          className="relative my-auto flex w-full max-w-xl max-h-[calc(100dvh-2rem)] flex-col rounded-[24px] border border-slate-100 bg-white shadow-2xl overflow-hidden dark:border-slate-800 dark:bg-surface-secondary dark:shadow-none"
         >
           {/* Modal Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-5">
+          <div className="shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4 sm:py-4.5 bg-white dark:bg-surface-secondary">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EFF6FF] text-[#2563EB] dark:bg-blue-950/50 dark:text-blue-400">
                 <UserPlus className="h-5 w-5 stroke-[2.2]" />
@@ -140,73 +140,75 @@ export function AddInstructorModal({
 
           {createdCredentials ? (
             /* Credentials Confirmation Screen */
-            <div className="p-6 space-y-4 text-slate-800 dark:text-slate-200">
-              <div className="flex flex-col items-center justify-center text-center space-y-2 py-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-xs">
-                  <CheckCircle2 className="h-6 w-6 stroke-[2.5]" />
-                </div>
-                <h4 className="text-base font-bold text-slate-900 dark:text-white">
-                  Tutor Added &amp; Welcome Email Dispatched!
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
-                  An official welcome email with login email and initial password has been sent to{" "}
-                  <strong className="text-slate-800 dark:text-white">{createdCredentials.email}</strong>.
-                </p>
-              </div>
-
-              {/* Credentials Box */}
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-4 space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-700/80 pb-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
-                    <KeyRound className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
-                    <span>Account Credentials</span>
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden text-slate-800 dark:text-slate-200">
+              <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 scrollbar-subtle">
+                <div className="flex flex-col items-center justify-center text-center space-y-2 py-2">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-xs">
+                    <CheckCircle2 className="h-6 w-6 stroke-[2.5]" />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const text = `JKS Learning Tutor Credentials\nName: ${createdCredentials.name}\nEmail: ${createdCredentials.email}\nPassword: ${createdCredentials.password}\nLogin Portal: ${window.location.origin}/sign-in`;
-                      navigator.clipboard.writeText(text);
-                      setIsCopied(true);
-                      setTimeout(() => setIsCopied(false), 2000);
-                    }}
-                    className="flex items-center gap-1 text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
-                  >
-                    {isCopied ? (
-                      <>
-                        <Check className="h-3.5 w-3.5 text-emerald-600" />
-                        <span className="text-emerald-600">Copied to Clipboard!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3.5 w-3.5" />
-                        <span>Copy Credentials</span>
-                      </>
-                    )}
-                  </button>
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                    Tutor Added &amp; Welcome Email Dispatched!
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
+                    An official welcome email with login email and initial password has been sent to{" "}
+                    <strong className="text-slate-800 dark:text-white">{createdCredentials.email}</strong>.
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="rounded-xl bg-white dark:bg-surface p-2.5 border border-slate-200/80 dark:border-slate-700/80">
-                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Login Email</div>
-                    <div className="font-semibold text-slate-900 dark:text-white truncate mt-0.5" title={createdCredentials.email}>
-                      {createdCredentials.email}
+                {/* Credentials Box */}
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-4 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-700/80 pb-2">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <KeyRound className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
+                      <span>Account Credentials</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const text = `JKS Learning Tutor Credentials\nName: ${createdCredentials.name}\nEmail: ${createdCredentials.email}\nPassword: ${createdCredentials.password}\nLogin Portal: ${window.location.origin}/sign-in`;
+                        navigator.clipboard.writeText(text);
+                        setIsCopied(true);
+                        setTimeout(() => setIsCopied(false), 2000);
+                      }}
+                      className="flex items-center gap-1 text-xs font-bold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
+                    >
+                      {isCopied ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-emerald-600" />
+                          <span className="text-emerald-600">Copied to Clipboard!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5" />
+                          <span>Copy Credentials</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="rounded-xl bg-white dark:bg-surface p-2.5 border border-slate-200/80 dark:border-slate-700/80">
+                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Login Email</div>
+                      <div className="font-semibold text-slate-900 dark:text-white truncate mt-0.5" title={createdCredentials.email}>
+                        {createdCredentials.email}
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl bg-white dark:bg-surface p-2.5 border border-slate-200/80 dark:border-slate-700/80">
+                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Initial Password</div>
+                      <div className="font-mono font-bold text-[#2563EB] dark:text-blue-400 mt-0.5">
+                        {createdCredentials.password}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="rounded-xl bg-white dark:bg-surface p-2.5 border border-slate-200/80 dark:border-slate-700/80">
-                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Initial Password</div>
-                    <div className="font-mono font-bold text-[#2563EB] dark:text-blue-400 mt-0.5">
-                      {createdCredentials.password}
-                    </div>
-                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
+                    Tip: You can also copy these credentials above to share via WhatsApp, Slack, or direct message.
+                  </p>
                 </div>
-
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
-                  Tip: You can also copy these credentials above to share via WhatsApp, Slack, or direct message.
-                </p>
               </div>
 
-              <div className="flex items-center justify-end pt-2">
+              <div className="shrink-0 flex items-center justify-end border-t border-slate-100 dark:border-slate-800 px-6 py-3.5 bg-slate-50/70 dark:bg-surface-elevated/40">
                 <button
                   type="button"
                   onClick={() => {
@@ -227,198 +229,200 @@ export function AddInstructorModal({
             </div>
           ) : (
             /* Modal Form Body */
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 text-slate-800 dark:text-slate-200">
-              {/* Live Avatar Preview Header */}
-              <div className="flex items-center gap-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-surface-elevated">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2563EB] text-sm font-bold text-white shadow-xs">
-                  {name ? getInitials(name) : "IN"}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                    {name || "Tutor full name"}
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden text-slate-800 dark:text-slate-200">
+              <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 scrollbar-subtle">
+                {/* Live Avatar Preview Header */}
+                <div className="flex items-center gap-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-surface-elevated">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2563EB] text-sm font-bold text-white shadow-xs">
+                    {name ? getInitials(name) : "IN"}
                   </div>
-                  <div className="text-[11px] text-[#2563EB] dark:text-blue-400 font-medium truncate">
-                    {role || "Designation & Track"}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {name || "Tutor full name"}
+                    </div>
+                    <div className="text-[11px] text-[#2563EB] dark:text-blue-400 font-medium truncate">
+                      {role || "Designation & Track"}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                    Full Name *
-                  </label>
-                  <div className="relative mt-1.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Full Name *
+                    </label>
+                    <div className="relative mt-1.5">
+                      <input
+                        type="text"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="e.g. Dr. Ananya Sharma"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/30 dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Email Address * (Real Working Email)
+                    </label>
+                    <div className="relative mt-1.5">
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="e.g. lecturer.name@gmail.com"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Login Password *
+                      </label>
+                      <span className="text-[10px] text-slate-400">Min 5 chars</span>
+                    </div>
                     <input
                       type="text"
                       required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Dr. Ananya Sharma"
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/30 dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
+                      minLength={5}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Initial login password"
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Mobile Number (10 Digits)
+                      </label>
+                      <span className="text-[10px] text-slate-400">Numeric only</span>
+                    </div>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={10}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
+                      placeholder="9876543210"
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                  <Mail className="h-3.5 w-3.5 shrink-0" />
+                  <span>An automated welcome email with login email, initial password, and role will be sent automatically.</span>
+                </p>
+
+                {error && (
+                  <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-[11px] font-semibold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
+                    {error}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Track / Specialization
+                    </label>
+                    <div className="relative mt-1.5">
+                      <select
+                        value={track}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTrack(val);
+                          if (val !== "Custom") {
+                            setRole(`Lead Trainer, ${val}`);
+                          } else if (customTrack) {
+                            setRole(`Lead Trainer, ${customTrack}`);
+                          }
+                        }}
+                        className="w-full appearance-none rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500 pr-8 shadow-xs cursor-pointer"
+                      >
+                        <option value="Full Stack">Full Stack</option>
+                        <option value="Frontend">Frontend</option>
+                        <option value="SAP">SAP</option>
+                        <option value="Cloud & DevOps">Cloud & DevOps</option>
+                        <option value="AI & Data">AI & Data</option>
+                        <option value="Custom">Custom / Other Track...</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    {track === "Custom" && (
+                      <div className="mt-2 animate-in fade-in slide-in-from-top-1">
+                        <input
+                          type="text"
+                          required
+                          value={customTrack}
+                          onChange={(e) => {
+                            setCustomTrack(e.target.value);
+                            setRole(`Lead Trainer, ${e.target.value}`);
+                          }}
+                          placeholder="Type custom specialization (e.g. Flutter, Salesforce, Cyber Security)"
+                          className="w-full rounded-xl border border-blue-300 dark:border-blue-700/80 bg-blue-50/40 dark:bg-blue-950/20 px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Assigned Courses
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="10"
+                      value={assignedCourses}
+                      onChange={(e) => setAssignedCourses(Number(e.target.value))}
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                    Email Address * (Real Working Email)
+                    Designation / Role Title
                   </label>
-                  <div className="relative mt-1.5">
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. lecturer.name@gmail.com"
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                      Login Password *
-                    </label>
-                    <span className="text-[10px] text-slate-400">Min 5 chars</span>
-                  </div>
                   <input
                     type="text"
-                    required
-                    minLength={5}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Initial login password"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    placeholder="e.g. Principal Architect & Lead Trainer"
                     className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                      Mobile Number (10 Digits)
-                    </label>
-                    <span className="text-[10px] text-slate-400">Numeric only</span>
-                  </div>
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    maxLength={10}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
-                    placeholder="9876543210"
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500 font-mono"
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                    Bio &amp; Industry Background (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="10+ years enterprise experience in microservices, cloud deployments..."
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white p-3 text-xs font-medium text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
                   />
                 </div>
               </div>
 
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                <Mail className="h-3.5 w-3.5 shrink-0" />
-                <span>An automated welcome email with login email, initial password, and role will be sent automatically.</span>
-              </p>
-
-              {error && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-[11px] font-semibold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
-                  {error}
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                    Track / Specialization
-                  </label>
-                  <div className="relative mt-1.5">
-                    <select
-                      value={track}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setTrack(val);
-                        if (val !== "Custom") {
-                          setRole(`Lead Trainer, ${val}`);
-                        } else if (customTrack) {
-                          setRole(`Lead Trainer, ${customTrack}`);
-                        }
-                      }}
-                      className="w-full appearance-none rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-input-bg px-3.5 py-2 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[#2563EB] dark:focus:border-blue-500 pr-8 shadow-xs cursor-pointer"
-                    >
-                      <option value="Full Stack">Full Stack</option>
-                      <option value="Frontend">Frontend</option>
-                      <option value="SAP">SAP</option>
-                      <option value="Cloud & DevOps">Cloud & DevOps</option>
-                      <option value="AI & Data">AI & Data</option>
-                      <option value="Custom">Custom / Other Track...</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
-                      <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {track === "Custom" && (
-                    <div className="mt-2 animate-in fade-in slide-in-from-top-1">
-                      <input
-                        type="text"
-                        required
-                        value={customTrack}
-                        onChange={(e) => {
-                          setCustomTrack(e.target.value);
-                          setRole(`Lead Trainer, ${e.target.value}`);
-                        }}
-                        placeholder="Type custom specialization (e.g. Flutter, Salesforce, Cyber Security)"
-                        className="w-full rounded-xl border border-blue-300 dark:border-blue-700/80 bg-blue-50/40 dark:bg-blue-950/20 px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white dark:placeholder-slate-400 outline-none focus:border-[#2563EB]"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                    Assigned Courses
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
-                    value={assignedCourses}
-                    onChange={(e) => setAssignedCourses(Number(e.target.value))}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                  Designation / Role Title
-                </label>
-                <input
-                  type="text"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  placeholder="e.g. Principal Architect & Lead Trainer"
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-900 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                  Bio &amp; Industry Background (Optional)
-                </label>
-                <textarea
-                  rows={2}
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="10+ years enterprise experience in microservices, cloud deployments..."
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white p-3 text-xs font-medium text-slate-800 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white dark:placeholder-slate-400 dark:focus:border-blue-500"
-                />
-              </div>
-
-              {/* Modal Footer */}
-              <div className="flex items-center justify-end gap-2.5 border-t border-slate-100 dark:border-slate-800 pt-4">
+              {/* Modal Footer (Pinned Sticky to Bottom) */}
+              <div className="shrink-0 flex items-center justify-end gap-2.5 border-t border-slate-100 dark:border-slate-800 px-6 py-3.5 bg-slate-50/70 dark:bg-surface-elevated/40">
                 <button
                   type="button"
                   onClick={onClose}
@@ -430,7 +434,7 @@ export function AddInstructorModal({
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSuccess ? (
                     <>

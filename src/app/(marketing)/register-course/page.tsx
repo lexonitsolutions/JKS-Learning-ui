@@ -207,10 +207,10 @@ function CourseRegistrationContent() {
       : Math.round(coursePrice * ((couponDiscountPercent || 10) / 100))
     : 0;
   const netPayable = Math.max(0, coursePrice - finalDiscount);
-  const taxableAmount = +(netPayable / 1.18).toFixed(2);
-  const totalTax = +(netPayable - taxableAmount).toFixed(2);
-  const cgst = +(totalTax / 2).toFixed(2);
-  const sgst = +(totalTax / 2).toFixed(2);
+  const taxableAmount = netPayable;
+  const totalTax = 0;
+  const cgst = 0;
+  const sgst = 0;
 
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();

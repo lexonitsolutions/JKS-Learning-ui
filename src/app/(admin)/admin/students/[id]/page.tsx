@@ -99,7 +99,7 @@ import {
 import { approveCourseCompletion } from "@/lib/data/certificates-api";
 import { InvoiceModal } from "@/components/common/invoice-modal";
 import { InAppVideoPlayer } from "@/components/ui/in-app-video-player";
-import { type Invoice } from "@/lib/data/invoices-store";
+import { createInvoice, type Invoice } from "@/lib/data/invoices-store";
 import {
   saveVideoProgress,
   fetchCourseProgress,
@@ -353,6 +353,122 @@ function AdminStudentDetailsContent() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  // Issue Custom Invoice State (Variable student fee with dynamic discount, Zero GST)
+  const [showIssueInvoiceModal, setShowIssueInvoiceModal] = useState(false);
+  const [issueInvoiceForm, setIssueInvoiceForm] = useState({
+    courseTitle: "SAP ABAP Masterclass: Reports, ALV, Forms, APIs & More",
+    courseSlug: "sap-abap-masterclass",
+    standardFee: 30000,
+    agreedFee: 27000,
+    discountAmount: 3000,
+    discountReason: "Scholarship Deduction (PROMO)",
+    paymentMode: "UPI" as Invoice["paymentMode"],
+    batchTiming: "Weekday Live Evening (7:00 PM - 8:30 PM IST)",
+  });
+
+  const availableInvoiceCourses = [
+    { title: "SAP ABAP Masterclass: Reports, ALV, Forms, APIs & More", slug: "sap-abap-masterclass", price: 30000 },
+    { title: "Java Full Stack Developer Mastery", slug: "java-full-stack-mastery", price: 45000 },
+    { title: "Modern Frontend Engineering (React 19 & Next.js)", slug: "modern-frontend-engineering", price: 38000 },
+    { title: "SAP S/4HANA Enterprise Systems", slug: "sap-s4hana-enterprise", price: 42000 },
+    { title: ".NET 9 Enterprise Microservices & Cloud", slug: "dotnet-enterprise-microservices", price: 45000 },
+  ];
+
+  const handleOpenIssueInvoiceModal = () => {
+    if (!student) return;
+    const firstCourse = student.enrollments[0];
+    const initialTitle = firstCourse?.courseTitle || "SAP ABAP Masterclass: Reports, ALV, Forms, APIs & More";
+    const matched = availableInvoiceCourses.find((c) => c.title === initialTitle);
+    const standard = matched?.price || 30000;
+    const agreed = Math.round(standard * 0.9); // default 10% promo
+    const discount = standard - agreed;
+
+    setIssueInvoiceForm({
+      courseTitle: initialTitle,
+      courseSlug: firstCourse?.courseSlug || matched?.slug || "sap-abap-masterclass",
+      standardFee: standard,
+      agreedFee: agreed,
+      discountAmount: discount,
+      discountReason: "Scholarship Deduction (PROMO)",
+      paymentMode: "UPI",
+      batchTiming: firstCourse?.batchTiming || "Weekday Live Evening (7:00 PM - 8:30 PM IST)",
+    });
+    setShowIssueInvoiceModal(true);
+  };
+
+  const handleIssueCourseChange = (selectedTitle: string) => {
+    const matched = availableInvoiceCourses.find((c) => c.title === selectedTitle);
+    const standard = matched ? matched.price : issueInvoiceForm.standardFee;
+    const currentDiscount = issueInvoiceForm.discountAmount;
+    const agreed = Math.max(0, standard - currentDiscount);
+    setIssueInvoiceForm({
+      ...issueInvoiceForm,
+      courseTitle: selectedTitle,
+      courseSlug: matched?.slug || selectedTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      standardFee: standard,
+      agreedFee: agreed,
+    });
+  };
+
+  const handleIssueAgreedFeeChange = (val: number) => {
+    const newFee = Math.max(0, val);
+    const newDiscount = Math.max(0, issueInvoiceForm.standardFee - newFee);
+    setIssueInvoiceForm({ ...issueInvoiceForm, agreedFee: newFee, discountAmount: newDiscount });
+  };
+
+  const handleIssueDiscountChange = (val: number) => {
+    const newDiscount = Math.max(0, val);
+    const newFee = Math.max(0, issueInvoiceForm.standardFee - newDiscount);
+    setIssueInvoiceForm({ ...issueInvoiceForm, discountAmount: newDiscount, agreedFee: newFee });
+  };
+
+  const handleIssuePriceChange = (val: number) => {
+    const newStandard = Math.max(0, val);
+    const newDiscount = Math.max(0, newStandard - issueInvoiceForm.agreedFee);
+    setIssueInvoiceForm({ ...issueInvoiceForm, standardFee: newStandard, discountAmount: newDiscount });
+  };
+
+  const handleIssueInvoiceSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!student) return;
+
+    const discount = Math.max(0, issueInvoiceForm.standardFee - issueInvoiceForm.agreedFee);
+
+    const newInv = createInvoice({
+      studentName: student.name,
+      studentEmail: student.email,
+      studentPhone: student.phone && student.phone !== "N/A" ? student.phone : "9876543210",
+      studentCity: "Bengaluru, India",
+      courseTitle: issueInvoiceForm.courseTitle,
+      courseSlug: issueInvoiceForm.courseSlug,
+      price: issueInvoiceForm.standardFee,
+      discount,
+      discountCode: issueInvoiceForm.discountReason.trim() || "Scholarship Deduction (PROMO)",
+      paymentMode: issueInvoiceForm.paymentMode,
+      batchTiming: issueInvoiceForm.batchTiming,
+    });
+
+    const studentInv: StudentInvoiceItem = {
+      id: newInv.id,
+      invoiceNumber: newInv.invoiceNumber,
+      courseTitle: issueInvoiceForm.courseTitle,
+      batchTiming: issueInvoiceForm.batchTiming,
+      baseAmount: issueInvoiceForm.standardFee,
+      discount,
+      taxAmount: 0,
+      totalAmount: issueInvoiceForm.agreedFee,
+      status: "PAID",
+      paymentMethod: issueInvoiceForm.paymentMode,
+      createdAt: new Date().toISOString(),
+      paidAt: new Date().toISOString(),
+    };
+
+    setStudent((prev) => prev ? { ...prev, invoices: [studentInv, ...prev.invoices] } : prev);
+    setShowIssueInvoiceModal(false);
+    setSelectedInvoice(newInv);
+    showToast(`Invoice ${newInv.invoiceNumber} created and issued for ${student.name}!`);
+  };
+
   const loadCourseTasks = useCallback(
     async (courseSlugOrId?: string) => {
       if (!studentIdOrSlug) return;
@@ -598,10 +714,10 @@ function AdminStudentDetailsContent() {
       studentEmail: student.email,
       studentPhone: student.phone,
       studentAddress: "Online Registration Portal",
-      studentCity: "Bengaluru, Karnataka",
+      studentCity: "Bengaluru, India",
       items: [
         {
-          description: `${inv.courseTitle} - Enterprise Live Cohort`,
+          description: inv.courseTitle,
           courseSlug: inv.courseTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
           qty: 1,
           unitPrice: inv.baseAmount,
@@ -610,12 +726,12 @@ function AdminStudentDetailsContent() {
       ],
       subtotal: inv.baseAmount,
       discountAmount: inv.discount,
-      discountCode: inv.discount > 0 ? "ADMISSION10" : undefined,
-      taxableAmount: +(inv.totalAmount / 1.18).toFixed(2),
-      cgstRate: 9,
-      cgstAmount: +(inv.taxAmount / 2).toFixed(2),
-      sgstRate: 9,
-      sgstAmount: +(inv.taxAmount / 2).toFixed(2),
+      discountCode: inv.discount > 0 ? "SCHOLARSHIP (PROMO)" : undefined,
+      taxableAmount: inv.totalAmount,
+      cgstRate: 0,
+      cgstAmount: 0,
+      sgstRate: 0,
+      sgstAmount: 0,
       totalAmount: inv.totalAmount,
       paymentMode: (inv.paymentMethod as any) || "UPI",
       paymentStatus: inv.status === "PAID" ? "Paid" : "Pending",
@@ -1888,6 +2004,21 @@ function AdminStudentDetailsContent() {
             {/* TAB 2: INVOICES & BILLING */}
             {activeTab === "invoices" && (
               <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Student Invoices &amp; Receipts</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Zero GST invoices with flexible course fee &amp; discount deduction</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleOpenIssueInvoiceModal}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-2 text-xs font-bold text-white shadow-md hover:bg-blue-600 transition-colors cursor-pointer shrink-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Issue Custom Invoice</span>
+                  </button>
+                </div>
+
                 {student.invoices.length > 0 ? (
                   <div className="rounded-[20px] border border-white/70 dark:border-slate-800/80 bg-white/85 dark:bg-surface-secondary/90 p-4 sm:p-6 shadow-[0_8px_30px_rgb(20,50,100,0.06)] dark:shadow-none backdrop-blur-xl">
                     <div className="overflow-x-auto">
@@ -1896,7 +2027,7 @@ function AdminStudentDetailsContent() {
                           <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase">
                             <th className="pb-3 pr-4 pl-0">Invoice #</th>
                             <th className="px-4 pb-3">Course / Description</th>
-                            <th className="px-4 pb-3">Amount &amp; GST</th>
+                            <th className="px-4 pb-3">Total Amount</th>
                             <th className="px-4 pb-3">Payment Mode</th>
                             <th className="px-4 pb-3 text-center">Status</th>
                             <th className="pr-0 pb-3 pl-4 text-right">Actions</th>
@@ -1925,7 +2056,7 @@ function AdminStudentDetailsContent() {
                                   {formatINR(inv.totalAmount)}
                                 </div>
                                 <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                                  Base: {formatINR(inv.baseAmount)} (incl. 18% GST)
+                                  Tuition: {formatINR(inv.baseAmount)} {inv.discount > 0 && <span className="text-emerald-600 dark:text-emerald-400">· Disc: -{formatINR(inv.discount)}</span>}
                                 </div>
                               </td>
 
@@ -1968,10 +2099,20 @@ function AdminStudentDetailsContent() {
                     <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
                       <Receipt className="h-6 w-6" />
                     </div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white">No billing invoices found.</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
-                      No tax invoices or payment transactions have been logged for this student yet.
-                    </p>
+                    <div>
+                      <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">No Invoices Issued Yet</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1">
+                        Issue a custom course fee invoice with tailored scholarship deductions for this learner.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleOpenIssueInvoiceModal}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-blue-600 transition-colors cursor-pointer"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Issue Custom Invoice</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -3585,6 +3726,158 @@ function AdminStudentDetailsContent() {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Issuing Custom Invoice for Student */}
+      {showIssueInvoiceModal && student && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs dark:bg-black/75">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4 dark:border-slate-800 dark:bg-surface-secondary">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div>
+                <h3 className="text-base font-black text-slate-900 dark:text-white">Issue Invoice for {student.name}</h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Custom student fee &amp; discount deduction (Zero GST)</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowIssueInvoiceModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleIssueInvoiceSubmit} className="space-y-3.5 text-xs">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated/70 p-3 space-y-1">
+                <div className="font-bold text-slate-900 dark:text-white">{student.name}</div>
+                <div className="text-slate-500 text-[11px]">{student.email} • {student.phone}</div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300">Course Track</label>
+                <select
+                  value={issueInvoiceForm.courseTitle}
+                  onChange={(e) => handleIssueCourseChange(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                >
+                  {availableInvoiceCourses.map((c) => (
+                    <option key={c.slug} value={c.title}>
+                      {c.title} — {formatINR(c.price)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Student fee varies per student — Two-way auto-calculation of fee & discount */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Standard Fee (₹)</label>
+                  <input
+                    type="number"
+                    value={issueInvoiceForm.standardFee}
+                    onChange={(e) => handleIssuePriceChange(Number(e.target.value))}
+                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white font-mono"
+                  />
+                  <span className="text-[10px] text-slate-400">Catalog price</span>
+                </div>
+                <div>
+                  <label className="font-bold text-emerald-700 dark:text-emerald-400">Agreed Student Fee (₹) *</label>
+                  <input
+                    type="number"
+                    value={issueInvoiceForm.agreedFee}
+                    onChange={(e) => handleIssueAgreedFeeChange(Number(e.target.value))}
+                    className="mt-1 w-full rounded-xl border border-emerald-300 bg-emerald-50/50 p-2.5 font-bold text-emerald-950 outline-none focus:border-[#2563EB] dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 font-mono"
+                  />
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Student fee paid</span>
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Discount (₹)</label>
+                  <input
+                    type="number"
+                    value={issueInvoiceForm.discountAmount}
+                    onChange={(e) => handleIssueDiscountChange(Number(e.target.value))}
+                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white font-mono"
+                  />
+                  <span className="text-[10px] text-slate-400">Auto deduction</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300">Discount / Promo Reason</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Scholarship Deduction (PROMO)"
+                  value={issueInvoiceForm.discountReason}
+                  onChange={(e) => setIssueInvoiceForm({ ...issueInvoiceForm, discountReason: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Payment Mode</label>
+                  <select
+                    value={issueInvoiceForm.paymentMode}
+                    onChange={(e) => setIssueInvoiceForm({ ...issueInvoiceForm, paymentMode: e.target.value as any })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                  >
+                    <option value="UPI">UPI</option>
+                    <option value="Credit/Debit Card">Credit/Debit Card</option>
+                    <option value="Net Banking">Net Banking</option>
+                    <option value="No-Cost EMI">No-Cost EMI</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Cohort / Batch Timing</label>
+                  <select
+                    value={issueInvoiceForm.batchTiming}
+                    onChange={(e) => setIssueInvoiceForm({ ...issueInvoiceForm, batchTiming: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                  >
+                    <option>Weekday Live Evening (7:00 PM - 8:30 PM IST)</option>
+                    <option>Weekday Morning (7:30 AM - 9:30 AM IST)</option>
+                    <option>Weekend Intensive (10:00 AM - 2:00 PM IST)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Summary (Zero GST) */}
+              <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-3.5 text-xs text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300 space-y-1.5">
+                <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                  <span>Gross Tuition Fee:</span>
+                  <span className="font-mono font-medium">{formatINR(issueInvoiceForm.standardFee)}</span>
+                </div>
+                {issueInvoiceForm.discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-semibold">
+                    <span>{issueInvoiceForm.discountReason || "Scholarship Deduction"}:</span>
+                    <span className="font-mono">- {formatINR(issueInvoiceForm.discountAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t border-blue-200/60 dark:border-blue-800/60 pt-2 font-black text-slate-900 dark:text-white">
+                  <span>Total Amount Paid (Zero GST):</span>
+                  <span className="font-mono text-[#2563EB] dark:text-blue-400 text-sm">
+                    {formatINR(issueInvoiceForm.agreedFee)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowIssueInvoiceModal(false)}
+                  className="rounded-xl px-4 py-2 font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-surface-hover cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-[#2563EB] px-5 py-2 font-bold text-white hover:bg-blue-700 shadow-md cursor-pointer"
+                >
+                  Generate &amp; View Invoice
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
