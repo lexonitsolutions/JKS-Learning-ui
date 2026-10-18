@@ -20,12 +20,14 @@ import {
   FileText,
   BadgeCheck,
   AlertCircle,
+  Gift,
 } from "lucide-react";
 import { registerCourseOnline, type Invoice } from "@/lib/data/invoices-store";
 import { enrollStudentCourse } from "@/lib/data/courses-store";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 import { getClientSessionEmail, validateCoupon } from "@/lib/data/enrollments-api";
+import { validateReferralCode } from "@/lib/data/referrals-api";
 
 export interface CheckoutCourseItem {
   id: string;
@@ -104,6 +106,14 @@ export function CourseCheckoutModal({
   const [couponError, setCouponError] = useState("");
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
+  // Referral state
+  const [referralCode, setReferralCode] = useState("");
+  const [referralApplied, setReferralApplied] = useState(false);
+  const [referralDiscountRupees, setReferralDiscountRupees] = useState<number>(0);
+  const [referralMessage, setReferralMessage] = useState("");
+  const [referralError, setReferralError] = useState("");
+  const [isValidatingReferral, setIsValidatingReferral] = useState(false);
+
   // Payment process state
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -159,18 +169,57 @@ export function CourseCheckoutModal({
   const isFreeCourse = typeof course.price === "number" ? course.price === 0 : false;
   const basePrice = typeof course.price === "number" && course.price >= 0 ? course.price : 0;
   const originalPrice = isFreeCourse ? 0 : (course.originalPrice || Math.round(basePrice * 1.5));
-  const discountAmount = isFreeCourse
+  const couponDiscountAmount = isFreeCourse
     ? 0
     : couponApplied
     ? isFullDiscount
       ? basePrice
       : Math.round(basePrice * ((couponDiscountPercent || 10) / 100))
     : 0;
+  const referralDiscountAmount = !isFreeCourse && referralApplied ? referralDiscountRupees : 0;
+  const discountAmount = Math.min(basePrice, couponDiscountAmount + referralDiscountAmount);
   const finalPrice = isFreeCourse ? 0 : Math.max(0, basePrice - discountAmount);
   const taxableAmount = finalPrice;
   const totalTax = 0;
   const cgst = 0;
   const sgst = 0;
+
+  const handleApplyReferral = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setReferralError("");
+    setReferralMessage("");
+    const cleaned = referralCode.trim().toUpperCase();
+    if (!cleaned) {
+      setReferralApplied(false);
+      setReferralDiscountRupees(0);
+      return;
+    }
+    setIsValidatingReferral(true);
+    try {
+      const res = await validateReferralCode(cleaned, course.slug);
+      if (res.valid) {
+        setReferralApplied(true);
+        let disc = 0;
+        if (res.refereeDiscountType === "PERCENT") {
+          disc = Math.round(basePrice * (res.refereeDiscountValue / 100));
+        } else {
+          disc = res.refereeDiscountValue;
+        }
+        setReferralDiscountRupees(disc);
+        setReferralMessage(res.message || `₹${disc.toLocaleString("en-IN")} referral benefit applied!`);
+      } else {
+        setReferralApplied(false);
+        setReferralDiscountRupees(0);
+        setReferralError(res.message || "Invalid referral code.");
+      }
+    } catch {
+      setReferralApplied(false);
+      setReferralDiscountRupees(0);
+      setReferralError("Could not validate referral code.");
+    } finally {
+      setIsValidatingReferral(false);
+    }
+  };
 
   const handleApplyCoupon = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -256,6 +305,7 @@ export function CourseCheckoutModal({
         price: basePrice,
         discount: discountAmount,
         discountCode: couponApplied ? couponCode.toUpperCase() : undefined,
+        referralCode: referralApplied ? referralCode.toUpperCase() : undefined,
         paymentMode:
           isFreeCourse || finalPrice === 0
             ? "Free Course"
@@ -706,6 +756,61 @@ export function CourseCheckoutModal({
                   )}
                 </div>
 
+                {/* Referral Code Card */}
+                {!isFreeCourse && (
+                  <div className={`rounded-2xl border p-4 space-y-2.5 transition-all ${
+                    referralApplied
+                      ? "border-purple-300 dark:border-purple-800 bg-purple-50/70 dark:bg-purple-950/30"
+                      : "border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-surface-elevated/80"
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs font-bold text-purple-900 dark:text-purple-300">
+                        <Gift className="h-3.5 w-3.5" /> Referral Code
+                      </span>
+                      {referralApplied && (
+                        <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1">
+                          <Check className="h-3.5 w-3.5" /> -₹{referralDiscountRupees.toLocaleString("en-IN")} Off
+                        </span>
+                      )}
+                    </div>
+
+                    <form onSubmit={handleApplyReferral} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={referralCode}
+                        onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                        placeholder="e.g. REF-SARAH-9214"
+                        className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-800 uppercase outline-none focus:border-purple-500 dark:border-slate-700 dark:bg-surface-secondary dark:text-white"
+                      />
+                      <button
+                        type="submit"
+                        disabled={isValidatingReferral}
+                        className="rounded-xl bg-purple-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-purple-700 cursor-pointer disabled:opacity-50 flex items-center gap-1 transition-colors"
+                      >
+                        {isValidatingReferral ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <span>Validating</span>
+                          </>
+                        ) : (
+                          "Apply"
+                        )}
+                      </button>
+                    </form>
+
+                    {referralMessage && (
+                      <div className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold flex items-center gap-1">
+                        <Check className="h-3 w-3" />
+                        <span>{referralMessage}</span>
+                      </div>
+                    )}
+
+                    {referralError && (
+                      <div className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold">{referralError}</div>
+                    )}
+                  </div>
+                )}
+
                 {/* Invoice Itemized Breakdown */}
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-2 text-xs text-slate-600 dark:border-slate-800 dark:bg-surface-elevated/80 dark:text-slate-300">
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white border-b border-slate-200/60 pb-2 dark:border-slate-800">
@@ -717,10 +822,22 @@ export function CourseCheckoutModal({
                       {isFreeCourse ? "₹0 (Free Course)" : `₹${basePrice.toLocaleString("en-IN")}`}
                     </span>
                   </div>
-                  {couponApplied && !isFreeCourse && (
+                  {couponApplied && !isFreeCourse && couponDiscountAmount > 0 && (
                     <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
                       <span>Scholarship Deduction ({couponCode})</span>
-                      <span>-₹{discountAmount.toLocaleString("en-IN")}</span>
+                      <span>-₹{couponDiscountAmount.toLocaleString("en-IN")}</span>
+                    </div>
+                  )}
+                  {referralApplied && !isFreeCourse && referralDiscountAmount > 0 && (
+                    <div className="flex justify-between text-purple-600 dark:text-purple-400 font-bold">
+                      <span>Referral Benefit ({referralCode})</span>
+                      <span>-₹{referralDiscountAmount.toLocaleString("en-IN")}</span>
+                    </div>
+                  )}
+                  {discountAmount > 0 && !isFreeCourse && (
+                    <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px] pt-1 border-t border-slate-200/50 dark:border-slate-800/50">
+                      <span>Total Savings</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400">-₹{discountAmount.toLocaleString("en-IN")}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2.5 border-t border-slate-200 dark:border-slate-800">

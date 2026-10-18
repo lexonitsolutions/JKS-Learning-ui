@@ -920,3 +920,96 @@ textarea {
   pointer-events: none;
   color: #94a3b8;
 }
+
+/* ── Success stories: restrained, transform/opacity-only motion ───────────── */
+.ss-armed { opacity: 0; transform: translate3d(0, 28px, 0); }
+.ss-in { animation: ss-rise 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) var(--ss-delay, 0s) both; }
+@keyframes ss-rise {
+  from { opacity: 0; transform: translate3d(0, 28px, 0); }
+  to { opacity: 1; transform: none; }
+}
+.ss-tilt {
+  transform: perspective(1100px) rotateX(var(--ss-rx, 0deg)) rotateY(var(--ss-ry, 0deg));
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.55s ease;
+}
+.ss-tilt[data-active="true"] { transition: transform 0.1s linear, box-shadow 0.55s ease; }
+.ss-float { animation: ss-float 9s ease-in-out infinite alternate; }
+@keyframes ss-float {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, -14px, 0); }
+}
+@keyframes ss-grow { to { transform: scaleX(1); } }
+@keyframes ss-drift { to { transform: translate3d(0, -64px, 0); } }
+.ss-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 60;
+  transform: scaleX(0); transform-origin: 0 50%;
+  background: linear-gradient(90deg, #1e5eff, #7cb0ff);
+  pointer-events: none;
+}
+.ss-parallax { will-change: transform; }
+@supports (animation-timeline: scroll()) {
+  .ss-progress { animation: ss-grow linear both; animation-timeline: scroll(root); }
+  .ss-parallax { animation: ss-drift linear both; animation-timeline: scroll(root); animation-range: 0 90vh; }
+}
+@supports not (animation-timeline: scroll()) { .ss-progress { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .ss-armed { opacity: 1; transform: none; }
+  .ss-in, .ss-float, .ss-parallax, .ss-progress { animation: none !important; }
+  .ss-progress { display: none; }
+  .ss-tilt { transform: none !important; transition: none; }
+}
+
+/* ── Success stories: extra motion (all transform/opacity/clip-path, compositor-friendly) ── */
+@keyframes ss-word {
+  from { opacity: 0; transform: translate3d(0, 0.55em, 0) rotateX(-45deg); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+.ss-word { display: inline-block; transform-origin: 50% 100%; animation: ss-word 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) calc(var(--i, 0) * 70ms + 150ms) both; }
+@keyframes ss-line { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.ss-bar { display: block; height: 4px; width: 72px; border-radius: 999px; background: linear-gradient(90deg, #1e5eff, #7cb0ff); transform-origin: 0 50%; }
+.ss-armed .ss-bar { transform: scaleX(0); }
+.ss-in .ss-bar { animation: ss-line 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s both; }
+.ss-stagger.ss-in, .ss-stagger.ss-armed { animation: none; }
+.ss-stagger.ss-armed { opacity: 1; transform: none; }
+.ss-stagger.ss-armed > * { opacity: 0; transform: translate3d(0, 24px, 0); }
+.ss-stagger.ss-in > * { animation: ss-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.ss-stagger.ss-in > *:nth-child(1) { animation-delay: 0.04s; }
+.ss-stagger.ss-in > *:nth-child(2) { animation-delay: 0.12s; }
+.ss-stagger.ss-in > *:nth-child(3) { animation-delay: 0.2s; }
+.ss-stagger.ss-in > *:nth-child(4) { animation-delay: 0.28s; }
+.ss-stagger.ss-in > *:nth-child(5) { animation-delay: 0.36s; }
+.ss-stagger.ss-in > *:nth-child(6) { animation-delay: 0.44s; }
+.ss-stagger.ss-in > *:nth-child(n + 7) { animation-delay: 0.52s; }
+@keyframes ss-ring { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.75); opacity: 0; } }
+.ss-ring { animation: ss-ring 2.6s ease-out infinite; }
+.ss-float-slow { animation: ss-float 13s ease-in-out infinite alternate; animation-delay: -4s; }
+.ss-float-fast { animation: ss-float 7s ease-in-out infinite alternate; animation-delay: -2s; }
+@keyframes ss-clip-in {
+  from { clip-path: inset(9% 5% 9% 5% round 40px); transform: scale(0.9); opacity: 0.4; }
+  to { clip-path: inset(-90px round 24px); transform: scale(1); opacity: 1; }
+}
+@keyframes ss-par-img { from { transform: translate3d(0, -6%, 0) scale(1.14); } to { transform: translate3d(0, 6%, 0) scale(1.14); } }
+@keyframes ss-from-left { from { opacity: 0; transform: translate3d(-56px, 0, 0); } to { opacity: 1; transform: none; } }
+@keyframes ss-from-right { from { opacity: 0; transform: translate3d(56px, 0, 0); } to { opacity: 1; transform: none; } }
+@keyframes ss-hero-out { to { opacity: 0.15; transform: translate3d(0, -60px, 0); } }
+@keyframes ss-hero-media { to { transform: translate3d(0, -40px, 0) scale(0.95); } }
+@keyframes ss-card-in { from { opacity: 0; transform: translate3d(0, 60px, 0) scale(0.96); } to { opacity: 1; transform: none; } }
+@supports (animation-timeline: view()) {
+  .ss-clip { animation: ss-clip-in linear both; animation-timeline: view(); animation-range: entry 0% cover 38%; }
+  .ss-img-par { animation: ss-par-img linear both; animation-timeline: view(); animation-range: cover; }
+  .ss-slide-l { animation: ss-from-left linear both; animation-timeline: view(); animation-range: entry 5% entry 85%; }
+  .ss-slide-r { animation: ss-from-right linear both; animation-timeline: view(); animation-range: entry 5% entry 85%; }
+  .ss-hero-out { animation: ss-hero-out linear both; animation-timeline: scroll(root); animation-range: 0 75vh; }
+  .ss-hero-media { animation: ss-hero-media linear both; animation-timeline: scroll(root); animation-range: 0 90vh; }
+  .ss-card-scroll { animation: ss-card-in linear both; animation-timeline: view(); animation-range: entry 0% entry 70%; }
+}
+/* Phones: no sideways slides (they overflow the viewport) and no hero fade while the stacked hero is still being read. */
+@media (max-width: 1023px) {
+  .ss-slide-l, .ss-slide-r, .ss-hero-out, .ss-hero-media { animation: none !important; }
+  .ss-parallax { animation: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ss-word, .ss-ring, .ss-float-slow, .ss-float-fast, .ss-clip, .ss-img-par, .ss-slide-l, .ss-slide-r,
+  .ss-hero-out, .ss-hero-media, .ss-card-scroll, .ss-bar, .ss-stagger > * { animation: none !important; }
+  .ss-stagger.ss-armed > *, .ss-armed .ss-bar { opacity: 1; transform: none; }
+}

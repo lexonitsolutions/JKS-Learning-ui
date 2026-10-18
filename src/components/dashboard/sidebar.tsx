@@ -31,6 +31,7 @@ import {
   UserCog,
   BriefcaseBusiness,
   Newspaper,
+  Trophy,
   type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -80,6 +81,7 @@ const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin/jobs", label: "Jobs", icon: BriefcaseBusiness },
   { href: "/admin/jobs-access", label: "Jobs Access", icon: ShieldCheck },
   { href: "/admin/blog", label: "Blog", icon: Newspaper },
+  { href: "/admin/success-stories", label: "Success Stories", icon: Trophy },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
   { href: "/admin/activity-logs", label: "Activity log", icon: Activity },
   { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone },

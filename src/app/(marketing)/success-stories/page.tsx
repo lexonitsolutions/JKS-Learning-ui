@@ -1,246 +1,66 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Trophy, ArrowRight, CheckCircle2, XCircle, Sparkles } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { MagneticButton } from "@/components/interactions/magnetic-button";
-import { Reveal } from "@/lib/motion/reveal";
-import { SuccessStoriesHero } from "@/components/marketing/success-stories-hero";
-import { SuccessStoriesExplorer } from "@/components/marketing/success-stories-explorer";
-import { TestimonialWall } from "@/components/marketing/testimonial-wall";
-import { TESTIMONIALS } from "@/lib/data/testimonials";
+import { ArrowRight } from "lucide-react";
+import { SITE_URL } from "@/lib/site";
+import {
+  fetchFeaturedStory,
+  fetchStoriesPage,
+  fetchStoryFacets,
+} from "@/lib/data/success-stories-api";
+import { StoriesExperience } from "@/components/success-stories/stories-experience";
 
-const HIRING_PARTNERS = [
-  { name: "Deloitte", tier: "Big 4 Consulting" },
-  { name: "Infosys", tier: "Global IT Services" },
-  { name: "Razorpay", tier: "FinTech Unicorn" },
-  { name: "Accenture", tier: "Enterprise Solutions" },
-  { name: "PwC", tier: "Big 4 Advisory" },
-  { name: "Swiggy", tier: "Tier-1 Consumer Tech" },
-  { name: "Capgemini", tier: "Enterprise Cloud" },
-  { name: "Oracle", tier: "Enterprise Systems" },
-  { name: "BrowserStack", tier: "Developer Tools" },
-  { name: "TCS", tier: "Global Technology" },
-  { name: "IBM", tier: "Cloud & Cognitive" },
-  { name: "Wipro", tier: "Digital Operations" },
-];
+export const metadata: Metadata = {
+  title: "Success Stories | JKS Learning",
+  description:
+    "Watch and read how JKS Learning students built new skills, changed careers and reached their goals, in their own words.",
+  alternates: { canonical: `${SITE_URL}/success-stories` },
+  openGraph: {
+    title: "Real People. Real Skills. Remarkable Success.",
+    description: "Student success stories from JKS Learning.",
+    url: `${SITE_URL}/success-stories`,
+    type: "website",
+  },
+};
 
-const COMPARISON_POINTS = [
-  {
-    pillar: "Skill Verification",
-    traditional: "Passive video certificates that recruiters ignore",
-    jksApproach: "100% Verifiable capstones + recorded AI mock interview readiness diagnostics",
-  },
-  {
-    pillar: "Interview Preparedness",
-    traditional: "Random LeetCode grinding with no adaptive conversational feedback",
-    jksApproach: "Enterprise-calibrated AI mock interviews with 5-axis instant diagnostic reports",
-  },
-  {
-    pillar: "Curriculum Alignment",
-    traditional: "Outdated toy apps (todo lists, counter buttons) with zero enterprise depth",
-    jksApproach: "Production-grade distributed systems, S/4HANA workflows, and micro-frontends",
-  },
-  {
-    pillar: "Career Outcome",
-    traditional: "Months stuck in tutorial hell without clear roadmap or mentorship",
-    jksApproach: "Targeted action plan with structured modules that directly convert to job offers",
-  },
-];
+export default async function SuccessStoriesPage() {
+  // Public, published-only data. Any failure resolves to null and the client
+  // shows a retryable state instead of an empty or broken page.
+  const [featured, facets, initialPage] = await Promise.all([
+    fetchFeaturedStory(),
+    fetchStoryFacets(),
+    fetchStoriesPage({}),
+  ]);
 
-export default function SuccessStoriesPage() {
   return (
     <>
-      {/* 1. ULTRA-PREMIUM 3D HERO SECTION */}
-      <SuccessStoriesHero />
+      <StoriesExperience featured={featured} facets={facets} initialPage={initialPage} />
 
-      {/* 2. TRUSTED HIRING PARTNER NETWORK MARQUEE */}
-      <section className="border-y border-border dark:border-slate-800 bg-white dark:bg-background py-12">
-        <div className="mx-auto max-w-[1320px] px-6 lg:px-12">
-          <div className="text-center mb-8">
-            <span className="text-xs font-bold uppercase tracking-wider text-text-body/70 dark:text-slate-400">
-              Where JKS Learning Alumni Build Their Careers
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {HIRING_PARTNERS.map((partner) => (
-              <div
-                key={partner.name}
-                className="flex flex-col items-center justify-center rounded-xl border border-border/80 dark:border-slate-800 bg-bg-light/60 dark:bg-surface-secondary p-4 transition-all hover:bg-white dark:hover:bg-surface-elevated hover:border-primary-blue/30 hover:shadow-sm"
-              >
-                <span className="text-sm font-bold text-text-heading dark:text-white">{partner.name}</span>
-                <span className="text-[10px] text-text-body/60 dark:text-slate-400 font-medium mt-0.5">
-                  {partner.tier}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 3. INTERACTIVE STORIES EXPLORER WITH SPOTLIGHT & 3D TILT CARDS */}
-      <SuccessStoriesExplorer />
-
-      {/* 5. THE JKS TRANSFORMATION DIFFERENCE MATRIX */}
-      <section className="py-20 lg:py-28 bg-white dark:bg-background border-y border-border dark:border-slate-800">
-        <div className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-12">
-          <Reveal className="mb-10 sm:mb-14 text-center max-w-2xl mx-auto">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-blue/10 dark:bg-blue-950/60 px-3.5 py-1 text-xs font-semibold text-primary-blue dark:text-blue-400">
-              <Sparkles className="h-3.5 w-3.5" /> Proven Advantage
-            </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text-heading dark:text-white mt-3">
-              Why JKS Graduates Land Offers 3x Faster
-            </h2>
-            <p className="mt-3 text-xs sm:text-sm text-text-body dark:text-slate-400">
-              How our structured curriculum, production capstones, and AI Mock Interview simulator
-              transform candidates into high-confidence engineering hires.
-            </p>
-          </Reveal>
-
-          {/* Mobile Card Stack (< md) */}
-          <div className="space-y-4 md:hidden">
-            {COMPARISON_POINTS.map((item, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl border border-border dark:border-slate-800 bg-white dark:bg-surface-secondary p-5 shadow-xs space-y-3.5"
-              >
-                <div className="font-extrabold text-slate-900 dark:text-white text-sm border-b border-border/60 dark:border-slate-800 pb-2">
-                  {item.pillar}
-                </div>
-
-                <div className="space-y-2.5">
-                  <div className="rounded-xl bg-rose-50/70 dark:bg-rose-950/30 p-3 text-xs text-slate-700 dark:text-slate-300 space-y-1 border border-rose-100/80 dark:border-rose-900/40">
-                    <div className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider flex items-center gap-1">
-                      <XCircle className="h-3.5 w-3.5 text-rose-500 shrink-0" />
-                      <span>Traditional Tutorials & Bootcamps</span>
-                    </div>
-                    <p className="font-medium text-slate-600 dark:text-slate-300 pl-4">{item.traditional}</p>
-                  </div>
-
-                  <div className="rounded-xl bg-blue-50/80 dark:bg-blue-950/30 p-3 text-xs text-slate-900 dark:text-white space-y-1 border border-blue-200/80 dark:border-blue-900/40 shadow-xs">
-                    <div className="text-[10px] font-bold text-[#2563EB] dark:text-blue-400 uppercase tracking-wider flex items-center gap-1">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                      <span>JKS Career Accelerator</span>
-                    </div>
-                    <p className="font-bold text-slate-900 dark:text-white pl-4">{item.jksApproach}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop Table (>= md) */}
-          <Reveal
-            variant="scale-in"
-            className="hidden md:block overflow-hidden rounded-3xl border border-border dark:border-slate-800 bg-white dark:bg-surface-secondary shadow-sm"
+      <section aria-labelledby="ss-cta-title" className="bg-[#0B1F3A] py-20 text-white lg:py-28">
+        <div className="mx-auto max-w-3xl px-5 text-center sm:px-8">
+          <h2
+            id="ss-cta-title"
+            className="text-balance text-[clamp(1.9rem,4vw,3rem)] font-semibold leading-[1.1] tracking-tight"
           >
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-border dark:border-slate-800 bg-bg-light/90 dark:bg-surface-elevated text-xs font-bold text-text-heading dark:text-white uppercase tracking-wider">
-                    <th className="p-5 sm:p-6">Transformation Pillar</th>
-                    <th className="p-5 sm:p-6 text-text-body dark:text-slate-400">Traditional Tutorials & Bootcamps</th>
-                    <th className="p-5 sm:p-6 text-primary-blue dark:text-blue-400 bg-primary-blue/[0.04] dark:bg-primary-blue/10">
-                      JKS Career Accelerator
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60 dark:divide-slate-800">
-                  {COMPARISON_POINTS.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-bg-light/40 dark:hover:bg-surface-hover transition-colors">
-                      <td className="p-5 sm:p-6 font-bold text-text-heading dark:text-white text-sm">
-                        {item.pillar}
-                      </td>
-                      <td className="p-5 sm:p-6 text-xs sm:text-sm text-text-body dark:text-slate-400">
-                        <div className="flex items-start gap-2.5">
-                          <XCircle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
-                          <span>{item.traditional}</span>
-                        </div>
-                      </td>
-                      <td className="p-5 sm:p-6 text-xs sm:text-sm font-medium text-text-heading dark:text-white bg-primary-blue/[0.02] dark:bg-primary-blue/5">
-                        <div className="flex items-start gap-2.5 text-slate-900 dark:text-white">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                          <span className="font-semibold">{item.jksApproach}</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-
-      {/* 6. 3D PERSPECTIVE TESTIMONIAL FEEDBACK WALL */}
-      <section className="py-20 lg:py-28 bg-bg-light dark:bg-background">
-        <div className="mx-auto max-w-[1320px] px-6 lg:px-12">
-          <Reveal className="mb-12 text-center max-w-xl mx-auto">
-            <span className="text-label text-primary-blue">Continuous Feedback</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-text-heading mt-2">
-              Wall of Alumni Love
-            </h2>
-            <p className="mt-2 text-sm text-text-body">
-              Live feedback from thousands of learners sharpening their skills every single day.
-            </p>
-          </Reveal>
-
-          <Reveal variant="scale-in">
-            <TestimonialWall testimonials={TESTIMONIALS} />
-          </Reveal>
-        </div>
-      </section>
-
-      {/* 7. HIGH-CONVERTING FINAL CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-[#0B1120] via-primary-fill to-[#0B1120] py-20 lg:py-24 text-white">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-25"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at center, rgba(0,240,255,0.45), transparent 70%)",
-          }}
-        />
-
-        <Reveal
-          variant="scale-in"
-          className="relative mx-auto max-w-[1280px] px-6 text-center lg:px-16"
-        >
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-cyan-300 backdrop-blur-md">
-            <Trophy className="h-3.5 w-3.5" /> Your Breakthrough Awaits
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mt-4">
-            Your Success Story Starts Here
+            Your success story starts here
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-white/85 leading-relaxed">
-            Join thousands of motivated engineers upskilling with structured courses, production
-            capstone portfolios, and AI-powered adaptive mock interviews.
+          <p className="mx-auto mt-4 max-w-xl text-pretty text-base leading-relaxed text-white/80">
+            Structured courses, hands-on projects and AI mock interviews to help you build skills that employers notice.
           </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <MagneticButton>
-              <Link
-                href="/courses"
-                className={
-                  cn(buttonVariants({ variant: "secondary", size: "lg" }), "border-white bg-white text-[#1E5EFF] hover:bg-blue-50 hover:text-[#1E5EFF] font-bold shadow-xl shadow-black/20")
-                }
-              >
-                Explore Courses <ArrowRight className="h-4 w-4 ml-1.5" />
-              </Link>
-            </MagneticButton>
-
-            <MagneticButton>
-              <Link
-                href="/dashboard/ai-interview"
-                className={
-                  cn(buttonVariants({ variant: "secondary", size: "lg" }), "border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-md font-semibold")
-                }
-              >
-                Try Free AI Mock Interview
-              </Link>
-            </MagneticButton>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/courses"
+              className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-[#0B1F3A] transition hover:bg-[#EAF1FF] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50"
+            >
+              Explore courses <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            <Link
+              href="/dashboard/ai-interview"
+              className="inline-flex min-h-12 items-center rounded-full px-6 text-sm font-semibold text-white ring-1 ring-white/30 transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50"
+            >
+              Try a free AI mock interview
+            </Link>
           </div>
-        </Reveal>
+        </div>
       </section>
     </>
   );

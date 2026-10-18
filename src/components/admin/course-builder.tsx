@@ -342,6 +342,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
   // Section, Subsections & Direct Videos Collapse State (Stage 2)
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [collapsedSubsectionsBySection, setCollapsedSubsectionsBySection] = useState<Record<string, boolean>>({});
+  const [collapsedIndividualSubsections, setCollapsedIndividualSubsections] = useState<Record<string, boolean>>({});
   const [collapsedDirectVideos, setCollapsedDirectVideos] = useState<Record<string, boolean>>({});
 
   const toggleSectionCollapse = (sectionId: string) => {
@@ -351,11 +352,32 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
     }));
   };
 
+  const toggleIndividualSubsection = (subsectionId: string) => {
+    setCollapsedIndividualSubsections((prev) => ({
+      ...prev,
+      [subsectionId]: !prev[subsectionId],
+    }));
+  };
+
   const toggleAllSubsectionsForSection = (sectionId: string) => {
+    const section = sections.find((s) => s.id === sectionId);
+    const currentlyAllCollapsed = !!collapsedSubsectionsBySection[sectionId];
+    const nextState = !currentlyAllCollapsed;
+
     setCollapsedSubsectionsBySection((prev) => ({
       ...prev,
-      [sectionId]: !prev[sectionId],
+      [sectionId]: nextState,
     }));
+
+    if (section?.subsections) {
+      setCollapsedIndividualSubsections((prev) => {
+        const updated = { ...prev };
+        section.subsections!.forEach((sub) => {
+          updated[sub.id] = nextState;
+        });
+        return updated;
+      });
+    }
   };
 
   const toggleDirectVideosCollapse = (sectionId: string) => {
@@ -1009,14 +1031,16 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
     const sec = updated[sectionIndex];
     const currentSubs = sec.subsections || [];
     const newSubOrder = currentSubs.length + 1;
+    const newSubId = `sub-${Date.now()}`;
     const newSub: SubSection = {
-      id: `sub-${Date.now()}`,
+      id: newSubId,
       title: "",
       order: newSubOrder,
       videos: [],
     };
     sec.subsections = [...currentSubs, newSub];
     setSections(updated);
+    setCollapsedIndividualSubsections((prev) => ({ ...prev, [newSubId]: false }));
   };
 
   const removeSubsection = (sectionIndex: number, subsectionId: string) => {
@@ -1087,6 +1111,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
     };
     sub.videos = [...sub.videos, newVid];
     setSections(updated);
+    setCollapsedIndividualSubsections((prev) => ({ ...prev, [sub.id]: false }));
 
     setTimeout(() => {
       const el = document.getElementById(`video-card-${newVidId}`);
@@ -2082,7 +2107,13 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
                     const subVideoCount = section.subsections?.reduce((acc, sub) => acc + (sub.videos?.length || 0), 0) || 0;
                     const totalSectionLessons = directVideoCount + subVideoCount;
                     const isSectionCollapsed = !!collapsedSections[section.id];
-                    const areSubsectionsCollapsed = !!collapsedSubsectionsBySection[section.id];
+                    const areSubsectionsCollapsed =
+                      (section.subsections || []).length > 0 &&
+                      (section.subsections || []).every((sub) =>
+                        collapsedIndividualSubsections[sub.id] !== undefined
+                          ? !!collapsedIndividualSubsections[sub.id]
+                          : !!collapsedSubsectionsBySection[section.id]
+                      );
                     const isDirectVideosCollapsed = !!collapsedDirectVideos[section.id];
 
                     return (
@@ -2224,13 +2255,32 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
                         {section.subsections && section.subsections.length > 0 ? (
                           <div className="space-y-3 pl-1 sm:pl-3 border-l-2 border-blue-200 dark:border-blue-900/60">
                             {section.subsections.map((sub, subIdx) => {
+                              const isSubCollapsed = collapsedIndividualSubsections[sub.id] !== undefined
+                                ? !!collapsedIndividualSubsections[sub.id]
+                                : !!collapsedSubsectionsBySection[section.id];
+
                               return (
                               <div
                                 key={sub.id}
-                                className="rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-3 sm:p-3.5 shadow-xs space-y-3"
+                                className={`rounded-xl border transition-all duration-200 ${
+                                  isSubCollapsed
+                                    ? "border-slate-200 dark:border-slate-700/80 bg-white/95 dark:bg-surface-secondary/90 p-2.5 sm:p-3 shadow-2xs"
+                                    : "border-slate-200 dark:border-slate-700/80 bg-white dark:bg-surface-secondary p-3 sm:p-3.5 shadow-xs space-y-3"
+                                }`}
                               >
                                 <div className="flex items-center justify-between gap-2">
-                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+                                    {/* Left Chevron Toggle */}
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleIndividualSubsection(sub.id)}
+                                      className="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
+                                      title={isSubCollapsed ? "Click to expand subsection videos" : "Click to collapse subsection videos"}
+                                      aria-label={isSubCollapsed ? "Expand subsection" : "Collapse subsection"}
+                                    >
+                                      <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${isSubCollapsed ? "-rotate-90" : ""}`} />
+                                    </button>
+
                                     <span className="rounded bg-blue-100 dark:bg-blue-950/50 px-1.5 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-400 shrink-0">
                                       {secIdx + 1}.{subIdx + 1}
                                     </span>
@@ -2249,10 +2299,36 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
                                     />
                                   </div>
                                   <div className="flex items-center gap-1.5 shrink-0">
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+                                    {/* Video Count Badge - also clickable to toggle */}
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleIndividualSubsection(sub.id)}
+                                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold transition-colors cursor-pointer ${
+                                        isSubCollapsed
+                                          ? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-[#2563EB] dark:hover:text-blue-400"
+                                          : "bg-blue-50 dark:bg-blue-950/50 text-[#2563EB] dark:text-blue-400"
+                                      }`}
+                                      title={isSubCollapsed ? "Click to expand videos" : "Click to collapse videos"}
+                                    >
                                       <Video className="h-3 w-3 text-[#2563EB] dark:text-blue-400" />
                                       <span>{sub.videos?.length || 0}</span>
-                                    </span>
+                                    </button>
+
+                                    {/* Right Dedicated Expand / Collapse Chevron Button */}
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleIndividualSubsection(sub.id)}
+                                      className={`flex h-6 w-6 items-center justify-center rounded-md border transition-all cursor-pointer ${
+                                        isSubCollapsed
+                                          ? "border-blue-200 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60"
+                                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-surface-hover"
+                                      }`}
+                                      title={isSubCollapsed ? "Expand subsection videos" : "Collapse subsection videos"}
+                                      aria-label={isSubCollapsed ? "Expand subsection videos" : "Collapse subsection videos"}
+                                    >
+                                      <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${isSubCollapsed ? "" : "rotate-180"}`} />
+                                    </button>
+
                                     <button
                                       type="button"
                                       onClick={() => removeSubsection(secIdx, sub.id)}
@@ -2264,8 +2340,8 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
                                   </div>
                                 </div>
 
-                                {/* Subsection Videos - Hidden when all subsections are collapsed */}
-                                {!areSubsectionsCollapsed && (
+                                {/* Subsection Videos - Hidden when THIS subsection is collapsed */}
+                                {!isSubCollapsed && (
                                 <div className="space-y-2.5 pl-1 sm:pl-3">
                                   {sub.videos.map((vid, vidIdx) => (
                                     <div

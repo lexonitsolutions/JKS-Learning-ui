@@ -19,6 +19,7 @@ import {
 import { JksLogo } from "@/components/common/jks-logo";
 import { useSignIn } from "@clerk/nextjs/legacy";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
+import { isNetworkError } from "@/components/ui/travel-connect-signin-1";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { apiFetch } from "@/lib/api/base-url";
 
@@ -135,7 +136,9 @@ export function ForgotPasswordCard() {
           clerkSuccess = true;
         }
       } catch (err: unknown) {
-        if (isClerkAPIResponseError(err)) {
+        if (isNetworkError(err)) {
+          clerkErrorMsg = "We couldn't reach the server. Please check your internet connection and try again.";
+        } else if (isClerkAPIResponseError(err)) {
           const first = err.errors?.[0];
           clerkErrorMsg = first?.longMessage || first?.message || null;
         } else if (err instanceof Error) {
