@@ -172,12 +172,12 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
                     {COMPANY.cin && (<><span className="font-bold">CIN:</span> {COMPANY.cin}</>)}
                   </p>
                 )}
-                <p className="text-slate-500 text-[11px]">SAC Code: 999293 (Commercial Training &amp; Education Services)</p>
+                <p className="text-slate-500 text-[11px]">Commercial Training &amp; Education Services</p>
               </div>
             </div>
 
             <div className="sm:text-right space-y-1.5 shrink-0 bg-slate-50 sm:bg-transparent p-3 sm:p-0 rounded-xl sm:rounded-none border sm:border-none border-slate-200">
-              <div className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">ORIGINAL TAX INVOICE</div>
+              <div className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">ORIGINAL INVOICE</div>
               <div className="text-xs font-mono font-bold text-[#2563EB] bg-blue-50 border border-blue-200 rounded-lg px-2.5 py-1 inline-block">
                 {invoice.invoiceNumber}
               </div>
@@ -217,17 +217,15 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b-2 border-slate-900 text-slate-600 font-black uppercase text-[10px] tracking-wider">
-                  <th className="py-3 px-2">SAC</th>
                   <th className="py-3 px-2">Item / Course Description</th>
                   <th className="py-3 px-2 text-center">Qty</th>
                   <th className="py-3 px-2 text-right">Tuition Fee</th>
-                  <th className="py-3 px-2 text-right">Taxable Total</th>
+                  <th className="py-3 px-2 text-right">Total Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {invoice.items.map((item, idx) => (
                   <tr key={idx}>
-                    <td className="py-3.5 px-2 font-mono text-slate-500 text-[11px] align-top">999293</td>
                     <td className="py-3.5 px-2 align-top">
                       <div className="font-bold text-slate-900 text-xs">{item.description}</div>
                       <div className="text-[11px] text-slate-500 mt-0.5">Live Tutor Mentorship + Production Capstones + Placement Support</div>
@@ -252,9 +250,8 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
                 </div>
                 <div className="text-[11px] text-slate-500">Live Tutor Mentorship + Capstones + Placement Support</div>
                 <div className="flex justify-between items-center border-t border-slate-200 pt-2 text-xs">
-                  <span className="text-slate-500 text-[11px]">SAC: 999293</span>
+                  <span className="text-slate-500 text-[11px]">Tuition: {formatINR(item.unitPrice)}</span>
                   <div className="text-right">
-                    <span className="text-slate-500 text-[11px] mr-2">Tuition: {formatINR(item.unitPrice)}</span>
                     <span className="font-mono font-black text-slate-900">Total: {formatINR(item.totalPrice)}</span>
                   </div>
                 </div>
@@ -262,7 +259,7 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
             ))}
           </div>
 
-          {/* Summary & Tax Breakdown Box */}
+          {/* Summary Box (Zero GST) */}
           <div className="flex justify-end pt-2 border-t-2 border-slate-900">
             <div className="w-full sm:max-w-sm space-y-2 text-xs">
               <div className="flex justify-between text-slate-600">
@@ -277,21 +274,6 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
                 </div>
               )}
 
-              <div className="flex justify-between text-slate-600">
-                <span>Taxable Value (Net of Discount):</span>
-                <span className="font-mono">{formatINR(invoice.taxableAmount)}</span>
-              </div>
-
-              <div className="flex justify-between text-slate-500 text-[11px]">
-                <span>Central GST (CGST 9%):</span>
-                <span className="font-mono">{formatINR(invoice.cgstAmount)}</span>
-              </div>
-
-              <div className="flex justify-between text-slate-500 text-[11px]">
-                <span>State GST (SGST 9%):</span>
-                <span className="font-mono">{formatINR(invoice.sgstAmount)}</span>
-              </div>
-
               <div className="flex justify-between border-t-2 border-slate-900 pt-2.5 text-sm font-black text-slate-950">
                 <span>Total Amount Paid:</span>
                 <span className="font-mono text-[#2563EB] text-base">{formatINR(invoice.totalAmount)}</span>
@@ -304,8 +286,8 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
             <div className="flex items-center gap-3">
               <ShieldCheck className="h-8 w-8 text-emerald-600 shrink-0" />
               <div>
-                <div className="font-bold text-slate-900 text-xs">Digitally Verified &amp; Reconciled Tax Invoice</div>
-                <div className="text-[11px] text-slate-500">This is a system-generated computer invoice under Section 31 of CGST Act.</div>
+                <div className="font-bold text-slate-900 text-xs">Digitally Verified &amp; Reconciled Invoice</div>
+                <div className="text-[11px] text-slate-500">This is a system-generated computer invoice issued by JKS Learning.</div>
               </div>
             </div>
 

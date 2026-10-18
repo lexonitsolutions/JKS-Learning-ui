@@ -19,7 +19,6 @@ export const COMPANY = {
 /** Fields that are still missing, so the UI can warn before an invoice is issued. */
 export function getMissingCompanyFields(): string[] {
   const missing: string[] = [];
-  if (!COMPANY.gstin) missing.push("GSTIN");
   if (!COMPANY.cin) missing.push("CIN");
   if (!COMPANY.address) missing.push("registered address");
   if (!COMPANY.signatoryName) missing.push("authorized signatory");

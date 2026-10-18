@@ -11,6 +11,7 @@ import { fetchInvoicesFromApi, createInvoice, isFreeInvoice, isSettledRevenue, i
 import { InvoiceModal } from "@/components/common/invoice-modal";
 import { CouponManager } from "@/components/admin/coupon-manager";
 import { CustomDropdown, type DropdownOption } from "@/components/ui/custom-dropdown";
+import { fetchDbCourses } from "@/lib/data/courses";
 
 export default function AdminPaymentsPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -20,19 +21,48 @@ export default function AdminPaymentsPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // New Invoice Form
+  // Dynamic Course List for Invoice Creation
+  const [coursesList, setCoursesList] = useState<{ title: string; slug: string; price: number }[]>([
+    { title: "SAP ABAP Masterclass: Reports, ALV, Forms, APIs & More", slug: "sap-abap-masterclass", price: 30000 },
+    { title: "Java Full Stack Developer Mastery", slug: "java-full-stack-mastery", price: 45000 },
+    { title: "Modern Frontend Engineering (React 19 & Next.js)", slug: "modern-frontend-engineering", price: 38000 },
+    { title: "SAP S/4HANA Enterprise Systems", slug: "sap-s4hana-enterprise", price: 42000 },
+    { title: ".NET 9 Enterprise Microservices & Cloud", slug: "dotnet-enterprise-microservices", price: 45000 },
+  ]);
+
+  useEffect(() => {
+    fetchDbCourses()
+      .then((dbCourses) => {
+        if (Array.isArray(dbCourses) && dbCourses.length > 0) {
+          const mapped = dbCourses.map((c) => ({
+            title: c.title,
+            slug: c.slug,
+            price: typeof c.price === "number" && c.price > 0 ? c.price : 30000,
+          }));
+          setCoursesList((prev) => {
+            const existingSlugs = new Set(mapped.map((m) => m.slug.toLowerCase()));
+            const keepPrev = prev.filter((p) => !existingSlugs.has(p.slug.toLowerCase()));
+            return [...mapped, ...keepPrev];
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // New Invoice Form with Bi-directional Student Fee / Discount Calculation
   const [form, setForm] = useState({
     studentName: "",
     studentEmail: "",
     studentPhone: "",
-    studentCity: "Bengaluru, Karnataka",
-    courseTitle: "Java Full Stack Developer Mastery",
-    courseSlug: "java-full-stack-mastery",
-    price: 45000,
-    discount: 5000,
-    discountCode: "SCHOLARSHIP10",
+    studentCity: "Bengaluru, India",
+    courseTitle: "SAP ABAP Masterclass: Reports, ALV, Forms, APIs & More",
+    courseSlug: "sap-abap-masterclass",
+    price: 30000,
+    agreedFee: 27000,
+    discount: 3000,
+    discountCode: "Scholarship Deduction (PROMO)",
     paymentMode: "UPI" as Invoice["paymentMode"],
-    batchTiming: "Weekday Morning (7:30 AM - 9:30 AM IST)",
+    batchTiming: "Weekday Live Evening (7:00 PM - 8:30 PM IST)",
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -49,20 +79,54 @@ export default function AdminPaymentsPage() {
     setInvoices(list);
   };
 
+  const handleCourseChange = (selectedTitle: string) => {
+    const matched = coursesList.find((c) => c.title === selectedTitle);
+    const standardPrice = matched ? matched.price : form.price;
+    const currentDiscount = form.discount;
+    const newAgreed = Math.max(0, standardPrice - currentDiscount);
+    setForm({
+      ...form,
+      courseTitle: selectedTitle,
+      courseSlug: matched?.slug || selectedTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      price: standardPrice,
+      agreedFee: newAgreed,
+    });
+  };
+
+  const handlePriceChange = (val: number) => {
+    const newPrice = Math.max(0, val);
+    const newDiscount = Math.max(0, newPrice - form.agreedFee);
+    setForm({ ...form, price: newPrice, discount: newDiscount });
+  };
+
+  const handleAgreedFeeChange = (val: number) => {
+    const newFee = Math.max(0, val);
+    const newDiscount = Math.max(0, form.price - newFee);
+    setForm({ ...form, agreedFee: newFee, discount: newDiscount });
+  };
+
+  const handleDiscountChange = (val: number) => {
+    const newDiscount = Math.max(0, val);
+    const newFee = Math.max(0, form.price - newDiscount);
+    setForm({ ...form, discount: newDiscount, agreedFee: newFee });
+  };
+
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.studentName || !form.studentPhone) return;
 
+    const discountAmount = Math.max(0, Number(form.price) - Number(form.agreedFee));
+
     const newInv = createInvoice({
-      studentName: form.studentName,
-      studentEmail: form.studentEmail || `${form.studentName.toLowerCase().replace(/\s+/g, ".")}@gmail.com`,
-      studentPhone: form.studentPhone,
-      studentCity: form.studentCity,
+      studentName: form.studentName.trim(),
+      studentEmail: form.studentEmail.trim() || `${form.studentName.toLowerCase().replace(/\s+/g, ".")}@gmail.com`,
+      studentPhone: form.studentPhone.trim(),
+      studentCity: form.studentCity.trim() || "Bengaluru, India",
       courseTitle: form.courseTitle,
       courseSlug: form.courseSlug,
       price: Number(form.price),
-      discount: Number(form.discount),
-      discountCode: form.discountCode,
+      discount: discountAmount,
+      discountCode: form.discountCode.trim() || "Scholarship Deduction (PROMO)",
       paymentMode: form.paymentMode,
       batchTiming: form.batchTiming,
     });
@@ -133,7 +197,7 @@ export default function AdminPaymentsPage() {
     <>
       <DashboardTopbar
         title="Billing & Invoices"
-        subtitle={`${formatINRCompact(totalSuccess)} total volume settled across ${invoices.length} tax invoices.`}
+        subtitle={`${formatINRCompact(totalSuccess)} total volume settled across ${invoices.length} official invoices.`}
         userInitials="AD"
       />
 
@@ -375,7 +439,7 @@ export default function AdminPaymentsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs dark:bg-black/75">
           <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4 dark:border-slate-800 dark:bg-surface-secondary">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="text-base font-black text-slate-900 dark:text-white">Generate New Tax Invoice</h3>
+              <h3 className="text-base font-black text-slate-900 dark:text-white">Generate Official Invoice</h3>
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
@@ -385,7 +449,7 @@ export default function AdminPaymentsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-3 text-xs">
+            <form onSubmit={handleCreate} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300">Student Name *</label>
@@ -417,35 +481,60 @@ export default function AdminPaymentsPage() {
                 <label className="font-bold text-slate-700 dark:text-slate-300">Course Track</label>
                 <select
                   value={form.courseTitle}
-                  onChange={(e) => setForm({ ...form, courseTitle: e.target.value })}
+                  onChange={(e) => handleCourseChange(e.target.value)}
                   className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                 >
-                  <option>Java Full Stack Developer Mastery</option>
-                  <option>Modern Frontend Engineering (React 19 & Next.js)</option>
-                  <option>SAP S/4HANA Enterprise Systems</option>
-                  <option>.NET 9 Enterprise Microservices & Cloud</option>
+                  {coursesList.map((c) => (
+                    <option key={c.slug} value={c.title}>
+                      {c.title} — {formatINR(c.price)}
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {/* Student fee varies per student — Two-way auto-calculation of fee & discount */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300">Standard Fee (₹)</label>
                   <input
                     type="number"
                     value={form.price}
-                    onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                    onChange={(e) => handlePriceChange(Number(e.target.value))}
+                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white font-mono"
                   />
+                  <span className="text-[10px] text-slate-400">Course standard price</span>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 dark:text-slate-300">Discount / Scholarship (₹)</label>
+                  <label className="font-bold text-emerald-700 dark:text-emerald-400">Agreed Student Fee (₹) *</label>
+                  <input
+                    type="number"
+                    value={form.agreedFee}
+                    onChange={(e) => handleAgreedFeeChange(Number(e.target.value))}
+                    className="mt-1 w-full rounded-xl border border-emerald-300 bg-emerald-50/50 p-2.5 font-bold text-emerald-950 outline-none focus:border-[#2563EB] dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 font-mono"
+                  />
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Amount to bill student</span>
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Discount Given (₹)</label>
                   <input
                     type="number"
                     value={form.discount}
-                    onChange={(e) => setForm({ ...form, discount: Number(e.target.value) })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                    onChange={(e) => handleDiscountChange(Number(e.target.value))}
+                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white font-mono"
                   />
+                  <span className="text-[10px] text-slate-400">Auto-deducted</span>
                 </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300">Scholarship / Discount Reason</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Scholarship Deduction (PROMO)"
+                  value={form.discountCode}
+                  onChange={(e) => setForm({ ...form, discountCode: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -469,20 +558,30 @@ export default function AdminPaymentsPage() {
                     onChange={(e) => setForm({ ...form, batchTiming: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-[#2563EB] dark:border-slate-700/80 dark:bg-input-bg dark:text-white"
                   >
-                    <option>Weekday Morning (7:30 AM - 9:30 AM)</option>
-                    <option>Weekend Intensive (10:00 AM - 2:00 PM)</option>
-                    <option>Weekday Evening (7:00 PM - 9:00 PM)</option>
+                    <option>Weekday Live Evening (7:00 PM - 8:30 PM IST)</option>
+                    <option>Weekday Morning (7:30 AM - 9:30 AM IST)</option>
+                    <option>Weekend Intensive (10:00 AM - 2:00 PM IST)</option>
                   </select>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-3 text-[11px] text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300 space-y-0.5">
-                <div className="flex justify-between font-bold">
-                  <span>Net Payable (Includes 18% GST):</span>
-                  <span>{formatINR(Math.max(0, form.price - form.discount))}</span>
+              {/* Live Fee Breakdown Preview (Zero GST) */}
+              <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-3.5 text-xs text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300 space-y-1.5">
+                <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                  <span>Gross Tuition Fee:</span>
+                  <span className="font-mono font-medium">{formatINR(form.price)}</span>
                 </div>
-                <div className="text-[10px] text-blue-700 dark:text-blue-400">
-                  Auto-calculates CGST (9%) + SGST (9%) and allocates sequential tax invoice number.
+                {form.discount > 0 && (
+                  <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-semibold">
+                    <span>{form.discountCode || "Scholarship Deduction"}:</span>
+                    <span className="font-mono">- {formatINR(form.discount)} ({Math.round((form.discount / (form.price || 1)) * 100)}% off)</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t border-blue-200/60 dark:border-blue-800/60 pt-2 font-black text-slate-900 dark:text-white">
+                  <span>Total Amount Paid (Zero GST):</span>
+                  <span className="font-mono text-[#2563EB] dark:text-blue-400 text-sm">
+                    {formatINR(form.agreedFee)}
+                  </span>
                 </div>
               </div>
 

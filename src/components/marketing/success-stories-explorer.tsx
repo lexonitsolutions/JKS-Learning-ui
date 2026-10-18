@@ -20,11 +20,24 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Play,
+  Video,
+  Plus,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Badge } from "@/components/ui/badge";
-import { TESTIMONIALS, type Testimonial, type CareerCategory } from "@/lib/data/testimonials";
+import { type CareerCategory } from "@/lib/data/testimonials";
 import type { Track } from "@/lib/data/courses";
+import {
+  useSuccessStories,
+  type SuccessStoryItem,
+} from "@/lib/data/success-stories-store";
+import { VideoStoryModal } from "./video-story-modal";
+import { AdminStoryEditorModal } from "./admin-story-editor-modal";
+import { useMockSession } from "@/lib/auth/use-mock-auth";
+import { useUser } from "@clerk/nextjs";
 
 const TRACKS: { label: string; value: "All" | Track }[] = [
   { label: "All Tracks", value: "All" },
@@ -64,17 +77,30 @@ function getTrackBadgeVariant(track: Track): "primary" | "neutral" | "success" {
 }
 
 export function SuccessStoriesExplorer() {
+  const { stories, addStory, updateStory, deleteStory } = useSuccessStories();
   const [selectedTrack, setSelectedTrack] = useState<"All" | Track>("All");
   const [selectedCategory, setSelectedCategory] = useState<"All" | CareerCategory>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [spotlightStoryId, setSpotlightStoryId] = useState<string>("priya-nair");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [activeVideoStory, setActiveVideoStory] = useState<SuccessStoryItem | null>(null);
+  const [editingStory, setEditingStory] = useState<SuccessStoryItem | null>(null);
+
+  const session = useMockSession();
+  const { user: clerkUser } = useUser();
+  const email = (
+    clerkUser?.primaryEmailAddress?.emailAddress ||
+    clerkUser?.emailAddresses?.[0]?.emailAddress ||
+    session?.email ||
+    ""
+  ).toLowerCase().trim();
+  const isAdmin = email === "lexonitservices@gmail.com" || session?.role === "admin";
 
   const activeFilterCount =
     (selectedTrack !== "All" ? 1 : 0) + (selectedCategory !== "All" ? 1 : 0);
 
   const filteredStories = useMemo(() => {
-    return TESTIMONIALS.filter((story) => {
+    return stories.filter((story) => {
       const matchTrack = selectedTrack === "All" || story.track === selectedTrack;
       const matchCategory = selectedCategory === "All" || story.category === selectedCategory;
       const matchSearch =
@@ -87,7 +113,7 @@ export function SuccessStoriesExplorer() {
 
       return matchTrack && matchCategory && matchSearch;
     });
-  }, [selectedTrack, selectedCategory, searchQuery]);
+  }, [stories, selectedTrack, selectedCategory, searchQuery]);
 
   const spotlightStory = useMemo(() => {
     if (filteredStories.length === 0) return null;
@@ -104,9 +130,45 @@ export function SuccessStoriesExplorer() {
             <div className="inline-flex items-center gap-2 rounded-full border border-primary-blue/20 dark:border-primary-blue/40 bg-primary-blue/5 dark:bg-primary-blue/10 px-3 py-1 text-xs font-semibold text-primary-blue dark:text-blue-400">
               <Sparkles className="h-3.5 w-3.5" /> Alumni Directory
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-text-heading dark:text-white mt-3">
-              Explore Verified Alumni Transitions
-            </h2>
+            <div className="flex flex-wrap items-center gap-3 mt-3">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-text-heading dark:text-white">
+                Explore Verified Alumni Transitions
+              </h2>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditingStory({
+                      id: "",
+                      name: "",
+                      role: "",
+                      company: "",
+                      placedCompany: "",
+                      previousRole: "",
+                      salaryPackage: "₹18 LPA Tier-1 Offer",
+                      salaryHike: "150% Hike",
+                      track: "Full Stack",
+                      category: "Tier-1 Placement",
+                      scoreDelta: "65 → 92",
+                      initialScore: 65,
+                      finalScore: 92,
+                      capstone: "",
+                      quote: "",
+                      highlightText: "",
+                      avatar: "",
+                      videoUrl: "",
+                      videoDuration: "2m 30s",
+                      verified: true,
+                      hiredYear: "2026",
+                    })
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer hover:scale-[1.02]"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Success Story</span>
+                </button>
+              )}
+            </div>
             <p className="mt-2 text-sm sm:text-base text-text-body dark:text-slate-300 max-w-xl">
               Filter by engineering domain, transition type, or target hiring partners to see how
               learners accelerated their careers.
@@ -379,6 +441,36 @@ export function SuccessStoriesExplorer() {
                   </div>
                 )}
               </div>
+
+              {/* Actions row: Watch Video / Admin Edit */}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                {spotlightStory.videoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveVideoStory(spotlightStory)}
+                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-pink-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-rose-500/25 hover:from-rose-700 hover:to-pink-700 transition-all hover:scale-[1.02] cursor-pointer"
+                  >
+                    <Play className="h-3.5 w-3.5 fill-white" />
+                    <span>Watch Student Video Story</span>
+                    {spotlightStory.videoDuration && (
+                      <span className="rounded-md bg-black/30 px-1.5 py-0.5 text-[10px] font-semibold">
+                        {spotlightStory.videoDuration}
+                      </span>
+                    )}
+                  </button>
+                )}
+
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setEditingStory(spotlightStory)}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 dark:border-blue-800 bg-white dark:bg-surface-elevated px-3.5 py-2 text-xs font-bold text-primary-blue dark:text-blue-300 shadow-xs hover:bg-blue-50 dark:hover:bg-blue-950/60 transition-colors cursor-pointer"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                    <span>Edit Story Details</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Right: Metrics & Capstone Breakdown */}
@@ -483,13 +575,54 @@ export function SuccessStoriesExplorer() {
                     <TiltCard className="group flex h-full flex-col justify-between rounded-2xl border border-border dark:border-slate-800/80 bg-white dark:bg-surface-secondary p-6 shadow-xs hover:border-primary-blue/40 dark:hover:border-blue-500/50 hover:shadow-xl dark:hover:shadow-black/60 transition-all duration-300">
                       <div>
                         {/* Top Meta Header */}
-                        <div className="flex items-start justify-between gap-3">
-                          <Badge variant={getTrackBadgeVariant(story.track)}>
-                            {story.track}
-                          </Badge>
-                          <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-semibold text-text-body dark:text-slate-300">
-                            {story.category}
-                          </span>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <Badge variant={getTrackBadgeVariant(story.track)}>
+                              {story.track}
+                            </Badge>
+                            <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-semibold text-text-body dark:text-slate-300">
+                              {story.category}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            {story.videoUrl && (
+                              <button
+                                type="button"
+                                onClick={() => setActiveVideoStory(story)}
+                                className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 px-2.5 py-0.5 text-[11px] font-bold hover:bg-rose-500/20 transition-all cursor-pointer shadow-xs"
+                                title="Watch student video story"
+                              >
+                                <Play className="h-2.5 w-2.5 fill-rose-600 dark:fill-rose-400" />
+                                <span>Video</span>
+                              </button>
+                            )}
+
+                            {isAdmin && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingStory(story)}
+                                  className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-primary-blue dark:bg-blue-950/50 dark:text-blue-300 transition-colors cursor-pointer"
+                                  title="Edit story"
+                                >
+                                  <Edit2 className="h-3 w-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm(`Delete success story of ${story.name}?`)) {
+                                      deleteStory(story.id);
+                                    }
+                                  }}
+                                  className="flex h-6 w-6 items-center justify-center rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300 transition-colors cursor-pointer"
+                                  title="Delete story"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </div>
 
                         {/* Candidate Bio Header */}
@@ -546,6 +679,22 @@ export function SuccessStoriesExplorer() {
                           </div>
                         </div>
 
+                        {/* Video Story Prompt Bar if available */}
+                        {story.videoUrl && (
+                          <div
+                            onClick={() => setActiveVideoStory(story)}
+                            className="mt-3 flex items-center justify-between rounded-xl bg-gradient-to-r from-rose-50 via-pink-50 to-rose-50 dark:from-rose-950/30 dark:via-pink-950/20 dark:to-rose-950/30 p-2 text-[11px] font-semibold text-rose-700 dark:text-rose-300 border border-rose-200/60 dark:border-rose-900/40 cursor-pointer hover:scale-[1.01] transition-transform"
+                          >
+                            <span className="flex items-center gap-1.5 truncate">
+                              <Video className="h-3.5 w-3.5 text-rose-500" />
+                              <span>Play Student Video Testimonial</span>
+                            </span>
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white">
+                              <Play className="h-2.5 w-2.5 fill-white ml-0.5" />
+                            </span>
+                          </div>
+                        )}
+
                         {/* Quote */}
                         <p className="mt-4 text-xs sm:text-sm text-text-body dark:text-slate-300 line-clamp-3 leading-relaxed">
                           &ldquo;{story.quote}&rdquo;
@@ -586,6 +735,31 @@ export function SuccessStoriesExplorer() {
           )}
         </div>
       </div>
+
+      {/* Video Modal */}
+      <VideoStoryModal
+        story={activeVideoStory}
+        onClose={() => setActiveVideoStory(null)}
+      />
+
+      {/* Admin Story Editor Modal */}
+      <AdminStoryEditorModal
+        isOpen={Boolean(editingStory)}
+        story={editingStory}
+        onClose={() => setEditingStory(null)}
+        onSave={(data, id) => {
+          if (id) {
+            updateStory(id, data);
+          } else {
+            addStory(data);
+          }
+          setEditingStory(null);
+        }}
+        onDelete={(id) => {
+          deleteStory(id);
+          setEditingStory(null);
+        }}
+      />
     </section>
   );
 }

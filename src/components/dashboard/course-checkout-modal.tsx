@@ -167,10 +167,10 @@ export function CourseCheckoutModal({
       : Math.round(basePrice * ((couponDiscountPercent || 10) / 100))
     : 0;
   const finalPrice = isFreeCourse ? 0 : Math.max(0, basePrice - discountAmount);
-  const taxableAmount = +(finalPrice / 1.18).toFixed(2);
-  const totalTax = +(finalPrice - taxableAmount).toFixed(2);
-  const cgst = +(totalTax / 2).toFixed(2);
-  const sgst = +(totalTax / 2).toFixed(2);
+  const taxableAmount = finalPrice;
+  const totalTax = 0;
+  const cgst = 0;
+  const sgst = 0;
 
   const handleApplyCoupon = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();

@@ -69,7 +69,7 @@ export default function PaymentsPage() {
     <>
       <DashboardTopbar
         title="Payment & Invoice History"
-        subtitle="Tax receipts and payment records for your course enrollments"
+        subtitle="Payment records and verified invoices for your course enrollments"
       />
       <div className="flex-1 space-y-6 p-4 pt-3 sm:p-6 lg:p-8 lg:pt-4">
         <Reveal variant="stagger" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -82,7 +82,7 @@ export default function PaymentsPage() {
                 </div>
               </div>
               <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">{formatINRCompact(totalPaid)}</div>
-              <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">{invoices.length} verified tax invoices</div>
+              <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">{invoices.length} verified invoices</div>
             </div>
           </TiltCard>
 
@@ -94,8 +94,8 @@ export default function PaymentsPage() {
                   <FileText className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">GST Compliant</div>
-              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">Original tax invoice downloads available</div>
+              <div className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">Official Invoices</div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">Original invoice &amp; payment receipts available</div>
             </div>
           </TiltCard>
         </Reveal>
@@ -170,10 +170,10 @@ export default function PaymentsPage() {
                 <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
                   <th className="pb-3 pr-4 pl-0">Invoice #</th>
                   <th className="px-4 pb-3">Course Track</th>
-                  <th className="px-4 pb-3">Amount (Incl. GST)</th>
+                  <th className="px-4 pb-3">Amount Paid</th>
                   <th className="px-4 pb-3 text-center">Status</th>
                   <th className="px-4 pb-3">Payment Mode</th>
-                  <th className="pr-0 pb-3 pl-4 text-right">Tax Invoice</th>
+                  <th className="pr-0 pb-3 pl-4 text-right">Official Invoice</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
