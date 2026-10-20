@@ -1,4 +1,4 @@
-export type MockRole = "student" | "admin" | "instructor" | "head";
+export type MockRole = "student" | "admin" | "instructor" | "head" | "staff";
 
 export interface MockUser {
   email: string;

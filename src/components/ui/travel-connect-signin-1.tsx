@@ -732,6 +732,10 @@ function redirectAfterLogin(role: MockRole, from: string | null) {
     window.location.assign("/head");
     return;
   }
+  if (role === "staff") {
+    window.location.assign("/staff");
+    return;
+  }
   window.location.assign(isSafeInternalPath(from) ? from : "/dashboard");
 }
 

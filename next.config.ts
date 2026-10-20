@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [
     "@abaplint/transpiler",
     "@abaplint/core",
+    "@abaplint/database-sqlite",
+    "sql.js",
   ],
   turbopack: {
     root: path.resolve(__dirname),

@@ -96,7 +96,7 @@ export function SiteHeader() {
       : userName.slice(0, 2).toUpperCase();
 
   const dashboardHref =
-    userRole === "admin" ? "/admin" : userRole === "instructor" ? "/instructor" : userRole === "head" ? "/head" : "/dashboard";
+    userRole === "admin" ? "/admin" : userRole === "instructor" ? "/instructor" : userRole === "head" ? "/head" : userRole === "staff" ? "/staff" : "/dashboard";
 
   // Dynamic Navigation items
   const navLinks: { href: string; label: string; key?: FlyoutKey }[] = [

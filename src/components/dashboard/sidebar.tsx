@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  PhoneCall,
+  WalletCards,
   BookOpen,
   ClipboardCheck,
   BrainCircuit,
@@ -85,6 +87,7 @@ const ADMIN_MAIN_NAV: NavItem[] = [
   { href: "/admin/certificates", label: "Certificates", icon: Award },
   { href: "/admin/activity-logs", label: "Activity log", icon: Activity },
   { href: "/admin/leads", label: "Leads & CRM", icon: Megaphone },
+  { href: "/admin/staff", label: "Staff", icon: PhoneCall },
 ];
 
 
@@ -103,6 +106,14 @@ const HEAD_MAIN_NAV: NavItem[] = [
 ];
 
 const HEAD_SEC_NAV: NavItem[] = [];
+
+const STAFF_MAIN_NAV: NavItem[] = [
+  { href: "/staff", label: "Fee follow-ups", icon: PhoneCall },
+  { href: "/staff/students", label: "Student ledger", icon: WalletCards },
+  { href: "/staff/leads", label: "Leads & CRM", icon: Megaphone },
+];
+
+const STAFF_SEC_NAV: NavItem[] = [];
 
 const INSTRUCTOR_MAIN_NAV: NavItem[] = [
   { href: "/instructor", label: "Dashboard", icon: LayoutDashboard },
@@ -123,17 +134,20 @@ const INSTRUCTOR_SEC_NAV: NavItem[] = [
 
 const SIDEBAR_STORAGE_KEY = "jks_sidebar_collapsed";
 
-export function DashboardSidebar({ role = "student" }: { role?: "student" | "admin" | "instructor" | "head" }) {
+export function DashboardSidebar({ role = "student" }: { role?: "student" | "admin" | "instructor" | "head" | "staff" }) {
   const pathname = usePathname();
   const isAdmin = role === "admin";
   const isInstructor = role === "instructor";
   const isHead = role === "head";
+  const isStaff = role === "staff";
   // Instructors and heads sign in with an API account (no Clerk profile), so they
   // share how their name, email and initials are resolved.
-  const isStaffAccount = isInstructor || isHead;
+  const isStaffAccount = isInstructor || isHead || isStaff;
 
   const mainItems = isAdmin
     ? ADMIN_MAIN_NAV
+    : isStaff
+    ? STAFF_MAIN_NAV
     : isHead
     ? HEAD_MAIN_NAV
     : isInstructor
@@ -141,12 +155,14 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
     : STUDENT_MAIN_NAV;
   const secItems = isAdmin
     ? ADMIN_SEC_NAV
+    : isStaff
+    ? STAFF_SEC_NAV
     : isHead
     ? HEAD_SEC_NAV
     : isInstructor
     ? INSTRUCTOR_SEC_NAV
     : STUDENT_SEC_NAV;
-  const rootHref = isAdmin ? "/admin" : isHead ? "/head" : isInstructor ? "/instructor" : "/dashboard";
+  const rootHref = isAdmin ? "/admin" : isStaff ? "/staff" : isHead ? "/head" : isInstructor ? "/instructor" : "/dashboard";
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [customAvatar, setCustomAvatar] = useState<string | null>(null);
@@ -239,7 +255,7 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
   const userName = isAdmin
     ? (session?.name && session.name !== "John Doe" && session.name !== "Ava Desai" ? session.name : "Lexon Administrator")
     : isStaffAccount
-    ? (session?.name ?? (isHead ? "Head" : "Tutor"))
+    ? (session?.name ?? (isStaff ? "Staff" : isHead ? "Head" : "Tutor"))
     : (clerkName || session?.name || "Student");
 
   const userAvatarUrl =
@@ -252,10 +268,10 @@ export function DashboardSidebar({ role = "student" }: { role?: "student" | "adm
   const userInitials = isAdmin
     ? "AD"
     : isStaffAccount
-    ? (session?.initials ?? (isHead ? "HD" : "TU"))
+    ? (session?.initials ?? (isStaff ? "ST" : isHead ? "HD" : "TU"))
     : (session?.initials ?? (clerkName ? clerkName.slice(0, 2).toUpperCase() : "ST"));
 
-  const userRole = isAdmin ? "Administrator" : isHead ? "Head" : isInstructor ? "Tutor" : "Student";
+  const userRole = isAdmin ? "Administrator" : isStaff ? "Staff" : isHead ? "Head" : isInstructor ? "Tutor" : "Student";
 
 
   const renderNavGroup = (items: NavItem[]) => {

@@ -3,7 +3,8 @@
  * runtime): the ABAP is checked and transpiled to JavaScript, then executed.
  * No SAP system is involved, so this is a LIMITED SUBSET of ABAP - plain
  * REPORT programs with local classes, internal tables, structures, string
- * templates and control flow. Database access, SAP UI, function modules and
+ * templates and control flow. Each run gets an empty in-memory SQLite database
+ * (COMMIT/ROLLBACK work), but no SAP tables exist. SAP UI, function modules and
  * the standard exception classes are not available.
  *
  * This module is DOM-free so it runs inside a Web Worker (see abap.worker.ts)
@@ -11,6 +12,7 @@
  */
 import { Transpiler } from "@abaplint/transpiler";
 import * as runtime from "@abaplint/runtime";
+import { SQLiteDatabaseClient } from "@abaplint/database-sqlite";
 
 export interface AbapRunResult {
   status: "ok" | "compile_error" | "runtime_error";
@@ -43,7 +45,24 @@ export function describeRuntimeError(message: string): string {
   return `Runtime error: ${message}`;
 }
 
-export function prepareAbapSource(raw: string): string {
+/**
+ * "MODIFY itab FROM wa." (inside a LOOP, no INDEX) is valid ABAP, but the transpiler
+ * compiles it as a database MODIFY. For standard tables declared in the program,
+ * make the index explicit so it stays an internal-table statement.
+ */
+export function fixInternalTableModify(raw: string): string {
+  const tables = new Set<string>();
+  for (const m of raw.matchAll(/([a-zA-Z0-9_]+)\s+TYPE\s+(?:STANDARD\s+)?TABLE\b/gi)) {
+    tables.add(m[1].toLowerCase());
+  }
+  if (tables.size === 0) return raw;
+  return raw.replace(/\bMODIFY\s+([a-zA-Z0-9_]+)\s+FROM\s+([a-zA-Z0-9_\-<>]+)\s*\./gi, (whole, table, wa) =>
+    tables.has(String(table).toLowerCase()) ? `MODIFY ${table} FROM ${wa} INDEX sy-tabix.` : whole,
+  );
+}
+
+export function prepareAbapSource(input: string): string {
+  const raw = fixInternalTableModify(input);
   if (!/if_oo_adt_classrun/i.test(raw)) return raw;
 
   const shim = `
@@ -95,10 +114,12 @@ export async function runAbap(source: string): Promise<AbapRunResult> {
   const elapsed = () => Date.now() - started;
 
   let code: string;
+  let dbSetup: { schemas: { sqlite: string[] }; insert: string[] };
   try {
     const preparedSource = prepareAbapSource(source);
     const result = await new Transpiler().runRaw([{ filename: "zprog.prog.abap", contents: preparedSource }]);
     code = result.objects.map((o) => o.chunk.getCode()).join("\n");
+    dbSetup = result.databaseSetup;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return { status: "compile_error", output: "", error: formatCompileError(message), timeMs: elapsed() };
@@ -107,6 +128,24 @@ export async function runAbap(source: string): Promise<AbapRunResult> {
   const abap = new runtime.ABAP({ console: new runtime.MemoryConsole() });
   // The generated code (and the runtime itself) reach the instance through a global.
   (globalThis as unknown as { abap: unknown }).abap = abap;
+
+  // Every run gets its own in-memory SQLite database, so COMMIT WORK, ROLLBACK and
+  // Open SQL statements find a DEFAULT connection instead of "database not initialized".
+  const db = new SQLiteDatabaseClient();
+  try {
+    await db.connect();
+    abap.context.databaseConnections["DEFAULT"] = db;
+    await db.execute(dbSetup.schemas.sqlite);
+    await db.execute(dbSetup.insert);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return {
+      status: "runtime_error",
+      output: "",
+      error: `Could not start the in-memory database: ${message}`,
+      timeMs: elapsed(),
+    };
+  }
 
   try {
     await new AsyncFunction("abap", code)(abap);

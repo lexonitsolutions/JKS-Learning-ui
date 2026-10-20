@@ -34,6 +34,9 @@ export const createSuperAdmin = (data: { name: string; email: string; password: 
 export const setSuperAdminActive = (id: string, active: boolean) =>
   request<SuperAdminAccount>(`/admin/super-admins/${id}/active`, { method: "PATCH", body: JSON.stringify({ active }) });
 
+export const deleteSuperAdmin = (id: string) =>
+  request<{ deleted: boolean }>(`/admin/super-admins/${id}`, { method: "DELETE" });
+
 /** The signed-in user's API role (the UI's own "admin" role merges ADMIN and SUPER_ADMIN). */
 export async function fetchMyApiRole(): Promise<string | null> {
   try {

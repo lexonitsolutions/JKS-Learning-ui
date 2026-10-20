@@ -63,6 +63,12 @@ import {
   recordReferralPayout,
   type AdminReferralReward,
 } from "@/lib/data/referrals-api";
+import {
+  getPendingPayments,
+  approvePendingPayment,
+  rejectPendingPayment,
+  type PendingPaymentSubmission,
+} from "@/lib/data/pending-payments-store";
 
 type TabType = "students" | "referrals" | "coupons" | "invoices";
 
@@ -72,6 +78,9 @@ export default function AdminPaymentsPage() {
   // Overview Metrics from Backend
   const [overview, setOverview] = useState<AdminFinancialOverview | null>(null);
   const [loadingOverview, setLoadingOverview] = useState(true);
+
+  // Pending Installment & Payment Approvals
+  const [pendingPayments, setPendingPayments] = useState<PendingPaymentSubmission[]>([]);
 
   // Student Financial Records from Backend
   const [students, setStudents] = useState<StudentFinancialRecord[]>([]);
@@ -153,6 +162,9 @@ export default function AdminPaymentsPage() {
 
   // Load Overview & Students
   const loadOverviewAndStudents = useCallback(async () => {
+    // Load local pending submissions
+    setPendingPayments(getPendingPayments());
+
     try {
       setLoadingOverview(true);
       const data = await fetchAdminPaymentOverview();
@@ -177,6 +189,25 @@ export default function AdminPaymentsPage() {
       setLoadingStudents(false);
     }
   }, [selectedCourseSlug, selectedFeeStatus, studentSearch]);
+
+  const handleApprovePendingPayment = async (paymentId: string) => {
+    try {
+      await approvePendingPayment(paymentId, "Admin");
+      setPendingPayments(getPendingPayments());
+      await loadOverviewAndStudents();
+      await loadInvoices();
+    } catch (err) {
+      console.error("Failed to approve pending payment:", err);
+    }
+  };
+
+  const handleRejectPendingPayment = (paymentId: string) => {
+    const reason = window.prompt("Reason for rejecting payment submission (e.g. Invalid UTR, Unverified transaction):");
+    if (!reason) return;
+    rejectPendingPayment(paymentId, reason, "Admin");
+    setPendingPayments(getPendingPayments());
+    void loadOverviewAndStudents();
+  };
 
   const loadRewards = useCallback(async () => {
     try {
@@ -206,6 +237,17 @@ export default function AdminPaymentsPage() {
 
   useEffect(() => {
     void loadOverviewAndStudents();
+
+    const handleUpdate = () => {
+      setPendingPayments(getPendingPayments());
+      void loadOverviewAndStudents();
+    };
+    window.addEventListener("jks_payment_completed", handleUpdate);
+    window.addEventListener("jks_enrollment_updated", handleUpdate);
+    return () => {
+      window.removeEventListener("jks_payment_completed", handleUpdate);
+      window.removeEventListener("jks_enrollment_updated", handleUpdate);
+    };
   }, [loadOverviewAndStudents]);
 
   useEffect(() => {
@@ -489,6 +531,11 @@ export default function AdminPaymentsPage() {
             }`}
           >
             <Users className="h-4 w-4" /> Student Fees &amp; EMI
+            {pendingPayments.filter((p) => p.status === "PENDING_APPROVAL").length > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500 text-[10px] text-white font-extrabold animate-pulse">
+                {pendingPayments.filter((p) => p.status === "PENDING_APPROVAL").length} Pending
+              </span>
+            )}
           </button>
 
           <button
@@ -536,6 +583,80 @@ export default function AdminPaymentsPage() {
         {/* ── TAB 1: STUDENT FEE MANAGEMENT ───────────────────────────────── */}
         {activeTab === "students" && (
           <div className="space-y-4">
+            {/* PENDING INSTALLMENT & OFFLINE PAYMENT APPROVALS */}
+            {pendingPayments.filter((p) => p.status === "PENDING_APPROVAL").length > 0 && (
+              <div className="rounded-[22px] border border-amber-300 bg-gradient-to-r from-amber-50/90 to-yellow-50/70 p-5 shadow-sm dark:border-amber-900/60 dark:from-amber-950/40 dark:to-yellow-950/20 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300">
+                      <Clock className="h-5 w-5 animate-pulse" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-slate-900 dark:text-white">
+                        Pending Installment &amp; Payment Submissions ({pendingPayments.filter((p) => p.status === "PENDING_APPROVAL").length})
+                      </h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Students have submitted UTR / Transaction reference details for installment payments requiring verification.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {pendingPayments
+                    .filter((p) => p.status === "PENDING_APPROVAL")
+                    .map((p) => (
+                      <div
+                        key={p.id}
+                        className="rounded-2xl border border-amber-200/90 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-surface-elevated space-y-3"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300">
+                              {p.installmentNumber ? `Installment #${p.installmentNumber}` : "Fee Payment"}
+                            </span>
+                            <div className="font-extrabold text-xs text-slate-900 dark:text-white mt-1.5">{p.studentName}</div>
+                            <div className="text-[10px] text-slate-500 truncate max-w-[200px]">{p.studentEmail}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-mono font-black text-sm text-emerald-600 dark:text-emerald-400">
+                              {formatINR(p.amountRupees)}
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-semibold">{p.paymentMode}</div>
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl bg-slate-50 p-2.5 text-[11px] dark:bg-surface-secondary space-y-1 font-mono">
+                          <div className="text-slate-500 text-[10px] font-sans">Transaction Ref / UTR:</div>
+                          <div className="font-bold text-slate-900 dark:text-white select-all">{p.transactionRef}</div>
+                          {p.notes && (
+                            <div className="text-[10px] text-slate-500 font-sans italic pt-0.5">Note: &ldquo;{p.notes}&rdquo;</div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => handleApprovePendingPayment(p.id)}
+                            className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                            <span>Approve Payment</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRejectPendingPayment(p.id)}
+                            className="px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold transition-colors cursor-pointer"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
             {/* Search and Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xs dark:border-slate-800 dark:bg-surface-secondary">
               <div className="relative flex-1 min-w-0">

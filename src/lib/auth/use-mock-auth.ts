@@ -214,6 +214,7 @@ export function roleFromApi(apiRole: string | undefined): MockRole {
   if (apiRole === "SUPER_ADMIN" || apiRole === "ADMIN") return "admin";
   if (apiRole === "INSTRUCTOR") return "instructor";
   if (apiRole === "HEAD") return "head";
+  if (apiRole === "STAFF") return "staff";
   return "student";
 }
 

@@ -73,6 +73,8 @@ import {
   getClientSessionEmail,
 } from "@/lib/data/enrollments-api";
 import { CertificateModal } from "@/components/common/certificate-modal";
+import { InvoiceModal } from "@/components/common/invoice-modal";
+import { getStoredInvoices, createInvoice, type Invoice } from "@/lib/data/invoices-store";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { recordDailyActivity } from "@/lib/utils/activity-ledger";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
@@ -104,7 +106,7 @@ function YoutubeIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-type TabType = "overview" | "ai-tutor" | "interview" | "video-task" | "curriculum" | "qa" | "reviews" | "tools";
+type TabType = "overview" | "quiz" | "ai-tutor" | "interview" | "video-task" | "curriculum" | "qa" | "reviews" | "tools";
 
 function formatCooldown(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -180,6 +182,7 @@ export default function CourseLearningHubPage({
 
   // Active assignment modal & evaluation feedback & cert modal
   const [activeAssignmentSection, setActiveAssignmentSection] = useState<Section | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [evaluationResult, setEvaluationResult] = useState<{
     sectionId: string;
     asgId: string;
@@ -775,6 +778,28 @@ export default function CourseLearningHubPage({
     setIsRetakeMode(retake);
   };
 
+  const handleOpenVideoAssignment = (vid: VideoItem, retake: boolean = false) => {
+    if (isAccessBlocked || !vid.assignment) return;
+    const asgId = vid.assignment.id || `asg-vid-${vid.id}`;
+    const syntheticSection: Section = {
+      id: `sec-vid-${vid.id}`,
+      title: vid.title,
+      order: 0,
+      description: `Video Lecture Assessment: ${vid.title}`,
+      assignment: {
+        ...vid.assignment,
+        id: asgId,
+        title: vid.assignment.title || `${vid.title} - Quiz & Assessment`,
+        type: (vid.assignment.type || "Multiple Choice") as any,
+        minPassingScore: vid.assignment.minPassingScore ?? 70,
+        questions: vid.assignment.questions || [],
+      },
+      subsections: [],
+      directVideos: [],
+    };
+    handleOpenAssignment(syntheticSection, retake);
+  };
+
   const countWords = (text: string) =>
     text.trim() ? text.trim().split(/\s+/).length : 0;
 
@@ -1251,6 +1276,36 @@ export default function CourseLearningHubPage({
         </div>
 
         <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              const currentInvoices = getStoredInvoices();
+              const inv =
+                currentInvoices.find(
+                  (i) =>
+                    i.items?.some(
+                      (it) => it.courseSlug === slug || it.description === course.title
+                    ) || (i as any).courseSlug === slug
+                ) ||
+                createInvoice({
+                  studentName: studentName || "Student",
+                  studentEmail: effectiveEmail || "student@jkslearning.com",
+                  studentPhone: "9876543210",
+                  courseTitle: course.title,
+                  courseSlug: slug,
+                  price: course.price || 0,
+                  discount: 0,
+                  paymentMode: "UPI",
+                });
+              setSelectedInvoice(inv);
+            }}
+            title="Download Course Tax Invoice (PDF)"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white/80 dark:border-slate-700/80 dark:bg-surface-elevated/80 px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-surface-hover hover:text-[#2563EB] dark:hover:text-blue-400 shadow-xs transition-all cursor-pointer"
+          >
+            <Download className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" />
+            <span className="hidden sm:inline">Invoice</span>
+          </button>
+
           <div className="text-left sm:text-right">
             <div className="text-xs font-extrabold text-slate-900 dark:text-white">
               {overallPercent}% Completed
@@ -1442,6 +1497,12 @@ export default function CourseLearningHubPage({
               {[
                 { id: "curriculum", label: "Curriculum & Lessons", icon: FolderTree, mobileOnly: true },
                 { id: "overview", label: "Video Preview", icon: BookOpen },
+                {
+                  id: "quiz",
+                  label: "Quiz & Assessment",
+                  icon: ClipboardCheck,
+                  badge: (activeVideo?.assignment?.questions?.length || 0) > 0 ? `${activeVideo?.assignment?.questions?.length} Qs` : undefined,
+                },
                 {
                   id: "interview",
                   label: "Interview Questions",
@@ -1639,11 +1700,34 @@ export default function CourseLearningHubPage({
                                       )}
                                       <span className="truncate">{vid.title}</span>
                                     </div>
-                                    {vid.durationFormatted && vid.durationFormatted !== "0:00" && vid.durationFormatted !== "0" && (
-                                      <span className="text-[11px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
-                                        {vid.durationFormatted}
-                                      </span>
-                                    )}
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      {vid.assignment && (vid.assignment.questions?.length ?? 0) > 0 && (
+                                        <span
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSelectVideo(vid, sec.id);
+                                            setActiveTab("quiz");
+                                            handleOpenVideoAssignment(vid, false);
+                                          }}
+                                          className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold cursor-pointer transition-colors ${
+                                            completedAssignmentIds.includes(vid.assignment.id || `asg-vid-${vid.id}`)
+                                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 hover:bg-emerald-200"
+                                              : "bg-blue-100 text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-300 hover:bg-blue-200"
+                                          }`}
+                                          title="Take Video Quiz & Assessment"
+                                        >
+                                          <ClipboardCheck className="h-3 w-3" />
+                                          {completedAssignmentIds.includes(vid.assignment.id || `asg-vid-${vid.id}`)
+                                            ? "Quiz Passed"
+                                            : `Quiz (${vid.assignment.questions?.length} Qs)`}
+                                        </span>
+                                      )}
+                                      {vid.durationFormatted && vid.durationFormatted !== "0:00" && vid.durationFormatted !== "0" && (
+                                        <span className="text-[11px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
+                                          {vid.durationFormatted}
+                                        </span>
+                                      )}
+                                    </div>
                                   </button>
                                 );
                               })}
@@ -1709,11 +1793,34 @@ export default function CourseLearningHubPage({
                                             )}
                                             <span className="truncate">{vid.title}</span>
                                           </div>
-                                          {vid.durationFormatted && vid.durationFormatted !== "0:00" && vid.durationFormatted !== "0" && (
-                                            <span className="text-[11px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
-                                              {vid.durationFormatted}
-                                            </span>
-                                          )}
+                                          <div className="flex items-center gap-2 shrink-0">
+                                            {vid.assignment && (vid.assignment.questions?.length ?? 0) > 0 && (
+                                              <span
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleSelectVideo(vid, sec.id);
+                                                  setActiveTab("quiz");
+                                                  handleOpenVideoAssignment(vid, false);
+                                                }}
+                                                className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold cursor-pointer transition-colors ${
+                                                  completedAssignmentIds.includes(vid.assignment.id || `asg-vid-${vid.id}`)
+                                                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 hover:bg-emerald-200"
+                                                    : "bg-blue-100 text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-300 hover:bg-blue-200"
+                                                }`}
+                                                title="Take Video Quiz & Assessment"
+                                              >
+                                                <ClipboardCheck className="h-3 w-3" />
+                                                {completedAssignmentIds.includes(vid.assignment.id || `asg-vid-${vid.id}`)
+                                                  ? "Quiz Passed"
+                                                  : `Quiz (${vid.assignment.questions?.length} Qs)`}
+                                              </span>
+                                            )}
+                                            {vid.durationFormatted && vid.durationFormatted !== "0:00" && vid.durationFormatted !== "0" && (
+                                              <span className="text-[11px] text-slate-400 shrink-0 font-mono dark:text-slate-400">
+                                                {vid.durationFormatted}
+                                              </span>
+                                            )}
+                                          </div>
                                         </button>
                                       );
                                     })}
@@ -1724,88 +1831,90 @@ export default function CourseLearningHubPage({
                           )}
 
                           {/* Section Assignment Footer */}
-                          <div className="border-t border-slate-100 p-3 bg-slate-50/60 flex items-center justify-between text-xs dark:border-slate-800 dark:bg-surface-elevated/60">
-                            <span className="font-semibold flex items-center gap-1.5">
-                              {isPassed ? (
-                                <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                                  <CheckCircle2 className="h-4 w-4" /> Passed ({score ?? 85}%)
-                                </span>
-                              ) : isCooldownActive ? (
-                                <span className="text-amber-700 dark:text-amber-400 flex items-center gap-1">
-                                  <Timer className="h-4 w-4 animate-pulse" /> Retake in {formatCooldown(secondsRemaining)}
-                                </span>
-                              ) : (
-                                <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                                  <ClipboardCheck className="h-4 w-4 text-blue-600" /> Section Assignment (Pass: {minPass}%)
-                                </span>
-                              )}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              {isPassed ? (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenAssignment(sec, false)}
-                                    className="font-bold text-emerald-600 hover:underline dark:text-emerald-400 cursor-pointer flex items-center gap-1"
-                                  >
-                                    <Eye className="h-3.5 w-3.5" /> Review Answers
-                                  </button>
-                                  <span className="text-slate-300 dark:text-slate-700">•</span>
+                          {sec.assignment && ((sec.assignment.questions?.length ?? 0) > 0 || (sec.assignment.title?.trim().length ?? 0) > 0) && (
+                            <div className="border-t border-slate-100 p-3 bg-slate-50/60 flex items-center justify-between text-xs dark:border-slate-800 dark:bg-surface-elevated/60">
+                              <span className="font-semibold flex items-center gap-1.5">
+                                {isPassed ? (
+                                  <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                                    <CheckCircle2 className="h-4 w-4" /> Passed ({score ?? 85}%)
+                                  </span>
+                                ) : isCooldownActive ? (
+                                  <span className="text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                                    <Timer className="h-4 w-4 animate-pulse" /> Retake in {formatCooldown(secondsRemaining)}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                                    <ClipboardCheck className="h-4 w-4 text-blue-600" /> Section Assignment (Pass: {minPass}%)
+                                  </span>
+                                )}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                {isPassed ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenAssignment(sec, false)}
+                                      className="font-bold text-emerald-600 hover:underline dark:text-emerald-400 cursor-pointer flex items-center gap-1"
+                                    >
+                                      <Eye className="h-3.5 w-3.5" /> Review Answers
+                                    </button>
+                                    <span className="text-slate-300 dark:text-slate-700">•</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenAssignment(sec, true)}
+                                      className="font-bold text-[#2563EB] hover:underline dark:text-blue-400 cursor-pointer flex items-center gap-1"
+                                    >
+                                      <RotateCcw className="h-3 w-3" /> Retake
+                                    </button>
+                                  </>
+                                ) : isCooldownActive ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenAssignment(sec, false)}
+                                      className="font-bold text-slate-600 hover:underline dark:text-slate-400 cursor-pointer flex items-center gap-1"
+                                    >
+                                      <Eye className="h-3.5 w-3.5" /> Review Answers
+                                    </button>
+                                    <span className="text-slate-300 dark:text-slate-700">•</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenAssignment(sec, false)}
+                                      className="font-bold text-amber-600 hover:underline dark:text-amber-400 cursor-pointer"
+                                    >
+                                      View Cooldown
+                                    </button>
+                                  </>
+                                ) : typeof score === "number" ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenAssignment(sec, false)}
+                                      className="font-bold text-slate-600 hover:underline dark:text-slate-400 cursor-pointer flex items-center gap-1"
+                                    >
+                                      <Eye className="h-3.5 w-3.5" /> Review Answers
+                                    </button>
+                                    <span className="text-slate-300 dark:text-slate-700">•</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenAssignment(sec, true)}
+                                      className="font-bold text-[#2563EB] hover:underline dark:text-blue-400 cursor-pointer flex items-center gap-1"
+                                    >
+                                      <RotateCcw className="h-3 w-3" /> Retake
+                                    </button>
+                                  </>
+                                ) : (
                                   <button
                                     type="button"
                                     onClick={() => handleOpenAssignment(sec, true)}
-                                    className="font-bold text-[#2563EB] hover:underline dark:text-blue-400 cursor-pointer flex items-center gap-1"
+                                    className="font-bold text-[#2563EB] hover:underline dark:text-blue-400 cursor-pointer"
                                   >
-                                    <RotateCcw className="h-3 w-3" /> Retake
+                                    Take Assessment →
                                   </button>
-                                </>
-                              ) : isCooldownActive ? (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenAssignment(sec, false)}
-                                    className="font-bold text-slate-600 hover:underline dark:text-slate-400 cursor-pointer flex items-center gap-1"
-                                  >
-                                    <Eye className="h-3.5 w-3.5" /> Review Answers
-                                  </button>
-                                  <span className="text-slate-300 dark:text-slate-700">•</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenAssignment(sec, false)}
-                                    className="font-bold text-amber-600 hover:underline dark:text-amber-400 cursor-pointer"
-                                  >
-                                    View Cooldown
-                                  </button>
-                                </>
-                              ) : typeof score === "number" ? (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenAssignment(sec, false)}
-                                    className="font-bold text-slate-600 hover:underline dark:text-slate-400 cursor-pointer flex items-center gap-1"
-                                  >
-                                    <Eye className="h-3.5 w-3.5" /> Review Answers
-                                  </button>
-                                  <span className="text-slate-300 dark:text-slate-700">•</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenAssignment(sec, true)}
-                                    className="font-bold text-[#2563EB] hover:underline dark:text-blue-400 cursor-pointer flex items-center gap-1"
-                                  >
-                                    <RotateCcw className="h-3 w-3" /> Retake
-                                  </button>
-                                </>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenAssignment(sec, true)}
-                                  className="font-bold text-[#2563EB] hover:underline dark:text-blue-400 cursor-pointer"
-                                >
-                                  Take Assessment →
-                                </button>
-                              )}
+                                )}
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       );
                     })}
@@ -2068,6 +2177,166 @@ export default function CourseLearningHubPage({
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* TAB: VIDEO QUIZ & ASSESSMENT */}
+              {activeTab === "quiz" && activeVideo && (
+                <div className="space-y-6 max-w-4xl animate-in fade-in duration-200">
+                  {/* Tab Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-blue-100 dark:bg-blue-950/60 px-2.5 py-0.5 text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
+                          Quiz &amp; Assessment
+                        </span>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                          {activeVideo.assignment?.title || `${activeVideo.title} Assessment`}
+                        </h2>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium mt-1 dark:text-slate-400">
+                        Test your comprehension of this lecture with graded questions and verified milestones.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-xl bg-slate-100 dark:bg-surface-elevated px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                        Pass Mark: {activeVideo.assignment?.minPassingScore ?? 70}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {activeVideo.assignment && (activeVideo.assignment.questions?.length ?? 0) > 0 ? (
+                    <div className="space-y-5">
+                      {/* Status / Score Summary Card */}
+                      {(() => {
+                        const asgId = activeVideo.assignment.id || `asg-vid-${activeVideo.id}`;
+                        const score = assignmentScores[asgId];
+                        const isPassed = completedAssignmentIds.includes(asgId);
+                        const hasAttempt = typeof score === "number" || isPassed;
+
+                        return (
+                          <div className={`rounded-2xl border p-5 transition-all ${
+                            isPassed
+                              ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-800/60 dark:bg-emerald-950/20"
+                              : hasAttempt
+                              ? "border-amber-200 bg-amber-50/50 dark:border-amber-800/60 dark:bg-amber-950/20"
+                              : "border-blue-100 bg-blue-50/40 dark:border-blue-900/40 dark:bg-blue-950/20"
+                          }`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  {isPassed ? (
+                                    <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                                  ) : (
+                                    <ClipboardCheck className="h-5 w-5 text-[#2563EB] dark:text-blue-400" />
+                                  )}
+                                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                                    {isPassed ? "Assessment Passed!" : hasAttempt ? "Assessment Attempted" : "Ready to Start"}
+                                  </h3>
+                                  {typeof score === "number" && (
+                                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-black ${
+                                      isPassed
+                                        ? "bg-emerald-200/70 text-emerald-900 dark:bg-emerald-900/60 dark:text-emerald-200"
+                                        : "bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200"
+                                    }`}>
+                                      Score: {score}%
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-600 dark:text-slate-300">
+                                  {isPassed
+                                    ? "Congratulations! You have satisfied the knowledge requirements for this lecture."
+                                    : hasAttempt
+                                    ? "Your score was below the passing threshold. Review the lecture material and retake the quiz."
+                                    : `This assessment consists of ${activeVideo.assignment.questions?.length} questions. You need ${activeVideo.assignment.minPassingScore ?? 70}% to pass.`}
+                                </p>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenVideoAssignment(activeVideo, false)}
+                                  className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-all cursor-pointer"
+                                >
+                                  {hasAttempt ? (
+                                    <>
+                                      <Eye className="h-3.5 w-3.5" />
+                                      <span>Review Answers</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <PlayCircle className="h-3.5 w-3.5" />
+                                      <span>Start Assessment</span>
+                                    </>
+                                  )}
+                                </button>
+                                {hasAttempt && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenVideoAssignment(activeVideo, true)}
+                                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated hover:bg-slate-50 dark:hover:bg-surface-hover px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition-all cursor-pointer"
+                                  >
+                                    <RotateCcw className="h-3.5 w-3.5 text-[#2563EB] dark:text-blue-400" />
+                                    <span>Retake</span>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Questions Preview List */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">
+                          <span>Curriculum Assessment Questions ({activeVideo.assignment.questions?.length})</span>
+                          <span>Type: {activeVideo.assignment.type || "Multiple Choice"}</span>
+                        </div>
+
+                        <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-surface-secondary overflow-hidden shadow-xs">
+                          {activeVideo.assignment.questions?.map((q, qIdx) => (
+                            <div key={q.id || qIdx} className="p-4 space-y-2">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-start gap-2.5">
+                                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 text-[11px] font-black shrink-0 mt-0.5">
+                                    {qIdx + 1}
+                                  </span>
+                                  <div>
+                                    <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                                      {q.prompt || `Question ${qIdx + 1}`}
+                                    </div>
+                                    <div className="mt-1 text-[11px] text-slate-400 font-medium">
+                                      Type: {assessmentKindLabel(resolveAssessmentKind(q.type, activeVideo.assignment?.type, q))} · {q.maxPoints || 10} Points
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {Array.isArray((q as any).options || q.choices) && ((q as any).options || q.choices).length > 0 && (
+                                <div className="pl-7 grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                                  {(((q as any).options || q.choices) as string[]).map((opt: string, optIdx: number) => (
+                                    <div key={optIdx} className="rounded-lg border border-slate-100 dark:border-slate-800/80 bg-slate-50/60 dark:bg-surface-elevated/40 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300">
+                                      <span className="font-bold text-slate-400 mr-1.5">{String.fromCharCode(65 + optIdx)}.</span>
+                                      <span>{opt}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center space-y-3 dark:border-slate-800 dark:bg-surface-secondary/40">
+                      <ClipboardCheck className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto" />
+                      <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">No Video Quiz Attached</h3>
+                      <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                        This video lecture doesn&apos;t have an inline quiz. Complete the video lesson to proceed, or attempt the full Section Assessment below.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -4371,6 +4640,12 @@ export default function CourseLearningHubPage({
             : null
         }
         onClose={() => setShowCertModal(false)}
+      />
+
+      {/* OFFICIAL COURSE TAX INVOICE MODAL */}
+      <InvoiceModal
+        invoice={selectedInvoice}
+        onClose={() => setSelectedInvoice(null)}
       />
     </div>
   );
