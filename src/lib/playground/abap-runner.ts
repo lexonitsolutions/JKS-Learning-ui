@@ -43,13 +43,61 @@ export function describeRuntimeError(message: string): string {
   return `Runtime error: ${message}`;
 }
 
+export function prepareAbapSource(raw: string): string {
+  if (!/if_oo_adt_classrun/i.test(raw)) return raw;
+
+  const shim = `
+INTERFACE if_oo_adt_classrun_out.
+  METHODS write IMPORTING data TYPE any.
+ENDINTERFACE.
+
+INTERFACE if_oo_adt_classrun.
+  METHODS main IMPORTING out TYPE REF TO if_oo_adt_classrun_out.
+ENDINTERFACE.
+
+CLASS lcl_adt_out DEFINITION.
+  PUBLIC SECTION.
+    INTERFACES if_oo_adt_classrun_out.
+ENDCLASS.
+
+CLASS lcl_adt_out IMPLEMENTATION.
+  METHOD if_oo_adt_classrun_out~write.
+    WRITE: / data.
+  ENDMETHOD.
+ENDCLASS.
+`;
+
+  // Convert global cloud classes "CLASS ... DEFINITION PUBLIC [FINAL] [CREATE PUBLIC]." into local classes
+  let prepared = raw.replace(
+    /CLASS\s+([a-zA-Z0-9_]+)\s+DEFINITION\s+PUBLIC(?:\s+FINAL)?(?:\s+CREATE\s+PUBLIC)?\s*\./gi,
+    "CLASS $1 DEFINITION.",
+  );
+
+  // Detect the class that implements if_oo_adt_classrun~main and auto-instantiate it
+  const match = prepared.match(/CLASS\s+([a-zA-Z0-9_]+)\s+IMPLEMENTATION[\s\S]*?if_oo_adt_classrun~main/i);
+  if (match && !/START-OF-SELECTION/i.test(prepared)) {
+    const className = match[1];
+    prepared += `
+START-OF-SELECTION.
+  DATA _lo_app TYPE REF TO ${className}.
+  DATA _lo_out TYPE REF TO lcl_adt_out.
+  CREATE OBJECT _lo_out.
+  CREATE OBJECT _lo_app.
+  _lo_app->if_oo_adt_classrun~main( _lo_out ).
+`;
+  }
+
+  return shim + "\n" + prepared;
+}
+
 export async function runAbap(source: string): Promise<AbapRunResult> {
   const started = Date.now();
   const elapsed = () => Date.now() - started;
 
   let code: string;
   try {
-    const result = await new Transpiler().runRaw([{ filename: "zprog.prog.abap", contents: source }]);
+    const preparedSource = prepareAbapSource(source);
+    const result = await new Transpiler().runRaw([{ filename: "zprog.prog.abap", contents: preparedSource }]);
     code = result.objects.map((o) => o.chunk.getCode()).join("\n");
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
