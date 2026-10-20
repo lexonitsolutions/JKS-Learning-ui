@@ -19,7 +19,6 @@ const DEFAULT_TIMEOUT_MS = 15_000;
 export async function runAbapIsolated(source: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<IsolatedResult> {
   const started = Date.now();
 
-  // 1. Try Next.js server route first (fast, reliable execution without browser worker bundling issues)
   try {
     const res = await fetch("/api/playground/abap", {
       method: "POST",
@@ -27,44 +26,22 @@ export async function runAbapIsolated(source: string, timeoutMs = DEFAULT_TIMEOU
       body: JSON.stringify({ source, timeoutMs }),
       signal: AbortSignal.timeout ? AbortSignal.timeout(timeoutMs + 2000) : undefined,
     });
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        status: data.status,
-        stdout: data.output ?? "",
-        stderr: data.error ?? "",
-        timeMs: typeof data.timeMs === "number" ? data.timeMs : Date.now() - started,
-      };
-    }
-  } catch (apiErr) {
-    // If API route is not reachable, fall back to direct in-browser runner
-    console.warn("ABAP API execution route unavailable, falling back to client-side runtime:", apiErr);
-  }
-
-  // 2. Client-side fallback using open-abap runner with timeout
-  try {
-    const { runAbap } = await import("./abap-runner");
-    const runPromise = runAbap(source);
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(
-        () => reject(new Error(`Stopped: the program ran longer than ${timeoutMs / 1000}s (possible infinite loop).`)),
-        timeoutMs,
-      ),
-    );
-    const r = await Promise.race([runPromise, timeoutPromise]);
+    const data = await res.json();
     return {
-      status: r.status,
-      stdout: r.output,
-      stderr: r.error ?? "",
-      timeMs: r.timeMs,
+      status: data.status ?? (res.ok ? "ok" : "runtime_error"),
+      stdout: data.output ?? "",
+      stderr: data.error ?? (res.ok ? "" : `Execution failed (${res.status})`),
+      timeMs: typeof data.timeMs === "number" ? data.timeMs : Date.now() - started,
     };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    const isTimeout = message.includes("possible infinite loop");
+    const isTimeout = message.toLowerCase().includes("timeout") || message.toLowerCase().includes("aborted");
     return {
       status: isTimeout ? "timeout" : "runtime_error",
       stdout: "",
-      stderr: message,
+      stderr: isTimeout
+        ? `Stopped: the program ran longer than ${timeoutMs / 1000}s (possible infinite loop).`
+        : `Execution failed: ${message}`,
       timeMs: Date.now() - started,
     };
   }

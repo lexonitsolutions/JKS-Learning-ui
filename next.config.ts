@@ -11,7 +11,6 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: [
     "@abaplint/transpiler",
-    "@abaplint/runtime",
     "@abaplint/core",
   ],
   turbopack: {
