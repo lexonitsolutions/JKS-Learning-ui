@@ -11,6 +11,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@abaplint/database-sqlite": "^2.13.83",
     "@abaplint/runtime": "^2.14.6",
     "@abaplint/transpiler": "^2.14.6",
     "@clerk/nextjs": "^7.9.1",

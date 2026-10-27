@@ -11,10 +11,16 @@ import {
   Loader2,
   Sparkles,
   Lock,
+  Building2,
+  Copy,
+  Check,
+  Clock,
+  Info,
 } from "lucide-react";
 import { formatINR } from "@/lib/utils/format-money";
 import { createPaymentOrder } from "@/lib/data/payments-api";
 import { createInvoice } from "@/lib/data/invoices-store";
+import { submitPendingPayment } from "@/lib/data/pending-payments-store";
 
 interface StudentPayModalProps {
   isOpen: boolean;
@@ -54,10 +60,19 @@ export function StudentPayModal({
   const [customAmount, setCustomAmount] = useState<number>(
     enrollment ? Math.min(5000, enrollment.outstandingBalanceRupees) : 5000
   );
-  const [paymentMethod, setPaymentMethod] = useState<"UPI" | "CARD" | "NETBANKING">("UPI");
+  const [paymentMethod, setPaymentMethod] = useState<"UPI" | "BANK_TRANSFER" | "CARD">("UPI");
+  const [transactionRef, setTransactionRef] = useState<string>("");
+  const [studentRemarks, setStudentRemarks] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successTxn, setSuccessTxn] = useState<any | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [successInfo, setSuccessInfo] = useState<{
+    amount: number;
+    reference: string;
+    isPendingApproval: boolean;
+    courseTitle: string;
+    installmentNumber?: number;
+  } | null>(null);
 
   if (!isOpen || !enrollment) return null;
 
@@ -68,6 +83,14 @@ export function StudentPayModal({
       : paymentType === "FULL_BALANCE"
       ? maxPayable
       : customAmount;
+
+  const copyToClipboard = (text: string, field: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    }
+  };
 
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,70 +105,63 @@ export function StudentPayModal({
       return;
     }
 
-    setIsProcessing(true);
-    try {
-      // 1. Call backend to calculate exact amount and create verified payment order
-      const orderRes = await createPaymentOrder({
-        courseId: enrollment.courseId || enrollment.courseSlug,
-        enrollmentId: enrollment.enrollmentId,
-        installmentItemId: installmentItem?.id,
-        amountCents: Math.round(targetAmount * 100),
-      });
+    // Require transaction reference for manual UPI / Bank Transfer payment
+    if (!transactionRef.trim()) {
+      setError("Please enter your 12-digit UTR, Transaction ID, or Reference Number.");
+      return;
+    }
 
-      // 2. Record locally for invoice persistence
-      const simulatedRef = `PAY-${Math.floor(10000000 + Math.random() * 90000000)}`;
-      createInvoice({
+    setIsProcessing(true);
+    const cleanRef = transactionRef.trim();
+
+    try {
+      // 1. Submit pending payment record requiring admin approval
+      submitPendingPayment({
+        enrollmentId: enrollment.enrollmentId,
+        courseId: enrollment.courseId,
+        courseSlug: enrollment.courseSlug,
+        courseTitle: enrollment.courseTitle,
+        installmentItemId: installmentItem?.id,
+        installmentNumber: installmentItem?.installmentNumber,
         studentName: studentName || "Student",
         studentEmail: studentEmail || "student@jkslearning.com",
-        studentPhone: "9876543210",
-        courseTitle: enrollment.courseTitle,
-        courseSlug: enrollment.courseSlug,
-        price: targetAmount,
-        discount: 0,
-        paymentMode: paymentMethod === "UPI" ? "UPI" : paymentMethod === "CARD" ? "Credit/Debit Card" : "Net Banking",
-        batchTiming: installmentItem ? `Installment #${installmentItem.installmentNumber}` : "Fee Payment",
+        amountRupees: targetAmount,
+        paymentMode: paymentMethod,
+        transactionRef: cleanRef,
+        notes: studentRemarks.trim() || undefined,
       });
 
-      setSuccessTxn({
+      // 2. Also register order with backend if available
+      try {
+        await createPaymentOrder({
+          courseId: enrollment.courseId || enrollment.courseSlug,
+          enrollmentId: enrollment.enrollmentId,
+          installmentItemId: installmentItem?.id,
+          amountCents: Math.round(targetAmount * 100),
+        });
+      } catch (beErr) {
+        console.warn("Backend createPaymentOrder note:", beErr);
+      }
+
+      setSuccessInfo({
         amount: targetAmount,
-        reference: orderRes?.providerOrderId || simulatedRef,
-        course: enrollment.courseTitle,
-        type: paymentType,
+        reference: cleanRef,
+        isPendingApproval: true,
+        courseTitle: enrollment.courseTitle,
+        installmentNumber: installmentItem?.installmentNumber,
       });
 
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("jks_payment_completed"));
+        window.dispatchEvent(new Event("jks_enrollment_updated"));
       }
 
       setTimeout(() => {
         onSuccess();
-      }, 1500);
+      }, 2500);
     } catch (err: any) {
-      console.error("Payment order error:", err);
-      // Fallback graceful success simulation for mock/dev environment
-      const simulatedRef = `PAY-${Math.floor(10000000 + Math.random() * 90000000)}`;
-      createInvoice({
-        studentName: studentName || "Student",
-        studentEmail: studentEmail || "student@jkslearning.com",
-        studentPhone: "9876543210",
-        courseTitle: enrollment.courseTitle,
-        courseSlug: enrollment.courseSlug,
-        price: targetAmount,
-        discount: 0,
-        paymentMode: paymentMethod === "UPI" ? "UPI" : paymentMethod === "CARD" ? "Credit/Debit Card" : "Net Banking",
-        batchTiming: installmentItem ? `Installment #${installmentItem.installmentNumber}` : "Fee Payment",
-      });
-
-      setSuccessTxn({
-        amount: targetAmount,
-        reference: simulatedRef,
-        course: enrollment.courseTitle,
-        type: paymentType,
-      });
-
-      setTimeout(() => {
-        onSuccess();
-      }, 1500);
+      console.error("Payment submission error:", err);
+      setError(err?.message || "Failed to submit payment verification request. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -163,7 +179,9 @@ export function StudentPayModal({
               <CreditCard className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Make Course Payment</h3>
+              <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                {installmentItem ? `Pay Installment #${installmentItem.installmentNumber}` : "Make Course Fee Payment"}
+              </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">{enrollment.courseTitle}</p>
             </div>
           </div>
@@ -171,30 +189,33 @@ export function StudentPayModal({
             type="button"
             onClick={onClose}
             disabled={isProcessing}
-            className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+            className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {successTxn ? (
+        {successInfo ? (
           <div className="py-8 text-center space-y-4">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
-              <CheckCircle2 className="h-8 w-8" />
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 ring-8 ring-amber-50/50">
+              <Clock className="h-8 w-8" />
             </div>
-            <div className="space-y-1">
-              <h4 className="text-xl font-bold text-slate-900 dark:text-white">Payment Successful!</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {formatINR(successTxn.amount)} paid against {successTxn.course}
-              </p>
-              <div className="text-[11px] font-mono text-slate-400 pt-2">
-                Reference: {successTxn.reference}
-              </div>
-            </div>
-            <div className="pt-2">
-              <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                <Sparkles className="h-3.5 w-3.5" /> Balance and invoice updated
+            <div className="space-y-1.5">
+              <span className="rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300 px-3 py-1 text-xs font-bold uppercase tracking-wider">
+                Submitted - Pending Admin Approval
               </span>
+              <h4 className="text-xl font-black text-slate-900 dark:text-white pt-2">
+                Payment Verification in Progress
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+                Your payment of <strong className="text-slate-800 dark:text-slate-200">{formatINR(successInfo.amount)}</strong> has been recorded with transaction reference:
+              </p>
+              <div className="inline-block rounded-xl bg-slate-100 dark:bg-slate-800 px-4 py-2 font-mono text-sm font-bold text-slate-900 dark:text-white mt-1 border border-slate-200 dark:border-slate-700">
+                {successInfo.reference}
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-md mx-auto pt-2">
+                Our finance team will verify the payment against your bank/UPI transaction and approve it shortly. Once approved, your installment will show as <strong>PAID</strong> and the official invoice will be available for download.
+              </p>
             </div>
           </div>
         ) : (
@@ -223,7 +244,7 @@ export function StudentPayModal({
 
             {/* Payment Type Selection */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Choose What to Pay:</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Payment Allocation:</label>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-xs">
                 {installmentItem && (
                   <button
@@ -295,26 +316,99 @@ export function StudentPayModal({
 
             {/* Payment Method Selector */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Payment Gateway Method:</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Select Payment Method:</label>
               <div className="grid grid-cols-3 gap-2 text-xs">
-                {(["UPI", "CARD", "NETBANKING"] as const).map((method) => (
+                {(["UPI", "BANK_TRANSFER", "CARD"] as const).map((method) => (
                   <button
                     key={method}
                     type="button"
                     onClick={() => setPaymentMethod(method)}
                     className={`rounded-xl border p-2.5 text-center transition-all cursor-pointer ${
                       paymentMethod === method
-                        ? "border-[#1E5EFF] bg-blue-50 dark:bg-blue-950/40 text-[#1E5EFF] dark:text-blue-400 font-bold shadow-xs"
+                        ? "border-[#1E5EFF] bg-blue-50 dark:bg-blue-950/40 text-[#1E5EFF] dark:text-blue-400 font-bold shadow-xs ring-1 ring-blue-500/20"
                         : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-800 dark:bg-surface-secondary dark:text-slate-400"
                     }`}
                   >
                     {method === "UPI" && <QrCode className="h-4 w-4 mx-auto mb-1 text-[#1E5EFF] dark:text-blue-400" />}
+                    {method === "BANK_TRANSFER" && <Building2 className="h-4 w-4 mx-auto mb-1 text-[#1E5EFF] dark:text-blue-400" />}
                     {method === "CARD" && <CreditCard className="h-4 w-4 mx-auto mb-1 text-[#1E5EFF] dark:text-blue-400" />}
-                    {method === "NETBANKING" && <Lock className="h-4 w-4 mx-auto mb-1 text-[#1E5EFF] dark:text-blue-400" />}
-                    <span>{method === "UPI" ? "UPI App" : method === "CARD" ? "Card" : "NetBanking"}</span>
+                    <span>{method === "UPI" ? "UPI / QR" : method === "BANK_TRANSFER" ? "Bank Transfer" : "Card / NetBanking"}</span>
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Payment Destination Details */}
+            {paymentMethod === "UPI" && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-surface-secondary space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Official UPI ID for Transfer:</span>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard("jkslearning@icici", "upi")}
+                    className="flex items-center gap-1 text-[11px] font-bold text-[#1E5EFF] hover:underline cursor-pointer"
+                  >
+                    {copiedField === "upi" ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
+                    <span>{copiedField === "upi" ? "Copied" : "Copy UPI"}</span>
+                  </button>
+                </div>
+                <div className="font-mono text-sm font-black text-slate-900 dark:text-white bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                  jkslearning@icici
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Open Google Pay, PhonePe, Paytm, or BHIM, send <strong>{formatINR(targetAmount)}</strong> to the UPI ID above, then enter the 12-digit UTR below.
+                </p>
+              </div>
+            )}
+
+            {paymentMethod === "BANK_TRANSFER" && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-surface-secondary space-y-2 text-xs">
+                <div className="font-bold text-slate-700 dark:text-slate-300 mb-1">Company Bank Account Details:</div>
+                <div className="space-y-1 font-mono text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Account Name:</span>
+                    <strong className="text-slate-800 dark:text-slate-200">JKS Learning Technologies Pvt Ltd</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Account Number:</span>
+                    <strong className="text-slate-800 dark:text-slate-200">123405009876</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Bank &amp; IFSC:</span>
+                    <strong className="text-slate-800 dark:text-slate-200">ICICI Bank · ICIC0001234</strong>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* UTR / Transaction Reference Input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <span>Transaction Reference / 12-Digit UTR <span className="text-rose-500">*</span>:</span>
+                <span className="text-[10px] text-slate-400 font-normal">Found in your payment app receipt</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={transactionRef}
+                onChange={(e) => setTransactionRef(e.target.value)}
+                placeholder="e.g. 528394829104 or TXN-998822"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-mono font-bold text-slate-900 outline-none focus:border-[#1E5EFF] dark:border-slate-700 dark:bg-input-bg dark:text-white"
+              />
+            </div>
+
+            {/* Notes / Remarks */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Payment Remarks / App Used (Optional):
+              </label>
+              <input
+                type="text"
+                value={studentRemarks}
+                onChange={(e) => setStudentRemarks(e.target.value)}
+                placeholder="e.g. Paid via PhonePe from HDFC account"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 outline-none focus:border-[#1E5EFF] dark:border-slate-700 dark:bg-input-bg dark:text-white"
+              />
             </div>
 
             {error && (
@@ -330,7 +424,7 @@ export function StudentPayModal({
                 type="button"
                 onClick={onClose}
                 disabled={isProcessing}
-                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -342,12 +436,12 @@ export function StudentPayModal({
                 {isProcessing ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Processing Secure Payment...</span>
+                    <span>Submitting for Approval...</span>
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="h-4 w-4" />
-                    <span>Pay {formatINR(targetAmount)}</span>
+                    <span>Submit Payment ({formatINR(targetAmount)})</span>
                   </>
                 )}
               </button>

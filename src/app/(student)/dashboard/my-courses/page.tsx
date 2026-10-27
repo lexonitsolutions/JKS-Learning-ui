@@ -19,6 +19,7 @@ import {
   AlertCircle,
   RefreshCw,
   Calendar,
+  Download,
 } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
@@ -28,6 +29,8 @@ import { useMockSession } from "@/lib/auth/use-mock-auth";
 import { useUser } from "@clerk/nextjs";
 import { fetchStudentEnrollments, getClientSessionEmail, getExactStudentCourseProgress, type EnrolledCourseItem } from "@/lib/data/enrollments-api";
 import { CourseThumbnail } from "@/components/common/course-thumbnail";
+import { InvoiceModal } from "@/components/common/invoice-modal";
+import { getStoredInvoices, createInvoice, type Invoice } from "@/lib/data/invoices-store";
 
 export default function MyCoursesPage() {
   const session = useMockSession();
@@ -37,8 +40,31 @@ export default function MyCoursesPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<"all" | "in-progress" | "completed" | "pending" | "on-hold">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress;
+
+  const handleOpenInvoice = (course: EnrolledCourseItem) => {
+    const currentInvoices = getStoredInvoices();
+    const inv =
+      currentInvoices.find(
+        (i) =>
+          i.items?.some(
+            (it) => it.courseSlug === course.slug || it.description === course.title
+          ) || (i as any).courseSlug === course.slug
+      ) ||
+      createInvoice({
+        studentName: (session as any)?.name || clerkUser?.fullName || "Student",
+        studentEmail: (clerkEmail || session?.email || "student@jkslearning.com").toLowerCase().trim(),
+        studentPhone: "9876543210",
+        courseTitle: course.title,
+        courseSlug: course.slug,
+        price: (course as any).price || 0,
+        discount: 0,
+        paymentMode: "UPI",
+      });
+    setSelectedInvoice(inv);
+  };
 
   const loadEnrollments = useCallback(async () => {
     setIsLoading(true);
@@ -445,24 +471,37 @@ export default function MyCoursesPage() {
                         <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                         <span>Access Paused by Administrator</span>
                       </div>
-                    ) : course.isCompleted || (course.progress || 0) >= 100 ? (
-                      <Link
-                        href={`/dashboard/my-courses/${course.slug}`}
-                        className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-500/20 transition-all hover:scale-[1.01]"
-                      >
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        <span>Completed · Review</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
                     ) : (
-                      <Link
-                        href={`/dashboard/my-courses/${course.slug}`}
-                        className="flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:scale-[1.01]"
-                      >
-                        <PlayCircle className="h-3.5 w-3.5" />
-                        <span>Continue Learning</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenInvoice(course)}
+                          title="Download Tax Invoice (PDF)"
+                          className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-elevated hover:bg-slate-50 dark:hover:bg-surface-hover px-3 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all shadow-xs cursor-pointer shrink-0"
+                        >
+                          <Download className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                          <span className="hidden sm:inline">Invoice</span>
+                        </button>
+                        {course.isCompleted || (course.progress || 0) >= 100 ? (
+                          <Link
+                            href={`/dashboard/my-courses/${course.slug}`}
+                            className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-500/20 transition-all hover:scale-[1.01]"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            <span>Review Course</span>
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/dashboard/my-courses/${course.slug}`}
+                            className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:scale-[1.01]"
+                          >
+                            <PlayCircle className="h-3.5 w-3.5" />
+                            <span>Continue Learning</span>
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -521,6 +560,11 @@ export default function MyCoursesPage() {
           </div>
         )}
       </div>
+
+      <InvoiceModal
+        invoice={selectedInvoice}
+        onClose={() => setSelectedInvoice(null)}
+      />
     </>
   );
 }

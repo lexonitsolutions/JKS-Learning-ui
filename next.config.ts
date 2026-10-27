@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
       { source: "/admin/instructors", destination: "/admin/tutors", permanent: true },
     ];
   },
+  serverExternalPackages: [
+    "@abaplint/transpiler",
+    "@abaplint/core",
+    "@abaplint/database-sqlite",
+    "sql.js",
+  ],
   turbopack: {
     root: path.resolve(__dirname),
   },

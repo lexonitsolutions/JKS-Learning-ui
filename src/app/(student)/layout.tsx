@@ -42,6 +42,9 @@ export default async function StudentLayout({ children }: { children: React.Reac
     if (session?.role === "head") {
       redirect("/head");
     }
+    if (session?.role === "staff") {
+      redirect("/staff");
+    }
   }
 
   return (

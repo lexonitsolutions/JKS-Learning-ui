@@ -101,6 +101,7 @@ export const createHead = (d: { name: string; email: string; password: string; p
   request<Person & { initialPassword: string }>("/admin/heads", body("POST", d));
 export const updateHead = (id: string, d: { name?: string; phone?: string; status?: "ACTIVE" | "BLOCKED" }) =>
   request<Person>(`/admin/heads/${id}`, body("PATCH", d));
+export const deleteHead = (id: string) => request<{ deleted: boolean }>(`/admin/heads/${id}`, { method: "DELETE" });
 export const getHeadOverview = (id: string) => request<HeadOverview>(`/admin/heads/${id}`);
 export const setHeadInstructors = (id: string, instructorIds: string[]) =>
   request<{ assigned: number; released: number }>(`/admin/heads/${id}/instructors`, body("PUT", { instructorIds }));

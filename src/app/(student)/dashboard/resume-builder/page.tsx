@@ -307,16 +307,22 @@ function toContent(d: ResumeData): ResumeContent {
 /** Applies API content back onto the builder, keeping the ids of items that were already there. */
 function fromContent(prev: ResumeData, c: ResumeContent): ResumeData {
   const stamp = Date.now();
-  const withIds = <T, E extends { id: string }>(items: T[], existing: E[], prefix: string) =>
-    items.map((item, i) => ({ ...item, id: existing[i]?.id ?? `${prefix}-${stamp}-${i}` }));
+  const withIds = <T, E extends { id: string }>(items: T[] | undefined, existing: E[] | undefined, prefix: string) =>
+    (items || []).map((item, i) => ({ ...item, id: existing?.[i]?.id ?? `${prefix}-${stamp}-${i}` }));
   return {
     ...prev,
-    personal: c.personal,
-    skills: c.skills,
-    experiences: withIds(c.experiences, prev.experiences, "exp-sync"),
-    projects: withIds(c.projects, prev.projects, "proj-sync"),
-    educations: withIds(c.educations, prev.educations, "edu-sync"),
-    certifications: withIds(c.certifications, prev.certifications, "cert-sync"),
+    personal: {
+      ...prev.personal,
+      ...(c?.personal || {}),
+    },
+    skills: {
+      ...prev.skills,
+      ...(c?.skills || {}),
+    },
+    experiences: withIds(c?.experiences, prev?.experiences, "exp-sync"),
+    projects: withIds(c?.projects, prev?.projects, "proj-sync"),
+    educations: withIds(c?.educations, prev?.educations, "edu-sync"),
+    certifications: withIds(c?.certifications, prev?.certifications, "cert-sync"),
   };
 }
 
@@ -516,8 +522,13 @@ export default function ResumeBuilderPage() {
     });
   }, [clerkUser, mockSession]);
 
+  const initialLoadDone = useRef(false);
+
   // Load initial data from localStorage, or prefill with current user's details
   useEffect(() => {
+    if (initialLoadDone.current) return;
+    initialLoadDone.current = true;
+
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -757,7 +768,13 @@ export default function ResumeBuilderPage() {
   // Upload an existing resume and merge it with real profile data
   const [importOpen, setImportOpen] = useState(false);
   const currentContent: ResumeContent = toContent(resumeData);
-  const applyImportedResume = (content: ResumeContent) => setResumeData((prev) => fromContent(prev, content));
+  const applyImportedResume = (content: ResumeContent) => {
+    setResumeData((prev) => {
+      const updated = fromContent(prev, content);
+      saveToStorage(updated);
+      return updated;
+    });
+  };
   // Contact details are never needed for scoring, so they are not sent.
   const aiResumePayload = {
     headline: resumeData.personal.headline,

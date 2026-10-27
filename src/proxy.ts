@@ -6,6 +6,7 @@ const PROTECTED_STUDENT_PREFIX = "/dashboard";
 const PROTECTED_INSTRUCTOR_PREFIX = "/instructor";
 const PROTECTED_ADMIN_PREFIX = "/admin";
 const PROTECTED_HEAD_PREFIX = "/head";
+const PROTECTED_STAFF_PREFIX = "/staff";
 
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -32,9 +33,10 @@ export default function proxy(request: NextRequest) {
     const isInstructorRoute = pathname.startsWith(PROTECTED_INSTRUCTOR_PREFIX);
     const isAdminRoute = pathname.startsWith(PROTECTED_ADMIN_PREFIX);
     const isHeadRoute = pathname.startsWith(PROTECTED_HEAD_PREFIX);
+    const isStaffRoute = pathname.startsWith(PROTECTED_STAFF_PREFIX);
     const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/sign-up";
 
-    const isProtected = isStudentRoute || isInstructorRoute || isAdminRoute || isHeadRoute;
+    const isProtected = isStudentRoute || isInstructorRoute || isAdminRoute || isHeadRoute || isStaffRoute;
 
     // 1. Unauthenticated users trying to access protected routes -> redirect to /login
     if (isProtected && !isAuthenticated) {
@@ -49,7 +51,7 @@ export default function proxy(request: NextRequest) {
       const isAdmin = session.role === "admin" || isSuperAdminEmail;
 
       const home =
-        session.role === "instructor" ? "/instructor" : session.role === "head" ? "/head" : "/dashboard";
+        session.role === "instructor" ? "/instructor" : session.role === "head" ? "/head" : session.role === "staff" ? "/staff" : "/dashboard";
 
       if (isAdminRoute && !isAdmin) {
         return NextResponse.redirect(new URL(home, request.url));
@@ -69,6 +71,11 @@ export default function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL(home, request.url));
       }
 
+      // Fee-collection staff workspace (admins may look in); the staff APIs are authorised server-side.
+      if (isStaffRoute && session.role !== "staff" && !isAdmin) {
+        return NextResponse.redirect(new URL(home, request.url));
+      }
+
       // Allow admins and instructors to preview course learning UI
       const isLearningPlayer = pathname.startsWith("/dashboard/my-courses");
 
@@ -82,6 +89,10 @@ export default function proxy(request: NextRequest) {
 
       if (isStudentRoute && !isLearningPlayer && session.role === "head") {
         return NextResponse.redirect(new URL("/head", request.url));
+      }
+
+      if (isStudentRoute && !isLearningPlayer && session.role === "staff") {
+        return NextResponse.redirect(new URL("/staff", request.url));
       }
     }
 

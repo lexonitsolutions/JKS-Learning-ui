@@ -29,7 +29,7 @@ import {
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { TiltCard } from "@/components/interactions/tilt-card";
 import { Reveal } from "@/lib/motion/reveal";
-import { getStoredInvoices, type Invoice } from "@/lib/data/invoices-store";
+import { getStoredInvoices, fetchInvoicesFromApi, createInvoice, type Invoice } from "@/lib/data/invoices-store";
 import { InvoiceModal } from "@/components/common/invoice-modal";
 import { CustomDropdown, type DropdownOption } from "@/components/ui/custom-dropdown";
 import { useMockSession } from "@/lib/auth/use-mock-auth";
@@ -43,6 +43,11 @@ import {
   type StudentReferralStats,
 } from "@/lib/data/referrals-api";
 import { StudentPayModal } from "@/components/dashboard/student-pay-modal";
+import {
+  getPendingPayments,
+  getPendingPaymentForInstallment,
+  type PendingPaymentSubmission,
+} from "@/lib/data/pending-payments-store";
 
 export default function StudentPaymentsDashboardPage() {
   const session = useMockSession();
@@ -75,6 +80,7 @@ export default function StudentPaymentsDashboardPage() {
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [selectedPayEnrollment, setSelectedPayEnrollment] = useState<any | null>(null);
   const [selectedInstallmentItem, setSelectedInstallmentItem] = useState<any | null>(null);
+  const [pendingPayments, setPendingPayments] = useState<PendingPaymentSubmission[]>([]);
 
   // Referral copy state
   const [copiedCode, setCopiedCode] = useState(false);
@@ -82,14 +88,13 @@ export default function StudentPaymentsDashboardPage() {
 
   const loadData = async () => {
     setIsLoading(true);
-    // Load local stored invoices first
-    const stored = getStoredInvoices();
-    setInvoices(stored);
+    setPendingPayments(getPendingPayments());
 
     try {
-      const [finRes, refRes] = await Promise.allSettled([
+      const [finRes, refRes, invRes] = await Promise.allSettled([
         fetchMyFinancialSummary(),
         fetchMyReferralStats(),
+        fetchInvoicesFromApi(),
       ]);
 
       if (finRes.status === "fulfilled" && finRes.value) {
@@ -98,11 +103,39 @@ export default function StudentPaymentsDashboardPage() {
       if (refRes.status === "fulfilled" && refRes.value) {
         setReferralStats(refRes.value);
       }
+      if (invRes.status === "fulfilled" && Array.isArray(invRes.value)) {
+        setInvoices(invRes.value);
+      } else {
+        setInvoices(getStoredInvoices());
+      }
     } catch (err) {
       console.warn("Could not load remote financial summary, relying on local records:", err);
+      setInvoices(getStoredInvoices());
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleOpenCourseInvoice = (course: any) => {
+    const inv =
+      invoices.find(
+        (i) =>
+          i.items?.some(
+            (it) => it.courseSlug === course.courseSlug || it.description === course.courseTitle
+          ) || (i as any).courseSlug === course.courseSlug
+      ) ||
+      createInvoice({
+        studentName: studentName || "Student",
+        studentEmail: (studentEmail || "student@jkslearning.com").toLowerCase().trim(),
+        studentPhone: "9876543210",
+        courseTitle: course.courseTitle,
+        courseSlug: course.courseSlug,
+        price: course.agreedFeeRupees || course.standardPriceRupees || 30000,
+        discount: course.discountRupees || 0,
+        paymentMode: "UPI",
+        batchTiming: "Standard Career Track Batch",
+      });
+    setSelectedInvoice(inv);
   };
 
   useEffect(() => {
@@ -458,8 +491,17 @@ export default function StudentPaymentsDashboardPage() {
                         </div>
 
                         {/* Action CTA */}
-                        {!isFullyPaid && (
-                          <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex flex-wrap items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenCourseInvoice(course)}
+                            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-surface-elevated dark:text-slate-200 dark:hover:bg-surface-hover shadow-xs transition-colors cursor-pointer"
+                          >
+                            <Download className="h-3.5 w-3.5 text-[#1E5EFF]" />
+                            <span>Download Invoice</span>
+                          </button>
+
+                          {!isFullyPaid && (
                             <button
                               type="button"
                               onClick={() => {
@@ -467,13 +509,13 @@ export default function StudentPaymentsDashboardPage() {
                                 setSelectedInstallmentItem(null);
                                 setPayModalOpen(true);
                               }}
-                              className="flex items-center gap-1.5 rounded-xl bg-[#1E5EFF] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-600 transition-all cursor-pointer"
+                              className="flex items-center gap-1.5 rounded-xl bg-[#1E5EFF] px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-600 transition-all cursor-pointer"
                             >
                               <CreditCard className="h-3.5 w-3.5" />
                               <span>Pay Outstanding ({formatINR(course.outstandingBalanceRupees)})</span>
                             </button>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
 
                       {/* Financial Figures Grid */}
@@ -584,7 +626,9 @@ export default function StudentPaymentsDashboardPage() {
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-2">
                     {item.plan.items.map((inst: any) => {
                       const isInstPaid = inst.status === "PAID";
-                      const isOverdue = inst.status === "OVERDUE";
+                      const pendingSub = getPendingPaymentForInstallment(inst.id);
+                      const isPending = Boolean(pendingSub) || inst.status === "PENDING_APPROVAL";
+                      const isOverdue = !isInstPaid && !isPending && inst.status === "OVERDUE";
                       const dueDate = new Date(inst.dueDate);
                       const isPast = dueDate.getTime() < Date.now();
 
@@ -594,6 +638,8 @@ export default function StudentPaymentsDashboardPage() {
                           className={`rounded-2xl border p-4 space-y-3 transition-all ${
                             isInstPaid
                               ? "border-emerald-200 bg-emerald-50/40 dark:border-emerald-900/40 dark:bg-emerald-950/20"
+                              : isPending
+                              ? "border-amber-300 bg-amber-50/40 dark:border-amber-900/50 dark:bg-amber-950/20 ring-1 ring-amber-400/30"
                               : isOverdue || isPast
                               ? "border-rose-200 bg-rose-50/40 dark:border-rose-900/40 dark:bg-rose-950/20 ring-1 ring-rose-300/40"
                               : "border-slate-200 bg-white dark:border-slate-800 dark:bg-surface-elevated"
@@ -607,12 +653,14 @@ export default function StudentPaymentsDashboardPage() {
                               className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase ${
                                 isInstPaid
                                   ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
+                                  : isPending
+                                  ? "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300"
                                   : isOverdue || isPast
                                   ? "bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300"
                                   : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                               }`}
                             >
-                              {inst.status}
+                              {isPending ? "Pending Approval" : inst.status}
                             </span>
                           </div>
 
@@ -626,7 +674,34 @@ export default function StudentPaymentsDashboardPage() {
                             </div>
                           </div>
 
-                          {!isInstPaid ? (
+                          {isInstPaid ? (
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 pt-1">
+                              <CheckCircle2 className="h-4 w-4" />
+                              <span>Paid &amp; Verified</span>
+                            </div>
+                          ) : isPending ? (
+                            <div className="space-y-2 pt-1">
+                              <div className="rounded-xl bg-amber-50/80 border border-amber-200/80 dark:border-amber-900/60 dark:bg-amber-950/30 p-2 text-xs text-amber-800 dark:text-amber-300 space-y-1">
+                                <div className="flex items-center gap-1.5 font-bold text-[11px]">
+                                  <Clock className="h-3 w-3 text-amber-600 animate-spin" />
+                                  <span>Pending Admin Approval</span>
+                                </div>
+                                {pendingSub && (
+                                  <div className="font-mono text-[10px] text-amber-700 dark:text-amber-400 truncate">
+                                    Ref: {pendingSub.transactionRef}
+                                  </div>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                disabled
+                                className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 py-2 text-xs font-bold text-slate-400 cursor-not-allowed border border-slate-200 dark:border-slate-700"
+                              >
+                                <Clock className="h-3.5 w-3.5" />
+                                <span>Verification in Progress</span>
+                              </button>
+                            </div>
+                          ) : (
                             <button
                               type="button"
                               onClick={() => {
@@ -646,11 +721,6 @@ export default function StudentPaymentsDashboardPage() {
                               <CreditCard className="h-3.5 w-3.5" />
                               <span>Pay Installment ({formatINR(inst.amountRupees)})</span>
                             </button>
-                          ) : (
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 pt-1">
-                              <CheckCircle2 className="h-4 w-4" />
-                              <span>Paid &amp; Verified</span>
-                            </div>
                           )}
                         </div>
                       );

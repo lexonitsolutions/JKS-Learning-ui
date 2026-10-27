@@ -301,44 +301,63 @@ export async function registerCourseOnline(data: {
 
 export async function fetchInvoicesFromApi(): Promise<Invoice[]> {
   try {
-    const res = await apiFetch("/payments/invoices/admin", {
+    // Try student's own invoices endpoint first
+    let res = await apiFetch("/payments/invoices/me", {
       headers: { "Content-Type": "application/json" },
     });
+
+    // If 403 or 404, try admin endpoint in case user is an admin
+    if (!res.ok && res.status !== 401) {
+      res = await apiFetch("/payments/invoices/admin", {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     if (res.ok) {
       const list = await res.json();
       if (Array.isArray(list) && list.length > 0) {
-        return list.map((inv: any) => ({
+        const apiInvoices: Invoice[] = list.map((inv: any) => ({
           id: inv.id,
           invoiceNumber: inv.invoiceNumber,
           issueDate: inv.paidAt || inv.createdAt || new Date().toISOString(),
           dueDate: inv.paidAt || inv.createdAt || new Date().toISOString(),
-          studentName: inv.studentName,
-          studentEmail: inv.studentEmail,
-          studentPhone: inv.studentPhone,
-          studentAddress: inv.studentAddress,
+          studentName: inv.studentName || inv.user?.fullName || "Student",
+          studentEmail: inv.studentEmail || inv.user?.email || "",
+          studentPhone: inv.studentPhone || inv.user?.phone || "9876543210",
+          studentAddress: inv.studentAddress || "India",
           studentCity: inv.studentAddress || "India",
           items: [
             {
-              description: inv.courseTitle,
-              courseSlug: "course",
+              description: inv.courseTitle || inv.course?.title || "Enrolled Course",
+              courseSlug: inv.course?.slug || (inv.courseId ? String(inv.courseId) : "course"),
               qty: 1,
-              unitPrice: inv.baseAmount,
-              totalPrice: inv.baseAmount,
+              unitPrice: inv.baseAmount || inv.totalAmount || 0,
+              totalPrice: inv.baseAmount || inv.totalAmount || 0,
             },
           ],
-          subtotal: inv.baseAmount,
-          discountAmount: inv.discount,
-          taxableAmount: inv.totalAmount,
+          subtotal: inv.baseAmount || inv.totalAmount || 0,
+          discountAmount: inv.discount || 0,
+          taxableAmount: inv.totalAmount || 0,
           cgstRate: 0,
           cgstAmount: 0,
           sgstRate: 0,
           sgstAmount: 0,
-          totalAmount: inv.totalAmount,
+          totalAmount: inv.totalAmount || 0,
           paymentMode: inv.paymentMethod || "UPI",
           paymentStatus: inv.status === "PAID" ? "Paid" : "Pending",
-          transactionRef: `TXN-${inv.invoiceNumber.replace(/[^0-9]/g, "")}`,
-          batchTiming: inv.batchTiming,
+          transactionRef: inv.transactionId || `TXN-${(inv.invoiceNumber || "").replace(/[^0-9]/g, "")}`,
+          batchTiming: inv.batchTiming || "Evening Batch (07:00 PM)",
         }));
+
+        // Merge with local invoices without duplicates
+        const localInvoices = getStoredInvoices();
+        const combined = [...apiInvoices];
+        for (const loc of localInvoices) {
+          if (!combined.some((c) => c.invoiceNumber === loc.invoiceNumber || c.id === loc.id)) {
+            combined.push(loc);
+          }
+        }
+        return combined;
       }
     }
   } catch (err) {

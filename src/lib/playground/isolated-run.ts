@@ -16,56 +16,35 @@ export interface IsolatedResult {
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
-export function runAbapIsolated(source: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<IsolatedResult> {
-  return new Promise((resolve) => {
-    const started = Date.now();
-    let worker: Worker;
-    try {
-      worker = new Worker(new URL("./abap.worker.ts", import.meta.url), { type: "module" });
-    } catch (err) {
-      resolve({
-        status: "runtime_error",
-        stdout: "",
-        stderr: `Could not start the ABAP runtime in this browser: ${err instanceof Error ? err.message : String(err)}`,
-        timeMs: 0,
-      });
-      return;
-    }
+export async function runAbapIsolated(source: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<IsolatedResult> {
+  const started = Date.now();
 
-    const finish = (r: IsolatedResult) => {
-      clearTimeout(timer);
-      worker.terminate();
-      resolve(r);
+  try {
+    const res = await fetch("/api/playground/abap", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ source, timeoutMs }),
+      signal: AbortSignal.timeout ? AbortSignal.timeout(timeoutMs + 2000) : undefined,
+    });
+    const data = await res.json();
+    return {
+      status: data.status ?? (res.ok ? "ok" : "runtime_error"),
+      stdout: data.output ?? "",
+      stderr: data.error ?? (res.ok ? "" : `Execution failed (${res.status})`),
+      timeMs: typeof data.timeMs === "number" ? data.timeMs : Date.now() - started,
     };
-    const timer = setTimeout(
-      () =>
-        finish({
-          status: "timeout",
-          stdout: "",
-          stderr: `Stopped: the program ran longer than ${timeoutMs / 1000}s (possible infinite loop).`,
-          timeMs: Date.now() - started,
-        }),
-      timeoutMs,
-    );
-
-    worker.onmessage = (e: MessageEvent<AbapRunResult>) => {
-      const r = e.data;
-      finish({
-        status: r.status,
-        stdout: r.output,
-        stderr: r.error ?? "",
-        timeMs: r.timeMs,
-      });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    const isTimeout = message.toLowerCase().includes("timeout") || message.toLowerCase().includes("aborted");
+    return {
+      status: isTimeout ? "timeout" : "runtime_error",
+      stdout: "",
+      stderr: isTimeout
+        ? `Stopped: the program ran longer than ${timeoutMs / 1000}s (possible infinite loop).`
+        : `Execution failed: ${message}`,
+      timeMs: Date.now() - started,
     };
-    worker.onerror = (e) =>
-      finish({
-        status: "runtime_error",
-        stdout: "",
-        stderr: `The ABAP runtime failed to load: ${e.message || "unknown error"}`,
-        timeMs: Date.now() - started,
-      });
-    worker.postMessage({ source });
-  });
+  }
 }
 
 /** Source of the JS worker. Dangerous globals are deleted before user code runs. */

@@ -52,7 +52,7 @@ export function ClerkSessionSync() {
         (u) => u.email.toLowerCase() === email
       );
 
-      const role: "student" | "instructor" | "admin" | "head" = isSuperAdminEmail
+      const role: "student" | "instructor" | "admin" | "head" | "staff" = isSuperAdminEmail
         ? "admin"
         : matchedMock?.role || "student";
 

@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Loader2, ShieldCheck, UserPlus } from "lucide-react";
+import { ArrowLeft, Loader2, ShieldCheck, Trash2, UserPlus } from "lucide-react";
 import {
   createSuperAdmin,
+  deleteSuperAdmin,
   listSuperAdmins,
   setSuperAdminActive,
   type SuperAdminAccount,
@@ -70,6 +71,22 @@ export function SuperAdminsPanel({ onBack }: { onBack: () => void }) {
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not update that account.");
+    } finally {
+      setRowBusy(null);
+    }
+  }
+
+  async function remove(a: SuperAdminAccount) {
+    if (!window.confirm(`Permanently delete ${a.email}? This cannot be undone. Consider deactivating instead.`)) return;
+    setRowBusy(a.id);
+    setError(null);
+    setNotice(null);
+    try {
+      await deleteSuperAdmin(a.id);
+      setNotice(`${a.email} was deleted.`);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete that account.");
     } finally {
       setRowBusy(null);
     }
@@ -147,6 +164,16 @@ export function SuperAdminsPanel({ onBack }: { onBack: () => void }) {
                         className="rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-surface-hover"
                       >
                         {rowBusy === a.id ? "…" : blocked ? "Reactivate" : "Deactivate"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => remove(a)}
+                        disabled={rowBusy === a.id}
+                        aria-label={`Delete ${a.email}`}
+                        title="Delete"
+                        className="rounded-lg border border-rose-200 p-1.5 text-rose-600 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-900/60 dark:hover:bg-rose-950/30"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </span>
                   </li>

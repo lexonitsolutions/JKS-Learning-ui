@@ -53,6 +53,19 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     };
     ScrollTrigger.addEventListener("refresh", onStRefresh);
 
+    // Automatically recalculate scroll limits whenever content dynamically loads or expands
+    let bodyObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && typeof document !== "undefined" && document.body) {
+      bodyObserver = new ResizeObserver(() => {
+        try {
+          lenis.resize();
+        } catch {
+          // ignore
+        }
+      });
+      bodyObserver.observe(document.body);
+    }
+
     const onTick = (time: number) => {
       try {
         lenis.raf(time * 1000);
@@ -66,6 +79,9 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     return () => {
       try {
         ScrollTrigger.removeEventListener("refresh", onStRefresh);
+        if (bodyObserver) {
+          bodyObserver.disconnect();
+        }
         gsap.ticker.remove(onTick);
         lenis.destroy();
       } catch {

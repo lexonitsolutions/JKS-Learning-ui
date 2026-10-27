@@ -63,6 +63,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         });
       }
       setIsLoading(false);
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new Event("resize"));
+      });
     }
     load();
   }, [slug]);
@@ -184,7 +187,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
 
       {/* Main Content Area */}
       <div className="mx-auto max-w-[1280px] px-6 lg:px-16 pt-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Left Column: Event Details */}
           <div className="lg:col-span-7 space-y-8">
             {/* Header Badges */}
@@ -376,7 +379,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
 
           {/* Right Column: Sticky Registration Form */}
           <div className="lg:col-span-5">
-            <div className="sticky top-28 rounded-3xl border border-slate-200/90 dark:border-white/15 bg-white dark:bg-[#0F1C3F] p-6 shadow-xl dark:shadow-2xl shadow-blue-500/5 dark:shadow-blue-500/10 space-y-6">
+            <div className="sticky top-28 rounded-3xl border border-slate-200/90 dark:border-white/15 bg-white dark:bg-[#0F1C3F] p-6 shadow-xl dark:shadow-2xl shadow-blue-500/5 dark:shadow-blue-500/10 space-y-6 max-h-[calc(100vh-8.5rem)] overflow-y-auto">
               {isSuccess ? (
                 /* Success State Screen */
                 <div className="py-8 text-center space-y-4 animate-in fade-in zoom-in-95">

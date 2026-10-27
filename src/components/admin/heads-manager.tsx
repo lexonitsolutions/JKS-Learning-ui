@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, Copy, Eye, Loader2, Pencil, Plus, Power, Search, UserCog, Users, X } from "lucide-react";
+import { Check, Copy, Eye, Loader2, Pencil, Plus, Power, Search, Trash2, UserCog, Users, X } from "lucide-react";
 import {
   createHead,
+  deleteHead,
   getHeadOverview,
   listHeads,
   listInstructorsWithHead,
@@ -72,6 +73,23 @@ export function HeadsManager() {
     try {
       await updateHead(h.id, { status: deactivate ? "BLOCKED" : "ACTIVE" });
       setNotice(`${verb}d ${h.name}.`);
+      await load();
+    } catch (e) {
+      setError(errMsg(e));
+    }
+  }
+
+  async function removeHead(h: HeadSummary) {
+    if (
+      !window.confirm(
+        `Permanently delete ${h.name}? Their ${h.instructorCount} instructor(s) and ${h.batchCount} batch(es) are kept but left without a head. This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    try {
+      await deleteHead(h.id);
+      setNotice(`Deleted ${h.name}.`);
       await load();
     } catch (e) {
       setError(errMsg(e));
@@ -168,6 +186,9 @@ export function HeadsManager() {
                         <IconBtn label={`Edit ${h.name}`} onClick={() => setEditing(h)}><Pencil className="h-3.5 w-3.5" /></IconBtn>
                         <IconBtn label={inactive ? `Reactivate ${h.name}` : `Deactivate ${h.name}`} onClick={() => toggleActive(h)} danger={!inactive}>
                           <Power className="h-3.5 w-3.5" />
+                        </IconBtn>
+                        <IconBtn label={`Delete ${h.name}`} onClick={() => removeHead(h)} danger>
+                          <Trash2 className="h-3.5 w-3.5" />
                         </IconBtn>
                       </div>
                     </td>
