@@ -233,7 +233,56 @@ export interface Section {
   description: string;
   subsections?: SubSection[];
   directVideos?: VideoItem[];
-  assignment: SectionAssignment;
+  assignment?: SectionAssignment;
+}
+
+/**
+ * Determines whether an assignment is genuinely configured and required.
+ * Returns false for dummy/default shells (empty titles, default fallback titles without questions, or empty prompts).
+ */
+export function isConfiguredAssignment(assignment?: SectionAssignment | null): boolean {
+  if (!assignment || typeof assignment !== "object") return false;
+
+  const title = (assignment.title || "").trim();
+
+  // Check for real questions
+  const questions = Array.isArray(assignment.questions) ? assignment.questions : [];
+  const hasRealQuestions = questions.some((q: any) => {
+    if (!q || typeof q !== "object") return false;
+    const prompt = (q.prompt || "").trim();
+    const hasChoices = Array.isArray(q.choices) && q.choices.some((c: any) => typeof c === "string" && c.trim().length > 0);
+    const hasCode = Boolean((q.starterCode || "").trim() || (q.instructions || "").trim());
+    const hasModelAnswer = Boolean((q.modelAnswer || "").trim());
+    return Boolean(prompt || hasChoices || hasCode || hasModelAnswer);
+  });
+
+  if (hasRealQuestions) {
+    return true;
+  }
+
+  // If there are no real questions, check if title is a default/generic placeholder
+  if (!title) return false;
+
+  const isGenericDefaultTitle =
+    /^Module \d+ Practical Assessment$/i.test(title) ||
+    /^Section \d+ Assessment$/i.test(title) ||
+    /^Milestone Assessment for Section \d+$/i.test(title) ||
+    title.toLowerCase() === "section assignment" ||
+    title.toLowerCase() === "module practical assessment" ||
+    title.toLowerCase() === "milestone assessment" ||
+    title.toLowerCase() === "review assignment";
+
+  if (isGenericDefaultTitle) {
+    return false;
+  }
+
+  // If an admin entered a custom title, check if it has meaningful description, instructions, or model answer
+  const hasContent = Boolean(
+    (assignment.description || "").trim() ||
+    (assignment.modelAnswer || "").trim()
+  );
+
+  return Boolean(title && hasContent);
 }
 
 /**
@@ -735,13 +784,7 @@ export async function syncCoursesWithBackend(): Promise<FullCourse[]> {
                 order: m.order || idx + 1,
                 description: m.description || `Curriculum module for ${dbc.title}`,
                 subsections,
-                assignment: {
-                  id: `asg-${m.id || idx}`,
-                  title: `${m.title || "Module"} Practical Assessment`,
-                  description: `Hands-on assessment and evaluation for ${m.title || "Module"}.`,
-                  type: "Project Submission" as const,
-                  minPassingScore: 70,
-                },
+                directVideos: [],
               };
             });
           }
@@ -914,14 +957,6 @@ export function normalizeDbCourse(dbCourse: any, existing?: FullCourse): FullCou
         description: m.description || `Curriculum module for ${dbCourse?.title || "Course"}`,
         subsections,
         directVideos: [],
-        assignment: {
-          id: `asg-${m.id || idx}`,
-          title: `${m.title || "Module"} Practical Assessment`,
-          description: `Hands-on assessment and evaluation for ${m.title || "Module"}.`,
-          type: "Multiple Choice (MCQ)",
-          minPassingScore: 70,
-          questions: [],
-        },
       };
     });
   }
@@ -945,66 +980,76 @@ export function normalizeDbCourse(dbCourse: any, existing?: FullCourse): FullCou
  */
 export function normalizeSections(rawSections: unknown): Section[] {
   const list: any[] = Array.isArray(rawSections) ? rawSections : [];
-  return list.filter((sec) => sec && typeof sec === "object").map((sec: any, idx: number) => ({
-    ...sec,
-    id: sec.id || `sec-${idx + 1}`,
-    title: sec.title || "",
-    order: sec.order || idx + 1,
-    description: sec.description || "",
-    subsections: (Array.isArray(sec.subsections) ? sec.subsections : [])
-      .filter((sub: any) => sub && typeof sub === "object")
-      .map((sub: any, subIdx: number) => ({
-        ...sub,
-        id: sub.id || `sub-${idx + 1}-${subIdx + 1}`,
-        title: sub.title || "",
-        order: sub.order || subIdx + 1,
-        videos: (Array.isArray(sub.videos) ? sub.videos : []).filter((v: any) => v && typeof v === "object" && v.id),
-      })),
-    directVideos: (Array.isArray(sec.directVideos) ? sec.directVideos : []).filter(
-      (v: any) => v && typeof v === "object" && v.id
-    ),
-    assignment: {
-      id: sec.assignment?.id || `asg-${idx + 1}`,
-      title: sec.assignment?.title || "",
-      description: sec.assignment?.description || "",
-      type: canonicalizeAssessmentType(sec.assignment?.type),
-      minPassingScore:
-        typeof sec.assignment?.minPassingScore === "number" ? sec.assignment.minPassingScore : 70,
-      modelAnswer: sec.assignment?.modelAnswer || "",
-      questions: Array.isArray(sec.assignment?.questions)
-        ? sec.assignment.questions.map((q: any, qIdx: number) => {
-            const rawType =
-              q.type ||
-              (Array.isArray(q.choices) && q.choices.length > 1 ? "Multiple Choice (MCQ)" : undefined) ||
-              (q.starterCode || q.testCases ? "Coding Challenge / Test" : undefined) ||
-              sec.assignment?.type;
+  return list.filter((sec) => sec && typeof sec === "object").map((sec: any, idx: number) => {
+    const hasConfigured = sec.assignment && isConfiguredAssignment(sec.assignment);
+    const normalized: Section = {
+      ...sec,
+      id: sec.id || `sec-${idx + 1}`,
+      title: sec.title || "",
+      order: sec.order || idx + 1,
+      description: sec.description || "",
+      subsections: (Array.isArray(sec.subsections) ? sec.subsections : [])
+        .filter((sub: any) => sub && typeof sub === "object")
+        .map((sub: any, subIdx: number) => ({
+          ...sub,
+          id: sub.id || `sub-${idx + 1}-${subIdx + 1}`,
+          title: sub.title || "",
+          order: sub.order || subIdx + 1,
+          videos: (Array.isArray(sub.videos) ? sub.videos : []).filter((v: any) => v && typeof v === "object" && v.id),
+        })),
+      directVideos: (Array.isArray(sec.directVideos) ? sec.directVideos : []).filter(
+        (v: any) => v && typeof v === "object" && v.id
+      ),
+    };
 
-            return {
-              id: q.id || `q-${qIdx + 1}`,
-              prompt: q.prompt || "",
-              type: canonicalizeAssessmentType(rawType),
-              choices: Array.isArray(q.choices) ? q.choices : [],
-              correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
-              modelAnswer: q.modelAnswer || "",
-              keywords: q.keywords || "",
-              language: q.language || "JavaScript",
-              starterCode: q.starterCode || "",
-              testCases: q.testCases || "",
-              structuredTestCases: Array.isArray(q.structuredTestCases) ? q.structuredTestCases : [],
-              solutionCode: q.solutionCode || "",
-              fileTypes: q.fileTypes || "",
-              maxFileSizeMb: typeof q.maxFileSizeMb === "number" ? q.maxFileSizeMb : 25,
-              checklist: q.checklist || "",
-              rubric: q.rubric || "",
-              minWords: q.minWords,
-              maxPoints: typeof q.maxPoints === "number" ? q.maxPoints : 10,
-              explanation: q.explanation || "",
-              guidance: q.guidance || "",
-            };
-          })
-        : [],
-    },
-  }));
+    if (hasConfigured) {
+      normalized.assignment = {
+        id: sec.assignment.id || `asg-${idx + 1}`,
+        title: (sec.assignment.title || "").trim(),
+        description: sec.assignment.description || "",
+        type: canonicalizeAssessmentType(sec.assignment.type),
+        minPassingScore:
+          typeof sec.assignment.minPassingScore === "number" ? sec.assignment.minPassingScore : 70,
+        modelAnswer: sec.assignment.modelAnswer || "",
+        questions: Array.isArray(sec.assignment.questions)
+          ? sec.assignment.questions.map((q: any, qIdx: number) => {
+              const rawType =
+                q.type ||
+                (Array.isArray(q.choices) && q.choices.length > 1 ? "Multiple Choice (MCQ)" : undefined) ||
+                (q.starterCode || q.testCases ? "Coding Challenge / Test" : undefined) ||
+                sec.assignment.type;
+
+              return {
+                id: q.id || `q-${qIdx + 1}`,
+                prompt: q.prompt || "",
+                type: canonicalizeAssessmentType(rawType),
+                choices: Array.isArray(q.choices) ? q.choices : [],
+                correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
+                modelAnswer: q.modelAnswer || "",
+                keywords: q.keywords || "",
+                language: q.language || "JavaScript",
+                starterCode: q.starterCode || "",
+                testCases: q.testCases || "",
+                structuredTestCases: Array.isArray(q.structuredTestCases) ? q.structuredTestCases : [],
+                solutionCode: q.solutionCode || "",
+                fileTypes: q.fileTypes || "",
+                maxFileSizeMb: typeof q.maxFileSizeMb === "number" ? q.maxFileSizeMb : 25,
+                checklist: q.checklist || "",
+                rubric: q.rubric || "",
+                minWords: q.minWords,
+                maxPoints: typeof q.maxPoints === "number" ? q.maxPoints : 10,
+                explanation: q.explanation || "",
+                guidance: q.guidance || "",
+              };
+            })
+          : [],
+      };
+    } else {
+      delete normalized.assignment;
+    }
+
+    return normalized;
+  });
 }
 
 function buildNormalizedCourse(dbCourse: any, existing: FullCourse | undefined, sections: Section[], price: number): FullCourse {

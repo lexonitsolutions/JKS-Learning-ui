@@ -62,6 +62,7 @@ import {
   type Section,
   type SubSection,
   DEFAULT_LEARNING_RULES,
+  isConfiguredAssignment,
 } from "@/lib/data/courses-store";
 import { seededShuffle } from "@/lib/utils/seeded-shuffle";
 import { InAppVideoPlayer } from "@/components/ui/in-app-video-player";
@@ -472,9 +473,10 @@ export default function CourseLearningHubPage({
   const completedVideosCount = allVideos.filter((v) => completedVideoIds.includes(v.id)).length;
   const allVideosCompleted = totalVideos > 0 && completedVideosCount >= totalVideos;
 
-  // Strict assignment verification with passing mark check
-  const totalAssignments = allSections.length;
-  const passedAssignments = allSections.filter((sec) => {
+  // Strict assignment verification with passing mark check: only count configured assignments
+  const configuredSections = allSections.filter((sec) => isConfiguredAssignment(sec.assignment));
+  const totalAssignments = configuredSections.length;
+  const passedAssignments = configuredSections.filter((sec) => {
     const asgId = sec.assignment?.id;
     if (!asgId) return false;
     const score = assignmentScores[asgId];
@@ -482,7 +484,8 @@ export default function CourseLearningHubPage({
     return completedAssignmentIds.includes(asgId) && ((typeof score === "number" && score >= minPass) || typeof score === "undefined");
   });
   const passedAssignmentsCount = passedAssignments.length;
-  const allAssignmentsPassed = totalAssignments > 0 && passedAssignmentsCount >= totalAssignments;
+  // If no assignments are configured for this course, the requirement is satisfied by default
+  const allAssignmentsPassed = totalAssignments === 0 || passedAssignmentsCount >= totalAssignments;
 
   // Finishing the material is necessary but not sufficient: the certificate
   // is released only after an admin approves the completion. Students could
@@ -504,13 +507,16 @@ export default function CourseLearningHubPage({
     if (targetIndex <= 0) return null;
     for (let i = 0; i < targetIndex; i++) {
       const prevSec = allSections[i];
-      const prevAsgId = prevSec?.assignment?.id;
-      if (prevAsgId) {
-        const isDone =
-          completedAssignmentIds.includes(prevAsgId) ||
-          assignmentScores[prevAsgId] !== undefined;
-        if (!isDone) {
-          return prevSec;
+      // Only require an assignment if the preceding section actually has a configured, required assignment
+      if (prevSec?.assignment && isConfiguredAssignment(prevSec.assignment)) {
+        const prevAsgId = prevSec.assignment.id;
+        if (prevAsgId) {
+          const isDone =
+            completedAssignmentIds.includes(prevAsgId) ||
+            assignmentScores[prevAsgId] !== undefined;
+          if (!isDone) {
+            return prevSec;
+          }
         }
       }
     }
@@ -756,19 +762,20 @@ export default function CourseLearningHubPage({
     if (isAccessBlocked) return;
     // Each student gets their own (stable) question order when the course asks
     // for it. Skipped once an attempt exists so saved answers keep their place.
-    const asgId = sec.assignment?.id;
-    if (!asgId) return;
+    const asg = sec.assignment;
+    const asgId = asg?.id;
+    if (!asg || !asgId) return;
     const hasAttempt =
       typeof assignmentScores[asgId] === "number" ||
       completedAssignmentIds.includes(asgId) ||
       Boolean(assignmentBreakdowns[asgId]?.length);
     const shown: Section =
-      learningRules.shuffleQuestions && !hasAttempt && ((sec.assignment?.questions?.length ?? 0) > 1)
+      learningRules.shuffleQuestions && !hasAttempt && ((asg.questions?.length ?? 0) > 1)
         ? {
             ...sec,
             assignment: {
-              ...sec.assignment,
-              questions: seededShuffle(sec.assignment?.questions ?? [], `${effectiveEmail}:${asgId}`),
+              ...asg,
+              questions: seededShuffle(asg.questions ?? [], `${effectiveEmail}:${asgId}`),
             },
           }
         : sec;
@@ -885,7 +892,7 @@ export default function CourseLearningHubPage({
   const gradeQuestionAnswer = (
     q: any,
     answer: any,
-    assignmentType: string
+    assignmentType: string = ""
   ): number => {
     const kind = resolveAssessmentKind(q?.type, assignmentType, q);
     if (kind === "CODING" && q?.id) {
@@ -1831,7 +1838,7 @@ export default function CourseLearningHubPage({
                           )}
 
                           {/* Section Assignment Footer */}
-                          {sec.assignment && ((sec.assignment.questions?.length ?? 0) > 0 || (sec.assignment.title?.trim().length ?? 0) > 0) && (
+                          {sec.assignment && isConfiguredAssignment(sec.assignment) && (
                             <div className="border-t border-slate-100 p-3 bg-slate-50/60 flex items-center justify-between text-xs dark:border-slate-800 dark:bg-surface-elevated/60">
                               <span className="font-semibold flex items-center gap-1.5">
                                 {isPassed ? (
@@ -3059,7 +3066,8 @@ export default function CourseLearningHubPage({
           {/* Active Section Assignments Section */}
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Section Assignments &amp; Milestones</h3>
-            {allSections.map((sec, secIdx) => {
+            {configuredSections.length > 0 ? (
+              configuredSections.map((sec, secIdx) => {
               const asgId = sec.assignment?.id || "";
               const score = assignmentScores[asgId] ?? (completedAssignmentIds.includes(asgId) ? 85 : undefined);
               const minPass = sec.assignment?.minPassingScore || 70;
@@ -3186,7 +3194,15 @@ export default function CourseLearningHubPage({
                   </div>
                 </div>
               );
-            })}
+            })
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center bg-slate-50/50 dark:bg-surface-elevated/20">
+              <ClipboardCheck className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                No section assignments are required for this course. Complete all video lectures to earn your verified certificate!
+              </p>
+            </div>
+          )}
           </div>
         </div>
 
@@ -3361,36 +3377,38 @@ export default function CourseLearningHubPage({
                   )}
 
                   {/* Section Assignment Footer in Rail */}
-                  <div className="border-t border-slate-100 p-2.5 bg-slate-50/50 flex items-center justify-between text-[11px] dark:border-slate-800 dark:bg-surface-elevated/50">
-                    <span className="font-semibold flex items-center gap-1">
-                      {isPassed ? (
-                        <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Passed ({score ?? 85}%)
-                        </span>
-                      ) : isCooldownActive ? (
-                        <span className="text-amber-700 dark:text-amber-400 flex items-center gap-1">
-                          <Timer className="h-3.5 w-3.5 animate-pulse" /> Retake {formatCooldown(secondsRemaining)}
-                        </span>
-                      ) : (
-                        <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                          <ClipboardCheck className="h-3.5 w-3.5 text-blue-600" /> Assignment ({minPass}%)
-                        </span>
-                      )}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenAssignment(sec)}
-                      className={`font-bold hover:underline cursor-pointer ${
-                        isPassed
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : isCooldownActive
-                          ? "text-amber-600 dark:text-amber-400"
-                          : "text-[#2563EB] dark:text-blue-400"
-                      }`}
-                    >
-                      {isPassed ? "Review" : isCooldownActive ? "Timer" : "Open"}
-                    </button>
-                  </div>
+                  {sec.assignment && isConfiguredAssignment(sec.assignment) && (
+                    <div className="border-t border-slate-100 p-2.5 bg-slate-50/50 flex items-center justify-between text-[11px] dark:border-slate-800 dark:bg-surface-elevated/50">
+                      <span className="font-semibold flex items-center gap-1">
+                        {isPassed ? (
+                          <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Passed ({score ?? 85}%)
+                          </span>
+                        ) : isCooldownActive ? (
+                          <span className="text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                            <Timer className="h-3.5 w-3.5 animate-pulse" /> Retake {formatCooldown(secondsRemaining)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                            <ClipboardCheck className="h-3.5 w-3.5 text-blue-600" /> Assignment ({minPass}%)
+                          </span>
+                        )}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenAssignment(sec)}
+                        className={`font-bold hover:underline cursor-pointer ${
+                          isPassed
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : isCooldownActive
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-[#2563EB] dark:text-blue-400"
+                        }`}
+                      >
+                        {isPassed ? "Review" : isCooldownActive ? "Timer" : "Open"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -3444,19 +3462,31 @@ export default function CourseLearningHubPage({
                 </span>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
-                  {allAssignmentsPassed ? (
+              {totalAssignments > 0 ? (
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                    {allAssignmentsPassed ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <Lock className="h-3.5 w-3.5 text-amber-500" />
+                    )}
+                    Assignments Passed (&ge;70%)
+                  </span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {passedAssignmentsCount}/{totalAssignments}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                  <span className="flex items-center gap-1.5">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                  ) : (
-                    <Lock className="h-3.5 w-3.5 text-amber-500" />
-                  )}
-                  Assignments Passed (&ge;70%)
-                </span>
-                <span className="font-bold text-slate-900 dark:text-white">
-                  {passedAssignmentsCount}/{totalAssignments}
-                </span>
-              </div>
+                    Assignments Required
+                  </span>
+                  <span className="font-bold text-slate-500 dark:text-slate-400">
+                    None
+                  </span>
+                </div>
+              )}
 
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
@@ -4494,7 +4524,7 @@ export default function CourseLearningHubPage({
                   </div>
                 </div>
                 <div className="text-xs font-extrabold text-slate-900 dark:text-white">
-                  {passedAssignmentsCount}/{totalAssignments}
+                  {totalAssignments > 0 ? `${passedAssignmentsCount}/${totalAssignments}` : "None Required"}
                 </div>
               </div>
 

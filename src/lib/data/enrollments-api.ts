@@ -1,5 +1,6 @@
 import { apiFetch } from "@/lib/api/base-url";
 import { recordDailyActivity } from "@/lib/utils/activity-ledger";
+import { isConfiguredAssignment } from "@/lib/data/courses-store";
 
 export interface EnrolledCourseItem {
   id: string;
@@ -447,7 +448,7 @@ export function getExactStudentCourseProgress(
                 }
               });
             }
-            if (sec.assignment && (sec.assignment.title || sec.assignment.id)) {
+            if (sec.assignment && isConfiguredAssignment(sec.assignment)) {
               const asgId = String(sec.assignment.id || `asg-${sec.id || secIdx + 1}`);
               validCourseAssignmentIds.add(asgId);
             }

@@ -92,6 +92,7 @@ import {
   getFullCourseBySlug,
   resolveAssessmentKind,
   assessmentKindLabel,
+  isConfiguredAssignment,
   type FullCourse,
   type VideoItem,
   type Section,
@@ -1140,7 +1141,7 @@ function AdminStudentDetailsContent() {
                   )}
 
                   {/* Section Assignment Footer in Rail with Real Status & Inspect Button */}
-                  {(() => {
+                  {sec.assignment && isConfiguredAssignment(sec.assignment) && (() => {
                     const asgId = sec.assignment.id;
                     const isDone = completedAssignmentIds.includes(asgId);
                     const score = assignmentScores[asgId] ?? (isDone ? 88 : undefined);
@@ -1178,38 +1179,40 @@ function AdminStudentDetailsContent() {
         </div>
 
         {/* SECTION ASSIGNMENT INSPECTION & ANSWERS MODAL */}
-        {activeAssignmentSection && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md">
-            <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-6 sm:p-8 shadow-2xl space-y-5 max-h-[85vh] overflow-y-auto">
-              <button
-                type="button"
-                onClick={() => setActiveAssignmentSection(null)}
-                className="absolute top-5 right-5 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
-              >
-                <X className="h-4 w-4" />
-              </button>
+        {activeAssignmentSection && activeAssignmentSection.assignment && (() => {
+          const asg = activeAssignmentSection.assignment;
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md">
+              <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-secondary p-6 sm:p-8 shadow-2xl space-y-5 max-h-[85vh] overflow-y-auto">
+                <button
+                  type="button"
+                  onClick={() => setActiveAssignmentSection(null)}
+                  className="absolute top-5 right-5 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
 
-              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold">
-                  <ClipboardCheck className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    {activeAssignmentSection.assignment.title}
-                  </h3>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">
-                    Student Submission &amp; AI Authenticity Evaluation · Min Pass: {activeAssignmentSection.assignment.minPassingScore}%
+                <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold">
+                    <ClipboardCheck className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                      {asg.title}
+                    </h3>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      Student Submission &amp; AI Authenticity Evaluation · Min Pass: {asg.minPassingScore}%
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* AI Authenticity & Rubric Score Card */}
-              {(() => {
-                const asgId = activeAssignmentSection.assignment.id;
-                const isDone = completedAssignmentIds.includes(asgId);
-                const score = assignmentScores[asgId] ?? (isDone ? 88 : 0);
-                const minPass = activeAssignmentSection.assignment.minPassingScore || 70;
-                const passed = isDone || score >= minPass;
+                {/* AI Authenticity & Rubric Score Card */}
+                {(() => {
+                  const asgId = asg.id;
+                  const isDone = completedAssignmentIds.includes(asgId);
+                  const score = assignmentScores[asgId] ?? (isDone ? 88 : 0);
+                  const minPass = asg.minPassingScore || 70;
+                  const passed = isDone || score >= minPass;
 
                 return (
                   <div className={`rounded-2xl border p-4 space-y-3 ${
@@ -1434,7 +1437,8 @@ function AdminStudentDetailsContent() {
               </div>
             </div>
           </div>
-        )}
+        );
+      })()}
       </div>
     );
   }

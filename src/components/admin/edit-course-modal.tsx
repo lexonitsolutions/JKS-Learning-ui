@@ -266,13 +266,6 @@ export function EditCourseModal({ isOpen, onClose, course, onSaved }: EditCourse
           order: 1,
         },
       ],
-      assignment: {
-        id: `asg-${Date.now()}`,
-        title: `Milestone Assessment for Section ${nextOrder}`,
-        description: "Review assignment",
-        type: "Short Answer",
-        minPassingScore: 70,
-      },
     };
     setSections([...sections, newSection]);
   };

@@ -40,6 +40,7 @@ import {
   saveCourseAsync,
   getStoredCourses,
   canonicalizeAssessmentType,
+  isConfiguredAssignment,
   type FullCourse,
   type Section,
   type SubSection,
@@ -305,37 +306,6 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
       description: "",
       subsections: [],
       directVideos: [],
-      assignment: {
-        id: `asg-${Date.now()}`,
-        title: "",
-        description: "",
-        type: "Short Answer Question",
-        minPassingScore: 70,
-        modelAnswer: "",
-        questions: [
-          {
-            id: `q-${Date.now()}-init`,
-            prompt: "",
-            type: "Short Answer Question",
-            choices: [],
-            correctIndex: 0,
-            modelAnswer: "",
-            keywords: "",
-            language: "JavaScript",
-            starterCode: "",
-            testCases: "",
-            structuredTestCases: [],
-            solutionCode: "",
-            fileTypes: ".zip, .pdf, .docx",
-            maxFileSizeMb: 25,
-            checklist: "",
-            rubric: "",
-            minWords: 50,
-            maxPoints: 10,
-            explanation: "",
-          },
-        ],
-      },
     },
   ]);
 
@@ -344,6 +314,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
   const [collapsedSubsectionsBySection, setCollapsedSubsectionsBySection] = useState<Record<string, boolean>>({});
   const [collapsedIndividualSubsections, setCollapsedIndividualSubsections] = useState<Record<string, boolean>>({});
   const [collapsedDirectVideos, setCollapsedDirectVideos] = useState<Record<string, boolean>>({});
+  const [expandedAssignmentSections, setExpandedAssignmentSections] = useState<Record<string, boolean>>({});
 
   const toggleSectionCollapse = (sectionId: string) => {
     setCollapsedSections((prev) => ({
@@ -638,14 +609,6 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
                 })),
               })),
               directVideos: [],
-              assignment: {
-                id: `asg-${m.id || idx}`,
-                title: `${m.title || "Module"} Practical Assessment`,
-                description: `Hands-on assessment and evaluation for ${m.title || "Module"}.`,
-                type: "Multiple Choice (MCQ)",
-                minPassingScore: 70,
-                questions: [],
-              },
             }));
           }
           if (Array.isArray(rawSections) && rawSections.length > 0) {
@@ -687,26 +650,32 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
               };
             });
 
-              return {
+              const isConfigured = sec.assignment && isConfiguredAssignment(sec.assignment);
+              const normalizedSec: Section = {
                 id: sec.id || `sec-${Date.now()}-${idx}`,
                 title: sec.title || "",
                 order: sec.order || idx + 1,
                 description: sec.description || "",
                 subsections: Array.isArray(sec.subsections) ? sec.subsections : [],
                 directVideos: Array.isArray(sec.directVideos) ? sec.directVideos : [],
-                assignment: {
-                  id: sec.assignment?.id || `asg-${Date.now()}-${idx}`,
-                  title: sec.assignment?.title || "",
-                  description: sec.assignment?.description || "",
+              };
+
+              if (isConfigured) {
+                normalizedSec.assignment = {
+                  id: sec.assignment.id || `asg-${Date.now()}-${idx}`,
+                  title: sec.assignment.title || "",
+                  description: sec.assignment.description || "",
                   type: asgType,
                   minPassingScore:
-                    typeof sec.assignment?.minPassingScore === "number"
+                    typeof sec.assignment.minPassingScore === "number"
                       ? sec.assignment.minPassingScore
                       : 70,
-                  modelAnswer: sec.assignment?.modelAnswer || "",
+                  modelAnswer: sec.assignment.modelAnswer || "",
                   questions: normalizedQuestions,
-                },
-              };
+                };
+              }
+
+              return normalizedSec;
             });
             setSections(normalizedSections);
           }
@@ -858,38 +827,6 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
     if (step === 3 || step === 4) {
       return { valid: true, message: "", step };
     }
-    if (false && step === 3) {
-      for (let i = 0; i < sections.length; i++) {
-        const sec = sections[i];
-        if (!sec.assignment.title.trim()) {
-          return {
-            valid: false,
-            message: `Please enter an Assignment Title for Section ${i + 1} requirement.`,
-            fieldId: `field-assignment-title-${i}`,
-            fieldKey: `assignment-title-${i}`,
-            step: 3,
-          };
-        }
-        if (
-          typeof sec.assignment.minPassingScore !== "number" ||
-          sec.assignment.minPassingScore < 40 ||
-          sec.assignment.minPassingScore > 100
-        ) {
-          return {
-            valid: false,
-            message: `Section ${i + 1} passing mark must be between 40% and 100%.`,
-            fieldId: `field-assignment-passmark-${i}`,
-            fieldKey: `assignment-passmark-${i}`,
-            step: 3,
-          };
-        }
-      }
-      return { valid: true, message: "", step: 3 };
-    }
-
-    if (step === 4) {
-      return { valid: true, message: "", step: 4 };
-    }
 
     return { valid: true, message: "", step: 4 };
   };
@@ -990,19 +927,37 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
       description: "",
       subsections: [],
       directVideos: [],
-      assignment: {
-        id: `asg-${Date.now()}`,
-        title: "",
-        description: "",
-        type: "Short Answer Question",
-        minPassingScore: 70,
-        modelAnswer: "",
-        questions: [createDefaultQuestion("Short Answer Question")],
-      },
     };
     const at = afterIndex === undefined ? sections.length : afterIndex + 1;
     const next = [...sections.slice(0, at), newSec, ...sections.slice(at)];
     setSections(next.map((sec, idx) => ({ ...sec, order: idx + 1 })));
+  };
+
+  const handleAddSectionAssignment = (secIdx: number) => {
+    const updated = [...sections];
+    const sec = updated[secIdx];
+    updated[secIdx] = {
+      ...sec,
+      assignment: {
+        id: `asg-${Date.now()}-${secIdx}`,
+        title: sec.title ? `${sec.title} Assessment` : `Section ${secIdx + 1} Assessment`,
+        description: "",
+        type: "Multiple Choice (MCQ)",
+        minPassingScore: 70,
+        modelAnswer: "",
+        questions: [createDefaultQuestion("Multiple Choice (MCQ)")],
+      },
+    };
+    setSections(updated);
+    setExpandedAssignmentSections((prev) => ({ ...prev, [sec.id]: true }));
+  };
+
+  const handleRemoveSectionAssignment = (secIdx: number) => {
+    const updated = [...sections];
+    const sec = { ...updated[secIdx] };
+    delete sec.assignment;
+    updated[secIdx] = sec;
+    setSections(updated);
   };
 
   const removeSection = (secId: string) => {
@@ -1141,6 +1096,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
   const addQuestionToAssignment = (sectionIndex: number) => {
     const updated = [...sections];
     const asg = updated[sectionIndex].assignment;
+    if (!asg) return;
     const currentQuestions = asg.questions || [];
     const qType = canonicalizeAssessmentType(asg.type);
     const newQId = `q-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
@@ -1165,6 +1121,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
   const removeQuestionFromAssignment = (sectionIndex: number, questionIndex: number) => {
     const updated = [...sections];
     const asg = updated[sectionIndex].assignment;
+    if (!asg) return;
     if (asg.questions) {
       asg.questions = asg.questions.filter((_, idx) => idx !== questionIndex);
     }
@@ -1174,6 +1131,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
   const updateQuestionPrompt = (sectionIndex: number, questionIndex: number, prompt: string) => {
     const updated = [...sections];
     const asg = updated[sectionIndex].assignment;
+    if (!asg) return;
     if (asg.questions && asg.questions[questionIndex]) {
       asg.questions[questionIndex].prompt = prompt;
     }
@@ -1188,6 +1146,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
   ) => {
     const updated = [...sections];
     const asg = updated[sectionIndex].assignment;
+    if (!asg) return;
     if (asg.questions && asg.questions[questionIndex]) {
       const q = asg.questions[questionIndex] as any;
       q[field] = val;
@@ -1236,6 +1195,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
   ) => {
     const updated = [...sections];
     const asg = updated[sectionIndex].assignment;
+    if (!asg) return;
     if (asg.questions && asg.questions[questionIndex]) {
       const choices = [...(asg.questions[questionIndex].choices || [])];
       choices[choiceIndex] = val;
@@ -1251,6 +1211,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
   ) => {
     const updated = [...sections];
     const asg = updated[sectionIndex].assignment;
+    if (!asg) return;
     if (asg.questions && asg.questions[questionIndex]) {
       asg.questions[questionIndex].correctIndex = correctIndex;
       (asg.questions[questionIndex] as any).correctIndices = [correctIndex];
@@ -1265,6 +1226,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
   ) => {
     const updated = [...sections];
     const asg = updated[sectionIndex].assignment;
+    if (!asg) return;
     if (asg.questions && asg.questions[questionIndex]) {
       const q = asg.questions[questionIndex] as any;
       const current: number[] = Array.isArray(q.correctIndices)
@@ -1284,6 +1246,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
   const addChoiceToQuestion = (sectionIndex: number, questionIndex: number) => {
     const updated = [...sections];
     const asg = updated[sectionIndex].assignment;
+    if (!asg) return;
     if (asg.questions && asg.questions[questionIndex]) {
       const choices = [...(asg.questions[questionIndex].choices || [])];
       choices.push("");
@@ -1299,6 +1262,7 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
   ) => {
     const updated = [...sections];
     const asg = updated[sectionIndex].assignment;
+    if (!asg) return;
     if (asg.questions && asg.questions[questionIndex]) {
       let choices = [...(asg.questions[questionIndex].choices || [])];
       if (choices.length <= 2) return;
@@ -2826,6 +2790,229 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
                       </div>
                       )}
 
+                      {/* Section-Level Optional Assignment */}
+                      <div className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-surface-elevated p-3.5 space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <ClipboardCheck className={`h-4 w-4 ${section.assignment ? "text-[#2563EB] dark:text-blue-400" : "text-slate-400"}`} />
+                            <div>
+                              <div className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <span>Section Assignment</span>
+                                {section.assignment ? (
+                                  <span className="rounded-md bg-blue-100 dark:bg-blue-950/60 px-2 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-400">
+                                    Configured · {section.assignment.questions?.length || 0} Qs · Pass: {section.assignment.minPassingScore}%
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-semibold text-slate-400">
+                                    None (Optional)
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                {section.assignment
+                                  ? "Students must pass this assignment to proceed to the next section when sequential unlock is enabled."
+                                  : "No assessment required for this section. Students can advance freely once videos are watched."}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {section.assignment ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setExpandedAssignmentSections((prev) => ({
+                                      ...prev,
+                                      [section.id]: !prev[section.id],
+                                    }))
+                                  }
+                                  className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                >
+                                  {expandedAssignmentSections[section.id] ? "Collapse" : "Edit Details"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveSectionAssignment(secIdx)}
+                                  className="flex items-center gap-1 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 px-2.5 py-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors cursor-pointer"
+                                  title="Remove section assignment"
+                                >
+                                  <Trash2 className="h-3 w-3" /> Remove
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleAddSectionAssignment(secIdx)}
+                                className="flex items-center gap-1 rounded-lg border border-blue-200 dark:border-blue-800/80 bg-white dark:bg-input-bg px-3 py-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 shadow-xs transition-colors cursor-pointer"
+                              >
+                                <Plus className="h-3 w-3" /> Add Section Assignment
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Collapsible Assignment Configuration Details */}
+                        {section.assignment && expandedAssignmentSections[section.id] && (
+                          <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800 space-y-3.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                              <div className="sm:col-span-6">
+                                <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
+                                  Assignment Title
+                                </label>
+                                <input
+                                  type="text"
+                                  value={section.assignment.title}
+                                  onChange={(e) => {
+                                    const updated = [...sections];
+                                    if (updated[secIdx].assignment) {
+                                      updated[secIdx].assignment!.title = e.target.value;
+                                      setSections(updated);
+                                    }
+                                  }}
+                                  placeholder="e.g. End of Section Milestone Assessment"
+                                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                                />
+                              </div>
+
+                              <div className="sm:col-span-3">
+                                <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
+                                  Assessment Type
+                                </label>
+                                <select
+                                  value={section.assignment.type}
+                                  onChange={(e) => {
+                                    const updated = [...sections];
+                                    if (updated[secIdx].assignment) {
+                                      updated[secIdx].assignment!.type = e.target.value;
+                                      setSections(updated);
+                                    }
+                                  }}
+                                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-2.5 py-1.5 text-xs text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                                >
+                                  <option value="Multiple Choice (MCQ)">Multiple Choice (MCQ)</option>
+                                  <option value="Short Answer Question">Short Answer Question</option>
+                                  <option value="Long Answer / Comprehensive">Long Answer / Comprehensive</option>
+                                  <option value="Coding Challenge / Test">Coding Challenge / Test</option>
+                                  <option value="Project / File Upload">Project / File Upload</option>
+                                </select>
+                              </div>
+
+                              <div className="sm:col-span-3">
+                                <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
+                                  Min Passing Score (%)
+                                </label>
+                                <input
+                                  type="number"
+                                  min={40}
+                                  max={100}
+                                  value={section.assignment.minPassingScore}
+                                  onChange={(e) => {
+                                    const updated = [...sections];
+                                    if (updated[secIdx].assignment) {
+                                      updated[secIdx].assignment!.minPassingScore = Number(e.target.value) || 70;
+                                      setSections(updated);
+                                    }
+                                  }}
+                                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
+                                Brief Instructions / Description (Optional)
+                              </label>
+                              <input
+                                type="text"
+                                value={section.assignment.description}
+                                onChange={(e) => {
+                                  const updated = [...sections];
+                                  if (updated[secIdx].assignment) {
+                                    updated[secIdx].assignment!.description = e.target.value;
+                                    setSections(updated);
+                                  }
+                                }}
+                                placeholder="Instructions or overview for students before they begin this assessment..."
+                                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg px-3 py-1.5 text-xs text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                              />
+                            </div>
+
+                            {/* Questions */}
+                            <div className="space-y-2 pt-2">
+                              <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                                <span>Assessment Questions ({(section.assignment.questions || []).length})</span>
+                                <button
+                                  type="button"
+                                  onClick={() => addQuestionToAssignment(secIdx)}
+                                  className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer"
+                                >
+                                  <Plus className="h-3 w-3" /> Add Question
+                                </button>
+                              </div>
+
+                              {(section.assignment.questions || []).map((q, qIdx) => (
+                                <div
+                                  key={q.id || `q-${qIdx}`}
+                                  id={`question-card-${q.id}`}
+                                  className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-input-bg p-3 space-y-2"
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[11px] font-bold text-slate-500">Q{qIdx + 1}</span>
+                                    <input
+                                      type="text"
+                                      value={q.prompt}
+                                      onChange={(e) => updateQuestionPrompt(secIdx, qIdx, e.target.value)}
+                                      placeholder={`Question prompt or instruction...`}
+                                      className="flex-1 rounded-md border border-slate-200 dark:border-slate-700 px-2 py-1 text-xs text-slate-800 dark:text-white outline-none focus:border-[#2563EB]"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeQuestionFromAssignment(secIdx, qIdx)}
+                                      className="text-slate-400 hover:text-rose-600 transition-colors cursor-pointer p-1"
+                                      title="Remove Question"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+
+                                  {(q.type === "Multiple Choice (MCQ)" || q.type === "Multiple Select (Multi-Choice)") && (
+                                    <div className="space-y-1 pl-4 pt-1">
+                                      <div className="text-[10px] font-semibold text-slate-500">Choices (Select correct answer):</div>
+                                      {(q.choices || []).map((choice, cIdx) => (
+                                        <div key={cIdx} className="flex items-center gap-2">
+                                          <input
+                                            type="radio"
+                                            name={`correct-${section.id}-${q.id}`}
+                                            checked={q.correctIndex === cIdx}
+                                            onChange={() => setQuestionCorrectIndex(secIdx, qIdx, cIdx)}
+                                            className="h-3.5 w-3.5 accent-[#2563EB] cursor-pointer"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={choice}
+                                            onChange={(e) => updateQuestionChoice(secIdx, qIdx, cIdx, e.target.value)}
+                                            placeholder={`Option ${String.fromCharCode(65 + cIdx)}`}
+                                            className="flex-1 rounded-md border border-slate-200 dark:border-slate-700 px-2 py-0.5 text-xs text-slate-800 dark:text-white outline-none"
+                                          />
+                                        </div>
+                                      ))}
+                                      <button
+                                        type="button"
+                                        onClick={() => addChoiceToQuestion(secIdx, qIdx)}
+                                        className="text-[10px] font-bold text-[#2563EB] dark:text-blue-400 hover:underline pt-0.5 cursor-pointer"
+                                      >
+                                        + Add Option
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
                       {/* Quick actions right under this section */}
                       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
                         <button
@@ -3191,7 +3378,9 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
                   <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Total Videos</div>
                 </div>
                 <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3">
-                  <div className="text-lg font-extrabold text-amber-700 dark:text-amber-400">{sections.length}</div>
+                  <div className="text-lg font-extrabold text-amber-700 dark:text-amber-400">
+                    {sections.filter((s) => s.assignment && isConfiguredAssignment(s.assignment)).length}
+                  </div>
                   <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Assignments</div>
                 </div>
               </div>
@@ -3209,11 +3398,12 @@ function CourseBuilderContent({ workspace }: { workspace: CourseBuilderWorkspace
                 <div className="flex justify-between">
                   <span className="text-slate-500 dark:text-slate-400 font-medium">Avg Pass Mark:</span>
                   <span className="font-bold text-slate-900 dark:text-white">
-                    {Math.round(
-                      sections.reduce((acc, s) => acc + (s.assignment.minPassingScore || 0), 0) /
-                        (sections.length || 1)
-                    )}
-                    %
+                    {(() => {
+                      const configured = sections.filter((s) => s.assignment && isConfiguredAssignment(s.assignment));
+                      return configured.length > 0
+                        ? `${Math.round(configured.reduce((acc, s) => acc + (s.assignment?.minPassingScore || 0), 0) / configured.length)}%`
+                        : "N/A";
+                    })()}
                   </span>
                 </div>
                 <div className="flex justify-between border-t border-slate-200/80 dark:border-slate-800 pt-2 text-sm font-extrabold">
