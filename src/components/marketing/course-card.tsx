@@ -12,7 +12,7 @@ export function CourseCard({ course }: { course: Course }) {
       <Link href={`/courses/${course.slug}`} className="block h-full">
         <Card className="h-full flex flex-col justify-between transition-shadow hover:shadow-lg rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-surface-secondary dark:hover:border-border-strong">
           <div>
-            <div className="relative h-28 sm:h-36 overflow-hidden">
+            <div className="relative aspect-video w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
               <CourseThumbnail
                 src={course.thumbnail}
                 title={course.title}

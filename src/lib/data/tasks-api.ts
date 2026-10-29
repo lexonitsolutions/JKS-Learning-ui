@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/api/base-url";
-import { getStoredCourses, syncCoursesWithBackend, type FullCourse } from "@/lib/data/courses-store";
+import { getStoredCourses, syncCoursesWithBackend, isConfiguredAssignment, type FullCourse } from "@/lib/data/courses-store";
 
 export interface TaskTestCase {
   input: string;
@@ -370,7 +370,7 @@ export function extractCourseAssignments(courses: FullCourse[]): ReusableAssessm
 
     for (let secIdx = 0; secIdx < course.sections.length; secIdx++) {
       const sec = course.sections[secIdx];
-      if (!sec || !sec.assignment) continue;
+      if (!sec || !sec.assignment || !isConfiguredAssignment(sec.assignment)) continue;
       const asg = sec.assignment;
       const title = asg.title?.trim();
       if (!title) continue;

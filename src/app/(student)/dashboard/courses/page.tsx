@@ -312,7 +312,7 @@ export default function StudentAllCoursesPage() {
                 <div className="flex h-full flex-col justify-between overflow-hidden rounded-2xl sm:rounded-[20px] border border-slate-200/80 bg-white shadow-[0_2px_12px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-xl hover:border-blue-300 dark:border-slate-800/80 dark:bg-surface-secondary dark:hover:border-blue-500/40">
                   {/* Card Thumbnail / Header Banner */}
                   <div
-                    className={`relative flex h-28 sm:h-36 md:h-44 lg:h-48 w-full flex-col items-center justify-center p-2.5 sm:p-4 text-center overflow-hidden ${course.thumbnailBg}`}
+                    className={`relative flex aspect-video w-full flex-col items-center justify-center p-2.5 sm:p-4 text-center overflow-hidden ${course.thumbnailBg}`}
                   >
                     {/* Uploaded Thumbnail Image (if provided) */}
                     {course.thumbnail ? (

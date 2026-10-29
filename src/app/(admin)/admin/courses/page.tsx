@@ -112,13 +112,17 @@ export default function AdminCoursesPage() {
             order: 1,
           },
         ],
-        assignment: {
-          id: `asg-${stg.id}`,
-          title: stg.assignmentTitle,
-          description: `Practical evaluation and milestone check for ${stg.stageTitle}.`,
-          type: stg.assignmentType === "MCQ" ? "MCQ" : "Project Submission",
-          minPassingScore: stg.minPassingScore,
-        },
+        ...(stg.assignmentTitle?.trim()
+          ? {
+              assignment: {
+                id: `asg-${stg.id}`,
+                title: stg.assignmentTitle.trim(),
+                description: `Practical evaluation and milestone check for ${stg.stageTitle}.`,
+                type: stg.assignmentType === "MCQ" ? "MCQ" : "Project Submission",
+                minPassingScore: stg.minPassingScore || 70,
+              },
+            }
+          : {}),
       })),
     };
     // saveCourseAsync now throws when the database write is rejected, so an

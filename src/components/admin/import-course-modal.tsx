@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   useAllCourses,
   canonicalizeAssessmentType,
+  isConfiguredAssignment,
   type FullCourse,
   type Section,
   type SectionAssignment,
@@ -245,9 +246,9 @@ export function ImportCourseModal({
         order: v.order || vIdx + 1,
       }));
 
-      // Build assignment
-      let clonedAssignment: SectionAssignment;
-      if (shouldIncludeAssignment && sec.assignment) {
+      // Build assignment (only if explicitly requested and configured)
+      let clonedAssignment: SectionAssignment | undefined = undefined;
+      if (shouldIncludeAssignment && sec.assignment && isConfiguredAssignment(sec.assignment)) {
         const asg = sec.assignment;
         const asgType = canonicalizeAssessmentType(asg.type);
         const clonedQuestions = (asg.questions || []).map((q, qIdx) => ({
@@ -266,17 +267,6 @@ export function ImportCourseModal({
           minPassingScore: typeof asg.minPassingScore === "number" ? asg.minPassingScore : 70,
           questions: clonedQuestions,
         };
-      } else {
-        // Fallback default clean assignment shell
-        clonedAssignment = {
-          id: `asg-${now}-${secIdx}`,
-          title: `${sec.title || `Section ${secIdx + 1}`} Assessment`,
-          description: `Practical assessment and milestone evaluation for ${sec.title || "this section"}.`,
-          type: "Short Answer Question",
-          minPassingScore: 70,
-          modelAnswer: "",
-          questions: [],
-        };
       }
 
       return {
@@ -286,7 +276,7 @@ export function ImportCourseModal({
         description: sec.description || "",
         subsections: clonedSubsections,
         directVideos: clonedDirectVideos,
-        assignment: clonedAssignment,
+        ...(clonedAssignment ? { assignment: clonedAssignment } : {}),
       };
     });
 
