@@ -138,7 +138,18 @@ export function InAppVideoPlayer({
   const [duration, setDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [simulationTimerActive, setSimulationTimerActive] = useState(false);
+  // Completion guards: fire the completion workflow once per genuine finish.
+  const completionFiredRef = useRef(false);
+  // Seconds of naturally-played (non-seeked) content, for anti-skip validation of embeds.
+  const watchedSecondsRef = useRef(0);
+  const lastEmbedTimeRef = useRef<number | null>(null);
+  const embedDurationRef = useRef(0);
+  const onVideoCompletedRef = useRef(onVideoCompleted);
+  const onVideoEndedRef = useRef(onVideoEnded);
+  const onProgressChangeRef = useRef(onProgressChange);
+  onVideoCompletedRef.current = onVideoCompleted;
+  onVideoEndedRef.current = onVideoEnded;
+  onProgressChangeRef.current = onProgressChange;
 
   const cleanedUrl = cleanVideoUrl(videoUrl);
   const isTeams = cleanedUrl.includes("teams.microsoft.com");
@@ -270,7 +281,6 @@ export function InAppVideoPlayer({
         videoRef.current.pause();
       }
       setIsPlaying(false);
-      setSimulationTimerActive(false);
 
       if (containerRef.current) {
         const iframes = containerRef.current.querySelectorAll("iframe");
@@ -290,97 +300,134 @@ export function InAppVideoPlayer({
     }
   }, [isPaused]);
 
-  // Reset and trigger autoPlay when videoUrl, title, or autoPlay changes
+  // New lesson / new source: clear completion state exactly once per source.
   useEffect(() => {
+    completionFiredRef.current = false;
+    watchedSecondsRef.current = 0;
+    lastEmbedTimeRef.current = null;
+    embedDurationRef.current = 0;
     setProgressPercent(0);
     setCurrentTime(0);
     setIsCompleted(false);
+  }, [videoUrl]);
 
+  // Trigger autoPlay for native <video> when the source or autoPlay changes
+  useEffect(() => {
     if (!isPaused) {
       setIsPlaying(autoPlay);
-      if (autoPlay) {
-        if (isExternalEmbed) {
-          setSimulationTimerActive(true);
-        } else if (videoRef.current) {
-          videoRef.current.play().catch((err) => {
-            console.warn("Autoplay was prevented by browser policy:", err);
-          });
-        }
+      if (autoPlay && !isExternalEmbed && videoRef.current) {
+        videoRef.current.play().catch((err) => {
+          console.warn("Autoplay was prevented by browser policy:", err);
+        });
       }
     }
   }, [videoUrl, title, autoPlay, isPaused, isExternalEmbed]);
 
-  // Listen for YouTube/Vimeo postMessages indicating completion
+  // Single entry point for a genuine completion; idempotent per source.
+  const fireCompletion = () => {
+    if (completionFiredRef.current) return;
+    completionFiredRef.current = true;
+    setIsCompleted(true);
+    setProgressPercent(100);
+    onProgressChangeRef.current?.(100);
+    onVideoCompletedRef.current?.();
+    onVideoEndedRef.current?.();
+  };
+
+  // An embed "ended" counts only when the real duration is known and, with anti-skip,
+  // the student actually watched (not seeked past) most of it.
+  const handleEmbedEnded = () => {
+    const dur = embedDurationRef.current;
+    if (!(dur > 0)) return;
+    if (antiSkip && watchedSecondsRef.current < dur * 0.9) return;
+    fireCompletion();
+  };
+
+  // Embed time tracking: seconds/duration from the player; jumps (seeks) are not counted as watched.
+  const handleEmbedTime = (seconds: number, dur: number) => {
+    if (!Number.isFinite(seconds) || !Number.isFinite(dur) || dur <= 0) return;
+    embedDurationRef.current = dur;
+    const last = lastEmbedTimeRef.current;
+    if (last !== null) {
+      const delta = seconds - last;
+      if (delta > 0 && delta <= 2) watchedSecondsRef.current += delta;
+    }
+    lastEmbedTimeRef.current = seconds;
+    const pct = Math.min(99, Math.floor((seconds / dur) * 100));
+    setCurrentTime(seconds);
+    setDuration(dur);
+    setProgressPercent(pct);
+    onProgressChangeRef.current?.(pct);
+  };
+
+  // Subscribe to events of the embedded players once their iframe has loaded.
+  const subscribeToEmbed = (e: React.SyntheticEvent<HTMLIFrameElement>, kind: "bunny" | "youtube" | "vimeo") => {
+    const win = e.currentTarget.contentWindow;
+    if (!win) return;
+    if (kind === "bunny") {
+      // Bunny Stream uses the player.js protocol
+      ["ready", "play", "pause", "ended", "timeupdate"].forEach((ev) =>
+        win.postMessage(
+          JSON.stringify({ context: "player.js", version: "0.0.11", method: "addEventListener", value: ev }),
+          "*"
+        )
+      );
+    } else if (kind === "youtube") {
+      win.postMessage(JSON.stringify({ event: "listening", id: 1, channel: "widget" }), "*");
+    } else {
+      win.postMessage(JSON.stringify({ method: "addEventListener", value: "finish" }), "*");
+    }
+  };
+
+  // Listen for postMessages from the embedded player iframe (and only from it)
   useEffect(() => {
     const handleWindowMessage = (event: MessageEvent) => {
+      const frames = containerRef.current?.querySelectorAll("iframe");
+      if (!frames || !Array.from(frames).some((f) => f.contentWindow === event.source)) return;
       try {
         const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-        // YouTube API infoDelivery playerState: 0 (ENDED)
-        if (data?.event === "infoDelivery" && data?.info?.playerState === 0) {
-          setIsCompleted(true);
-          onVideoCompleted?.();
-          onVideoEnded?.();
+        if (!data) return;
+        // Bunny Stream (player.js)
+        if (data.context === "player.js") {
+          if (data.event === "timeupdate") {
+            handleEmbedTime(Number(data.value?.seconds), Number(data.value?.duration));
+          } else if (data.event === "ended") {
+            handleEmbedEnded();
+          }
+          return;
+        }
+        // YouTube API infoDelivery: playerState 0 (ENDED); currentTime/duration for tracking
+        if (data.event === "infoDelivery" && data.info) {
+          if (typeof data.info.currentTime === "number" && typeof data.info.duration === "number") {
+            handleEmbedTime(data.info.currentTime, data.info.duration);
+          }
+          if (data.info.playerState === 0) handleEmbedEnded();
         }
         // Vimeo finish event
-        if (data?.event === "finish") {
-          setIsCompleted(true);
-          onVideoCompleted?.();
-          onVideoEnded?.();
-        }
+        if (data.event === "finish") handleEmbedEnded();
       } catch {}
     };
 
     window.addEventListener("message", handleWindowMessage);
     return () => window.removeEventListener("message", handleWindowMessage);
-  }, [onVideoCompleted, onVideoEnded]);
-
-  // Simulation progress timer for external embedded frames
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | undefined;
-    if (isExternalEmbed && simulationTimerActive && progressPercent < 100) {
-      interval = setInterval(() => {
-        setProgressPercent((prev) => {
-          const next = Math.min(prev + 2, 100);
-          onProgressChange?.(next);
-          if (next >= 100) {
-            clearInterval(interval);
-            setIsCompleted(true);
-            setSimulationTimerActive(false);
-            onVideoCompleted?.();
-            onVideoEnded?.();
-          }
-          return next;
-        });
-      }, 500);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isExternalEmbed, simulationTimerActive, progressPercent, onProgressChange, onVideoCompleted, onVideoEnded]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [antiSkip, videoUrl]);
 
   // HTML5 native video time update handler
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
     const current = videoRef.current.currentTime;
-    const dur = videoRef.current.duration || 1;
+    const dur = videoRef.current.duration;
     setCurrentTime(current);
+    if (!Number.isFinite(dur) || dur <= 0) return;
     setDuration(dur);
-    const pct = Math.round((current / dur) * 100);
+    const pct = Math.min(99, Math.floor((current / dur) * 100));
     setProgressPercent(pct);
     onProgressChange?.(pct);
-
-    if (pct >= 95 && !isCompleted) {
-      setIsCompleted(true);
-      onVideoCompleted?.();
-    }
   };
 
   const togglePlay = () => {
-    if (isExternalEmbed) {
-      setSimulationTimerActive((prev) => !prev);
-      setIsPlaying((prev) => !prev);
-      return;
-    }
+    if (isExternalEmbed) return;
 
     if (videoRef.current) {
       if (videoRef.current.paused) {
@@ -404,10 +451,8 @@ export function InAppVideoPlayer({
     setProgressPercent(0);
     setCurrentTime(0);
     setIsCompleted(false);
-    if (isExternalEmbed) {
-      setSimulationTimerActive(true);
-      setIsPlaying(true);
-    } else if (videoRef.current) {
+    completionFiredRef.current = false;
+    if (videoRef.current) {
       videoRef.current.currentTime = 0;
       videoRef.current.play();
       setIsPlaying(true);
@@ -538,6 +583,7 @@ export function InAppVideoPlayer({
         {youTubeEmbedSrc ? (
           <iframe
             src={youTubeEmbedSrc}
+            onLoad={(e) => subscribeToEmbed(e, "youtube")}
             title={title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
@@ -546,6 +592,7 @@ export function InAppVideoPlayer({
         ) : vimeoEmbedSrc ? (
           <iframe
             src={vimeoEmbedSrc}
+            onLoad={(e) => subscribeToEmbed(e, "vimeo")}
             title={title}
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
@@ -611,6 +658,7 @@ export function InAppVideoPlayer({
               <iframe
                 key={`bunny-frame-${bunnyReloadKey}`}
                 src={bunnyEmbedSrc}
+                onLoad={(e) => subscribeToEmbed(e, "bunny")}
                 title={title}
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen
@@ -707,10 +755,8 @@ export function InAppVideoPlayer({
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => {
-            setIsCompleted(true);
             setIsPlaying(false);
-            onVideoCompleted?.();
-            onVideoEnded?.();
+            fireCompletion();
           }}
           playsInline
           className="h-full w-full object-contain"

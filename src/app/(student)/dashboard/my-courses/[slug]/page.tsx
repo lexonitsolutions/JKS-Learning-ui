@@ -1444,10 +1444,7 @@ export default function CourseLearningHubPage({
                   autoPlay={autoPlayNext}
                   isPaused={Boolean(activeAssignmentSection)}
                   onVideoCompleted={() => handleVideoCompleted(activeVideo.id, false)}
-                  onVideoEnded={() => {
-                    handleVideoCompleted(activeVideo.id, false);
-                    handleAutoAdvance(activeVideo.id);
-                  }}
+                  onVideoEnded={() => handleAutoAdvance(activeVideo.id)}
                   className="max-h-[35vh] sm:max-h-[42vh] lg:max-h-[48vh] mx-auto w-full rounded-2xl overflow-hidden shadow-md"
                 />
               </div>
