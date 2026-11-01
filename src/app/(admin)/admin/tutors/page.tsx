@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Users, BookOpen, Star, Search, Mail, Trash2, KeyRound, ShieldCheck, Pencil } from "lucide-react";
+import { Plus, Users, BookOpen, Star, Search, Mail, Trash2, KeyRound, ShieldCheck, Pencil, Layers } from "lucide-react";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
 import { AddInstructorModal } from "@/components/admin/add-instructor-modal";
 import { EditInstructorModal } from "@/components/admin/edit-instructor-modal";
@@ -204,6 +204,12 @@ export default function AdminInstructorsPage() {
                         <BookOpen className="h-3.5 w-3.5" /> Courses
                       </span>
                       <span className="font-bold text-slate-800 dark:text-slate-200">{inst.assignedCourses ?? 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-slate-400 dark:text-slate-400">
+                        <Layers className="h-3.5 w-3.5" /> Batches
+                      </span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">{inst.batches ?? 0}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5 text-slate-400 dark:text-slate-400">

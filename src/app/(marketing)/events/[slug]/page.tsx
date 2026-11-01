@@ -9,7 +9,6 @@ import {
   Video,
   MapPin,
   Sparkles,
-  Users,
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
@@ -233,21 +232,27 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   <Clock className="h-4 w-4 text-[#1E5EFF]" />
                   <span>{timeFormatted} IST</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                  <span>{event.registeredCount || 0} Registered</span>
-                </div>
               </div>
             </div>
 
             {/* Poster / Banner */}
             {event.bannerUrl && !bannerError && (
-              <div className="relative h-64 sm:h-80 w-full rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-lg dark:shadow-xl bg-slate-900">
+              <div className="relative aspect-video w-full rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-lg dark:shadow-xl bg-slate-900">
+                <Image
+                  src={event.bannerUrl}
+                  alt=""
+                  aria-hidden
+                  fill
+                  sizes="(min-width: 1024px) 66vw, 100vw"
+                  className="object-cover scale-110 blur-xl opacity-60"
+                  unoptimized={Boolean(event.bannerUrl.includes("cloudinary.com"))}
+                />
                 <Image
                   src={event.bannerUrl}
                   alt={event.title}
                   fill
-                  className="object-cover"
+                  sizes="(min-width: 1024px) 66vw, 100vw"
+                  className="object-contain"
                   priority
                   unoptimized={Boolean(event.bannerUrl.includes("cloudinary.com"))}
                   onError={() => setBannerError(true)}
