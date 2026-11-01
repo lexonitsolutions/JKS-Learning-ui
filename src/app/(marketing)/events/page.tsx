@@ -202,15 +202,29 @@ export default function PublicEventsPage() {
                   className="group relative flex flex-col justify-between rounded-3xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-[#0F1C3F]/60 backdrop-blur-md overflow-hidden hover:border-blue-500/50 hover:shadow-xl dark:hover:shadow-[0_8px_30px_rgba(30,94,255,0.15)] transition-all duration-300 shadow-sm"
                 >
                   {/* Event Poster / Banner Top */}
-                  <div className="relative h-44 w-full overflow-hidden bg-gradient-to-br from-blue-900 via-indigo-950 to-slate-950 flex items-center justify-center">
+                  <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-blue-900 via-indigo-950 to-slate-950 flex items-center justify-center">
                     {event.bannerUrl ? (
-                      <Image
-                        src={event.bannerUrl}
-                        alt={event.title}
-                        fill
-                        unoptimized={Boolean(event.bannerUrl.includes("cloudinary.com"))}
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      <>
+                        {/* Blurred copy fills any space the poster doesn't, so
+                            the whole banner shows uncropped without empty bars. */}
+                        <Image
+                          src={event.bannerUrl}
+                          alt=""
+                          aria-hidden
+                          fill
+                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          unoptimized={Boolean(event.bannerUrl.includes("cloudinary.com"))}
+                          className="object-cover scale-110 blur-xl opacity-60"
+                        />
+                        <Image
+                          src={event.bannerUrl}
+                          alt={event.title}
+                          fill
+                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          unoptimized={Boolean(event.bannerUrl.includes("cloudinary.com"))}
+                          className="object-contain"
+                        />
+                      </>
                     ) : (
                       <div className="absolute inset-0 bg-radial from-blue-600/30 to-transparent flex flex-col items-center justify-center p-6 text-center">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/20 border border-blue-400/30 text-blue-300 mb-2">

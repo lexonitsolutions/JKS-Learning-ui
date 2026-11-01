@@ -321,7 +321,12 @@ export async function deleteAdminStudent(id: string): Promise<{ success: boolean
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
     });
-    return { success: res.ok };
+    if (res.ok) return { success: true };
+    const errData = await res.json().catch(() => ({}));
+    return {
+      success: false,
+      error: (Array.isArray(errData.message) ? errData.message.join(", ") : errData.message) || "Failed to delete student",
+    };
   } catch (err: any) {
     return { success: false, error: err?.message || "Failed to delete student" };
   }

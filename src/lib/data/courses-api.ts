@@ -315,33 +315,46 @@ export function resolveCourseThumbnail(thumb?: string | null): string | undefine
  */
 export async function fetchDbCourses(): Promise<Course[]> {
   const urlsToTry: string[] = [apiUrl("/courses")];
-  if (typeof window === "undefined") {
-    if (!urlsToTry[0].includes("localhost:4000")) {
-      urlsToTry.push("http://localhost:4000/courses");
-    }
-  } else if (typeof window !== "undefined" && window.location.hostname === "localhost") {
-    if (!urlsToTry[0].includes("localhost:4000")) {
-      urlsToTry.push("http://localhost:4000/courses");
-    }
+  // Server-side, Node can resolve "localhost" to ::1 while the API listens on
+  // IPv4 only, so a dev backend is also tried by its IPv4 address.
+  if (urlsToTry[0].includes("localhost:4000")) {
+    urlsToTry.push(urlsToTry[0].replace("localhost:4000", "127.0.0.1:4000"));
+  } else if (
+    typeof window === "undefined" ||
+    window.location.hostname === "localhost"
+  ) {
+    urlsToTry.push("http://localhost:4000/courses", "http://127.0.0.1:4000/courses");
   }
 
   for (const url of urlsToTry) {
+    let data: unknown;
     try {
       const res = await fetch(url, {
         cache: "no-store",
         headers: { Accept: "application/json" },
         signal: AbortSignal.timeout(12000),
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          return data.map((item: BackendCourse) => transformBackendCourse(item));
-        }
+      if (!res.ok) {
+        console.error(`[courses] ${url} responded ${res.status}`);
+        continue;
       }
-    } catch {
-      // Try next url if available
+      data = await res.json();
+    } catch (err) {
+      console.error(`[courses] could not reach ${url}:`, (err as Error)?.message);
+      continue;
     }
+    if (!Array.isArray(data)) continue;
+
+    // One malformed course must not hide the whole catalogue.
+    const courses: Course[] = [];
+    for (const item of data as BackendCourse[]) {
+      try {
+        courses.push(transformBackendCourse(item));
+      } catch (err) {
+        console.error(`[courses] skipped "${item?.slug}":`, (err as Error)?.message);
+      }
+    }
+    return courses;
   }
 
   return [];

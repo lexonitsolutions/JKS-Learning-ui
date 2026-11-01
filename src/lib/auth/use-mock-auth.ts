@@ -70,6 +70,7 @@ export interface StoredInstructor {
   role: string;
   phone?: string;
   assignedCourses?: number;
+  batches?: number;
   students?: number;
   status?: "Active" | "Inactive" | "On Leave";
 }
@@ -82,6 +83,7 @@ interface ApiInstructor {
   createdAt: string;
   assignedCourseIds?: string[];
   assignedCoursesCount?: number;
+  batchesCount?: number;
   studentsCount?: number;
 }
 
@@ -95,6 +97,7 @@ function toStoredInstructor(row: ApiInstructor): StoredInstructor {
     phone: row.phone || undefined,
     // Real counts from the API (same source as the Batches page).
     assignedCourses: row.assignedCoursesCount ?? row.assignedCourseIds?.length ?? 0,
+    batches: row.batchesCount ?? 0,
     students: row.studentsCount ?? 0,
     status: "Active",
   };
