@@ -134,7 +134,16 @@ export function CourseThumbnail({
 
   if (!hasError && resolvedSrc) {
     return (
-      <div className={`relative overflow-hidden ${className}`}>
+      <div className={`relative overflow-hidden bg-slate-900 ${className}`}>
+        {/* Blurred copy fills any empty space so the full picture can be shown uncropped. */}
+        <Image
+          src={resolvedSrc}
+          alt=""
+          aria-hidden
+          fill
+          unoptimized
+          className="scale-125 object-cover opacity-60 blur-2xl"
+        />
         <Image
           src={resolvedSrc}
           alt={title}
@@ -142,7 +151,7 @@ export function CourseThumbnail({
           unoptimized
           priority={priority}
           onError={() => setHasError(true)}
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-contain transition-transform duration-500 group-hover:scale-105"
         />
         {showOverlay && (
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />

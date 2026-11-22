@@ -151,9 +151,9 @@ export function InteractiveHero() {
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="inline-flex items-center gap-2 rounded-full border border-blue-200/90 dark:border-blue-800/60 bg-white/90 dark:bg-surface-secondary/90 px-4 py-1.5 text-xs font-semibold text-[#1E5EFF] dark:text-blue-400 shadow-[0_2px_12px_rgba(30,94,255,0.08)] backdrop-blur-md"
+          className="inline-flex max-w-full items-center justify-center gap-2 rounded-2xl sm:rounded-full border border-blue-200/90 dark:border-blue-800/60 bg-white/90 dark:bg-surface-secondary/90 px-3 sm:px-4 py-1.5 text-center text-[11px] sm:text-xs leading-snug font-semibold text-[#1E5EFF] dark:text-blue-400 shadow-[0_2px_12px_rgba(30,94,255,0.08)] backdrop-blur-md"
         >
-          <Sparkles className="h-3.5 w-3.5 fill-[#1E5EFF] dark:fill-blue-400 text-[#1E5EFF] dark:text-blue-400" />
+          <Sparkles className="h-3.5 w-3.5 shrink-0 fill-[#1E5EFF] dark:fill-blue-400 text-[#1E5EFF] dark:text-blue-400" />
           <span>Anti-Skip Enforced · AI Interview Ready · Verified Credentials</span>
         </motion.div>
 
@@ -162,7 +162,7 @@ export function InteractiveHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-          className="mt-5 text-3xl sm:text-5xl lg:text-[62px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]"
+          className="mt-5 text-[1.65rem] min-[380px]:text-3xl sm:text-5xl lg:text-[62px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15] break-words"
         >
           Career-Ready IT Mastery{" "}
           <span className="font-serif italic font-normal bg-gradient-to-r from-[#1E5EFF] via-[#2563EB] to-cyan-500 dark:from-blue-400 dark:via-blue-500 dark:to-cyan-400 bg-clip-text text-transparent">

@@ -172,9 +172,9 @@ export function SiteHeader() {
           : "border-transparent"
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-3.5 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 gap-2 sm:gap-4">
-        <div className="shrink-0 flex items-center min-w-max mr-2 xl:mr-4">
-          <JksLogo size="md" className="py-1 shrink-0" imgClassName="h-7 sm:h-8 xl:h-9 w-auto" />
+      <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center justify-between px-3 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 gap-1.5 sm:gap-4">
+        <div className="flex min-w-0 shrink items-center xl:mr-4 sm:mr-2 sm:min-w-max">
+          <JksLogo size="md" className="py-1 shrink-0" imgClassName="h-5 min-[400px]:h-6 sm:h-8 xl:h-9 w-auto max-w-full" />
         </div>
 
         <nav className="hidden items-center gap-2 lg:gap-4 xl:gap-6 md:flex min-w-0">
@@ -218,12 +218,12 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="flex items-center gap-1.5 sm:gap-2.5 xl:gap-3 shrink-0 ml-auto">
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2.5 xl:gap-3">
           {/* Global Search Icon Trigger (desktop & mobile icon - preserves clean heading spacing) */}
-          <GlobalSearchTrigger variant="icon" />
+          <GlobalSearchTrigger variant="icon" className="!h-8 !w-8 sm:!h-10 sm:!w-10" />
 
           {/* Theme Toggle Button */}
-          <div className="shrink-0 scale-90 sm:scale-95 xl:scale-100">
+          <div className="shrink-0 scale-[.85] sm:scale-95 xl:scale-100 -mx-0.5 sm:mx-0">
             <ThemeToggle />
           </div>
 
@@ -253,7 +253,7 @@ export function SiteHeader() {
               {/* Tablet & Mobile: Clean login button */}
               <Link
                 href="/login"
-                className="md:hidden text-xs font-semibold text-primary-blue dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                className="md:hidden text-[11px] min-[400px]:text-xs font-semibold text-primary-blue dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 px-2 min-[400px]:px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap"
               >
                 Log in
               </Link>
@@ -264,7 +264,7 @@ export function SiteHeader() {
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
                 aria-expanded={menuOpen}
                 onClick={() => setMenuOpen((v) => !v)}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border dark:border-slate-800 text-text-heading dark:text-slate-200 transition-colors hover:bg-bg-light dark:hover:bg-surface-hover md:hidden cursor-pointer"
+                className="flex h-8 w-8 min-[400px]:h-9 min-[400px]:w-9 shrink-0 items-center justify-center rounded-lg border border-border dark:border-slate-800 text-text-heading dark:text-slate-200 transition-colors hover:bg-bg-light dark:hover:bg-surface-hover md:hidden cursor-pointer"
               >
                 {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
               </button>
