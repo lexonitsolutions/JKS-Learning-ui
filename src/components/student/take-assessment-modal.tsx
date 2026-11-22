@@ -1,5 +1,6 @@
 "use client";
 
+import { uploadSubmissionFile } from "@/lib/api/submission-files";
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -82,6 +83,8 @@ export function TakeAssessmentModal({
 }: TakeAssessmentModalProps) {
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [uploadedFileName, setUploadedFileName] = useState<string>("");
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   // Latest server-recorded submission per coding question (coding answers are
@@ -92,6 +95,8 @@ export function TakeAssessmentModal({
     if (isOpen) {
       setAnswers({});
       setUploadedFileName("");
+      setUploadedFileUrl("");
+      setIsUploading(false);
       setValidationError(null);
       setCodeStatus({});
     }
@@ -183,15 +188,37 @@ export function TakeAssessmentModal({
     setValidationError(null);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const f = e.target.files[0];
-      setUploadedFileName(f.name);
-      setAnswers((prev) => ({ ...prev, uploadedFile: f.name }));
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const f = input.files?.[0];
+    if (!f) return;
+    setValidationError(null);
+    setIsUploading(true);
+    try {
+      // The file itself is stored on the server so tutors and admins can open it.
+      const ref = await uploadSubmissionFile(f);
+      setUploadedFileName(ref.name);
+      setUploadedFileUrl(ref.url);
+      setAnswers((prev) => ({ ...prev, uploadedFile: ref.name }));
+    } catch (err: any) {
+      setUploadedFileName("");
+      setUploadedFileUrl("");
+      setAnswers((prev) => {
+        const { uploadedFile: _drop, ...rest } = prev;
+        return rest;
+      });
+      setValidationError(err?.message || "Upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
+      input.value = ""; // allow choosing the same file again after a failure
     }
   };
 
   const handleSubmit = async () => {
+    if (isUploading) {
+      setValidationError("Your file is still uploading. Please wait a moment.");
+      return;
+    }
     if (!allQuestionsAnswered) {
       setValidationError(
         `Please answer all ${totalQuestions} questions before submitting (${effectiveAnsweredCount}/${totalQuestions} answered${
@@ -213,6 +240,7 @@ export function TakeAssessmentModal({
             studentEmail: studentEmail || task.assignedStudentEmail,
             answers,
             uploadedFileName: uploadedFileName || undefined,
+            uploadedFileUrl: uploadedFileUrl || undefined,
           });
           if (!result.success) {
             throw new Error(result.error || "Failed to submit assignment.");
@@ -221,12 +249,13 @@ export function TakeAssessmentModal({
           onSubmit(Number.isFinite(serverScore) ? serverScore : 0, {
             answers,
             uploadedFileName,
+            uploadedFileUrl,
             needsManualCodeReview: Boolean(result.data?.submission?.needsManualCodeReview),
           });
         } else {
           // Course milestone assignment: scored locally as before.
           const evalResult = evaluateAssessmentSubmission(customQuestions, answers, uploadedFileName);
-          onSubmit(evalResult.score, { answers, uploadedFileName });
+          onSubmit(evalResult.score, { answers, uploadedFileName, uploadedFileUrl });
         }
       } else {
         // Fallback for default questions
@@ -425,7 +454,7 @@ export function TakeAssessmentModal({
                     >
                       <Upload className="h-6 w-6 text-[#2563EB] dark:text-blue-400" />
                       <span className="font-bold text-slate-800 dark:text-slate-200">
-                        {uploadedFileName ? `Attached: ${uploadedFileName}` : "Click to select and attach solution file"}
+                        {isUploading ? "Uploading…" : uploadedFileName ? `Attached: ${uploadedFileName}` : "Click to select and attach solution file"}
                       </span>
                       <span className="text-[10px] text-slate-400">Accepted formats: {task?.requiredFiles || ".pdf, .zip, .java, .tsx"}</span>
                     </label>
@@ -490,7 +519,7 @@ export function TakeAssessmentModal({
                   <span>Choose File</span>
                 </label>
                 <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {uploadedFileName ? `Selected: ${uploadedFileName}` : "No file chosen yet"}
+                  {isUploading ? "Uploading…" : uploadedFileName ? `Selected: ${uploadedFileName}` : "No file chosen yet"}
                 </span>
               </div>
             </div>
@@ -517,7 +546,7 @@ export function TakeAssessmentModal({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isSubmitting || !allQuestionsAnswered}
+              disabled={isSubmitting || isUploading || !allQuestionsAnswered}
               title={
                 !allQuestionsAnswered
                   ? `Answer all ${totalQuestions} questions before submitting (${effectiveAnsweredCount}/${totalQuestions} answered).`

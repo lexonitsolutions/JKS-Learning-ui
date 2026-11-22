@@ -110,6 +110,7 @@ import { approveEnrollment, rejectEnrollment } from "@/lib/data/students-api";
 import { CourseThumbnail } from "@/components/common/course-thumbnail";
 import { MessageStudentModal } from "@/components/admin/message-student-modal";
 import { EditStudentModal } from "@/components/admin/edit-student-modal";
+import { SubmissionFileActions } from "@/components/admin/submission-file-actions";
 
 type HubTabType = "overview" | "qa" | "reviews" | "tools";
 
@@ -3064,16 +3065,7 @@ function AdminStudentDetailsContent() {
                                                               </div>
 
                                                               {(q.fileUrl || task.submissionFileUrl) && (
-                                                                <a
-                                                                  href={q.fileUrl || task.submissionFileUrl}
-                                                                  target="_blank"
-                                                                  rel="noopener noreferrer"
-                                                                  download
-                                                                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-1.5 text-xs font-bold transition-colors shrink-0 shadow-xs"
-                                                                >
-                                                                  <Download className="h-3.5 w-3.5" />
-                                                                  <span>Download Deliverable</span>
-                                                                </a>
+                                                                <SubmissionFileActions url={q.fileUrl || task.submissionFileUrl} name={q?.fileName || task.submissionFileName} />
                                                               )}
                                                             </div>
 
@@ -3158,16 +3150,7 @@ function AdminStudentDetailsContent() {
                                                     </div>
                                                   </div>
                                                   {task.submissionFileUrl && (
-                                                    <a
-                                                      href={task.submissionFileUrl}
-                                                      target="_blank"
-                                                      rel="noopener noreferrer"
-                                                      download
-                                                      className="flex items-center gap-1.5 rounded-xl bg-blue-600 text-white px-3 py-1.5 text-xs font-bold hover:bg-blue-700 transition-colors"
-                                                    >
-                                                      <Download className="h-3.5 w-3.5" />
-                                                      <span>Download File</span>
-                                                    </a>
+                                                    <SubmissionFileActions url={task.submissionFileUrl} name={task.submissionFileName} />
                                                   )}
                                                 </div>
                                               ) : (
@@ -3633,15 +3616,7 @@ function AdminStudentDetailsContent() {
                                         </span>
                                       </div>
                                       {(q.fileUrl || selectedTaskModal.submissionFileUrl) && (
-                                        <a
-                                          href={q.fileUrl || selectedTaskModal.submissionFileUrl}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          className="inline-flex items-center gap-1 rounded-md bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1 text-[11px] font-bold transition-colors"
-                                        >
-                                          <Download className="h-3 w-3" />
-                                          Download File
-                                        </a>
+                                        <SubmissionFileActions url={q.fileUrl || selectedTaskModal.submissionFileUrl} name={q?.fileName || selectedTaskModal.submissionFileName} />
                                       )}
                                     </div>
                                     {studentText && !studentText.startsWith("http") && (
@@ -3688,15 +3663,7 @@ function AdminStudentDetailsContent() {
                               <div className="text-[11px] text-slate-500">Click to inspect or download student submission</div>
                             </div>
                           </div>
-                          <a
-                            href={selectedTaskModal.submissionFileUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 text-xs font-bold transition-colors"
-                          >
-                            <Download className="h-3.5 w-3.5" />
-                            Download
-                          </a>
+                          <SubmissionFileActions url={selectedTaskModal.submissionFileUrl} name={selectedTaskModal.submissionFileName} />
                         </div>
                       );
                     }

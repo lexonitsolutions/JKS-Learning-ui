@@ -21,6 +21,7 @@ import {
   type TaskQuestion,
 } from "@/lib/data/tasks-api";
 import { evaluateAssessmentSubmission } from "@/lib/data/assessment-scoring";
+import { SubmissionFileActions } from "@/components/admin/submission-file-actions";
 
 interface ReviewTaskModalProps {
   isOpen: boolean;
@@ -299,11 +300,16 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
                         {ev.studentAnswerText}
                       </pre>
                     ) : ev.type === "FILE_UPLOAD" ? (
-                      <div className="flex items-center gap-2 pt-1 text-xs">
-                        <FileText className="h-4 w-4 text-[#2563EB] dark:text-blue-400 shrink-0" />
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">
-                          {ev.studentAnswerText}
-                        </span>
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <FileText className="h-4 w-4 text-[#2563EB] dark:text-blue-400 shrink-0" />
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 break-all">
+                            {ev.studentAnswerText}
+                          </span>
+                        </div>
+                        {submission?.uploadedFileUrl ? (
+                          <SubmissionFileActions url={submission.uploadedFileUrl} name={submission.uploadedFileName} />
+                        ) : null}
                       </div>
                     ) : (
                       <p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap font-medium">
@@ -361,7 +367,7 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
                 <FileText className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                 <span>Uploaded Artifact: {submission.uploadedFileName}</span>
               </div>
-              <span className="text-[11px] text-emerald-600 font-bold">Verified Submission ✓</span>
+              <SubmissionFileActions url={submission.uploadedFileUrl} name={submission.uploadedFileName} />
             </div>
           )}
         </div>
