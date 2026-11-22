@@ -94,7 +94,7 @@ export default function MyCoursesPage() {
           ? exact.totalSections
           : (c.totalSections || 1);
         const isCompleted = prog >= 100 && (c.completionApproved === true);
-        const instructorName = c.instructorName && c.instructorName !== "Dr. Rohit Kapoor" ? c.instructorName : "Davood Khan";
+        const instructorName = c.instructorName && c.instructorName !== "Dr. Rohit Kapoor" ? c.instructorName : "JKS Faculty";
         return {
           ...c,
           progress: prog,

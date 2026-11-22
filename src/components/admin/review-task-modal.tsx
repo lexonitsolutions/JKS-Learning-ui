@@ -21,6 +21,7 @@ import {
   type TaskQuestion,
 } from "@/lib/data/tasks-api";
 import { evaluateAssessmentSubmission } from "@/lib/data/assessment-scoring";
+import { SubmissionFileActions } from "@/components/admin/submission-file-actions";
 
 interface ReviewTaskModalProps {
   isOpen: boolean;
@@ -30,6 +31,23 @@ interface ReviewTaskModalProps {
 }
 
 const LEGACY_DEFAULT_FEEDBACK = "Demonstrated sound understanding of core concepts. Great job!";
+
+/**
+ * Task prompts are often pasted as one long run with dashed dividers. Turn the
+ * dividers into line breaks (and split obvious parts/steps) so the text reads
+ * as short lines instead of one wall.
+ */
+function formatQuestionPrompt(raw: string): string {
+  let text = String(raw || "").replace(/\r\n/g, "\n");
+  text = text.replace(/[ \t]*-{5,}[ \t]*/g, "\n");
+  if (!text.includes("\n")) {
+    text = text
+      .replace(/\s+(?=PART \d+\s*:)/g, "\n")
+      .replace(/\s+(?=SUBMISSION INSTRUCTIONS\s*:)/gi, "\n")
+      .replace(/\s+(?=\d+\.\s+[A-Z])/g, "\n");
+  }
+  return text.replace(/\n{3,}/g, "\n\n").trim();
+}
 
 export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTaskModalProps) {
   const submission = task?.submission;
@@ -213,12 +231,15 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
                       : "border-rose-200 dark:border-rose-900/50 bg-rose-50/20 dark:bg-rose-950/10"
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white">
-                      Q{idx + 1}: {ev.prompt}
-                    </span>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                    <div className="min-w-0 flex-1 text-xs leading-relaxed text-slate-900 dark:text-white">
+                      <span className="font-extrabold text-[#2563EB] dark:text-blue-400">Q{idx + 1}</span>
+                      <div className="mt-1 whitespace-pre-wrap break-words font-medium">
+                        {formatQuestionPrompt(ev.prompt)}
+                      </div>
+                    </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:shrink-0 sm:justify-end">
                       {ev.isCorrect ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-bold">
                           <CheckCircle2 className="h-3 w-3" />
@@ -299,11 +320,16 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
                         {ev.studentAnswerText}
                       </pre>
                     ) : ev.type === "FILE_UPLOAD" ? (
-                      <div className="flex items-center gap-2 pt-1 text-xs">
-                        <FileText className="h-4 w-4 text-[#2563EB] dark:text-blue-400 shrink-0" />
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">
-                          {ev.studentAnswerText}
-                        </span>
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <FileText className="h-4 w-4 text-[#2563EB] dark:text-blue-400 shrink-0" />
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 break-all">
+                            {ev.studentAnswerText}
+                          </span>
+                        </div>
+                        {submission?.uploadedFileUrl ? (
+                          <SubmissionFileActions url={submission.uploadedFileUrl} name={submission.uploadedFileName} />
+                        ) : null}
                       </div>
                     ) : (
                       <p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap font-medium">
@@ -361,7 +387,7 @@ export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTas
                 <FileText className="h-4 w-4 text-[#2563EB] dark:text-blue-400" />
                 <span>Uploaded Artifact: {submission.uploadedFileName}</span>
               </div>
-              <span className="text-[11px] text-emerald-600 font-bold">Verified Submission ✓</span>
+              <SubmissionFileActions url={submission.uploadedFileUrl} name={submission.uploadedFileName} />
             </div>
           )}
         </div>

@@ -55,7 +55,7 @@ export default function AdminStaffPage() {
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -121,13 +121,13 @@ export default function AdminStaffPage() {
       const res = await apiFetch("/admin/staff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, role: "STAFF" }),
+        body: JSON.stringify({ ...form, phone: form.phone.trim() || undefined, role: "STAFF" }),
       });
       if (!res.ok) {
         const fallback = res.status === 403 ? "Only the super admin can create staff accounts." : "Could not create the account.";
         throw new Error(await errorMessage(res, fallback));
       }
-      setForm({ name: "", email: "", password: "" });
+      setForm({ name: "", email: "", phone: "", password: "" });
       setShowForm(false);
       await load();
     } catch (err) {
@@ -156,14 +156,15 @@ export default function AdminStaffPage() {
       </header>
 
       {showForm ? (
-        <form onSubmit={create} className={`${CARD} grid gap-3 sm:grid-cols-4`}>
+        <form onSubmit={create} className={`${CARD} grid gap-3 sm:grid-cols-2 lg:grid-cols-5`}>
           <input className={INPUT} required minLength={2} placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <input className={INPUT} required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          <input className={INPUT} required type="tel" inputMode="tel" pattern="[+0-9][0-9 ()\-]{6,19}" title="Mobile number, digits only (optional + and spaces)" placeholder="Mobile number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           <input className={INPUT} required minLength={5} type="password" placeholder="Password (min 5)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
           <button disabled={saving} className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-60">
             <UserPlus className="h-4 w-4" /> {saving ? "Creating…" : "Create account"}
           </button>
-          {formError ? <p className="text-xs font-semibold text-rose-600 sm:col-span-4">{formError}</p> : null}
+          {formError ? <p className="text-xs font-semibold text-rose-600 sm:col-span-2 lg:col-span-5">{formError}</p> : null}
         </form>
       ) : null}
 
@@ -187,7 +188,7 @@ export default function AdminStaffPage() {
                         <span className="ml-2 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">Deactivated</span>
                       ) : null}
                     </p>
-                    <p className="text-xs text-slate-500">{s.email}</p>
+                    <p className="text-xs text-slate-500">{s.email}{s.phone ? ` · ${s.phone}` : ""}</p>
                   </div>
                   <Stat label="Follow-ups (month)" value={s.followUpsThisMonth} />
                   <Stat label="Total" value={s.followUpsTotal} />
