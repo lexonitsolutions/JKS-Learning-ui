@@ -1,5 +1,6 @@
 "use client";
 
+import { formatQuestionPrompt } from "@/lib/format-question-prompt";
 import React, { useMemo } from "react";
 import {
   X,
@@ -251,8 +252,8 @@ export function ViewSubmissionModal({
                   </div>
 
                   {/* Question Prompt */}
-                  <p className="text-xs font-semibold text-slate-900 dark:text-white leading-relaxed">
-                    {ev.prompt}
+                  <p className="whitespace-pre-wrap break-words text-xs font-semibold text-slate-900 dark:text-white leading-relaxed">
+                    {formatQuestionPrompt(ev.prompt)}
                   </p>
 
                   {/* Student Answer Box */}

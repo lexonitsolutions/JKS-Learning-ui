@@ -127,7 +127,6 @@ const CATEGORY_TABS = [
   { id: "fullstack", label: "Full Stack" },
   { id: "frontend", label: "Frontend" },
   { id: "sap", label: "SAP" },
-  { id: "bundle-builder", label: "Create Own Bundle" },
 ];
 
 export default function StudentAllCoursesPage() {
@@ -154,25 +153,6 @@ export default function StudentAllCoursesPage() {
 
   const catalogCourses = useMemo(() => {
     const list = allCourses.map(mapFullCourseToCatalog);
-    if (list.length >= 2) {
-      list.push({
-        id: "cat-bundle-pro",
-        slug: "create-own-bundle",
-        title: "Create Your Own Bundle",
-        tagline: "Combine multiple enterprise tracks with special tiered bundle savings.",
-        category: "bundle",
-        isPremium: true,
-        language: "English",
-        rating: 5.0,
-        reviewsCount: "Best Value",
-        price: 39999,
-        thumbnailBg: "bg-gradient-to-br from-slate-950 via-neutral-900 to-blue-950",
-        bannerTitle: "ENTERPRISE",
-        bannerSubtitle: "COMBO BUNDLE",
-        gradientText: "from-blue-300 via-cyan-400 to-indigo-400",
-        isBundle: true,
-      });
-    }
     return list;
   }, [allCourses]);
 
@@ -317,10 +297,17 @@ export default function StudentAllCoursesPage() {
                     {/* Uploaded Thumbnail Image (if provided) */}
                     {course.thumbnail ? (
                       <>
+                        {/* Blurred copy fills the sides so the whole picture can show uncropped. */}
+                        <img
+                          src={course.thumbnail}
+                          alt=""
+                          aria-hidden
+                          className="absolute inset-0 h-full w-full scale-125 object-cover opacity-60 blur-2xl"
+                        />
                         <img
                           src={course.thumbnail}
                           alt={course.title}
-                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                          className="absolute inset-0 h-full w-full object-contain transition-transform duration-500 hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
                       </>

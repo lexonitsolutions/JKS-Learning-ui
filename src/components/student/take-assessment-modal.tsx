@@ -1,6 +1,7 @@
 "use client";
 
 import { uploadSubmissionFile } from "@/lib/api/submission-files";
+import { formatQuestionPrompt } from "@/lib/format-question-prompt";
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -336,8 +337,8 @@ export function TakeAssessmentModal({
                 className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-surface-elevated/40 p-4 space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 dark:text-white text-xs">
-                    Question {qIdx + 1}: {q.prompt}
+                  <span className="min-w-0 flex-1 whitespace-pre-wrap break-words font-bold leading-relaxed text-slate-900 dark:text-white text-xs">
+                    Question {qIdx + 1}: {formatQuestionPrompt(q.prompt)}
                   </span>
                   <span className="text-[10px] font-bold uppercase text-[#2563EB] dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded">
                     {q.type.replace("_", " ")}

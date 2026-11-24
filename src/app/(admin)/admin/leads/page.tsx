@@ -125,7 +125,10 @@ export default function AdminLeadsPage() {
         lead.interestedCourse.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesSource =
-        sourceFilter === "ALL" || lead.source === sourceFilter;
+        sourceFilter === "ALL" ||
+        (sourceFilter === "EVENT"
+          ? Boolean(lead.interestedCourse?.startsWith("Event:"))
+          : lead.source === sourceFilter);
 
       const matchesStatus =
         statusFilter === "ALL" || lead.status === statusFilter;
@@ -212,6 +215,7 @@ export default function AdminLeadsPage() {
               <option value="ALL">All Sources</option>
               <option value="CHATBOT">🤖 AI Chatbot</option>
               <option value="WEBSITE">🌐 Website Form</option>
+              <option value="EVENT">🎟️ Event Registration</option>
               <option value="META_ADS">📱 Meta Ads</option>
               <option value="GOOGLE_ADS">🔍 Google Ads</option>
               <option value="WALK_IN">🚶 Walk-In</option>
@@ -305,7 +309,12 @@ export default function AdminLeadsPage() {
 
                           {/* Source */}
                           <td className="px-3 py-3.5">
-                            {lead.source === "CHATBOT" ? (
+                            {lead.interestedCourse?.startsWith("Event:") ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 px-2 py-0.5 text-[10.5px] font-bold text-amber-700 dark:text-amber-300">
+                                <Globe className="h-3 w-3" />
+                                <span>Event Registration</span>
+                              </span>
+                            ) : lead.source === "CHATBOT" ? (
                               <span className="inline-flex items-center gap-1 rounded-full bg-cyan-50 dark:bg-cyan-950/50 border border-cyan-200 dark:border-cyan-800 px-2 py-0.5 text-[10.5px] font-bold text-cyan-700 dark:text-cyan-300">
                                 <Bot className="h-3 w-3" />
                                 <span>AI Chatbot</span>

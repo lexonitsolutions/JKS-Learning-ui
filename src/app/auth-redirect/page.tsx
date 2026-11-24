@@ -224,10 +224,16 @@ export default function AuthRedirectPage() {
     }
 
     if (!user) {
-      // Not signed in with Clerk: clear any stale identity and start over.
-      logoutMockSession();
-      window.location.replace("/login");
-      return;
+      // Right after Google sign-in (especially a brand-new account going through
+      // the sign-up step) Clerk can report "loaded, no user" for a moment while
+      // the session is being activated. Bouncing to /login at once is what sent
+      // people back to the previous screen, so wait before giving up.
+      const giveUp = setTimeout(() => {
+        if (hasInitiatedSync.current) return;
+        logoutMockSession();
+        window.location.replace("/login?oauth_failed=1");
+      }, 9000);
+      return () => clearTimeout(giveUp);
     }
 
     void executeSync(user);

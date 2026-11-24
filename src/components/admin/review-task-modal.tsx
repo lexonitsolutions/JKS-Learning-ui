@@ -22,6 +22,7 @@ import {
 } from "@/lib/data/tasks-api";
 import { evaluateAssessmentSubmission } from "@/lib/data/assessment-scoring";
 import { SubmissionFileActions } from "@/components/admin/submission-file-actions";
+import { formatQuestionPrompt } from "@/lib/format-question-prompt";
 
 interface ReviewTaskModalProps {
   isOpen: boolean;
@@ -31,23 +32,6 @@ interface ReviewTaskModalProps {
 }
 
 const LEGACY_DEFAULT_FEEDBACK = "Demonstrated sound understanding of core concepts. Great job!";
-
-/**
- * Task prompts are often pasted as one long run with dashed dividers. Turn the
- * dividers into line breaks (and split obvious parts/steps) so the text reads
- * as short lines instead of one wall.
- */
-function formatQuestionPrompt(raw: string): string {
-  let text = String(raw || "").replace(/\r\n/g, "\n");
-  text = text.replace(/[ \t]*-{5,}[ \t]*/g, "\n");
-  if (!text.includes("\n")) {
-    text = text
-      .replace(/\s+(?=PART \d+\s*:)/g, "\n")
-      .replace(/\s+(?=SUBMISSION INSTRUCTIONS\s*:)/gi, "\n")
-      .replace(/\s+(?=\d+\.\s+[A-Z])/g, "\n");
-  }
-  return text.replace(/\n{3,}/g, "\n\n").trim();
-}
 
 export function ReviewTaskModal({ isOpen, task, onClose, onReviewed }: ReviewTaskModalProps) {
   const submission = task?.submission;

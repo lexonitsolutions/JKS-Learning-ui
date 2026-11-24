@@ -170,7 +170,7 @@ export default function SSOCallbackPage() {
                   Opening taking longer than usual?
                 </p>
                 <p className="mt-1 text-[11px] font-medium leading-relaxed text-amber-800/85 dark:text-amber-300/80">
-                  Sign-in is still finishing. You can keep waiting, or start again:
+                  If a &quot;Verify you are human&quot; box is showing above, tick it to finish creating your account. Otherwise you can keep waiting, or start again:
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 pt-0.5">

@@ -6,7 +6,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Printer, Download, CheckCircle2, ShieldCheck, QrCode, Building, Award, FileText, Loader2 } from "lucide-react";
 import { type Invoice, getInvoiceStatusLabel } from "@/lib/data/invoices-store";
-import { COMPANY, getMissingCompanyFields } from "@/lib/config/company";
+import { COMPANY } from "@/lib/config/company";
 import { JKS_LOGO_BASE64 } from "@/lib/utils/logo-base64";
 import { downloadElementAsPdf } from "@/lib/utils/pdf-download";
 
@@ -19,7 +19,6 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
-  const missingCompanyFields = getMissingCompanyFields();
 
   useEffect(() => {
     setMounted(true);
@@ -136,11 +135,6 @@ export function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
           </div>
         </div>
 
-        {missingCompanyFields.length > 0 && (
-          <div className="border-b border-amber-200 bg-amber-50 px-4 sm:px-6 py-2.5 text-xs font-semibold text-amber-800 print:hidden">
-            Company details missing: {missingCompanyFields.join(", ")}. Set the NEXT_PUBLIC_COMPANY_* environment variables before issuing this invoice to a student.
-          </div>
-        )}
 
         {/* Printable Official Invoice Sheet */}
         <div

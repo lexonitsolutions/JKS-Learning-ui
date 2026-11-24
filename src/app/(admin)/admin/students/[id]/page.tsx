@@ -111,6 +111,7 @@ import { CourseThumbnail } from "@/components/common/course-thumbnail";
 import { MessageStudentModal } from "@/components/admin/message-student-modal";
 import { EditStudentModal } from "@/components/admin/edit-student-modal";
 import { SubmissionFileActions } from "@/components/admin/submission-file-actions";
+import { formatQuestionPrompt } from "@/lib/format-question-prompt";
 
 type HubTabType = "overview" | "qa" | "reviews" | "tools";
 
@@ -1278,9 +1279,9 @@ function AdminStudentDetailsContent() {
                               className="space-y-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-surface-elevated p-4"
                             >
                               <div className="flex items-start justify-between gap-3">
-                                <div className="font-bold text-slate-900 dark:text-white">
+                                <div className="min-w-0 flex-1 whitespace-pre-wrap break-words font-bold leading-relaxed text-slate-900 dark:text-white">
                                   <span className="text-[#2563EB] dark:text-blue-400 mr-1.5">Q{qIdx + 1}.</span>
-                                  {q.prompt}
+                                  {formatQuestionPrompt(q.prompt)}
                                 </div>
                                 <span className="shrink-0 rounded-full bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 text-[10px] font-bold text-[#2563EB] dark:text-blue-300 uppercase">
                                   {assessmentKindLabel(kind)}
@@ -3592,8 +3593,8 @@ function AdminStudentDetailsContent() {
                                   )}
                                 </div>
 
-                                <p className="font-semibold text-slate-900 dark:text-white text-xs">
-                                  {q.prompt}
+                                <p className="whitespace-pre-wrap break-words font-semibold leading-relaxed text-slate-900 dark:text-white text-xs">
+                                  {formatQuestionPrompt(q.prompt)}
                                 </p>
 
                                 {/* Response Content */}

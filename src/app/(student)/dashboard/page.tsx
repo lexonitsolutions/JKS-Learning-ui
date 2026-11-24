@@ -666,9 +666,9 @@ export default function StudentDashboardPage() {
           </Reveal>
         </div>
 
-        {/* AI Mock Interview CTA Banner (Disabled / Coming Soon as requested) */}
+        {/* AI Mock Interview CTA Banner */}
         <Reveal variant="fade-up">
-          <div className="relative overflow-hidden rounded-[24px] border border-slate-800 bg-[#0B1F3A]/90 p-6 text-white shadow-xl sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 dark:bg-surface-secondary dark:border-slate-800/80 opacity-85">
+          <div className="relative overflow-hidden rounded-[24px] border border-slate-800 bg-[#0B1F3A]/90 p-6 text-white shadow-xl sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 dark:bg-surface-secondary dark:border-slate-800/80">
             <div
               className="pointer-events-none absolute -top-12 right-20 h-48 w-48 rounded-full opacity-30"
               style={{ background: "radial-gradient(circle, rgba(56,189,248,0.25), transparent 70%)" }}
@@ -678,23 +678,24 @@ export default function StudentDashboardPage() {
                 <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-cyan-400">
                   <Zap className="h-3 w-3" /> AI Mock Interview
                 </span>
-                <span className="rounded-full bg-cyan-500/20 border border-cyan-400/30 px-2 py-0.5 text-[10px] font-bold text-cyan-300 uppercase tracking-wide">
-                  Coming Soon
+                <span className="rounded-full bg-emerald-500/20 border border-emerald-400/30 px-2 py-0.5 text-[10px] font-bold text-emerald-300 uppercase tracking-wide">
+                  Live
                 </span>
               </div>
               <h3 className="mt-1.5 text-xl font-bold text-white tracking-tight">
                 AI-Powered System Design & Coding Mock Interviews
               </h3>
               <p className="mt-1 text-sm text-slate-300">
-                Interactive real-time technical assessments and speech-enabled architectural reviews will be available in the upcoming release.
+                Practice interactive technical interviews with real-time feedback and get a detailed report on your answers.
               </p>
             </div>
-            <div
-              className="relative z-10 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800/80 border border-slate-700/70 px-5 py-2.5 text-xs font-bold text-slate-400 cursor-not-allowed select-none sm:shrink-0"
+            <Link
+              href="/ai-mock-interview"
+              className="relative z-10 inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-blue-600 sm:shrink-0"
             >
-              <Clock className="h-3.5 w-3.5 text-cyan-400" />
-              <span>Coming Soon</span>
-            </div>
+              <span>Start Practicing</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
         </Reveal>
       </div>

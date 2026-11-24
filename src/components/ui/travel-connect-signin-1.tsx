@@ -365,6 +365,16 @@ export function TravelConnectSignIn({ mode }: { mode: AuthMode }) {
   const [verifyingEmailAddress, setVerifyingEmailAddress] = useState("");
 
   const isBlocked = searchParams?.get("blocked") === "1" || session?.status === "BLOCKED";
+
+  // /auth-redirect sends people back here when Google finished without a usable session.
+  const oauthFailedFlag = searchParams?.get("oauth_failed") === "1";
+  useEffect(() => {
+    if (oauthFailedFlag) {
+      setOauthError(
+        "Google sign-in did not finish. If you saw a \"Verify you are human\" box, tick it and wait for the page to continue. Then try again, or use email and password."
+      );
+    }
+  }, [oauthFailedFlag]);
   const isAuthenticated = !isBlocked && ((isAuthLoaded && isSignedIn) || !!session);
   const userEmail = clerkUser?.primaryEmailAddress?.emailAddress || session?.email || "";
   const userName = clerkUser?.fullName || clerkUser?.firstName || session?.name || "Student";
